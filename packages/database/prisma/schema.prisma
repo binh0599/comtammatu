@@ -1,0 +1,10 @@
+// Prisma 7 schema — models generated via `prisma db pull`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}

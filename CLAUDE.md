@@ -13,7 +13,7 @@ The monorepo is fully initialized with configuration, CI/CD, and stub structure.
 
 | Aspect                            | Status                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------ |
-| Architecture specification (v2.1) | Complete (`docs/F&B_CRM_Lightweight_Architecture_v2.1.md`) — architecture only |
+| Architecture specification (v2.2) | Complete (`docs/F&B_CRM_Lightweight_Architecture_v2.2.md`) — performance & budget optimized |
 | Development Roadmap               | Complete (`docs/ROADMAP.md`) — timeline, milestones, migration path            |
 | Project Operating System          | Complete (`docs/PROJECT_OPERATING_SYSTEM_ENGLISH.md`)                    |
 | AI boot file (this file)          | Complete                                                                 |
@@ -27,6 +27,7 @@ The monorepo is fully initialized with configuration, CI/CD, and stub structure.
 | Supabase project                  | config.toml exists, not linked to remote                                 |
 | Vercel project                    | Not linked                                                               |
 | shadcn/ui                         | Not installed                                                            |
+| Agent skills                      | 4 project-level + 70+ platform skills mapped (Section XIX)               |
 | tasks/ directory                  | Created with empty tracking files                                        |
 
 **Current file count:** ~43 files (mostly config + stubs + documentation)
@@ -43,10 +44,10 @@ The monorepo is fully initialized with configuration, CI/CD, and stub structure.
 | Stack            | Next.js 16.1 (App Router) + Supabase + Vercel + TypeScript 5.7 + Prisma 7.2 |
 | Monorepo         | Turborepo 2.8 with pnpm 9.15.0                                              |
 | UI               | shadcn/ui components (not yet installed)                                    |
-| Cost target      | $45-120/month                                                               |
+| Cost target      | $46/month (base)                                                            |
 | Team size        | 2-3 developers                                                              |
 | Time to MVP      | 4-6 weeks (8-week roadmap)                                                  |
-| Architecture doc | `docs/F&B_CRM_Lightweight_Architecture_v2.1.md` (source of truth)           |
+| Architecture doc | `docs/F&B_CRM_Lightweight_Architecture_v2.2.md` (source of truth)           |
 | Roadmap          | `docs/ROADMAP.md` (timeline, milestones, migration path)                    |
 
 ---
@@ -109,10 +110,15 @@ comtammatu/
 │   ├── friction.md                    # Contradiction tracker (empty)
 │   └── predictions.md                 # Prediction log (empty)
 ├── docs/
-│   ├── F&B_CRM_Lightweight_Architecture_v2.1.md  # Architecture spec (source of truth)
+│   ├── F&B_CRM_Lightweight_Architecture_v2.2.md  # Architecture spec (source of truth)
 │   ├── ROADMAP.md                                # Development roadmap & migration path
 │   ├── PROJECT_OPERATING_SYSTEM_ENGLISH.md       # Workflow rules
 │   └── README.md                      # Minimal
+├── .agents/skills/                    # Project-level AI agent skills
+│   ├── supabase-postgres-best-practices/  # Postgres optimization (Supabase)
+│   ├── nextjs-supabase-auth/              # Auth integration patterns
+│   ├── next-best-practices/               # Next.js conventions & RSC
+│   └── clean-code/                        # Clean Code principles
 ├── CLAUDE.md                          # This file
 ├── package.json                       # Root workspace (Turborepo)
 ├── pnpm-workspace.yaml                # apps/*, packages/*, modules/*
@@ -480,8 +486,9 @@ At the start of every new task:
 2. Check tasks/regressions.md -- any applicable rules?
 3. Check tasks/lessons.md -- any relevant lessons?
 4. Check tasks/friction.md -- any unresolved contradictions?
-5. Assess task complexity -> choose appropriate workflow
-6. Begin execution
+5. Identify relevant skills from Section XIX -- invoke before coding
+6. Assess task complexity -> choose appropriate workflow
+7. Begin execution
 ```
 
 ---
@@ -495,7 +502,7 @@ Current Phase: Project Initialization (completing)
 - [x] Create project file structure
 - [ ] Run pnpm install to verify workspace resolution
 - [ ] Initialize Supabase project (supabase link)
-- [ ] Create initial database migration (v2.1 schema)
+- [ ] Create initial database migration (v2.2 schema)
 - [ ] Configure shadcn/ui in apps/web
 - [ ] Set up ESLint + Prettier
 - [ ] First Vercel deployment test
@@ -505,7 +512,7 @@ Current Phase: Project Initialization (completing)
 
 **Week 1-2: Foundation + Security Baseline**
 
-- Database: Schema (v2.1 DDL) + RLS policies + seed data + RLS validation tests
+- Database: Schema (v2.2 DDL) + RLS policies + seed data + RLS validation tests
 - Auth: Supabase Auth config, RBAC, MFA, login pages
 - Security: Pre-commit hooks, CI pipeline
 - Core UI: Layout, navigation, shadcn/ui components
@@ -576,6 +583,98 @@ When scaling beyond 10 branches, extract modules into standalone services:
 | Complex payroll     | Extract HR/Payroll service      | 2-3 weeks |
 | > 10K orders/day    | CQRS + read replicas            | 3-4 weeks |
 | Multi-region        | K8s + multi-region Supabase     | 6-8 weeks |
+
+---
+
+## XIX. AGENT SKILLS REFERENCE
+
+> Skills are specialized AI capabilities installed at the project level or available via platform plugins.
+> **Always invoke the most relevant skill(s) before starting work on a task.**
+
+### Project-Level Skills (`.agents/skills/`)
+
+These 4 skills are installed directly in the repo and tailored to our stack:
+
+| Skill | Trigger | When to Use |
+| ----- | ------- | ----------- |
+| `supabase-postgres-best-practices` | Writing/reviewing SQL, schema design, RLS policies, query optimization, connection pooling | **Every database task.** Schema migrations, RLS, indexes, seed data, query tuning. Aligns with Section VIII conventions. |
+| `nextjs-supabase-auth` | Auth flows, login/signup pages, middleware auth, protected routes, session handling | **Auth module (Week 1-2).** Supabase Auth + Next.js App Router integration, cookie-based sessions, Server Actions for auth. |
+| `next-best-practices` | Any Next.js code — routes, layouts, RSC boundaries, data fetching, metadata, error handling | **Every frontend task.** File conventions, async API patterns (Next.js 15+/16), route handlers, image/font optimization. |
+| `clean-code` | Writing new code, reviewing PRs, refactoring, naming, function design | **Every code task.** Naming conventions, single responsibility, error handling, testability. |
+
+### Platform Skills — Mapped to Roadmap Phases
+
+#### Week 1-2: Foundation + Security Baseline
+
+| Task | Primary Skill(s) | Notes |
+| ---- | ---------------- | ----- |
+| Database schema (v2.2 DDL) | `supabase-postgres-best-practices` + `database-design:postgresql` | Use both: project skill for Supabase-specific patterns, platform skill for general PG schema design (types, indexes, constraints, partitioning) |
+| RLS policies + validation tests | `supabase-postgres-best-practices` + `engineering:testing-strategy` | RLS performance rules from project skill; test strategy for RLS validation suite |
+| Auth: Supabase config, RBAC, MFA, login pages | `nextjs-supabase-auth` + `next-best-practices` | Project skill covers middleware auth, callback routes, cookie sessions |
+| CI pipeline enhancements | `cicd-automation:github-actions-templates` | Extend existing `.github/workflows/ci.yml` with deployment, SBOM, RLS test jobs |
+| Core UI: Layout, navigation, shadcn/ui | `next-best-practices` + `ui-design:design-system-patterns` + `ui-design:responsive-design` | Design tokens, component architecture, mobile-first for POS/KDS interfaces |
+| Menu Management CRUD | `next-best-practices` + `javascript-typescript:typescript-advanced-types` | RSC data patterns, Zod schema typing, Server Actions |
+
+#### Week 3-4: Split POS & Orders
+
+| Task | Primary Skill(s) | Notes |
+| ---- | ---------------- | ----- |
+| Terminal Management + Mobile Order | `next-best-practices` + `ui-design:interaction-design` | Offline-capable PWA, touch interactions for waiter mobile |
+| Cashier Station | `next-best-practices` + `ui-design:responsive-design` | Tablet/laptop layout, payment flow UI |
+| Payment integration (VNPay/Momo) | `javascript-typescript:modern-javascript-patterns` | Async webhook handling, HMAC verification, idempotency |
+| Order lifecycle + KDS Realtime | `supabase-postgres-best-practices` + `next-best-practices` | Supabase Realtime subscriptions, optimistic updates, RLS-filtered channels |
+| Offline support | `javascript-typescript:modern-javascript-patterns` | Service workers, IndexedDB sync, AES-256-GCM encryption |
+
+#### Week 5-6: Operations
+
+| Task | Primary Skill(s) | Notes |
+| ---- | ---------------- | ----- |
+| Inventory module | `database-design:postgresql` + `supabase-postgres-best-practices` | Optimistic concurrency (version column), stock movement queries |
+| Admin Dashboard + Reports | `data:build-dashboard` or `data:create-viz` | Interactive charts for revenue, orders, inventory levels |
+| Security Events | `supabase-postgres-best-practices` | Append-only tables, audit trail queries, GIN indexes on JSONB |
+
+#### Week 7-8: CRM, Privacy & Polish
+
+| Task | Primary Skill(s) | Notes |
+| ---- | ---------------- | ----- |
+| CRM + Loyalty | `database-design:postgresql` | Customer segmentation queries, loyalty tier calculations |
+| Customer PWA | `next-best-practices` + `ui-design:accessibility-compliance` | WCAG compliance for customer-facing app |
+| GDPR/Privacy | `supabase-postgres-best-practices` | Data retention jobs, anonymization queries, Edge Functions |
+| Testing & QA | `engineering:testing-strategy` + `javascript-typescript:javascript-testing-patterns` | Vitest setup, integration tests, E2E strategy |
+| Documentation | `engineering:documentation` | API docs, architecture docs, onboarding guide |
+
+### Cross-Cutting Skills (Use Anytime)
+
+| Skill | When to Invoke |
+| ----- | -------------- |
+| `engineering:code-review` | Before merging any PR or completing a significant feature |
+| `engineering:debug` | When encountering bugs — structured reproduce/isolate/diagnose/fix |
+| `engineering:system-design` | When making architectural decisions (ADRs) |
+| `javascript-typescript:typescript-advanced-types` | Complex generics, discriminated unions, Zod inference types |
+| `javascript-typescript:modern-javascript-patterns` | Async patterns, error handling, functional patterns |
+| `data:write-query` | Complex SQL queries, especially reporting and analytics |
+| `ui-design:accessibility-compliance` | Any user-facing UI (WCAG 2.2 compliance) |
+| `clean-code` | Every code task (naming, functions, error handling) |
+
+### Future Migration Skills (Tier 3 — Not Needed Until Scale)
+
+These become relevant when scaling beyond 10 branches (see Section XVIII):
+
+| Skill | Trigger Condition |
+| ----- | ----------------- |
+| `backend-development:microservices-patterns` | > 10 branches, extracting POS module |
+| `backend-development:architecture-patterns` | Moving to Clean/Hexagonal Architecture |
+| `backend-development:cqrs-implementation` | > 10K orders/day, read replica separation |
+| `backend-development:saga-orchestration` | Distributed transactions across extracted services |
+| `cicd-automation:deployment-pipeline-design` | Multi-service deployment orchestration |
+| `data-engineering:data-quality-frameworks` | Data warehouse, analytics pipeline at scale |
+
+### Skill Invocation Rules
+
+1. **Always check project-level skills first** — they're tuned to our exact stack
+2. **Combine skills when tasks span domains** — e.g., database + auth for RLS policies
+3. **Platform skills supplement, never override** — if project skill conflicts with platform skill, project skill wins
+4. **Log skill gaps in `tasks/friction.md`** — if a skill gives bad advice for our setup, document it
 
 ---
 

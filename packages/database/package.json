@@ -7,13 +7,22 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:pull": "prisma db pull",
+    "db:studio": "prisma studio",
+    "db:types": "supabase gen types typescript --project-id zrlriuednoaqrsvnjjyo --schema public > src/types/database.types.ts"
   },
   "dependencies": {
-    "@prisma/client": "^7.2.0"
+    "@prisma/adapter-pg": "^7.2.0",
+    "@prisma/client": "^7.2.0",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.49.0",
+    "pg": "^8.13.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.11.0",
+    "@types/react": "^19.1.0",
+    "dotenv": "^16.4.0",
+    "next": "^16.1.0",
     "prisma": "^7.2.0",
     "typescript": "^5.9.0"
   }
