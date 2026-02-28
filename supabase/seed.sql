@@ -1,0 +1,3 @@
+-- Seed data for F&B CRM (Com Tam Ma Tu)
+-- Run: supabase db reset (applies migrations + seed)
+-- Add seed data here after creating migrations
