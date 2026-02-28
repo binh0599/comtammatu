@@ -48,6 +48,9 @@ pnpm-debug.log*
 # Testing
 coverage/
 
+# Vercel
+.vercel/
+
 # Sentry
 .sentryclirc
 
