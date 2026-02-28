@@ -1,7 +1,9 @@
 -- ============================================================
--- Com Tam Ma Tu F&B CRM — Initial Schema v2.1
+-- Com Tam Ma Tu F&B CRM — Initial Schema (v2.1 baseline)
 -- Migration: 20260228000000_initial_schema.sql
 -- Architecture: docs/F&B_CRM_Lightweight_Architecture_v2.1.md
+-- NOTE: v2.2 changes (junction tables, index policy) applied in
+--       20260228000002_schema_v2_2.sql
 -- ============================================================
 
 -- Extensions
