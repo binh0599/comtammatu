@@ -159,3 +159,39 @@ INSERT INTO system_settings (tenant_id, key, value) VALUES
   (1, 'service_charge', '5'),
   (1, 'receipt_header', '"COM TAM MA TU - Hương vị quê nhà"'),
   (1, 'receipt_footer', '"Cảm ơn quý khách! Hẹn gặp lại!"');
+
+-- 12. POS TERMINALS (Branch 1)
+INSERT INTO pos_terminals (branch_id, name, type, device_fingerprint, is_active, registered_by, approved_by, approved_at)
+SELECT 1, 'Máy tính thu ngân 1', 'cashier_station', 'cashier-dev-001', true, p.id, p.id, NOW()
+FROM profiles p WHERE p.role = 'owner' LIMIT 1;
+
+INSERT INTO pos_terminals (branch_id, name, type, device_fingerprint, is_active, registered_by, approved_by, approved_at)
+SELECT 1, 'Điện thoại phục vụ 1', 'mobile_order', 'waiter-dev-001', true, p.id, p.id, NOW()
+FROM profiles p WHERE p.role = 'owner' LIMIT 1;
+
+-- 13. KDS STATIONS (Branch 1)
+INSERT INTO kds_stations (branch_id, name, display_config, is_active) VALUES
+  (1, 'Bếp Chính', '{"columns": 4, "theme": "dark"}'::jsonb, true),
+  (1, 'Quầy Nước', '{"columns": 3, "theme": "dark"}'::jsonb, true);
+
+-- Link stations to categories
+INSERT INTO kds_station_categories (station_id, category_id)
+SELECT ks.id, mc.id
+FROM kds_stations ks CROSS JOIN menu_categories mc
+WHERE ks.name = 'Bếp Chính' AND mc.name IN ('Cơm', 'Phở & Bún');
+
+INSERT INTO kds_station_categories (station_id, category_id)
+SELECT ks.id, mc.id
+FROM kds_stations ks CROSS JOIN menu_categories mc
+WHERE ks.name = 'Quầy Nước' AND mc.name IN ('Món Phụ', 'Đồ Uống');
+
+-- 14. KDS TIMING RULES
+INSERT INTO kds_timing_rules (station_id, category_id, prep_time_min, warning_min, critical_min)
+SELECT ks.id, ksc.category_id, 15, 12, 20
+FROM kds_stations ks JOIN kds_station_categories ksc ON ksc.station_id = ks.id
+WHERE ks.name = 'Bếp Chính';
+
+INSERT INTO kds_timing_rules (station_id, category_id, prep_time_min, warning_min, critical_min)
+SELECT ks.id, ksc.category_id, 5, 4, 8
+FROM kds_stations ks JOIN kds_station_categories ksc ON ksc.station_id = ks.id
+WHERE ks.name = 'Quầy Nước';

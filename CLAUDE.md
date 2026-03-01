@@ -7,9 +7,9 @@
 
 ## I. PROJECT STATUS
 
-**Phase: SCAFFOLDED — Ready for Active Development**
+**Phase: FOUNDATION COMPLETE — Week 3-4 Ready (Split POS & Orders)**
 
-The monorepo is fully initialized with configuration, CI/CD, and stub structure. All domain modules, packages, and route groups exist as placeholders. No business logic, database schema, or UI has been implemented yet.
+Week 1-2 Foundation is complete. The database schema (v2.2), auth module, admin layout, and menu management CRUD are all implemented and deployed. The project is ready to begin Split POS & Orders development.
 
 | Aspect                            | Status                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------ |
@@ -17,20 +17,40 @@ The monorepo is fully initialized with configuration, CI/CD, and stub structure.
 | Development Roadmap               | Complete (`docs/ROADMAP.md`) — timeline, milestones, migration path            |
 | Project Operating System          | Complete (`docs/PROJECT_OPERATING_SYSTEM_ENGLISH.md`)                    |
 | AI boot file (this file)          | Complete                                                                 |
-| Git repository                    | Initialized (main branch)                                                |
+| Git repository                    | Active (`main` branch, 5 commits)                                        |
 | Monorepo scaffolding              | Complete (Turborepo + pnpm workspaces)                                   |
 | CI/CD pipeline                    | Complete (`.github/workflows/ci.yml`)                                    |
-| Next.js app shell                 | Scaffolded (route groups + health endpoint only)                         |
-| Domain modules                    | 10 stubs created, no implementation                                      |
-| Shared packages                   | 4 packages created, no implementation                                    |
-| Database schema                   | Not created (no Prisma schema, no migrations)                            |
-| Supabase project                  | config.toml exists, not linked to remote                                 |
-| Vercel project                    | Not linked                                                               |
-| shadcn/ui                         | Not installed                                                            |
+| Next.js app shell                 | **Working** — auth, admin layout, menu CRUD, route groups                |
+| Domain modules                    | 10 stubs created (not yet used — logic lives in app routes)              |
+| Shared packages                   | 4 packages — `database` implemented, others are stubs                    |
+| Database schema                   | **Complete** — 4 migrations (1,947 lines SQL), v2.2 with RLS            |
+| Supabase project                  | **Linked** (project: `zrlriuednoaqrsvnjjyo`)                             |
+| Vercel project                    | **Deployed** (`comtammatu.vercel.app`)                                   |
+| shadcn/ui                         | **Installed** (new-york style, 21 components)                            |
+| Tailwind CSS                      | **Installed** (v4.2.1 + design tokens + dark mode)                       |
+| Auth module                       | **Working** — login, middleware, role-based routing, RBAC                 |
+| Admin UI                          | **Working** — sidebar, navigation, dashboard placeholder, menu CRUD      |
+| Prisma                            | **Configured** — v7.2 with `@prisma/adapter-pg` driver adapter           |
 | Agent skills                      | 4 project-level + 70+ platform skills mapped (Section XIX)               |
-| tasks/ directory                  | Created with empty tracking files                                        |
+| tasks/ directory                  | Active — lessons (3), todo tracking in use                               |
 
-**Current file count:** ~43 files (mostly config + stubs + documentation)
+**Current file count:** ~71 source files (excluding generated/node_modules)
+
+### Git History
+
+```
+8b48166 feat: complete Week 1-2 foundation — auth, admin layout, menu CRUD
+15ee48d merge: schema v2.2 upgrade (junction tables, index policy)
+18ad052 feat(db): schema v2.2 — junction tables, index policy, RLS
+22cb765 feat: complete project setup — Supabase schema, shadcn/ui, Vercel config
+a4d9dcf chore: initial project scaffold
+```
+
+### Lessons Learned (from `tasks/lessons.md`)
+
+1. **@supabase/ssr version must match @supabase/supabase-js** — Use `@supabase/ssr@0.8.0+` with `@supabase/supabase-js@2.98.0`
+2. **Separate Prisma from Supabase exports for Edge Runtime** — Middleware imports from `@comtammatu/database/src/supabase` subpath (never barrel export)
+3. **Prisma 7 breaking changes** — Use `prisma.config.ts` for datasource URL, `@prisma/adapter-pg` driver adapter, generated client at `../generated/prisma/client`
 
 ---
 
@@ -41,9 +61,9 @@ The monorepo is fully initialized with configuration, CI/CD, and stub structure.
 | Attribute        | Value                                                                       |
 | ---------------- | --------------------------------------------------------------------------- |
 | Pattern          | Modular Monolith (single Next.js app, domain modules internally)            |
-| Stack            | Next.js 16.1 (App Router) + Supabase + Vercel + TypeScript 5.7 + Prisma 7.2 |
+| Stack            | Next.js 16.1 (App Router) + Supabase + Vercel + TypeScript 5.9 + Prisma 7.2 |
 | Monorepo         | Turborepo 2.8 with pnpm 9.15.0                                              |
-| UI               | shadcn/ui components (not yet installed)                                    |
+| UI               | shadcn/ui (new-york style) + Tailwind CSS v4.2 + dark mode                  |
 | Cost target      | $46/month (base)                                                            |
 | Team size        | 2-3 developers                                                              |
 | Time to MVP      | 4-6 weeks (8-week roadmap)                                                  |
@@ -58,17 +78,55 @@ The monorepo is fully initialized with configuration, CI/CD, and stub structure.
 comtammatu/
 ├── apps/web/                          # Next.js 16.1 app (@comtammatu/web)
 │   ├── app/
-│   │   ├── layout.tsx                 # Root layout (lang="vi")
+│   │   ├── layout.tsx                 # Root layout (lang="vi", TooltipProvider)
 │   │   ├── page.tsx                   # Home page (placeholder)
-│   │   ├── (admin)/layout.tsx         # Admin route group (empty)
-│   │   ├── (pos)/layout.tsx           # POS route group (empty)
-│   │   ├── (kds)/layout.tsx           # KDS route group (empty)
-│   │   ├── (customer)/layout.tsx      # Customer route group (empty)
-│   │   └── api/health/route.ts        # Health check endpoint (working)
+│   │   ├── globals.css                # Tailwind v4 + shadcn design tokens + dark mode
+│   │   ├── login/
+│   │   │   ├── page.tsx               # Login page (RSC, checks auth, role redirect)
+│   │   │   ├── login-form.tsx         # Client component — email/password form
+│   │   │   └── actions.ts            # Server Actions: login() + logout() with Zod validation
+│   │   ├── (admin)/
+│   │   │   ├── layout.tsx             # Admin layout (auth guard, RBAC: owner/manager only)
+│   │   │   └── admin/
+│   │   │       ├── page.tsx           # Dashboard (revenue, orders, customers placeholders)
+│   │   │       └── menu/
+│   │   │           ├── page.tsx       # Menu list (RSC, fetches via Server Action)
+│   │   │           ├── actions.ts     # Server Actions: getMenus(), createMenu(), etc.
+│   │   │           ├── menus-table.tsx # Client component — data table
+│   │   │           └── [menuId]/
+│   │   │               ├── page.tsx           # Menu detail/edit page
+│   │   │               └── menu-detail.tsx    # Client component — edit form
+│   │   ├── (pos)/layout.tsx           # POS route group (stub)
+│   │   ├── (kds)/layout.tsx           # KDS route group (stub)
+│   │   ├── (customer)/layout.tsx      # Customer route group (stub)
+│   │   └── api/
+│   │       ├── health/route.ts        # Health check endpoint (working)
+│   │       └── auth/callback/route.ts # Supabase PKCE auth callback
+│   ├── components/
+│   │   ├── admin/
+│   │   │   ├── app-sidebar.tsx        # Admin sidebar navigation (shadcn Sidebar)
+│   │   │   ├── header.tsx             # Admin header with breadcrumbs
+│   │   │   └── nav-user.tsx           # User dropdown (avatar, logout)
+│   │   └── ui/                        # 21 shadcn/ui components (auto-generated)
+│   │       ├── button.tsx, card.tsx, dialog.tsx, dropdown-menu.tsx,
+│   │       │   input.tsx, label.tsx, select.tsx, separator.tsx,
+│   │       │   sheet.tsx, sidebar.tsx, skeleton.tsx, table.tsx,
+│   │       │   tabs.tsx, textarea.tsx, tooltip.tsx, sonner.tsx,
+│   │       │   alert-dialog.tsx, avatar.tsx, badge.tsx,
+│   │       │   breadcrumb.tsx, switch.tsx
+│   │       └── (New-York style, RSC-compatible, Tailwind CSS vars)
+│   ├── hooks/
+│   │   └── use-mobile.ts             # Mobile breakpoint detection hook
+│   ├── lib/
+│   │   └── utils.ts                   # cn() helper (clsx + tailwind-merge)
+│   ├── middleware.ts                   # Supabase session refresh + auth redirect
 │   ├── next.config.ts                 # Transpiles workspace packages
-│   ├── package.json                   # Next 16.1, React 19.1, Supabase
-│   └── tsconfig.json                  # Extends root, Next.js plugin
-├── modules/                           # Domain modules (all export-only stubs)
+│   ├── components.json                # shadcn/ui config (new-york, RSC, Tailwind vars)
+│   ├── postcss.config.mjs             # @tailwindcss/postcss plugin
+│   ├── eslint.config.mjs              # ESLint flat config (core-web-vitals + TS)
+│   ├── package.json                   # Next 16.1, React 19.1, Supabase, shadcn, Tailwind
+│   └── tsconfig.json                  # Extends root, Next.js plugin, @/* alias
+├── modules/                           # Domain modules (all export-only stubs — NOT YET USED)
 │   ├── auth/index.ts                  # Authentication & RBAC
 │   ├── terminals/index.ts             # Terminal registration
 │   ├── pos/index.ts                   # POS sessions, payments
@@ -80,35 +138,50 @@ comtammatu/
 │   ├── privacy/index.ts               # GDPR deletion, export
 │   └── reports/index.ts               # Analytics, reporting
 ├── packages/
-│   ├── database/                      # @comtammatu/database (Prisma 7.2)
-│   │   ├── package.json               # prisma + @prisma/client
-│   │   ├── src/index.ts               # Export stub
+│   ├── database/                      # @comtammatu/database (IMPLEMENTED)
+│   │   ├── prisma.config.ts           # Prisma 7 datasource config (DIRECT_URL / DATABASE_URL)
+│   │   ├── src/
+│   │   │   ├── index.ts               # Barrel: prisma client + Supabase clients + types
+│   │   │   ├── prisma.ts              # Prisma singleton (PrismaPg adapter, global cache)
+│   │   │   ├── supabase/
+│   │   │   │   ├── index.ts           # Edge-safe exports (no Prisma dependency)
+│   │   │   │   ├── server.ts          # createServerClient (cookie-based, RSC/Actions)
+│   │   │   │   ├── client.ts          # createBrowserClient (client components)
+│   │   │   │   └── middleware.ts       # updateSession (auth guard + role-based redirect)
+│   │   │   └── types/
+│   │   │       └── database.types.ts  # Supabase generated types
+│   │   ├── generated/prisma/client/   # Generated Prisma client (git-ignored)
+│   │   ├── package.json               # prisma, @prisma/client, @prisma/adapter-pg, pg
 │   │   └── tsconfig.json
-│   ├── shared/                        # @comtammatu/shared (Zod 3.24)
+│   ├── shared/                        # @comtammatu/shared (Zod 3.24) — STUB
 │   │   ├── package.json               # zod
 │   │   ├── src/index.ts               # Export stub
 │   │   └── tsconfig.json
-│   ├── security/                      # @comtammatu/security (Upstash)
+│   ├── security/                      # @comtammatu/security (Upstash) — STUB
 │   │   ├── package.json               # @upstash/ratelimit, @upstash/redis
 │   │   ├── src/index.ts               # Export stub
 │   │   └── tsconfig.json
-│   └── ui/                            # @comtammatu/ui (React 19.1)
+│   └── ui/                            # @comtammatu/ui (React 19.1) — STUB
 │       ├── package.json               # react, react-dom
-│       ├── src/index.ts               # Export stub
+│       ├── src/index.ts               # Export stub (UI components live in apps/web/components/ui)
 │       └── tsconfig.json
 ├── supabase/
-│   ├── config.toml                    # Local dev config (not linked)
+│   ├── config.toml                    # Local dev config (linked to zrlriuednoaqrsvnjjyo)
 │   ├── functions/.gitkeep             # Edge Functions (empty)
-│   ├── migrations/.gitkeep            # SQL migrations (empty)
+│   ├── migrations/
+│   │   ├── 20260228000000_initial_schema.sql       # v2.1 base schema (1,782 lines)
+│   │   ├── 20260228000001_fix_security_advisors.sql # Security advisory fixes
+│   │   ├── 20260228000002_schema_v2_2.sql          # v2.2 upgrade (junction tables, indexes)
+│   │   └── 20260228000003_profile_trigger.sql       # Auto-create profile on auth.users insert
 │   ├── tests/.gitkeep                 # RLS tests (empty)
-│   └── seed.sql                       # Seed data (empty template)
+│   └── seed.sql                       # Seed data (tenant, branches, users, menus)
 ├── .github/workflows/ci.yml           # CI: typecheck, lint, test, secrets, audit
 ├── tasks/                             # Task tracking (Operating System)
-│   ├── todo.md                        # Current plan & progress
-│   ├── regressions.md                 # Named failure rules (empty)
-│   ├── lessons.md                     # Learning log (empty)
-│   ├── friction.md                    # Contradiction tracker (empty)
-│   └── predictions.md                 # Prediction log (empty)
+│   ├── todo.md                        # Current plan & progress (active)
+│   ├── regressions.md                 # Named failure rules
+│   ├── lessons.md                     # Learning log (3 lessons)
+│   ├── friction.md                    # Contradiction tracker
+│   └── predictions.md                 # Prediction log
 ├── docs/
 │   ├── F&B_CRM_Lightweight_Architecture_v2.2.md  # Architecture spec (source of truth)
 │   ├── ROADMAP.md                                # Development roadmap & migration path
@@ -120,11 +193,14 @@ comtammatu/
 │   ├── next-best-practices/               # Next.js conventions & RSC
 │   └── clean-code/                        # Clean Code principles
 ├── CLAUDE.md                          # This file
+├── vercel.json                        # Vercel config (install command)
 ├── package.json                       # Root workspace (Turborepo)
 ├── pnpm-workspace.yaml                # apps/*, packages/*, modules/*
 ├── turbo.json                         # Build orchestration
 ├── tsconfig.json                      # Root TS config (strict, ES2022)
-├── .env.example                       # Environment variable template
+├── .prettierrc                        # Prettier config (semi, double quotes, 100 width)
+├── .prettierignore                    # Prettier ignore patterns
+├── .env.example                       # Environment variable template (with Prisma URLs)
 ├── .gitignore                         # 59 rules
 ├── .npmrc                             # pnpm config
 └── .pre-commit-config.yaml            # detect-secrets v1.4.0
@@ -139,27 +215,45 @@ comtammatu/
 | Package    | Version | Purpose                      |
 | ---------- | ------- | ---------------------------- |
 | turbo      | ^2.8.0  | Monorepo build orchestration |
-| typescript | ^5.7.0  | Type system                  |
+| typescript | ^5.9.0  | Type system                  |
 | prettier   | ^3.4.0  | Code formatting              |
 
 ### apps/web (@comtammatu/web)
 
-| Package               | Version | Purpose                           |
-| --------------------- | ------- | --------------------------------- |
-| next                  | ^16.1.0 | Framework (App Router, Turbopack) |
-| react                 | ^19.1.0 | UI library                        |
-| react-dom             | ^19.1.0 | React DOM renderer                |
-| @supabase/supabase-js | ^2.49.0 | Supabase client                   |
-| @supabase/ssr         | ^0.6.0  | Supabase SSR utilities            |
-| eslint                | ^9.0.0  | Linting                           |
-| eslint-config-next    | ^16.1.0 | Next.js ESLint rules              |
+| Package                | Version  | Purpose                            |
+| ---------------------- | -------- | ---------------------------------- |
+| next                   | ^16.1.0  | Framework (App Router, Turbopack)  |
+| react                  | ^19.1.0  | UI library                         |
+| react-dom              | ^19.1.0  | React DOM renderer                 |
+| @supabase/supabase-js  | ^2.49.0  | Supabase client                    |
+| @supabase/ssr          | ^0.8.0   | Supabase SSR utilities             |
+| tailwindcss            | ^4.2.1   | Utility-first CSS framework        |
+| @tailwindcss/postcss   | ^4.2.1   | PostCSS integration for Tailwind   |
+| postcss                | ^8.5.6   | CSS processing                     |
+| radix-ui               | ^1.4.3   | Headless UI primitives (shadcn)    |
+| class-variance-authority | ^0.7.1 | Component variant styles           |
+| clsx                   | ^2.1.1   | Conditional class utility          |
+| tailwind-merge         | ^3.5.0   | Tailwind class deduplication       |
+| lucide-react           | ^0.575.0 | Icon library                       |
+| next-themes            | ^0.4.6   | Dark/light theme switching         |
+| sonner                 | ^2.0.7   | Toast notifications                |
+| zod                    | ^3.24.0  | Runtime validation (login forms)   |
+| eslint                 | ^9.0.0   | Linting                            |
+| eslint-config-next     | ^16.1.0  | Next.js ESLint rules               |
+| shadcn                 | ^3.8.5   | shadcn/ui CLI (devDep)             |
+| tw-animate-css         | ^1.4.0   | Tailwind animation utilities       |
 
 ### packages/database (@comtammatu/database)
 
-| Package        | Version | Purpose                       |
-| -------------- | ------- | ----------------------------- |
-| @prisma/client | ^7.2.0  | Type-safe ORM client          |
-| prisma         | ^7.2.0  | Schema management, migrations |
+| Package             | Version | Purpose                                    |
+| ------------------- | ------- | ------------------------------------------ |
+| @prisma/client      | ^7.2.0  | Type-safe ORM client                       |
+| @prisma/adapter-pg  | ^7.2.0  | Prisma driver adapter for PgBouncer        |
+| pg                  | ^8.13.0 | PostgreSQL client (used by adapter)        |
+| @supabase/supabase-js | ^2.49.0 | Supabase client (auth, realtime, storage) |
+| @supabase/ssr       | ^0.8.0  | SSR cookie-based auth                      |
+| prisma              | ^7.2.0  | Schema management, migrations (devDep)     |
+| dotenv              | ^16.4.0 | Environment variable loading (devDep)      |
 
 ### packages/shared (@comtammatu/shared)
 
@@ -181,12 +275,12 @@ comtammatu/
 | react     | ^19.1.0 | Component rendering |
 | react-dom | ^19.1.0 | DOM rendering       |
 
+> **Note:** shadcn/ui components are installed directly in `apps/web/components/ui/`, not in `packages/ui`. The shared UI package is a stub for future extraction.
+
 ### NOT YET INSTALLED (Planned)
 
-- shadcn/ui (component library)
 - Sentry (error monitoring)
-- vitest (testing)
-- Tailwind CSS (styling)
+- vitest (testing framework)
 
 ---
 
@@ -231,9 +325,10 @@ pnpm --filter @comtammatu/web typecheck  # tsc --noEmit
 ### packages/database
 
 ```bash
-pnpm --filter @comtammatu/database db:generate  # Generate Prisma client
-pnpm --filter @comtammatu/database db:push      # Push schema to DB
+pnpm --filter @comtammatu/database db:generate  # Generate Prisma client (from pulled schema)
+pnpm --filter @comtammatu/database db:pull      # Pull schema from Supabase DB
 pnpm --filter @comtammatu/database db:studio    # Open Prisma Studio
+pnpm --filter @comtammatu/database db:types     # Generate Supabase TypeScript types
 ```
 
 ---
@@ -254,16 +349,19 @@ Two terminal types with different capabilities:
 3. Chef marks ready -> waiter notified -> serves food
 4. Cashier processes payment -> links order to `pos_session` -> prints receipt
 
-### Key Database Tables (to be created)
+### Key Database Tables (CREATED — v2.2 schema)
 
 - `tenants` -> `branches` -> `tables` (multi-tenant, multi-branch)
-- `profiles` (maps to auth.users, has role + tenant_id + branch_id)
+- `profiles` (maps to auth.users via trigger, has role + tenant_id + branch_id)
 - `pos_terminals` -> `pos_sessions` (device management, cash shifts)
+- `menu_items`, `menu_categories`, `modifiers`, `modifier_groups` (menu management)
 - `orders` -> `order_items` -> `payments` (order lifecycle)
 - `kds_stations` -> `kds_tickets` (kitchen display)
 - `ingredients` -> `recipes` -> `stock_levels` -> `stock_movements` (inventory)
 - `customers` -> `loyalty_tiers` -> `loyalty_transactions` (CRM)
 - `audit_logs`, `security_events` (append-only, REVOKE UPDATE/DELETE)
+
+> All tables have RLS policies enabled. Schema lives in `supabase/migrations/`.
 
 ### Roles (hierarchy: owner > manager > staff > customer)
 
@@ -393,7 +491,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY
 # Server-side only (Vercel env vars)
 SUPABASE_SERVICE_ROLE_KEY
 UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
-SENTRY_DSN
+SENTRY_DSN / NEXT_PUBLIC_SENTRY_DSN
+
+# Prisma (PgBouncer pooler for queries, direct for CLI)
+DATABASE_URL       # PgBouncer URL (port 6543, ?pgbouncer=true&connection_limit=1)
+DIRECT_URL         # Direct connection (port 5432, for db:pull / db:generate / studio)
 
 # Payment keys (Supabase Vault, server-side only)
 VNPAY_TMN_CODE / VNPAY_HASH_SECRET
@@ -404,11 +506,11 @@ MOMO_PARTNER_CODE / MOMO_ACCESS_KEY / MOMO_SECRET_KEY
 
 ### Connected Services
 
-| Service  | Use                                               | Status                       |
-| -------- | ------------------------------------------------- | ---------------------------- |
-| Supabase | Database, Auth, Realtime, Storage, Edge Functions | config.toml only, not linked |
-| Vercel   | Hosting, CDN, serverless functions, deployments   | Not linked                   |
-| GitHub   | Source control, CI/CD via Actions                 | Active                       |
+| Service  | Use                                               | Status                               |
+| -------- | ------------------------------------------------- | ------------------------------------ |
+| Supabase | Database, Auth, Realtime, Storage, Edge Functions | **Linked** (`zrlriuednoaqrsvnjjyo`)  |
+| Vercel   | Hosting, CDN, serverless functions, deployments   | **Deployed** (`comtammatu.vercel.app`) |
+| GitHub   | Source control, CI/CD via Actions                 | Active                               |
 
 ---
 
@@ -495,33 +597,44 @@ At the start of every new task:
 
 ## XV. WHAT NEEDS TO BE BUILT NEXT
 
-Per `tasks/todo.md`, the immediate next steps are:
+Per `tasks/todo.md`, the completed and upcoming phases are:
+
+### Completed: Project Initialization
 
 ```
-Current Phase: Project Initialization (completing)
 - [x] Create project file structure
-- [ ] Run pnpm install to verify workspace resolution
-- [ ] Initialize Supabase project (supabase link)
-- [ ] Create initial database migration (v2.2 schema)
-- [ ] Configure shadcn/ui in apps/web
-- [ ] Set up ESLint + Prettier
-- [ ] First Vercel deployment test
+- [x] Run pnpm install to verify workspace resolution
+- [x] Configure shadcn/ui in apps/web (Tailwind v4 + shadcn v3)
+- [x] Set up ESLint + Prettier
+- [x] Initialize Supabase project (supabase link → zrlriuednoaqrsvnjjyo)
+- [x] Create initial database migration (v2.1 schema)
+- [x] First Vercel deployment test (comtammatu.vercel.app)
 ```
 
-### Development Roadmap
+### Completed: Week 1-2 Foundation
 
-**Week 1-2: Foundation + Security Baseline**
+```
+- [x] v2.2 schema migration (junction tables + drop redundant indexes)
+- [x] Database package — Prisma 7.2 + Supabase client setup
+- [x] Auth module — login page, middleware, role-based routing
+- [x] Seed data — tenant, branches, users, menus
+- [x] Admin layout — sidebar, navigation, header
+- [x] Menu Management CRUD — list, create, edit, delete
+```
 
-- Database: Schema (v2.2 DDL) + RLS policies + seed data + RLS validation tests
-- Auth: Supabase Auth config, RBAC, MFA, login pages
-- Security: Pre-commit hooks, CI pipeline
-- Core UI: Layout, navigation, shadcn/ui components
-- Menu Management: CRUD menu items, categories, modifiers
+### Current Phase: Week 3-4 — Split POS & Orders
 
-**Week 3-4: Split POS & Orders**
+```
+- [ ] Terminal Management (mobile_order + cashier_station)
+- [ ] Mobile Order (Waiter) — create/edit orders, select tables
+- [ ] Cashier Station — view orders, process payments, shifts
+- [ ] Payment: Cash + VNPay/Momo
+- [ ] Order Lifecycle (order status flow)
+- [ ] KDS — kitchen display, ticket routing
+- [ ] Offline support (basic)
+```
 
-- Terminal Management, Mobile Order (Waiter), Cashier Station
-- Payment: Cash + VNPay/Momo, Order Lifecycle, KDS, Offline support
+### Development Roadmap (Remaining)
 
 **Week 5-6: Operations**
 
@@ -530,6 +643,13 @@ Current Phase: Project Initialization (completing)
 **Week 7-8: CRM, Privacy & Polish**
 
 - CRM, Vouchers, Customer PWA, GDPR, Testing, Documentation
+
+### Open Technical Decisions
+
+1. **`modules/` directory** — 10 stubs exist but are unused. Domain logic currently lives in `apps/web/app/` route files. Decide: implement modules pattern or remove stubs.
+2. **`packages/ui`** — Stub package, but shadcn components live in `apps/web/components/ui/`. Decide: centralize or keep local.
+3. **`packages/shared`** — Zod schemas are defined inline in Server Actions. Decide: centralize validation schemas as API surface grows.
+4. **Prisma schema** — No `.prisma` file in repo. Uses `db:pull` from Supabase. Decide: commit pulled schema or document pull-based workflow.
 
 ---
 

@@ -2,7 +2,9 @@
 
 import {
   ChefHat,
+  CookingPot,
   LayoutDashboard,
+  Monitor,
   Package,
   ShoppingCart,
   Users,
@@ -52,6 +54,16 @@ const navigation = [
         title: "Đơn hàng",
         url: "/admin/orders",
         icon: ShoppingCart,
+      },
+      {
+        title: "Thiết bị POS",
+        url: "/admin/terminals",
+        icon: Monitor,
+      },
+      {
+        title: "Bếp KDS",
+        url: "/admin/kds-stations",
+        icon: CookingPot,
       },
       {
         title: "Kho hàng",
