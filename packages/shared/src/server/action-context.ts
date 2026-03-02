@@ -41,6 +41,7 @@ export interface ActionContext {
     userId: string;
     tenantId: number;
     userRole: string;
+    branchId: number | null;
 }
 
 /**
@@ -68,7 +69,7 @@ export async function getActionContext(): Promise<ActionContext> {
 
     const { data: profile } = await supabase
         .from("profiles")
-        .select("tenant_id, role")
+        .select("tenant_id, role, branch_id")
         .eq("id", user.id)
         .single();
 
@@ -86,5 +87,22 @@ export async function getActionContext(): Promise<ActionContext> {
         userId: user.id,
         tenantId,
         userRole: profile?.role ?? "customer",
+        branchId: profile?.branch_id ?? null,
     };
+}
+
+/**
+ * Assert that the user has a branch assigned and return the branch ID.
+ *
+ * @throws ActionError("VALIDATION_ERROR") if no branch assigned
+ */
+export function requireBranch(ctx: ActionContext): number {
+    if (ctx.branchId == null) {
+        throw new ActionError(
+            "Bạn chưa được gán chi nhánh",
+            "VALIDATION_ERROR",
+            400,
+        );
+    }
+    return ctx.branchId;
 }

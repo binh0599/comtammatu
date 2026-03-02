@@ -87,6 +87,34 @@ export function handleServerActionError(error: unknown): {
 }
 
 /**
+ * Create a safe ActionError from a database/Supabase error.
+ * Logs the real error server-side but returns a generic message to the client.
+ */
+export function safeDbError(
+  error: { message: string; code?: string },
+  context: string,
+): ActionError {
+  console.error(`[${context}]`, error.message, error.code ?? "");
+  return new ActionError(
+    "Lỗi hệ thống. Vui lòng thử lại sau.",
+    "SERVER_ERROR",
+    500,
+  );
+}
+
+/**
+ * Return a safe error object from a database/Supabase error.
+ * Logs the real error server-side but returns a generic message to the client.
+ */
+export function safeDbErrorResult(
+  error: { message: string; code?: string },
+  context: string,
+): { error: string } {
+  console.error(`[${context}]`, error.message, error.code ?? "");
+  return { error: "Lỗi hệ thống. Vui lòng thử lại sau." };
+}
+
+/**
  * Validate role against allowed roles. Throws ActionError if insufficient.
  */
 export function requireRole(

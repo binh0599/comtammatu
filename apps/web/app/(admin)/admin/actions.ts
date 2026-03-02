@@ -6,6 +6,7 @@ import {
   getActionContext,
   withServerQuery,
   getOrderStatusLabel,
+  safeDbError,
 } from "@comtammatu/shared";
 
 // =====================
@@ -29,7 +30,7 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     .eq("tenant_id", tenantId);
 
   if (branchError)
-    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
+    throw safeDbError(branchError, "db");
   if (!branches || branches.length === 0) {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
@@ -43,7 +44,7 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     .not("status", "in", '("cancelled","draft")');
 
   if (orderError)
-    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
+    throw safeDbError(orderError, "db");
   if (!orders || orders.length === 0) {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
@@ -105,7 +106,7 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .eq("tenant_id", tenantId);
 
   if (branchError)
-    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
+    throw safeDbError(branchError, "db");
   if (!branches || branches.length === 0) return [];
 
   const branchIds = branches.map((b: { id: number }) => b.id);
@@ -118,7 +119,7 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .limit(limit);
 
   if (orderError)
-    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
+    throw safeDbError(orderError, "db");
 
   return (orders ?? []).map((o: Record<string, unknown>) => ({
     id: o.id as number,
@@ -152,7 +153,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     .eq("tenant_id", tenantId);
 
   if (branchError)
-    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
+    throw safeDbError(branchError, "db");
   if (!branches || branches.length === 0) return [];
 
   const branchIds = branches.map((b: { id: number }) => b.id);
@@ -168,7 +169,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     .gte("created_at", thirtyDaysAgo.toISOString());
 
   if (orderError)
-    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
+    throw safeDbError(orderError, "db");
   if (!completedOrders || completedOrders.length === 0) return [];
 
   const orderIds = completedOrders.map((o: { id: number }) => o.id);
@@ -179,7 +180,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     .in("order_id", orderIds);
 
   if (itemError)
-    throw new ActionError(itemError.message, "SERVER_ERROR", 500);
+    throw safeDbError(itemError, "db");
   if (!items || items.length === 0) return [];
 
   const aggregated = new Map<number, TopSellingItem>();
@@ -221,7 +222,7 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
     .eq("tenant_id", tenantId);
 
   if (branchError)
-    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
+    throw safeDbError(branchError, "db");
   if (!branches || branches.length === 0) return {};
 
   const branchIds = branches.map((b: { id: number }) => b.id);
@@ -236,7 +237,7 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
     .gte("created_at", todayStart.toISOString());
 
   if (orderError)
-    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
+    throw safeDbError(orderError, "db");
   if (!orders || orders.length === 0) return {};
 
   const counts: Record<string, number> = {};

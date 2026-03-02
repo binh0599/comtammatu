@@ -13,6 +13,8 @@ import {
   adjustLoyaltyPointsSchema,
   createVoucherSchema,
   respondFeedbackSchema,
+  safeDbError,
+  safeDbErrorResult,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 
@@ -29,7 +31,7 @@ async function _getBranches() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -48,7 +50,7 @@ async function _getCustomers() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -86,11 +88,11 @@ async function _createCustomer(formData: FormData) {
     if (error.code === "23505") {
       return { error: "Số điện thoại đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createCustomer = withServerAction(_createCustomer);
@@ -132,11 +134,11 @@ async function _updateCustomer(id: number, formData: FormData) {
     if (error.code === "23505") {
       return { error: "Số điện thoại đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateCustomer = withServerAction(_updateCustomer);
@@ -160,10 +162,10 @@ async function _toggleCustomerActive(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const toggleCustomerActive = withServerAction(_toggleCustomerActive);
@@ -178,7 +180,7 @@ async function _getCustomerLoyaltyHistory(customerId: number) {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
   return { data: data ?? [] };
 }
 
@@ -246,7 +248,7 @@ async function _getLoyaltyTiers() {
     .order("sort_order")
     .order("min_points");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -280,11 +282,11 @@ async function _createLoyaltyTier(formData: FormData) {
     if (error.code === "23505") {
       return { error: "Tên hạng đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createLoyaltyTier = withServerAction(_createLoyaltyTier);
@@ -316,10 +318,10 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateLoyaltyTier = withServerAction(_updateLoyaltyTier);
@@ -346,10 +348,10 @@ async function _deleteLoyaltyTier(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteLoyaltyTier = withServerAction(_deleteLoyaltyTier);
@@ -367,7 +369,7 @@ async function _getVouchers() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -434,7 +436,7 @@ async function _createVoucher(data: {
   }
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createVoucher = withServerAction(_createVoucher);
@@ -501,7 +503,7 @@ async function _updateVoucher(
   }
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateVoucher = withServerAction(_updateVoucher);
@@ -517,10 +519,10 @@ async function _deleteVoucher(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteVoucher = withServerAction(_deleteVoucher);
@@ -544,10 +546,10 @@ async function _toggleVoucher(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const toggleVoucher = withServerAction(_toggleVoucher);
@@ -565,7 +567,7 @@ async function _getFeedback() {
     .eq("branches.tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -588,10 +590,10 @@ async function _respondToFeedback(id: number, input: { response: string }) {
     })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/crm");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const respondToFeedback = withServerAction(_respondToFeedback);

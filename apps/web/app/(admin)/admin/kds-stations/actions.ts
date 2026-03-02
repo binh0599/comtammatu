@@ -2,7 +2,7 @@
 
 import { createSupabaseServer } from "@comtammatu/database";
 import { revalidatePath } from "next/cache";
-import { ADMIN_ROLES } from "@comtammatu/shared";
+import { ADMIN_ROLES, safeDbErrorResult } from "@comtammatu/shared";
 import { z } from "zod";
 
 const stationSchema = z.object({
@@ -155,7 +155,7 @@ export async function createKdsStation(formData: FormData) {
   }
 
   revalidatePath("/admin/kds-stations");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export async function updateKdsStation(id: number, formData: FormData) {
@@ -210,7 +210,7 @@ export async function updateKdsStation(id: number, formData: FormData) {
   }
 
   revalidatePath("/admin/kds-stations");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export async function toggleKdsStation(id: number) {
@@ -228,7 +228,7 @@ export async function toggleKdsStation(id: number) {
   if (updateError) return { error: updateError.message };
 
   revalidatePath("/admin/kds-stations");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export async function deleteKdsStation(id: number) {
@@ -240,8 +240,8 @@ export async function deleteKdsStation(id: number) {
 
   const { error } = await supabase.from("kds_stations").delete().eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/kds-stations");
-  return { success: true };
+  return { error: null, success: true };
 }

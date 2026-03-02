@@ -14,6 +14,8 @@ import {
   createSupplierSchema,
   createPurchaseOrderSchema,
   receivePurchaseOrderSchema,
+  safeDbError,
+  safeDbErrorResult,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 
@@ -30,7 +32,7 @@ async function _getIngredients() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -45,7 +47,7 @@ async function _getBranches() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -85,11 +87,11 @@ async function _createIngredient(formData: FormData) {
     if (error.code === "23505") {
       return { error: "SKU đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createIngredient = withServerAction(_createIngredient);
@@ -127,10 +129,10 @@ async function _updateIngredient(id: number, formData: FormData) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateIngredient = withServerAction(_updateIngredient);
@@ -144,10 +146,10 @@ async function _deleteIngredient(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteIngredient = withServerAction(_deleteIngredient);
@@ -165,7 +167,7 @@ async function _getStockLevels() {
     .eq("ingredients.tenant_id", tenantId)
     .order("updated_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -188,11 +190,11 @@ async function _initStockLevel(data: {
     if (error.code === "23505") {
       return { error: "Tồn kho cho nguyên liệu này tại chi nhánh đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const initStockLevel = withServerAction(_initStockLevel);
@@ -211,7 +213,7 @@ async function _getStockMovements() {
     .order("created_at", { ascending: false })
     .limit(100);
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -275,7 +277,7 @@ async function _createStockMovement(data: {
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createStockMovement = withServerAction(_createStockMovement);
@@ -293,7 +295,7 @@ async function _getRecipes() {
     .eq("menu_items.tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -309,14 +311,14 @@ async function _getMenuItemsForRecipe() {
     .eq("is_available", true)
     .order("name");
 
-  if (itemsError) throw new ActionError(itemsError.message, "SERVER_ERROR", 500);
+  if (itemsError) throw safeDbError(itemsError, "db");
 
   const { data: existingRecipes, error: recipesError } = await supabase
     .from("recipes")
     .select("menu_item_id, menu_items!inner(tenant_id)")
     .eq("menu_items.tenant_id", tenantId);
 
-  if (recipesError) throw new ActionError(recipesError.message, "SERVER_ERROR", 500);
+  if (recipesError) throw safeDbError(recipesError, "db");
 
   const usedIds = new Set(existingRecipes?.map((r: { menu_item_id: number }) => r.menu_item_id) ?? []);
   return (allItems ?? []).filter((item: { id: number }) => !usedIds.has(item.id));
@@ -402,7 +404,7 @@ async function _createRecipe(data: {
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createRecipe = withServerAction(_createRecipe);
@@ -413,10 +415,10 @@ async function _deleteRecipe(id: number) {
   await supabase.from("recipe_ingredients").delete().eq("recipe_id", id);
   const { error } = await supabase.from("recipes").delete().eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteRecipe = withServerAction(_deleteRecipe);
@@ -434,7 +436,7 @@ async function _getSuppliers() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -472,11 +474,11 @@ async function _createSupplier(formData: FormData) {
     if (error.code === "23505") {
       return { error: "Nhà cung cấp đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createSupplier = withServerAction(_createSupplier);
@@ -512,10 +514,10 @@ async function _updateSupplier(id: number, formData: FormData) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateSupplier = withServerAction(_updateSupplier);
@@ -533,11 +535,11 @@ async function _deleteSupplier(id: number) {
     if (error.code === "23503") {
       return { error: "Không thể xóa — nhà cung cấp này đang có đơn mua hàng" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteSupplier = withServerAction(_deleteSupplier);
@@ -555,7 +557,7 @@ async function _getPurchaseOrders() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -616,7 +618,7 @@ async function _createPurchaseOrder(input: {
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createPurchaseOrder = withServerAction(_createPurchaseOrder);
@@ -645,10 +647,10 @@ async function _sendPurchaseOrder(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const sendPurchaseOrder = withServerAction(_sendPurchaseOrder);
@@ -748,7 +750,7 @@ async function _receivePurchaseOrder(input: {
   }
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const receivePurchaseOrder = withServerAction(_receivePurchaseOrder);
@@ -777,10 +779,10 @@ async function _cancelPurchaseOrder(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/inventory");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const cancelPurchaseOrder = withServerAction(_cancelPurchaseOrder);

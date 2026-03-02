@@ -1,35 +1,26 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import { revalidatePath } from "next/cache";
-import { openSessionSchema, closeSessionSchema } from "@comtammatu/shared";
+import {
+  openSessionSchema,
+  closeSessionSchema,
+  getActionContext,
+  requireBranch,
+  requireRole,
+  withServerQuery,
+  safeDbError,
+  safeDbErrorResult,
+  CASHIER_ROLES,
+} from "@comtammatu/shared";
 
-async function getCashierProfile() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+// ===== Active Session =====
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, branch_id, role, full_name")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) throw new Error("Profile not found");
-  if (!profile.branch_id) throw new Error("No branch assigned");
-
-  const role = profile.role;
-  if (!["cashier", "manager", "owner"].includes(role)) {
-    throw new Error("Not authorized for cashier operations");
-  }
-
-  return { supabase, userId: user.id, profile };
-}
-
-export async function getActiveSession() {
-  const { supabase, userId } = await getCashierProfile();
+async function _getActiveSession() {
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
+  const { supabase, userId } = ctx;
 
   const { data, error } = await supabase
     .from("pos_sessions")
@@ -38,28 +29,42 @@ export async function getActiveSession() {
     .eq("status", "open")
     .maybeSingle();
 
-  if (error) throw new Error(error.message);
+  if (error) throw safeDbError(error, "getActiveSession");
   return data;
 }
 
-export async function getTerminalsForSession() {
-  const { supabase, profile } = await getCashierProfile();
+export const getActiveSession = withServerQuery(_getActiveSession);
+
+// ===== Terminals for Session =====
+
+async function _getTerminalsForSession() {
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
+  const { supabase } = ctx;
 
   const { data, error } = await supabase
     .from("pos_terminals")
     .select("id, name, type")
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .eq("type", "cashier_station")
     .eq("is_active", true)
     .not("approved_at", "is", null)
     .order("name");
 
-  if (error) throw new Error(error.message);
+  if (error) throw safeDbError(error, "getTerminalsForSession");
   return data ?? [];
 }
 
+export const getTerminalsForSession = withServerQuery(_getTerminalsForSession);
+
+// ===== Open Session =====
+
 export async function openSession(formData: FormData) {
-  const { supabase, userId, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
+  const { supabase, userId } = ctx;
 
   const parsed = openSessionSchema.safeParse({
     terminal_id: Number(formData.get("terminal_id")),
@@ -86,7 +91,7 @@ export async function openSession(formData: FormData) {
   if (!terminal.is_active || !terminal.approved_at) {
     return { error: "Thiết bị chưa được kích hoạt hoặc phê duyệt" };
   }
-  if (terminal.branch_id !== profile.branch_id) {
+  if (terminal.branch_id !== branchId) {
     return { error: "Thiết bị không thuộc chi nhánh của bạn" };
   }
 
@@ -117,20 +122,25 @@ export async function openSession(formData: FormData) {
   const { error: insertError } = await supabase.from("pos_sessions").insert({
     cashier_id: userId,
     terminal_id: parsed.data.terminal_id,
-    branch_id: profile.branch_id!,
+    branch_id: branchId,
     opening_amount: parsed.data.opening_amount,
     status: "open",
   });
 
-  if (insertError) return { error: insertError.message };
+  if (insertError) return safeDbErrorResult(insertError, "openSession");
 
   revalidatePath("/pos/session");
   revalidatePath("/pos/cashier");
   return { error: null };
 }
 
+// ===== Close Session =====
+
 export async function closeSession(formData: FormData) {
-  const { supabase, userId } = await getCashierProfile();
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
+  const { supabase, userId } = ctx;
 
   const parsed = closeSessionSchema.safeParse({
     session_id: Number(formData.get("session_id")),
@@ -167,7 +177,8 @@ export async function closeSession(formData: FormData) {
     .eq("method", "cash")
     .eq("status", "completed");
 
-  const cashTotal = (cashPayments ?? []).reduce(
+  type CashPayment = { amount: number; tip: number };
+  const cashTotal = ((cashPayments ?? []) as CashPayment[]).reduce(
     (sum, p) => sum + p.amount + p.tip,
     0
   );
@@ -187,15 +198,20 @@ export async function closeSession(formData: FormData) {
     })
     .eq("id", session.id);
 
-  if (updateError) return { error: updateError.message };
+  if (updateError) return safeDbErrorResult(updateError, "closeSession");
 
   revalidatePath("/pos/session");
   revalidatePath("/pos/cashier");
   return { error: null };
 }
 
-export async function getSessionSummary(sessionId: number) {
-  const { supabase } = await getCashierProfile();
+// ===== Session Summary =====
+
+async function _getSessionSummary(sessionId: number) {
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
+  const { supabase } = ctx;
 
   // Get payments for this session
   const { data: payments } = await supabase
@@ -204,11 +220,14 @@ export async function getSessionSummary(sessionId: number) {
     .eq("pos_session_id", sessionId)
     .eq("status", "completed");
 
-  const cashTotal = (payments ?? [])
+  type SessionPayment = { amount: number; tip: number; method: string; status: string };
+  const typedPayments = (payments ?? []) as SessionPayment[];
+
+  const cashTotal = typedPayments
     .filter((p) => p.method === "cash")
     .reduce((sum, p) => sum + p.amount + p.tip, 0);
 
-  const totalPayments = (payments ?? []).reduce(
+  const totalPayments = typedPayments.reduce(
     (sum, p) => sum + p.amount + p.tip,
     0
   );
@@ -219,3 +238,5 @@ export async function getSessionSummary(sessionId: number) {
     transactionCount: payments?.length ?? 0,
   };
 }
+
+export const getSessionSummary = withServerQuery(_getSessionSummary);

@@ -6,6 +6,8 @@ import {
   getActionContext,
   withServerAction,
   withServerQuery,
+  safeDbError,
+  safeDbErrorResult,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -43,7 +45,7 @@ async function _getMenus() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data;
 }
 
@@ -69,10 +71,10 @@ async function _createMenu(formData: FormData) {
     is_active: parsed.data.is_active,
   });
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createMenu = withServerAction(_createMenu);
@@ -100,10 +102,10 @@ async function _updateMenu(id: number, formData: FormData) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateMenu = withServerAction(_updateMenu);
@@ -117,10 +119,10 @@ async function _deleteMenu(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteMenu = withServerAction(_deleteMenu);
@@ -136,7 +138,7 @@ async function _getCategories(menuId: number) {
     .eq("menu_id", menuId)
     .order("sort_order", { ascending: true });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data;
 }
 
@@ -161,10 +163,10 @@ async function _createCategory(formData: FormData) {
     sort_order: parsed.data.sort_order,
   });
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createCategory = withServerAction(_createCategory);
@@ -174,10 +176,10 @@ async function _deleteCategory(id: number) {
 
   const { error } = await supabase.from("menu_categories").delete().eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteCategory = withServerAction(_deleteCategory);
@@ -193,7 +195,7 @@ async function _getMenuItems(categoryId: number) {
     .eq("category_id", categoryId)
     .order("name", { ascending: true });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data;
 }
 
@@ -223,10 +225,10 @@ async function _createMenuItem(formData: FormData) {
     is_available: parsed.data.is_available,
   });
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createMenuItem = withServerAction(_createMenuItem);
@@ -257,10 +259,10 @@ async function _updateMenuItem(id: number, formData: FormData) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateMenuItem = withServerAction(_updateMenuItem);
@@ -274,10 +276,10 @@ async function _deleteMenuItem(id: number) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/menu");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteMenuItem = withServerAction(_deleteMenuItem);

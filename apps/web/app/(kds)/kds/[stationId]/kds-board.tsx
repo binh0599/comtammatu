@@ -1,9 +1,10 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { LogOut, WifiOff, Loader2 } from "lucide-react";
 import { logout } from "@/app/login/actions";
-import { useKdsRealtime } from "./use-kds-realtime";
+import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
+import { getStationTickets } from "./actions";
 
 interface KdsTicket {
   id: number;
@@ -30,6 +31,30 @@ interface TimingRule {
   critical_min: number | null;
 }
 
+function ConnectionBanner({ status }: { status: ConnectionStatus }) {
+  if (status === "connected") return null;
+
+  const messages: Record<Exclude<ConnectionStatus, "connected">, string> = {
+    connecting: "Đang kết nối...",
+    disconnected: "Mất kết nối — Đang kết nối lại...",
+    error: "Lỗi kết nối — Đang thử lại...",
+  };
+
+  return (
+    <div
+      className="flex items-center justify-center gap-2 bg-yellow-600 py-1.5 text-sm font-medium text-black"
+      role="alert"
+    >
+      {status === "connecting" ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <WifiOff className="h-4 w-4" />
+      )}
+      {messages[status]}
+    </div>
+  );
+}
+
 export function KdsBoard({
   stationId,
   stationName,
@@ -41,13 +66,19 @@ export function KdsBoard({
   initialTickets: KdsTicket[];
   timingRules: TimingRule[];
 }) {
-  const tickets = useKdsRealtime(stationId, initialTickets);
+  const { tickets, connectionStatus } = useKdsRealtime(
+    stationId,
+    initialTickets,
+    getStationTickets,
+  );
 
-  // Use first timing rule as default (simplification for MVP)
   const defaultRule = timingRules[0] ?? null;
 
   return (
     <div className="flex h-screen flex-col">
+      {/* Connection status banner */}
+      <ConnectionBanner status={connectionStatus} />
+
       {/* Header */}
       <div className="flex items-center justify-between border-b border-gray-700 px-6 py-3">
         <h1 className="text-2xl font-bold text-white">{stationName}</h1>

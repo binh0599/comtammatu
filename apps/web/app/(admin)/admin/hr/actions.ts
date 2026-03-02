@@ -19,6 +19,8 @@ import {
   type CreateShiftAssignmentInput,
   type CreateLeaveRequestInput,
   type ApproveLeaveRequestInput,
+  safeDbError,
+  safeDbErrorResult,
 } from "@comtammatu/shared";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
@@ -64,7 +66,7 @@ async function _getEmployees() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -142,7 +144,7 @@ async function _createStaffAccount(data: CreateStaffAccountInput) {
   if (empError) return { error: empError.message };
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createStaffAccount = withServerAction(_createStaffAccount);
@@ -174,11 +176,11 @@ async function _createEmployee(data: CreateEmployeeInput) {
     if (error.code === "23505") {
       return { error: "Nhân viên này đã tồn tại trong hệ thống" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createEmployee = withServerAction(_createEmployee);
@@ -209,10 +211,10 @@ async function _updateEmployee(id: number, data: UpdateEmployeeInput) {
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const updateEmployee = withServerAction(_updateEmployee);
@@ -235,7 +237,7 @@ async function _getShifts() {
     .in("branch_id", branchIds)
     .order("name");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -266,10 +268,10 @@ async function _createShift(formData: FormData) {
     max_employees: parsed.data.max_employees ?? null,
   });
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createShift = withServerAction(_createShift);
@@ -279,10 +281,10 @@ async function _deleteShift(id: number) {
 
   const { error } = await supabase.from("shifts").delete().eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const deleteShift = withServerAction(_deleteShift);
@@ -310,7 +312,7 @@ async function _getShiftAssignments(startDate: string, endDate: string) {
     .order("date")
     .order("shifts(start_time)");
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -337,11 +339,11 @@ async function _createShiftAssignment(data: CreateShiftAssignmentInput) {
     if (error.code === "23505") {
       return { error: "Nhân viên này đã được phân ca này trong ngày" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createShiftAssignment = withServerAction(_createShiftAssignment);
@@ -367,7 +369,7 @@ async function _getAttendanceRecords(date: string) {
     .eq("date", date)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -385,7 +387,7 @@ async function _getLeaveRequests() {
     .select("id")
     .eq("tenant_id", tenantId);
 
-  if (empError) throw new ActionError(empError.message, "SERVER_ERROR", 500);
+  if (empError) throw safeDbError(empError, "db");
 
   const empIds = (employees ?? []).map((e: { id: number }) => e.id);
   if (empIds.length === 0) return [];
@@ -398,7 +400,7 @@ async function _getLeaveRequests() {
     .in("employee_id", empIds)
     .order("created_at", { ascending: false });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -423,10 +425,10 @@ async function _createLeaveRequest(data: CreateLeaveRequestInput) {
     status: "pending",
   });
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const createLeaveRequest = withServerAction(_createLeaveRequest);
@@ -448,10 +450,10 @@ async function _approveLeaveRequest(data: ApproveLeaveRequestInput) {
     })
     .eq("id", parsed.data.id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/hr");
-  return { success: true };
+  return { error: null, success: true };
 }
 
 export const approveLeaveRequest = withServerAction(_approveLeaveRequest);

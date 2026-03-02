@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import { revalidatePath } from "next/cache";
 import {
   createOrderSchema,
@@ -8,40 +8,16 @@ import {
   addOrderItemsSchema,
   type OrderStatus,
   ActionError,
-  handleServerActionError,
+  getActionContext,
+  requireBranch,
+  withServerAction,
+  withServerQuery,
+  safeDbError,
 } from "@comtammatu/shared";
 import { isValidTransition, calculateOrderTotals } from "./helpers";
 
-async function getPosProfile() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, branch_id, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile)
-    throw new ActionError("Hồ sơ không tìm thấy", "NOT_FOUND", 404);
-  if (!profile.branch_id)
-    throw new ActionError(
-      "Bạn chưa được gán chi nhánh",
-      "VALIDATION_ERROR",
-      400
-    );
-
-  return { supabase, userId: user.id, profile };
-}
-
-async function getTaxSettings(
-  supabase: Awaited<ReturnType<typeof createSupabaseServer>>,
-  tenantId: number
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getTaxSettings(supabase: any, tenantId: number) {
   const { data: settings } = await supabase
     .from("system_settings")
     .select("key, value")
@@ -82,7 +58,9 @@ async function _createOrder(data: {
     notes?: string;
   }[];
 }) {
-  const { supabase, userId, profile } = await getPosProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase, userId, tenantId } = ctx;
 
   const parsed = createOrderSchema.safeParse(data);
   if (!parsed.success) {
@@ -111,7 +89,7 @@ async function _createOrder(data: {
   if (terminalError || !terminal) {
     throw new ActionError("Thiết bị không tồn tại", "NOT_FOUND", 404);
   }
-  if (terminal.branch_id !== profile.branch_id) {
+  if (terminal.branch_id !== branchId) {
     throw new ActionError(
       "Thiết bị không thuộc chi nhánh của bạn",
       "UNAUTHORIZED",
@@ -137,17 +115,18 @@ async function _createOrder(data: {
     .from("menu_items")
     .select("id, base_price, is_available, name")
     .in("id", itemIds)
-    .eq("tenant_id", profile.tenant_id);
+    .eq("tenant_id", tenantId);
 
   if (menuError) {
-    throw new ActionError(menuError.message, "SERVER_ERROR", 500);
+    throw safeDbError(menuError, "db");
   }
   if (!menuItems || menuItems.length === 0) {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
 
   // Check availability
-  const unavailable = menuItems.filter((mi) => !mi.is_available);
+  type MenuItem = { id: number; base_price: number; is_available: boolean; name: string };
+  const unavailable = (menuItems as MenuItem[]).filter((mi) => !mi.is_available);
   if (unavailable.length > 0) {
     const names = unavailable.map((mi) => mi.name).join(", ");
     throw new ActionError(`Các món sau đã hết: ${names}`, "CONFLICT", 409);
@@ -212,7 +191,7 @@ async function _createOrder(data: {
   // Calculate totals
   const { taxRate, serviceChargeRate } = await getTaxSettings(
     supabase,
-    profile.tenant_id
+    tenantId
   );
 
   const totals = calculateOrderTotals(orderItems, taxRate, serviceChargeRate);
@@ -220,15 +199,11 @@ async function _createOrder(data: {
   // Generate order number
   const { data: orderNum, error: numError } = await supabase.rpc(
     "generate_order_number",
-    { p_branch_id: profile.branch_id! }
+    { p_branch_id: branchId }
   );
 
   if (numError) {
-    throw new ActionError(
-      `Lỗi tạo mã đơn: ${numError.message}`,
-      "SERVER_ERROR",
-      500
-    );
+    throw safeDbError(numError, "db");
   }
 
   // Generate idempotency key
@@ -239,7 +214,7 @@ async function _createOrder(data: {
     .from("orders")
     .insert({
       order_number: orderNum as string,
-      branch_id: profile.branch_id!,
+      branch_id: branchId,
       table_id: table_id ?? null,
       type,
       status: "draft",
@@ -257,7 +232,7 @@ async function _createOrder(data: {
     .single();
 
   if (orderError) {
-    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
+    throw safeDbError(orderError, "db");
   }
 
   // Insert order items
@@ -278,7 +253,7 @@ async function _createOrder(data: {
     .insert(itemInserts);
 
   if (itemsError) {
-    throw new ActionError(itemsError.message, "SERVER_ERROR", 500);
+    throw safeDbError(itemsError, "db");
   }
 
   // Update table status to occupied if dine-in
@@ -299,28 +274,7 @@ async function _createOrder(data: {
   };
 }
 
-export async function createOrder(data: {
-  table_id?: number | null;
-  type: string;
-  notes?: string;
-  terminal_id: number;
-  items: {
-    menu_item_id: number;
-    variant_id?: number | null;
-    quantity: number;
-    modifiers?: { name: string; price: number }[];
-    notes?: string;
-  }[];
-}) {
-  try {
-    return await _createOrder(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const createOrder = withServerAction(_createOrder);
 
 // ---------------------------------------------------------------------------
 // confirmOrder
@@ -342,7 +296,9 @@ async function _updateOrderStatus(data: {
   order_id: number;
   status: string;
 }) {
-  const { supabase, profile } = await getPosProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
 
   const parsed = updateOrderStatusSchema.safeParse(data);
   if (!parsed.success) {
@@ -358,7 +314,7 @@ async function _updateOrderStatus(data: {
     .from("orders")
     .select("id, status, table_id, type")
     .eq("id", order_id)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .single();
 
   if (fetchError || !order) {
@@ -384,7 +340,7 @@ async function _updateOrderStatus(data: {
     .eq("id", order_id);
 
   if (updateError) {
-    throw new ActionError(updateError.message, "SERVER_ERROR", 500);
+    throw safeDbError(updateError, "db");
   }
 
   // Free up table when order is completed or cancelled
@@ -406,36 +362,26 @@ async function _updateOrderStatus(data: {
   return { error: null };
 }
 
-export async function updateOrderStatus(data: {
-  order_id: number;
-  status: string;
-}) {
-  try {
-    return await _updateOrderStatus(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const updateOrderStatus = withServerAction(_updateOrderStatus);
 
 // ---------------------------------------------------------------------------
 // getOrders (data-fetching — throws on error for RSC error boundaries)
 // ---------------------------------------------------------------------------
 
-export async function getOrders(filters?: {
+async function _getOrders(filters?: {
   status?: string;
   type?: string;
 }) {
-  const { supabase, profile } = await getPosProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
 
   let query = supabase
     .from("orders")
     .select(
       "*, tables(number, zone_id, branch_zones(name)), order_items(id, menu_item_id, quantity, unit_price, item_total, status, menu_items(name))"
     )
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .order("created_at", { ascending: false })
     .limit(50);
 
@@ -449,17 +395,21 @@ export async function getOrders(filters?: {
   const { data, error } = await query;
 
   if (error) {
-    throw new ActionError(error.message, "SERVER_ERROR", 500);
+    throw safeDbError(error, "db");
   }
   return data ?? [];
 }
+
+export const getOrders = withServerQuery(_getOrders);
 
 // ---------------------------------------------------------------------------
 // getOrderDetail (data-fetching — throws on error for RSC error boundaries)
 // ---------------------------------------------------------------------------
 
-export async function getOrderDetail(orderId: number) {
-  const { supabase } = await getPosProfile();
+async function _getOrderDetail(orderId: number) {
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  const { supabase } = ctx;
 
   const { data: order, error } = await supabase
     .from("orders")
@@ -475,10 +425,12 @@ export async function getOrderDetail(orderId: number) {
     .single();
 
   if (error) {
-    throw new ActionError(error.message, "SERVER_ERROR", 500);
+    throw safeDbError(error, "db");
   }
   return order;
 }
+
+export const getOrderDetail = withServerQuery(_getOrderDetail);
 
 // ---------------------------------------------------------------------------
 // addOrderItems
@@ -494,7 +446,9 @@ async function _addOrderItems(data: {
     notes?: string;
   }[];
 }) {
-  const { supabase, profile } = await getPosProfile();
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  const { supabase, tenantId } = ctx;
 
   const parsed = addOrderItemsSchema.safeParse(data);
   if (!parsed.success) {
@@ -531,7 +485,7 @@ async function _addOrderItems(data: {
     .from("menu_items")
     .select("id, base_price, is_available")
     .in("id", itemIds)
-    .eq("tenant_id", profile.tenant_id);
+    .eq("tenant_id", tenantId);
 
   if (!menuItems) {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
@@ -594,7 +548,7 @@ async function _addOrderItems(data: {
     .insert(newItems);
 
   if (insertError) {
-    throw new ActionError(insertError.message, "SERVER_ERROR", 500);
+    throw safeDbError(insertError, "db");
   }
 
   // Recalculate order totals
@@ -606,7 +560,7 @@ async function _addOrderItems(data: {
   if (allItems) {
     const { taxRate, serviceChargeRate } = await getTaxSettings(
       supabase,
-      profile.tenant_id
+      tenantId
     );
     const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
 
@@ -627,82 +581,65 @@ async function _addOrderItems(data: {
   return { error: null };
 }
 
-export async function addOrderItems(data: {
-  order_id: number;
-  items: {
-    menu_item_id: number;
-    variant_id?: number | null;
-    quantity: number;
-    modifiers?: { name: string; price: number }[];
-    notes?: string;
-  }[];
-}) {
-  try {
-    return await _addOrderItems(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const addOrderItems = withServerAction(_addOrderItems);
 
 // ---------------------------------------------------------------------------
 // getTables (data-fetching — throws on error for RSC error boundaries)
 // ---------------------------------------------------------------------------
 
-/**
- * Get tables for the user's branch (for waiter UI)
- */
-export async function getTables() {
-  const { supabase, profile } = await getPosProfile();
+async function _getTables() {
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
 
   const { data, error } = await supabase
     .from("tables")
     .select("*, branch_zones(name)")
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .order("number");
 
   if (error) {
-    throw new ActionError(error.message, "SERVER_ERROR", 500);
+    throw safeDbError(error, "db");
   }
   return data ?? [];
 }
+
+export const getTables = withServerQuery(_getTables);
 
 // ---------------------------------------------------------------------------
 // getMenuItems (data-fetching — throws on error for RSC error boundaries)
 // ---------------------------------------------------------------------------
 
-/**
- * Get menu items for the user's branch (for waiter UI)
- */
-export async function getMenuItems() {
-  const { supabase, profile } = await getPosProfile();
+async function _getMenuItems() {
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  const { supabase, tenantId } = ctx;
 
   const { data, error } = await supabase
     .from("menu_items")
     .select(
       "*, menu_categories(id, name, menu_id), menu_item_variants(id, name, price_adjustment, is_available)"
     )
-    .eq("tenant_id", profile.tenant_id)
+    .eq("tenant_id", tenantId)
     .eq("is_available", true)
     .order("name");
 
   if (error) {
-    throw new ActionError(error.message, "SERVER_ERROR", 500);
+    throw safeDbError(error, "db");
   }
   return data ?? [];
 }
+
+export const getMenuItems = withServerQuery(_getMenuItems);
 
 // ---------------------------------------------------------------------------
 // getMenuCategories (data-fetching — throws on error for RSC error boundaries)
 // ---------------------------------------------------------------------------
 
-/**
- * Get categories for filtering
- */
-export async function getMenuCategories() {
-  const { supabase } = await getPosProfile();
+async function _getMenuCategories() {
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  const { supabase } = ctx;
 
   const { data, error } = await supabase
     .from("menu_categories")
@@ -710,7 +647,9 @@ export async function getMenuCategories() {
     .order("sort_order");
 
   if (error) {
-    throw new ActionError(error.message, "SERVER_ERROR", 500);
+    throw safeDbError(error, "db");
   }
   return data ?? [];
 }
+
+export const getMenuCategories = withServerQuery(_getMenuCategories);

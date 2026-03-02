@@ -1,46 +1,22 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import { revalidatePath } from "next/cache";
 import {
   processPaymentSchema,
   validateVoucherSchema,
   applyVoucherSchema,
   ActionError,
-  handleServerActionError,
+  getActionContext,
+  requireBranch,
+  requireRole,
+  withServerAction,
+  withServerQuery,
   auditLog,
+  safeDbError,
+  safeDbErrorResult,
+  CASHIER_ROLES,
 } from "@comtammatu/shared";
-
-async function getCashierProfile() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user)
-    throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, branch_id, role, full_name")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile)
-    throw new ActionError("Hồ sơ không tìm thấy", "NOT_FOUND", 404);
-  if (!profile.branch_id)
-    throw new ActionError("Chưa được gán chi nhánh", "VALIDATION_ERROR", 400);
-
-  const role = profile.role;
-  if (!["cashier", "manager", "owner"].includes(role)) {
-    throw new ActionError(
-      "Bạn không có quyền thực hiện thao tác thu ngân",
-      "UNAUTHORIZED",
-      403,
-    );
-  }
-
-  return { supabase, userId: user.id, profile };
-}
 
 // ===== Payment Processing =====
 
@@ -50,7 +26,10 @@ async function _processPayment(data: {
   amount_tendered?: number;
   tip?: number;
 }) {
-  const { supabase, userId, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase, userId, tenantId } = ctx;
 
   const parsed = processPaymentSchema.safeParse(data);
   if (!parsed.success) {
@@ -67,7 +46,7 @@ async function _processPayment(data: {
     .eq("status", "open")
     .maybeSingle();
 
-  if (sessionError) return { error: sessionError.message };
+  if (sessionError) return safeDbErrorResult(sessionError, "db");
   if (!session) {
     return { error: "Chưa mở ca. Vui lòng mở ca trước khi thanh toán." };
   }
@@ -88,7 +67,7 @@ async function _processPayment(data: {
     .from("orders")
     .select("id, total, status, table_id, type")
     .eq("id", parsed.data.order_id)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .single();
 
   if (orderError || !order) return { error: "Đơn hàng không tồn tại" };
@@ -138,7 +117,7 @@ async function _processPayment(data: {
     if (paymentError.code === "23505") {
       return { error: "Giao dịch đã được xử lý" };
     }
-    return { error: paymentError.message };
+    return safeDbErrorResult(paymentError, "db");
   }
 
   // For cash: complete order immediately
@@ -151,7 +130,7 @@ async function _processPayment(data: {
       })
       .eq("id", order.id);
 
-    if (orderUpdateError) return { error: orderUpdateError.message };
+    if (orderUpdateError) return safeDbErrorResult(orderUpdateError, "db");
 
     // Free up table
     if (order.table_id && order.type === "dine_in") {
@@ -178,7 +157,7 @@ async function _processPayment(data: {
 
   // Audit log: payment processed
   await auditLog(supabase, {
-    tenant_id: profile.tenant_id,
+    tenant_id: tenantId,
     user_id: userId,
     action: "payment_processed",
     resource_type: "payment",
@@ -206,21 +185,7 @@ async function _processPayment(data: {
   };
 }
 
-export async function processPayment(data: {
-  order_id: number;
-  method: "cash" | "qr";
-  amount_tendered?: number;
-  tip?: number;
-}) {
-  try {
-    return await _processPayment(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const processPayment = withServerAction(_processPayment);
 
 // ===== Voucher Validation & Application =====
 
@@ -229,7 +194,10 @@ async function _validateVoucher(data: {
   branch_id: number;
   subtotal: number;
 }) {
-  const { supabase, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase, tenantId } = ctx;
 
   const parsed = validateVoucherSchema.safeParse(data);
   if (!parsed.success) {
@@ -244,11 +212,11 @@ async function _validateVoucher(data: {
     .select(
       "id, code, type, value, min_order, max_discount, valid_from, valid_to, max_uses, used_count, is_active",
     )
-    .eq("tenant_id", profile.tenant_id)
+    .eq("tenant_id", tenantId)
     .ilike("code", parsed.data.code)
     .maybeSingle();
 
-  if (voucherError) return { error: voucherError.message };
+  if (voucherError) return safeDbErrorResult(voucherError, "db");
   if (!voucher) return { error: "Mã voucher không tồn tại" };
 
   if (!voucher.is_active) return { error: "Voucher đã bị vô hiệu hóa" };
@@ -273,7 +241,7 @@ async function _validateVoucher(data: {
     .eq("voucher_id", voucher.id);
 
   if (voucherBranches && voucherBranches.length > 0) {
-    const branchIds = voucherBranches.map((vb) => vb.branch_id);
+    const branchIds = voucherBranches.map((vb: { branch_id: number }) => vb.branch_id);
     if (!branchIds.includes(parsed.data.branch_id)) {
       return { error: "Voucher không áp dụng cho chi nhánh này" };
     }
@@ -312,26 +280,16 @@ async function _validateVoucher(data: {
   };
 }
 
-export async function validateVoucher(data: {
-  code: string;
-  branch_id: number;
-  subtotal: number;
-}) {
-  try {
-    return await _validateVoucher(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const validateVoucher = withServerAction(_validateVoucher);
 
 async function _applyVoucherToOrder(data: {
   order_id: number;
   voucher_code: string;
 }) {
-  const { supabase, userId, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase, userId, tenantId } = ctx;
 
   const parsed = applyVoucherSchema.safeParse(data);
   if (!parsed.success) {
@@ -347,7 +305,7 @@ async function _applyVoucherToOrder(data: {
       "id, subtotal, tax, service_charge, discount_total, total, status, branch_id",
     )
     .eq("id", parsed.data.order_id)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .single();
 
   if (orderError || !order) return { error: "Đơn hàng không tồn tại" };
@@ -376,9 +334,9 @@ async function _applyVoucherToOrder(data: {
     subtotal: order.subtotal,
   });
 
-  if (validation.error) return { error: validation.error };
+  if (validation.error !== null) return { error: validation.error };
 
-  const discountAmount = validation.discount_amount!;
+  const discountAmount = validation.discount_amount;
 
   // Insert order_discount
   const { error: discountError } = await supabase
@@ -392,22 +350,22 @@ async function _applyVoucherToOrder(data: {
       voucher_id: validation.voucher_id,
     });
 
-  if (discountError) return { error: discountError.message };
+  if (discountError) return safeDbErrorResult(discountError, "db");
 
   // Recalculate order totals (tax/service on discounted subtotal)
   const { data: settings } = await supabase
     .from("system_settings")
     .select("key, value")
-    .eq("tenant_id", profile.tenant_id)
+    .eq("tenant_id", tenantId)
     .in("key", ["tax_rate", "service_charge"]);
 
   const taxRate =
     Number(
-      settings?.find((s) => s.key === "tax_rate")?.value ?? 10,
+      settings?.find((s: { key: string; value: string | null }) => s.key === "tax_rate")?.value ?? 10,
     ) / 100;
   const serviceChargeRate =
     Number(
-      settings?.find((s) => s.key === "service_charge")?.value ?? 5,
+      settings?.find((s: { key: string; value: string | null }) => s.key === "service_charge")?.value ?? 5,
     ) / 100;
 
   const discountedSubtotal = order.subtotal - discountAmount;
@@ -425,11 +383,11 @@ async function _applyVoucherToOrder(data: {
     })
     .eq("id", order.id);
 
-  if (updateError) return { error: updateError.message };
+  if (updateError) return safeDbErrorResult(updateError, "db");
 
   // Audit log: voucher applied
   await auditLog(supabase, {
-    tenant_id: profile.tenant_id,
+    tenant_id: tenantId,
     user_id: userId,
     action: "voucher_applied",
     resource_type: "order_discount",
@@ -453,29 +411,20 @@ async function _applyVoucherToOrder(data: {
   };
 }
 
-export async function applyVoucherToOrder(data: {
-  order_id: number;
-  voucher_code: string;
-}) {
-  try {
-    return await _applyVoucherToOrder(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const applyVoucherToOrder = withServerAction(_applyVoucherToOrder);
 
 async function _removeVoucherFromOrder(orderId: number) {
-  const { supabase, userId, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase, userId, tenantId } = ctx;
 
   // Get order — validate branch ownership
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("id, subtotal, status")
     .eq("id", orderId)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .single();
 
   if (orderError || !order) return { error: "Đơn hàng không tồn tại" };
@@ -498,22 +447,22 @@ async function _removeVoucherFromOrder(orderId: number) {
     .eq("order_id", orderId)
     .eq("type", "voucher");
 
-  if (deleteError) return { error: deleteError.message };
+  if (deleteError) return safeDbErrorResult(deleteError, "db");
 
   // Recalculate totals without discount
   const { data: settings } = await supabase
     .from("system_settings")
     .select("key, value")
-    .eq("tenant_id", profile.tenant_id)
+    .eq("tenant_id", tenantId)
     .in("key", ["tax_rate", "service_charge"]);
 
   const taxRate =
     Number(
-      settings?.find((s) => s.key === "tax_rate")?.value ?? 10,
+      settings?.find((s: { key: string; value: string | null }) => s.key === "tax_rate")?.value ?? 10,
     ) / 100;
   const serviceChargeRate =
     Number(
-      settings?.find((s) => s.key === "service_charge")?.value ?? 5,
+      settings?.find((s: { key: string; value: string | null }) => s.key === "service_charge")?.value ?? 5,
     ) / 100;
 
   const newTax = Math.round(order.subtotal * taxRate);
@@ -532,7 +481,7 @@ async function _removeVoucherFromOrder(orderId: number) {
 
   // Audit log: voucher removed
   await auditLog(supabase, {
-    tenant_id: profile.tenant_id,
+    tenant_id: tenantId,
     user_id: userId,
     action: "voucher_removed",
     resource_type: "order_discount",
@@ -552,21 +501,15 @@ async function _removeVoucherFromOrder(orderId: number) {
   return { error: null, new_total: newTotal };
 }
 
-export async function removeVoucherFromOrder(orderId: number) {
-  try {
-    return await _removeVoucherFromOrder(orderId);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const removeVoucherFromOrder = withServerAction(_removeVoucherFromOrder);
 
 // ===== Momo Payment =====
 
 async function _createMomoPayment(orderId: number) {
-  const { supabase, userId, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase, userId } = ctx;
 
   // Get active session
   const { data: session } = await supabase
@@ -583,7 +526,7 @@ async function _createMomoPayment(orderId: number) {
     .from("orders")
     .select("id, order_number, total, status")
     .eq("id", orderId)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .single();
 
   if (!order) return { error: "Đơn hàng không tồn tại" };
@@ -611,7 +554,7 @@ async function _createMomoPayment(orderId: number) {
 
   if (payErr) {
     if (payErr.code === "23505") return { error: "Đang chờ thanh toán" };
-    return { error: payErr.message };
+    return safeDbErrorResult(payErr, "db");
   }
 
   // Call Momo API
@@ -645,19 +588,13 @@ async function _createMomoPayment(orderId: number) {
   }
 }
 
-export async function createMomoPayment(orderId: number) {
-  try {
-    return await _createMomoPayment(orderId);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const createMomoPayment = withServerAction(_createMomoPayment);
 
 async function _checkPaymentStatus(paymentId: number) {
-  const { supabase, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase } = ctx;
 
   const { data: payment } = await supabase
     .from("payments")
@@ -672,7 +609,7 @@ async function _checkPaymentStatus(paymentId: number) {
     .from("orders")
     .select("id")
     .eq("id", payment.order_id)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .single();
 
   if (!order) return { error: "Không tìm thấy giao dịch" };
@@ -685,41 +622,27 @@ async function _checkPaymentStatus(paymentId: number) {
   };
 }
 
-export async function checkPaymentStatus(paymentId: number) {
-  try {
-    return await _checkPaymentStatus(paymentId);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) {
-      throw error;
-    }
-    return handleServerActionError(error);
-  }
-}
+export const checkPaymentStatus = withServerAction(_checkPaymentStatus);
 
 // ===== Cashier Order Queue =====
 
 async function _getCashierOrders() {
-  const { supabase, profile } = await getCashierProfile();
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase } = ctx;
 
   const { data, error } = await supabase
     .from("orders")
     .select(
       "id, order_number, status, type, subtotal, discount_total, total, created_at, table_id, tables(number), order_items(id, quantity, menu_items(name)), order_discounts(id, type, value, voucher_id, vouchers(code))",
     )
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", branchId)
     .in("status", ["confirmed", "preparing", "ready", "served"])
     .order("created_at", { ascending: true });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
-export async function getCashierOrders() {
-  try {
-    return await _getCashierOrders();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getCashierOrders = withServerQuery(_getCashierOrders);

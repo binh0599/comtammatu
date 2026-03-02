@@ -2,7 +2,7 @@
 
 import { createSupabaseServer } from "@comtammatu/database";
 import { revalidatePath } from "next/cache";
-import { ADMIN_ROLES } from "@comtammatu/shared";
+import { ADMIN_ROLES, safeDbErrorResult } from "@comtammatu/shared";
 import { z } from "zod";
 
 const terminalSchema = z.object({
@@ -124,7 +124,7 @@ export async function createTerminal(formData: FormData) {
     if (error.code === "23505") {
       return { error: "Mã thiết bị đã tồn tại" };
     }
-    return { error: error.message };
+    return safeDbErrorResult(error, "db");
   }
 
   revalidatePath("/admin/terminals");
@@ -157,7 +157,7 @@ export async function approveTerminal(id: number) {
     })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/terminals");
   return { error: null };
@@ -183,7 +183,7 @@ export async function toggleTerminal(id: number) {
     .update({ is_active: !terminal.is_active })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/terminals");
   return { error: null };
@@ -201,7 +201,7 @@ export async function deleteTerminal(id: number) {
     .update({ is_active: false })
     .eq("id", id);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/terminals");
   return { error: null };
