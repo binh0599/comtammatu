@@ -40,16 +40,16 @@ export default async function InventoryPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Kho hang" }]} />
+      <Header breadcrumbs={[{ label: "Kho hàng" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Tabs defaultValue="ingredients" className="w-full">
           <TabsList>
-            <TabsTrigger value="ingredients">Nguyen lieu</TabsTrigger>
-            <TabsTrigger value="stock">Ton kho</TabsTrigger>
-            <TabsTrigger value="movements">Nhap/Xuat</TabsTrigger>
-            <TabsTrigger value="recipes">Cong thuc</TabsTrigger>
-            <TabsTrigger value="suppliers">Nha cung cap</TabsTrigger>
-            <TabsTrigger value="purchase-orders">Don mua hang</TabsTrigger>
+            <TabsTrigger value="ingredients">Nguyên liệu</TabsTrigger>
+            <TabsTrigger value="stock">Tồn kho</TabsTrigger>
+            <TabsTrigger value="movements">Nhập/Xuất</TabsTrigger>
+            <TabsTrigger value="recipes">Công thức</TabsTrigger>
+            <TabsTrigger value="suppliers">Nhà cung cấp</TabsTrigger>
+            <TabsTrigger value="purchase-orders">Đơn mua hàng</TabsTrigger>
           </TabsList>
           <TabsContent value="ingredients">
             <IngredientsTab ingredients={ingredients} />

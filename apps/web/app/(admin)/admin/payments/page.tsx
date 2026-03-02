@@ -10,7 +10,7 @@ export default async function PaymentsPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Thanh toan" }]} />
+      <Header breadcrumbs={[{ label: "Thanh toán" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <PaymentsTab payments={payments} branches={branches} />
       </div>

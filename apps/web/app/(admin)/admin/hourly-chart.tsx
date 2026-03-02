@@ -40,15 +40,15 @@ export function HourlyChart({ data }: { data: HourlyData[] }) {
             "Số đơn hàng",
           ]}
           contentStyle={{
-            backgroundColor: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
+            backgroundColor: "var(--color-card)",
+            border: "1px solid var(--color-border)",
             borderRadius: "8px",
           }}
         />
         <Line
           type="monotone"
           dataKey="count"
-          stroke="hsl(var(--primary))"
+          stroke="var(--color-primary)"
           strokeWidth={2}
           dot={{ r: 4 }}
           activeDot={{ r: 6 }}

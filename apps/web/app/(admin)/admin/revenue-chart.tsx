@@ -43,14 +43,14 @@ export function RevenueChart({ data }: { data: RevenueData[] }) {
           ]}
           labelFormatter={(label) => `Ngày ${label}`}
           contentStyle={{
-            backgroundColor: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
+            backgroundColor: "var(--color-card)",
+            border: "1px solid var(--color-border)",
             borderRadius: "8px",
           }}
         />
         <Bar
           dataKey="revenue"
-          fill="hsl(var(--primary))"
+          fill="var(--color-primary)"
           radius={[4, 4, 0, 0]}
         />
       </BarChart>

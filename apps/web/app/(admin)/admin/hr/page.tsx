@@ -45,15 +45,15 @@ export default async function HrPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Nhan su" }]} />
+      <Header breadcrumbs={[{ label: "Nhân sự" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Tabs defaultValue="employees" className="w-full">
           <TabsList>
-            <TabsTrigger value="employees">Nhan vien</TabsTrigger>
-            <TabsTrigger value="shifts">Ca lam</TabsTrigger>
-            <TabsTrigger value="schedule">Lich phan ca</TabsTrigger>
-            <TabsTrigger value="attendance">Cham cong</TabsTrigger>
-            <TabsTrigger value="leave">Nghi phep</TabsTrigger>
+            <TabsTrigger value="employees">Nhân viên</TabsTrigger>
+            <TabsTrigger value="shifts">Ca làm</TabsTrigger>
+            <TabsTrigger value="schedule">Lịch phân ca</TabsTrigger>
+            <TabsTrigger value="attendance">Chấm công</TabsTrigger>
+            <TabsTrigger value="leave">Nghỉ phép</TabsTrigger>
           </TabsList>
           <TabsContent value="employees">
             <EmployeesTab
