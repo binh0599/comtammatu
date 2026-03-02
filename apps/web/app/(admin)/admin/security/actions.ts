@@ -1,33 +1,14 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import { getActionContext } from "@comtammatu/shared/src/server/action-context";
+import { withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
 
-// --- Helper: Get tenant_id from authenticated user ---
+// =====================
+// Security Events
+// =====================
 
-async function getTenantId() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new Error("Unauthorized");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
-
-  return { supabase, tenantId };
-}
-
-// --- Security Events ---
-
-export async function getSecurityEvents(severity?: string) {
-  const { supabase, tenantId } = await getTenantId();
+async function _getSecurityEvents(severity?: string) {
+  const { supabase, tenantId } = await getActionContext();
 
   let query = supabase
     .from("security_events")
@@ -45,7 +26,6 @@ export async function getSecurityEvents(severity?: string) {
 
   if (!events || events.length === 0) return [];
 
-  // Collect unique user_ids and terminal_ids for batch lookup
   const userIds = [
     ...new Set(events.map((e) => e.user_id).filter(Boolean)),
   ] as string[];
@@ -53,7 +33,6 @@ export async function getSecurityEvents(severity?: string) {
     ...new Set(events.map((e) => e.terminal_id).filter(Boolean)),
   ] as number[];
 
-  // Batch fetch profiles
   let profilesMap: Record<string, string> = {};
   if (userIds.length > 0) {
     const { data: profiles } = await supabase
@@ -67,7 +46,6 @@ export async function getSecurityEvents(severity?: string) {
     }
   }
 
-  // Batch fetch terminals
   let terminalsMap: Record<number, string> = {};
   if (terminalIds.length > 0) {
     const { data: terminals } = await supabase
@@ -81,7 +59,6 @@ export async function getSecurityEvents(severity?: string) {
     }
   }
 
-  // Enrich events with display names
   return events.map((event) => ({
     ...event,
     source_ip: event.source_ip ? String(event.source_ip) : null,
@@ -92,8 +69,10 @@ export async function getSecurityEvents(severity?: string) {
   }));
 }
 
-export async function getSecuritySummary() {
-  const { supabase, tenantId } = await getTenantId();
+export const getSecurityEvents = withServerQuery(_getSecurityEvents);
+
+async function _getSecuritySummary() {
+  const { supabase, tenantId } = await getActionContext();
 
   const twentyFourHoursAgo = new Date(
     Date.now() - 24 * 60 * 60 * 1000
@@ -107,12 +86,7 @@ export async function getSecuritySummary() {
 
   if (error) throw new Error(error.message);
 
-  const summary = {
-    info: 0,
-    warning: 0,
-    critical: 0,
-    failedLogins: 0,
-  };
+  const summary = { info: 0, warning: 0, critical: 0, failedLogins: 0 };
 
   if (events) {
     for (const event of events) {
@@ -126,10 +100,14 @@ export async function getSecuritySummary() {
   return summary;
 }
 
-// --- Audit Logs ---
+export const getSecuritySummary = withServerQuery(_getSecuritySummary);
 
-export async function getAuditLogs(resourceType?: string) {
-  const { supabase, tenantId } = await getTenantId();
+// =====================
+// Audit Logs
+// =====================
+
+async function _getAuditLogs(resourceType?: string) {
+  const { supabase, tenantId } = await getActionContext();
 
   let query = supabase
     .from("audit_logs")
@@ -147,7 +125,6 @@ export async function getAuditLogs(resourceType?: string) {
 
   if (!logs || logs.length === 0) return [];
 
-  // Collect unique user_ids for batch lookup
   const userIds = [...new Set(logs.map((l) => l.user_id).filter(Boolean))];
 
   let profilesMap: Record<string, string> = {};
@@ -170,8 +147,10 @@ export async function getAuditLogs(resourceType?: string) {
   }));
 }
 
-export async function getAuditResourceTypes() {
-  const { supabase, tenantId } = await getTenantId();
+export const getAuditLogs = withServerQuery(_getAuditLogs);
+
+async function _getAuditResourceTypes() {
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("audit_logs")
@@ -182,7 +161,8 @@ export async function getAuditResourceTypes() {
 
   if (!data) return [];
 
-  // Extract unique resource types
   const types = [...new Set(data.map((d) => d.resource_type))];
   return types.sort();
 }
+
+export const getAuditResourceTypes = withServerQuery(_getAuditResourceTypes);

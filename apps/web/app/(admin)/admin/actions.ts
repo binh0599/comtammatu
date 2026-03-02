@@ -1,36 +1,15 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
-import { ActionError, handleServerActionError } from "@comtammatu/shared";
+import {
+  ActionError,
+  getOrderStatusLabel,
+} from "@comtammatu/shared";
+import { getActionContext } from "@comtammatu/shared/src/server/action-context";
+import { withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
 
-// --- Helper: Get tenant_id from authenticated user ---
-
-async function getTenantId() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId)
-    throw new ActionError(
-      "Tai khoan chua duoc gan tenant",
-      "UNAUTHORIZED",
-      403,
-    );
-
-  return { supabase, tenantId };
-}
-
-// --- Dashboard Stats ---
+// =====================
+// Dashboard Stats
+// =====================
 
 export interface DashboardStats {
   todayRevenue: number;
@@ -41,9 +20,8 @@ export interface DashboardStats {
 }
 
 async function _getDashboardStats(): Promise<DashboardStats> {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Get all branch IDs for this tenant
   const { data: branches, error: branchError } = await supabase
     .from("branches")
     .select("id")
@@ -52,18 +30,11 @@ async function _getDashboardStats(): Promise<DashboardStats> {
   if (branchError)
     throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) {
-    return {
-      todayRevenue: 0,
-      todayOrders: 0,
-      weekRevenue: 0,
-      monthRevenue: 0,
-      avgOrderValue: 0,
-    };
+    return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
 
   const branchIds = branches.map((b) => b.id);
 
-  // Fetch all non-cancelled, non-draft orders for these branches
   const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("total, created_at, status")
@@ -73,19 +44,13 @@ async function _getDashboardStats(): Promise<DashboardStats> {
   if (orderError)
     throw new ActionError(orderError.message, "SERVER_ERROR", 500);
   if (!orders || orders.length === 0) {
-    return {
-      todayRevenue: 0,
-      todayOrders: 0,
-      weekRevenue: 0,
-      monthRevenue: 0,
-      avgOrderValue: 0,
-    };
+    return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
 
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const weekStart = new Date(todayStart);
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1); // Monday
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
   if (weekStart > todayStart) weekStart.setDate(weekStart.getDate() - 7);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -99,41 +64,26 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     const orderDate = new Date(order.created_at);
     const total = Number(order.total);
 
-    if (orderDate >= todayStart) {
-      todayRevenue += total;
-      todayOrders++;
-    }
-    if (orderDate >= weekStart) {
-      weekRevenue += total;
-    }
-    if (orderDate >= monthStart) {
-      monthRevenue += total;
-    }
+    if (orderDate >= todayStart) { todayRevenue += total; todayOrders++; }
+    if (orderDate >= weekStart) weekRevenue += total;
+    if (orderDate >= monthStart) monthRevenue += total;
     totalRevenue += total;
   }
-
-  const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
 
   return {
     todayRevenue,
     todayOrders,
     weekRevenue,
     monthRevenue,
-    avgOrderValue,
+    avgOrderValue: orders.length > 0 ? totalRevenue / orders.length : 0,
   };
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
-  try {
-    return await _getDashboardStats();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getDashboardStats = withServerQuery(_getDashboardStats);
 
-// --- Recent Orders ---
+// =====================
+// Recent Orders
+// =====================
 
 export interface RecentOrder {
   id: number;
@@ -146,9 +96,8 @@ export interface RecentOrder {
 }
 
 async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Get branch IDs for this tenant
   const { data: branches, error: branchError } = await supabase
     .from("branches")
     .select("id")
@@ -181,17 +130,11 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
   }));
 }
 
-export async function getRecentOrders(limit = 10): Promise<RecentOrder[]> {
-  try {
-    return await _getRecentOrders(limit);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getRecentOrders = withServerQuery(_getRecentOrders);
 
-// --- Top Selling Items ---
+// =====================
+// Top Selling Items
+// =====================
 
 export interface TopSellingItem {
   name: string;
@@ -200,9 +143,8 @@ export interface TopSellingItem {
 }
 
 async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Get branch IDs for this tenant
   const { data: branches, error: branchError } = await supabase
     .from("branches")
     .select("id")
@@ -214,7 +156,6 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
 
   const branchIds = branches.map((b) => b.id);
 
-  // Get completed orders from last 30 days
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -231,7 +172,6 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
 
   const orderIds = completedOrders.map((o) => o.id);
 
-  // Get order items for those orders with menu item names
   const { data: items, error: itemError } = await supabase
     .from("order_items")
     .select("menu_item_id, quantity, item_total, menu_items(name)")
@@ -241,15 +181,11 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     throw new ActionError(itemError.message, "SERVER_ERROR", 500);
   if (!items || items.length === 0) return [];
 
-  // Aggregate by menu_item_id in JS
-  const aggregated = new Map<
-    number,
-    { name: string; total_qty: number; total_revenue: number }
-  >();
+  const aggregated = new Map<number, TopSellingItem>();
 
   for (const item of items) {
     const menuItem = item.menu_items as { name: string } | null;
-    const name = menuItem?.name ?? "Khong ro";
+    const name = menuItem?.name ?? "Không rõ";
     const existing = aggregated.get(item.menu_item_id);
 
     if (existing) {
@@ -264,30 +200,20 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     }
   }
 
-  // Sort by total_qty descending and take top N
   return Array.from(aggregated.values())
     .sort((a, b) => b.total_qty - a.total_qty)
     .slice(0, limit);
 }
 
-export async function getTopSellingItems(
-  limit = 10,
-): Promise<TopSellingItem[]> {
-  try {
-    return await _getTopSellingItems(limit);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getTopSellingItems = withServerQuery(_getTopSellingItems);
 
-// --- Order Status Counts (today) ---
+// =====================
+// Order Status Counts (today)
+// =====================
 
 async function _getOrderStatusCounts(): Promise<Record<string, number>> {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Get branch IDs for this tenant
   const { data: branches, error: branchError } = await supabase
     .from("branches")
     .select("id")
@@ -299,7 +225,6 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
 
   const branchIds = branches.map((b) => b.id);
 
-  // Get today's orders
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
@@ -313,7 +238,6 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
     throw new ActionError(orderError.message, "SERVER_ERROR", 500);
   if (!orders || orders.length === 0) return {};
 
-  // Group by status in JS
   const counts: Record<string, number> = {};
   for (const order of orders) {
     counts[order.status] = (counts[order.status] ?? 0) + 1;
@@ -322,20 +246,14 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
   return counts;
 }
 
-export async function getOrderStatusCounts(): Promise<Record<string, number>> {
-  try {
-    return await _getOrderStatusCounts();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getOrderStatusCounts = withServerQuery(_getOrderStatusCounts);
 
-// --- Revenue Trend (last N days) ---
+// =====================
+// Revenue Trend (last N days)
+// =====================
 
 async function _getRevenueTrend(days: number = 7) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
@@ -354,26 +272,18 @@ async function _getRevenueTrend(days: number = 7) {
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", startDate.toISOString());
 
-  // Group by date
   const dateMap = new Map<string, { revenue: number; orders: number }>();
 
-  // Initialize all days with 0
   for (let i = 0; i < days; i++) {
     const d = new Date(startDate);
     d.setDate(d.getDate() + i);
-    const key = d.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-    });
+    const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
     dateMap.set(key, { revenue: 0, orders: 0 });
   }
 
   for (const order of orders ?? []) {
     const d = new Date(order.created_at);
-    const key = d.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-    });
+    const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
     const entry = dateMap.get(key);
     if (entry) {
       entry.revenue += Number(order.total);
@@ -388,20 +298,14 @@ async function _getRevenueTrend(days: number = 7) {
   }));
 }
 
-export async function getRevenueTrend(days: number = 7) {
-  try {
-    return await _getRevenueTrend(days);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getRevenueTrend = withServerQuery(_getRevenueTrend);
 
-// --- Hourly Order Volume (today) ---
+// =====================
+// Hourly Order Volume (today)
+// =====================
 
 async function _getHourlyOrderVolume() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
@@ -419,7 +323,6 @@ async function _getHourlyOrderVolume() {
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", todayStart.toISOString());
 
-  // Initialize all hours 6-23 with 0
   const hourMap = new Map<number, number>();
   for (let h = 6; h <= 23; h++) {
     hourMap.set(h, 0);
@@ -436,20 +339,14 @@ async function _getHourlyOrderVolume() {
   }));
 }
 
-export async function getHourlyOrderVolume() {
-  try {
-    return await _getHourlyOrderVolume();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getHourlyOrderVolume = withServerQuery(_getHourlyOrderVolume);
 
-// --- Order Status Distribution (today, for pie chart) ---
+// =====================
+// Order Status Distribution (today, for pie chart)
+// =====================
 
 async function _getOrderStatusDistribution() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
@@ -481,32 +378,14 @@ async function _getOrderStatusDistribution() {
     cancelled: "hsl(0, 70%, 50%)",
   };
 
-  const labelMap: Record<string, string> = {
-    draft: "Nhap",
-    confirmed: "Da xac nhan",
-    preparing: "Dang chuan bi",
-    ready: "San sang",
-    served: "Da phuc vu",
-    completed: "Hoan tat",
-    cancelled: "Da huy",
-  };
-
   return Array.from(statusMap.entries())
     .filter(([, count]) => count > 0)
     .map(([status, count]) => ({
       status,
-      label: labelMap[status] ?? status,
+      label: getOrderStatusLabel(status),
       count,
       color: colorMap[status] ?? "hsl(var(--muted-foreground))",
     }));
 }
 
-export async function getOrderStatusDistribution() {
-  try {
-    return await _getOrderStatusDistribution();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getOrderStatusDistribution = withServerQuery(_getOrderStatusDistribution);

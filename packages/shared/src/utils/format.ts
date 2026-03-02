@@ -46,61 +46,6 @@ export function formatDateTime(date: string | Date): string {
   });
 }
 
-/**
- * Get display label for order status (Vietnamese).
- */
-export function getOrderStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    draft: "Nháp",
-    confirmed: "Đã xác nhận",
-    preparing: "Đang chuẩn bị",
-    ready: "Sẵn sàng",
-    served: "Đã phục vụ",
-    completed: "Hoàn tất",
-    cancelled: "Đã huỷ",
-  };
-  return labels[status] ?? status;
-}
-
-/**
- * Get display label for payment method (Vietnamese).
- */
-export function getPaymentMethodLabel(method: string): string {
-  const labels: Record<string, string> = {
-    cash: "Tiền mặt",
-    card: "Thẻ",
-    ewallet: "Ví điện tử",
-    qr: "QR Code",
-  };
-  return labels[method] ?? method;
-}
-
-/**
- * Get display label for terminal type (Vietnamese).
- */
-export function getTerminalTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    mobile_order: "Máy gọi món",
-    cashier_station: "Máy thu ngân",
-  };
-  return labels[type] ?? type;
-}
-
-/**
- * Get display label for table status (Vietnamese).
- */
-export function getTableStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    available: "Trống",
-    occupied: "Có khách",
-    reserved: "Đã đặt",
-    maintenance: "Bảo trì",
-  };
-  return labels[status] ?? status;
-}
-
-// ===== Week 5-6 Formatters =====
-
 /** Format a date to DD/MM/YYYY */
 export function formatDate(date: string | Date): string {
   const d = typeof date === "string" ? new Date(date) : date;
@@ -116,179 +61,10 @@ export function formatTime(time: string): string {
   return time.slice(0, 5);
 }
 
-export function getStockMovementTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    in: "Nhập kho",
-    out: "Xuất kho",
-    transfer: "Chuyển kho",
-    waste: "Hao hụt",
-    adjust: "Điều chỉnh",
-  };
-  return labels[type] ?? type;
-}
-
-export function getWasteReasonLabel(reason: string): string {
-  const labels: Record<string, string> = {
-    expired: "Hết hạn",
-    spoiled: "Hỏng",
-    overproduction: "Dư sản xuất",
-    other: "Khác",
-  };
-  return labels[reason] ?? reason;
-}
-
-export function getPoStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    draft: "Nháp",
-    sent: "Đã gửi",
-    received: "Đã nhận",
-    cancelled: "Đã hủy",
-  };
-  return labels[status] ?? status;
-}
-
-export function getEmploymentTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    full: "Toàn thời gian",
-    part: "Bán thời gian",
-    contract: "Hợp đồng",
-  };
-  return labels[type] ?? type;
-}
-
-export function getEmployeeStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    active: "Đang làm",
-    inactive: "Nghỉ",
-    on_leave: "Nghỉ phép",
-    terminated: "Đã nghỉ",
-  };
-  return labels[status] ?? status;
-}
-
-export function getLeaveTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    annual: "Phép năm",
-    sick: "Ốm",
-    unpaid: "Không lương",
-    maternity: "Thai sản",
-  };
-  return labels[type] ?? type;
-}
-
-export function getLeaveStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    pending: "Chờ duyệt",
-    approved: "Đã duyệt",
-    rejected: "Từ chối",
-  };
-  return labels[status] ?? status;
-}
-
-export function getSeverityLabel(severity: string): string {
-  const labels: Record<string, string> = {
-    info: "Thông tin",
-    warning: "Cảnh báo",
-    critical: "Nghiêm trọng",
-  };
-  return labels[severity] ?? severity;
-}
-
-export function getAttendanceStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    present: "Có mặt",
-    absent: "Vắng",
-    late: "Đi muộn",
-    early_leave: "Về sớm",
-  };
-  return labels[status] ?? status;
-}
-
-export function getShiftAssignmentStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    scheduled: "Đã lên lịch",
-    confirmed: "Đã xác nhận",
-    completed: "Hoàn tất",
-    no_show: "Vắng mặt",
-  };
-  return labels[status] ?? status;
-}
-
-// ===== Week 7-8 CRM Formatters =====
-
-export function getCustomerGenderLabel(gender: string): string {
-  const labels: Record<string, string> = {
-    M: "Nam",
-    F: "Nữ",
-    Other: "Khác",
-  };
-  return labels[gender] ?? gender;
-}
-
-export function getCustomerSourceLabel(source: string): string {
-  const labels: Record<string, string> = {
-    pos: "Tại quán",
-    app: "Ứng dụng",
-    website: "Website",
-  };
-  return labels[source] ?? source;
-}
-
-export function getLoyaltyTransactionTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    earn: "Tích điểm",
-    redeem: "Đổi điểm",
-    expire: "Hết hạn",
-    adjust: "Điều chỉnh",
-  };
-  return labels[type] ?? type;
-}
-
-export function getVoucherTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    percent: "Giảm %",
-    fixed: "Giảm cố định",
-    free_item: "Tặng món",
-  };
-  return labels[type] ?? type;
-}
-
-export function getDeletionStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    pending: "Đang chờ",
-    cancelled: "Đã hủy",
-    completed: "Hoàn tất",
-  };
-  return labels[status] ?? status;
-}
-
 /** Format loyalty points with sign. e.g. +150, -50 */
 export function formatPoints(points: number): string {
   const sign = points > 0 ? "+" : "";
   return `${sign}${new Intl.NumberFormat("vi-VN").format(points)} điểm`;
-}
-
-// ===== Payment Formatters =====
-
-export function getPaymentStatusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    pending: "Chờ xử lý",
-    completed: "Thành công",
-    failed: "Thất bại",
-    refunded: "Đã hoàn tiền",
-  };
-  return labels[status] ?? status;
-}
-
-// ===== Post-MVP: Discount Formatters =====
-
-export function getDiscountTypeLabel(type: string): string {
-  const labels: Record<string, string> = {
-    percent: "Giảm %",
-    fixed: "Giảm cố định",
-    voucher: "Voucher",
-  };
-  return labels[type] ?? type;
 }
 
 /** Format discount display. e.g. "10%" or "50.000₫" */
@@ -296,3 +72,164 @@ export function formatDiscount(type: string, value: number): string {
   if (type === "percent") return `${value}%`;
   return formatPrice(value);
 }
+
+// =====================================================================
+// Label Mappers — generated via createLabelMapper factory
+// =====================================================================
+
+/**
+ * Factory: creates a label-mapper function from a key→label record.
+ * Falls back to the raw key if no mapping exists.
+ */
+function createLabelMapper(
+  labels: Record<string, string>,
+): (key: string) => string {
+  return (key: string) => labels[key] ?? key;
+}
+
+export const getOrderStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  confirmed: "Đã xác nhận",
+  preparing: "Đang chuẩn bị",
+  ready: "Sẵn sàng",
+  served: "Đã phục vụ",
+  completed: "Hoàn tất",
+  cancelled: "Đã huỷ",
+});
+
+export const getPaymentMethodLabel = createLabelMapper({
+  cash: "Tiền mặt",
+  card: "Thẻ",
+  ewallet: "Ví điện tử",
+  qr: "QR Code",
+});
+
+export const getTerminalTypeLabel = createLabelMapper({
+  mobile_order: "Máy gọi món",
+  cashier_station: "Máy thu ngân",
+});
+
+export const getTableStatusLabel = createLabelMapper({
+  available: "Trống",
+  occupied: "Có khách",
+  reserved: "Đã đặt",
+  maintenance: "Bảo trì",
+});
+
+export const getStockMovementTypeLabel = createLabelMapper({
+  in: "Nhập kho",
+  out: "Xuất kho",
+  transfer: "Chuyển kho",
+  waste: "Hao hụt",
+  adjust: "Điều chỉnh",
+});
+
+export const getWasteReasonLabel = createLabelMapper({
+  expired: "Hết hạn",
+  spoiled: "Hỏng",
+  overproduction: "Dư sản xuất",
+  other: "Khác",
+});
+
+export const getPoStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  sent: "Đã gửi",
+  received: "Đã nhận",
+  cancelled: "Đã hủy",
+});
+
+export const getEmploymentTypeLabel = createLabelMapper({
+  full: "Toàn thời gian",
+  part: "Bán thời gian",
+  contract: "Hợp đồng",
+});
+
+export const getEmployeeStatusLabel = createLabelMapper({
+  active: "Đang làm",
+  inactive: "Nghỉ",
+  on_leave: "Nghỉ phép",
+  terminated: "Đã nghỉ",
+});
+
+export const getLeaveTypeLabel = createLabelMapper({
+  annual: "Phép năm",
+  sick: "Ốm",
+  unpaid: "Không lương",
+  maternity: "Thai sản",
+});
+
+export const getLeaveStatusLabel = createLabelMapper({
+  pending: "Chờ duyệt",
+  approved: "Đã duyệt",
+  rejected: "Từ chối",
+});
+
+export const getSeverityLabel = createLabelMapper({
+  info: "Thông tin",
+  warning: "Cảnh báo",
+  critical: "Nghiêm trọng",
+});
+
+export const getAttendanceStatusLabel = createLabelMapper({
+  present: "Có mặt",
+  absent: "Vắng",
+  late: "Đi muộn",
+  early_leave: "Về sớm",
+});
+
+export const getShiftAssignmentStatusLabel = createLabelMapper({
+  scheduled: "Đã lên lịch",
+  confirmed: "Đã xác nhận",
+  completed: "Hoàn tất",
+  no_show: "Vắng mặt",
+});
+
+export const getCustomerGenderLabel = createLabelMapper({
+  M: "Nam",
+  F: "Nữ",
+  Other: "Khác",
+});
+
+export const getCustomerSourceLabel = createLabelMapper({
+  pos: "Tại quán",
+  app: "Ứng dụng",
+  website: "Website",
+});
+
+export const getLoyaltyTransactionTypeLabel = createLabelMapper({
+  earn: "Tích điểm",
+  redeem: "Đổi điểm",
+  expire: "Hết hạn",
+  adjust: "Điều chỉnh",
+});
+
+export const getVoucherTypeLabel = createLabelMapper({
+  percent: "Giảm %",
+  fixed: "Giảm cố định",
+  free_item: "Tặng món",
+});
+
+export const getDeletionStatusLabel = createLabelMapper({
+  pending: "Đang chờ",
+  cancelled: "Đã hủy",
+  completed: "Hoàn tất",
+});
+
+export const getPaymentStatusLabel = createLabelMapper({
+  pending: "Chờ xử lý",
+  completed: "Thành công",
+  failed: "Thất bại",
+  refunded: "Đã hoàn tiền",
+});
+
+export const getOrderTypeLabel = createLabelMapper({
+  dine_in: "Tại chỗ",
+  takeaway: "Mang đi",
+  delivery: "Giao hàng",
+});
+
+export const getDiscountTypeLabel = createLabelMapper({
+  percent: "Giảm %",
+  fixed: "Giảm cố định",
+  voucher: "Voucher",
+});

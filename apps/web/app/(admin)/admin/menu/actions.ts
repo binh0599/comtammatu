@@ -1,63 +1,39 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
-import { ActionError, handleServerActionError } from "@comtammatu/shared";
+import {
+  ActionError,
+} from "@comtammatu/shared";
+import { getActionContext } from "@comtammatu/shared/src/server/action-context";
+import { withServerAction, withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 // --- Schemas ---
 
 const menuSchema = z.object({
-  name: z.string().min(1, "Ten thuc don khong duoc de trong"),
+  name: z.string().min(1, "Tên thực đơn không được để trống"),
   type: z.enum(["dine_in", "takeaway", "delivery"]),
   is_active: z.boolean().default(true),
 });
 
 const categorySchema = z.object({
   menu_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Ten danh muc khong duoc de trong"),
+  name: z.string().min(1, "Tên danh mục không được để trống"),
   sort_order: z.coerce.number().int().min(0).default(0),
 });
 
 const menuItemSchema = z.object({
   category_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Ten mon khong duoc de trong"),
+  name: z.string().min(1, "Tên món không được để trống"),
   description: z.string().optional(),
-  base_price: z.coerce.number().positive("Gia phai lon hon 0"),
+  base_price: z.coerce.number().positive("Giá phải lớn hơn 0"),
   is_available: z.boolean().default(true),
 });
-
-// --- Helper: Get tenant_id from authenticated user ---
-
-async function getTenantId() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId)
-    throw new ActionError(
-      "Tai khoan chua duoc gan tenant",
-      "UNAUTHORIZED",
-      403,
-    );
-
-  return { supabase, tenantId };
-}
 
 // --- Menu CRUD ---
 
 async function _getMenus() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("menus")
@@ -69,15 +45,7 @@ async function _getMenus() {
   return data;
 }
 
-export async function getMenus() {
-  try {
-    return await _getMenus();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getMenus = withServerQuery(_getMenus);
 
 async function _createMenu(formData: FormData) {
   const parsed = menuSchema.safeParse({
@@ -87,10 +55,10 @@ async function _createMenu(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase.from("menus").insert({
     tenant_id: tenantId,
@@ -105,14 +73,7 @@ async function _createMenu(formData: FormData) {
   return { success: true };
 }
 
-export async function createMenu(formData: FormData) {
-  try {
-    return await _createMenu(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createMenu = withServerAction(_createMenu);
 
 async function _updateMenu(id: number, formData: FormData) {
   const parsed = menuSchema.safeParse({
@@ -122,10 +83,10 @@ async function _updateMenu(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("menus")
@@ -143,17 +104,10 @@ async function _updateMenu(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function updateMenu(id: number, formData: FormData) {
-  try {
-    return await _updateMenu(id, formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateMenu = withServerAction(_updateMenu);
 
 async function _deleteMenu(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("menus")
@@ -167,19 +121,12 @@ async function _deleteMenu(id: number) {
   return { success: true };
 }
 
-export async function deleteMenu(id: number) {
-  try {
-    return await _deleteMenu(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteMenu = withServerAction(_deleteMenu);
 
 // --- Category CRUD ---
 
 async function _getCategories(menuId: number) {
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
   const { data, error } = await supabase
     .from("menu_categories")
@@ -191,15 +138,7 @@ async function _getCategories(menuId: number) {
   return data;
 }
 
-export async function getCategories(menuId: number) {
-  try {
-    return await _getCategories(menuId);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getCategories = withServerQuery(_getCategories);
 
 async function _createCategory(formData: FormData) {
   const parsed = categorySchema.safeParse({
@@ -209,10 +148,10 @@ async function _createCategory(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
   const { error } = await supabase.from("menu_categories").insert({
     menu_id: parsed.data.menu_id,
@@ -226,17 +165,10 @@ async function _createCategory(formData: FormData) {
   return { success: true };
 }
 
-export async function createCategory(formData: FormData) {
-  try {
-    return await _createCategory(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createCategory = withServerAction(_createCategory);
 
 async function _deleteCategory(id: number) {
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
   const { error } = await supabase.from("menu_categories").delete().eq("id", id);
 
@@ -246,19 +178,12 @@ async function _deleteCategory(id: number) {
   return { success: true };
 }
 
-export async function deleteCategory(id: number) {
-  try {
-    return await _deleteCategory(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteCategory = withServerAction(_deleteCategory);
 
 // --- Menu Item CRUD ---
 
 async function _getMenuItems(categoryId: number) {
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
   const { data, error } = await supabase
     .from("menu_items")
@@ -270,15 +195,7 @@ async function _getMenuItems(categoryId: number) {
   return data;
 }
 
-export async function getMenuItems(categoryId: number) {
-  try {
-    return await _getMenuItems(categoryId);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getMenuItems = withServerQuery(_getMenuItems);
 
 async function _createMenuItem(formData: FormData) {
   const parsed = menuItemSchema.safeParse({
@@ -290,10 +207,10 @@ async function _createMenuItem(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase.from("menu_items").insert({
     tenant_id: tenantId,
@@ -310,14 +227,7 @@ async function _createMenuItem(formData: FormData) {
   return { success: true };
 }
 
-export async function createMenuItem(formData: FormData) {
-  try {
-    return await _createMenuItem(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createMenuItem = withServerAction(_createMenuItem);
 
 async function _updateMenuItem(id: number, formData: FormData) {
   const parsed = menuItemSchema.safeParse({
@@ -329,10 +239,10 @@ async function _updateMenuItem(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("menu_items")
@@ -351,17 +261,10 @@ async function _updateMenuItem(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function updateMenuItem(id: number, formData: FormData) {
-  try {
-    return await _updateMenuItem(id, formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateMenuItem = withServerAction(_updateMenuItem);
 
 async function _deleteMenuItem(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("menu_items")
@@ -375,11 +278,4 @@ async function _deleteMenuItem(id: number) {
   return { success: true };
 }
 
-export async function deleteMenuItem(id: number) {
-  try {
-    return await _deleteMenuItem(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteMenuItem = withServerAction(_deleteMenuItem);

@@ -1,13 +1,8 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
 import {
   ActionError,
-  handleServerActionError,
   auditLog,
-} from "@comtammatu/shared";
-import { revalidatePath } from "next/cache";
-import {
   createCustomerSchema,
   updateCustomerSchema,
   createLoyaltyTierSchema,
@@ -15,39 +10,16 @@ import {
   createVoucherSchema,
   respondFeedbackSchema,
 } from "@comtammatu/shared";
-
-// --- Helper: Get tenant_id + userId from authenticated user ---
-
-async function getTenantId() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId)
-    throw new ActionError(
-      "Tai khoan chua duoc gan tenant",
-      "UNAUTHORIZED",
-      403,
-    );
-
-  return { supabase, tenantId, userId: user.id };
-}
+import { getActionContext } from "@comtammatu/shared/src/server/action-context";
+import { withServerAction, withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
+import { revalidatePath } from "next/cache";
 
 // =====================
 // Branches (shared)
 // =====================
 
 async function _getBranches() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("branches")
@@ -59,22 +31,14 @@ async function _getBranches() {
   return data ?? [];
 }
 
-export async function getBranches() {
-  try {
-    return await _getBranches();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getBranches = withServerQuery(_getBranches);
 
 // =====================
 // Customers
 // =====================
 
 async function _getCustomers() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("customers")
@@ -86,15 +50,7 @@ async function _getCustomers() {
   return data ?? [];
 }
 
-export async function getCustomers() {
-  try {
-    return await _getCustomers();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getCustomers = withServerQuery(_getCustomers);
 
 async function _createCustomer(formData: FormData) {
   const parsed = createCustomerSchema.safeParse({
@@ -108,10 +64,10 @@ async function _createCustomer(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase.from("customers").insert({
     tenant_id: tenantId,
@@ -126,7 +82,7 @@ async function _createCustomer(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "So dien thoai da ton tai" };
+      return { error: "Số điện thoại đã tồn tại" };
     }
     return { error: error.message };
   }
@@ -135,14 +91,7 @@ async function _createCustomer(formData: FormData) {
   return { success: true };
 }
 
-export async function createCustomer(formData: FormData) {
-  try {
-    return await _createCustomer(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createCustomer = withServerAction(_createCustomer);
 
 async function _updateCustomer(id: number, formData: FormData) {
   const parsed = updateCustomerSchema.safeParse({
@@ -157,10 +106,10 @@ async function _updateCustomer(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("customers")
@@ -179,7 +128,7 @@ async function _updateCustomer(id: number, formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "So dien thoai da ton tai" };
+      return { error: "Số điện thoại đã tồn tại" };
     }
     return { error: error.message };
   }
@@ -188,19 +137,11 @@ async function _updateCustomer(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function updateCustomer(id: number, formData: FormData) {
-  try {
-    return await _updateCustomer(id, formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateCustomer = withServerAction(_updateCustomer);
 
 async function _toggleCustomerActive(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Fetch current state
   const { data: customer, error: fetchError } = await supabase
     .from("customers")
     .select("is_active")
@@ -209,7 +150,7 @@ async function _toggleCustomerActive(id: number) {
     .single();
 
   if (fetchError) return { error: fetchError.message };
-  if (!customer) return { error: "Khach hang khong ton tai" };
+  if (!customer) return { error: "Khách hàng không tồn tại" };
 
   const { error } = await supabase
     .from("customers")
@@ -223,17 +164,10 @@ async function _toggleCustomerActive(id: number) {
   return { success: true };
 }
 
-export async function toggleCustomerActive(id: number) {
-  try {
-    return await _toggleCustomerActive(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const toggleCustomerActive = withServerAction(_toggleCustomerActive);
 
 async function _getCustomerLoyaltyHistory(customerId: number) {
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
   const { data, error } = await supabase
     .from("loyalty_transactions")
@@ -246,14 +180,7 @@ async function _getCustomerLoyaltyHistory(customerId: number) {
   return { data: data ?? [] };
 }
 
-export async function getCustomerLoyaltyHistory(customerId: number) {
-  try {
-    return await _getCustomerLoyaltyHistory(customerId);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const getCustomerLoyaltyHistory = withServerAction(_getCustomerLoyaltyHistory);
 
 async function _adjustLoyaltyPoints(input: {
   customer_id: number;
@@ -264,12 +191,11 @@ async function _adjustLoyaltyPoints(input: {
   const parsed = adjustLoyaltyPointsSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
-  // Get current balance from latest transaction
   const { data: latest } = await supabase
     .from("loyalty_transactions")
     .select("balance_after")
@@ -282,10 +208,9 @@ async function _adjustLoyaltyPoints(input: {
   const newBalance = currentBalance + parsed.data.points;
 
   if (newBalance < 0) {
-    return { error: "Khong du diem de thuc hien giao dich" };
+    return { error: "Không đủ điểm để thực hiện giao dịch" };
   }
 
-  // Insert loyalty transaction
   const { error: txError } = await supabase
     .from("loyalty_transactions")
     .insert({
@@ -299,33 +224,18 @@ async function _adjustLoyaltyPoints(input: {
 
   if (txError) return { error: txError.message };
 
-  // Update customer total (total_spent is separate, we track points via transactions)
-  // No loyalty_points column on customers table, balance is derived from transactions
-
   revalidatePath("/admin/crm");
   return { success: true, balance: newBalance };
 }
 
-export async function adjustLoyaltyPoints(input: {
-  customer_id: number;
-  points: number;
-  type: string;
-  reference_type?: string;
-}) {
-  try {
-    return await _adjustLoyaltyPoints(input);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const adjustLoyaltyPoints = withServerAction(_adjustLoyaltyPoints);
 
 // =====================
 // Loyalty Tiers
 // =====================
 
 async function _getLoyaltyTiers() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("loyalty_tiers")
@@ -338,15 +248,7 @@ async function _getLoyaltyTiers() {
   return data ?? [];
 }
 
-export async function getLoyaltyTiers() {
-  try {
-    return await _getLoyaltyTiers();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getLoyaltyTiers = withServerQuery(_getLoyaltyTiers);
 
 async function _createLoyaltyTier(formData: FormData) {
   const parsed = createLoyaltyTierSchema.safeParse({
@@ -358,10 +260,10 @@ async function _createLoyaltyTier(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase.from("loyalty_tiers").insert({
     tenant_id: tenantId,
@@ -374,7 +276,7 @@ async function _createLoyaltyTier(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Ten hang da ton tai" };
+      return { error: "Tên hạng đã tồn tại" };
     }
     return { error: error.message };
   }
@@ -383,14 +285,7 @@ async function _createLoyaltyTier(formData: FormData) {
   return { success: true };
 }
 
-export async function createLoyaltyTier(formData: FormData) {
-  try {
-    return await _createLoyaltyTier(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createLoyaltyTier = withServerAction(_createLoyaltyTier);
 
 async function _updateLoyaltyTier(id: number, formData: FormData) {
   const parsed = createLoyaltyTierSchema.safeParse({
@@ -402,10 +297,10 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("loyalty_tiers")
@@ -425,19 +320,11 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function updateLoyaltyTier(id: number, formData: FormData) {
-  try {
-    return await _updateLoyaltyTier(id, formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateLoyaltyTier = withServerAction(_updateLoyaltyTier);
 
 async function _deleteLoyaltyTier(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Check if any customers are linked to this tier
   const { count, error: countError } = await supabase
     .from("customers")
     .select("id", { count: "exact", head: true })
@@ -447,7 +334,7 @@ async function _deleteLoyaltyTier(id: number) {
 
   if (count && count > 0) {
     return {
-      error: `Khong the xoa — co ${count} khach hang dang o hang nay`,
+      error: `Không thể xóa — có ${count} khách hàng đang ở hạng này`,
     };
   }
 
@@ -463,21 +350,14 @@ async function _deleteLoyaltyTier(id: number) {
   return { success: true };
 }
 
-export async function deleteLoyaltyTier(id: number) {
-  try {
-    return await _deleteLoyaltyTier(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteLoyaltyTier = withServerAction(_deleteLoyaltyTier);
 
 // =====================
 // Vouchers
 // =====================
 
 async function _getVouchers() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("vouchers")
@@ -489,15 +369,7 @@ async function _getVouchers() {
   return data ?? [];
 }
 
-export async function getVouchers() {
-  try {
-    return await _getVouchers();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getVouchers = withServerQuery(_getVouchers);
 
 async function _createVoucher(data: {
   code: string;
@@ -514,12 +386,11 @@ async function _createVoucher(data: {
   const parsed = createVoucherSchema.safeParse(data);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Insert voucher
   const { data: voucher, error: voucherError } = await supabase
     .from("vouchers")
     .insert({
@@ -539,12 +410,11 @@ async function _createVoucher(data: {
 
   if (voucherError) {
     if (voucherError.code === "23505") {
-      return { error: "Ma voucher da ton tai" };
+      return { error: "Mã voucher đã tồn tại" };
     }
     return { error: voucherError.message };
   }
 
-  // Insert voucher_branches if provided
   if (parsed.data.branch_ids && parsed.data.branch_ids.length > 0) {
     const branchRows = parsed.data.branch_ids.map((branchId) => ({
       voucher_id: voucher.id,
@@ -556,7 +426,6 @@ async function _createVoucher(data: {
       .insert(branchRows);
 
     if (branchError) {
-      // Rollback voucher on branch insert failure
       await supabase.from("vouchers").delete().eq("id", voucher.id);
       return { error: branchError.message };
     }
@@ -566,25 +435,7 @@ async function _createVoucher(data: {
   return { success: true };
 }
 
-export async function createVoucher(data: {
-  code: string;
-  type: string;
-  value: number;
-  min_order?: number | null;
-  max_discount?: number | null;
-  valid_from: string;
-  valid_to: string;
-  max_uses?: number | null;
-  is_active?: boolean;
-  branch_ids?: number[];
-}) {
-  try {
-    return await _createVoucher(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createVoucher = withServerAction(_createVoucher);
 
 async function _updateVoucher(
   id: number,
@@ -603,9 +454,8 @@ async function _updateVoucher(
 ) {
   const { branch_ids, ...voucherData } = data;
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Update voucher fields
   if (Object.keys(voucherData).length > 0) {
     const { error: updateError } = await supabase
       .from("vouchers")
@@ -625,18 +475,15 @@ async function _updateVoucher(
 
     if (updateError) {
       if (updateError.code === "23505") {
-        return { error: "Ma voucher da ton tai" };
+        return { error: "Mã voucher đã tồn tại" };
       }
       return { error: updateError.message };
     }
   }
 
-  // Replace voucher_branches
   if (branch_ids !== undefined) {
-    // Delete old branches
     await supabase.from("voucher_branches").delete().eq("voucher_id", id);
 
-    // Insert new branches
     if (branch_ids.length > 0) {
       const branchRows = branch_ids.map((branchId) => ({
         voucher_id: id,
@@ -655,33 +502,11 @@ async function _updateVoucher(
   return { success: true };
 }
 
-export async function updateVoucher(
-  id: number,
-  data: {
-    code?: string;
-    type?: string;
-    value?: number;
-    min_order?: number | null;
-    max_discount?: number | null;
-    valid_from?: string;
-    valid_to?: string;
-    max_uses?: number | null;
-    is_active?: boolean;
-    branch_ids?: number[];
-  }
-) {
-  try {
-    return await _updateVoucher(id, data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateVoucher = withServerAction(_updateVoucher);
 
 async function _deleteVoucher(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Delete voucher_branches first (cascade should handle, but be explicit)
   await supabase.from("voucher_branches").delete().eq("voucher_id", id);
 
   const { error } = await supabase
@@ -696,17 +521,10 @@ async function _deleteVoucher(id: number) {
   return { success: true };
 }
 
-export async function deleteVoucher(id: number) {
-  try {
-    return await _deleteVoucher(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteVoucher = withServerAction(_deleteVoucher);
 
 async function _toggleVoucher(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data: voucher, error: fetchError } = await supabase
     .from("vouchers")
@@ -716,7 +534,7 @@ async function _toggleVoucher(id: number) {
     .single();
 
   if (fetchError) return { error: fetchError.message };
-  if (!voucher) return { error: "Voucher khong ton tai" };
+  if (!voucher) return { error: "Voucher không tồn tại" };
 
   const { error } = await supabase
     .from("vouchers")
@@ -730,21 +548,14 @@ async function _toggleVoucher(id: number) {
   return { success: true };
 }
 
-export async function toggleVoucher(id: number) {
-  try {
-    return await _toggleVoucher(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const toggleVoucher = withServerAction(_toggleVoucher);
 
 // =====================
 // Feedback
 // =====================
 
 async function _getFeedback() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("customer_feedback")
@@ -753,28 +564,19 @@ async function _getFeedback() {
     .order("created_at", { ascending: false });
 
   if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
-  // Filter by tenant_id via customers join
   return data ?? [];
 }
 
-export async function getFeedback() {
-  try {
-    return await _getFeedback();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getFeedback = withServerQuery(_getFeedback);
 
 async function _respondToFeedback(id: number, input: { response: string }) {
   const parsed = respondFeedbackSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, userId } = await getTenantId();
+  const { supabase, userId } = await getActionContext();
 
   const { error } = await supabase
     .from("customer_feedback")
@@ -790,144 +592,4 @@ async function _respondToFeedback(id: number, input: { response: string }) {
   return { success: true };
 }
 
-export async function respondToFeedback(id: number, input: { response: string }) {
-  try {
-    return await _respondToFeedback(id, input);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
-
-// =====================
-// GDPR / Deletion Requests
-// =====================
-
-async function _getDeletionRequests() {
-  const { supabase, tenantId } = await getTenantId();
-
-  const { data, error } = await supabase
-    .from("deletion_requests")
-    .select("*, customers!inner(full_name, email, tenant_id)")
-    .eq("customers.tenant_id", tenantId)
-    .eq("status", "pending")
-    .order("requested_at", { ascending: false });
-
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
-  return data ?? [];
-}
-
-export async function getDeletionRequests() {
-  try {
-    return await _getDeletionRequests();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
-
-async function _cancelDeletionRequest(id: number) {
-  const { supabase } = await getTenantId();
-
-  const { error } = await supabase
-    .from("deletion_requests")
-    .update({ status: "cancelled" })
-    .eq("id", id);
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/admin/crm");
-  return { success: true };
-}
-
-export async function cancelDeletionRequest(id: number) {
-  try {
-    return await _cancelDeletionRequest(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
-
-async function _processDeletion(id: number) {
-  const { supabase, tenantId, userId } = await getTenantId();
-
-  // Get the deletion request to find the customer
-  const { data: request, error: fetchError } = await supabase
-    .from("deletion_requests")
-    .select("customer_id")
-    .eq("id", id)
-    .single();
-
-  if (fetchError) return { error: fetchError.message };
-  if (!request) return { error: "Yeu cau khong ton tai" };
-
-  // 1. Anonymize customer PII
-  const { error: anonError } = await supabase
-    .from("customers")
-    .update({
-      full_name: "[Da xoa]",
-      phone: "[Da xoa]",
-      email: null,
-      is_active: false,
-      notes: null,
-      birthday: null,
-      gender: null,
-    })
-    .eq("id", request.customer_id);
-
-  if (anonError) return { error: anonError.message };
-
-  // 2. Null out customer_id on orders (keep orders for accounting)
-  await supabase
-    .from("orders")
-    .update({ customer_id: null })
-    .eq("customer_id", request.customer_id);
-
-  // 3. Delete loyalty transactions
-  await supabase
-    .from("loyalty_transactions")
-    .delete()
-    .eq("customer_id", request.customer_id);
-
-  // 4. Delete customer feedback
-  await supabase
-    .from("customer_feedback")
-    .delete()
-    .eq("customer_id", request.customer_id);
-
-  // 5. Mark deletion request as completed
-  const { error: updateError } = await supabase
-    .from("deletion_requests")
-    .update({
-      status: "completed",
-      completed_at: new Date().toISOString(),
-      processed_by: userId,
-    })
-    .eq("id", id);
-
-  if (updateError) return { error: updateError.message };
-
-  // 6. Audit log (fire-and-forget)
-  void auditLog(supabase, {
-    tenant_id: tenantId,
-    user_id: userId,
-    action: "gdpr_deletion_processed",
-    resource_type: "customer",
-    resource_id: request.customer_id,
-    changes: { deletion_request_id: id },
-  });
-
-  revalidatePath("/admin/crm");
-  return { success: true };
-}
-
-export async function processDeletion(id: number) {
-  try {
-    return await _processDeletion(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const respondToFeedback = withServerAction(_respondToFeedback);

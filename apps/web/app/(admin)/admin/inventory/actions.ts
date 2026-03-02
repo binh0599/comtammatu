@@ -1,51 +1,26 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
-import { ActionError, handleServerActionError } from "@comtammatu/shared";
-import { revalidatePath } from "next/cache";
 import {
+  ActionError,
+  VALID_PO_TRANSITIONS,
+  type PoStatus,
   createIngredientSchema,
   createStockMovementSchema,
   createRecipeSchema,
   createSupplierSchema,
   createPurchaseOrderSchema,
   receivePurchaseOrderSchema,
-  VALID_PO_TRANSITIONS,
-  type PoStatus,
 } from "@comtammatu/shared";
-
-// --- Helper: Get tenant_id + userId from authenticated user ---
-
-async function getTenantId() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId)
-    throw new ActionError(
-      "Tai khoan chua duoc gan tenant",
-      "UNAUTHORIZED",
-      403,
-    );
-
-  return { supabase, tenantId, userId: user.id };
-}
+import { getActionContext } from "@comtammatu/shared/src/server/action-context";
+import { withServerAction, withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
+import { revalidatePath } from "next/cache";
 
 // =====================
 // Ingredients
 // =====================
 
 async function _getIngredients() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("ingredients")
@@ -57,18 +32,10 @@ async function _getIngredients() {
   return data ?? [];
 }
 
-export async function getIngredients() {
-  try {
-    return await _getIngredients();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getIngredients = withServerQuery(_getIngredients);
 
 async function _getBranches() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("branches")
@@ -80,15 +47,7 @@ async function _getBranches() {
   return data ?? [];
 }
 
-export async function getBranches() {
-  try {
-    return await _getBranches();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getBranches = withServerQuery(_getBranches);
 
 async function _createIngredient(formData: FormData) {
   const parsed = createIngredientSchema.safeParse({
@@ -103,10 +62,10 @@ async function _createIngredient(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase.from("ingredients").insert({
     tenant_id: tenantId,
@@ -122,7 +81,7 @@ async function _createIngredient(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "SKU da ton tai" };
+      return { error: "SKU đã tồn tại" };
     }
     return { error: error.message };
   }
@@ -131,14 +90,7 @@ async function _createIngredient(formData: FormData) {
   return { success: true };
 }
 
-export async function createIngredient(formData: FormData) {
-  try {
-    return await _createIngredient(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createIngredient = withServerAction(_createIngredient);
 
 async function _updateIngredient(id: number, formData: FormData) {
   const parsed = createIngredientSchema.safeParse({
@@ -153,10 +105,10 @@ async function _updateIngredient(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("ingredients")
@@ -179,17 +131,10 @@ async function _updateIngredient(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function updateIngredient(id: number, formData: FormData) {
-  try {
-    return await _updateIngredient(id, formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateIngredient = withServerAction(_updateIngredient);
 
 async function _deleteIngredient(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("ingredients")
@@ -203,21 +148,14 @@ async function _deleteIngredient(id: number) {
   return { success: true };
 }
 
-export async function deleteIngredient(id: number) {
-  try {
-    return await _deleteIngredient(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteIngredient = withServerAction(_deleteIngredient);
 
 // =====================
 // Stock Levels
 // =====================
 
 async function _getStockLevels() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("stock_levels")
@@ -229,22 +167,14 @@ async function _getStockLevels() {
   return data ?? [];
 }
 
-export async function getStockLevels() {
-  try {
-    return await _getStockLevels();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getStockLevels = withServerQuery(_getStockLevels);
 
 async function _initStockLevel(data: {
   ingredient_id: number;
   branch_id: number;
   quantity: number;
 }) {
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
   const { error } = await supabase.from("stock_levels").insert({
     ingredient_id: data.ingredient_id,
@@ -254,7 +184,7 @@ async function _initStockLevel(data: {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Ton kho cho nguyen lieu nay tai chi nhanh da ton tai" };
+      return { error: "Tồn kho cho nguyên liệu này tại chi nhánh đã tồn tại" };
     }
     return { error: error.message };
   }
@@ -263,31 +193,18 @@ async function _initStockLevel(data: {
   return { success: true };
 }
 
-export async function initStockLevel(data: {
-  ingredient_id: number;
-  branch_id: number;
-  quantity: number;
-}) {
-  try {
-    return await _initStockLevel(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const initStockLevel = withServerAction(_initStockLevel);
 
 // =====================
 // Stock Movements
 // =====================
 
 async function _getStockMovements() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("stock_movements")
-    .select(
-      "*, ingredients!inner(name, unit, tenant_id), branches!inner(name), profiles(full_name)"
-    )
+    .select("*, ingredients!inner(name, unit, tenant_id), branches!inner(name), profiles(full_name)")
     .eq("ingredients.tenant_id", tenantId)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -296,15 +213,7 @@ async function _getStockMovements() {
   return data ?? [];
 }
 
-export async function getStockMovements() {
-  try {
-    return await _getStockMovements();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getStockMovements = withServerQuery(_getStockMovements);
 
 async function _createStockMovement(data: {
   ingredient_id: number;
@@ -316,12 +225,11 @@ async function _createStockMovement(data: {
   const parsed = createStockMovementSchema.safeParse(data);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, userId } = await getTenantId();
+  const { supabase, userId } = await getActionContext();
 
-  // Insert stock movement
   const { error: movError } = await supabase.from("stock_movements").insert({
     ingredient_id: parsed.data.ingredient_id,
     branch_id: parsed.data.branch_id,
@@ -334,7 +242,6 @@ async function _createStockMovement(data: {
 
   if (movError) return { error: movError.message };
 
-  // Update stock_levels accordingly
   const { data: existing } = await supabase
     .from("stock_levels")
     .select("id, quantity, version")
@@ -369,33 +276,18 @@ async function _createStockMovement(data: {
   return { success: true };
 }
 
-export async function createStockMovement(data: {
-  ingredient_id: number;
-  branch_id: number;
-  type: string;
-  quantity: number;
-  notes?: string;
-}) {
-  try {
-    return await _createStockMovement(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createStockMovement = withServerAction(_createStockMovement);
 
 // =====================
 // Recipes
 // =====================
 
 async function _getRecipes() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("recipes")
-    .select(
-      "*, menu_items!inner(name, tenant_id), recipe_ingredients(*, ingredients(name, unit))"
-    )
+    .select("*, menu_items!inner(name, tenant_id), recipe_ingredients(*, ingredients(name, unit))")
     .eq("menu_items.tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
@@ -403,20 +295,11 @@ async function _getRecipes() {
   return data ?? [];
 }
 
-export async function getRecipes() {
-  try {
-    return await _getRecipes();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getRecipes = withServerQuery(_getRecipes);
 
 async function _getMenuItemsForRecipe() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Get all menu items for tenant
   const { data: allItems, error: itemsError } = await supabase
     .from("menu_items")
     .select("id, name")
@@ -424,31 +307,20 @@ async function _getMenuItemsForRecipe() {
     .eq("is_available", true)
     .order("name");
 
-  if (itemsError)
-    throw new ActionError(itemsError.message, "SERVER_ERROR", 500);
+  if (itemsError) throw new ActionError(itemsError.message, "SERVER_ERROR", 500);
 
-  // Get all recipe menu_item_ids
   const { data: existingRecipes, error: recipesError } = await supabase
     .from("recipes")
     .select("menu_item_id, menu_items!inner(tenant_id)")
     .eq("menu_items.tenant_id", tenantId);
 
-  if (recipesError)
-    throw new ActionError(recipesError.message, "SERVER_ERROR", 500);
+  if (recipesError) throw new ActionError(recipesError.message, "SERVER_ERROR", 500);
 
   const usedIds = new Set(existingRecipes?.map((r) => r.menu_item_id) ?? []);
   return (allItems ?? []).filter((item) => !usedIds.has(item.id));
 }
 
-export async function getMenuItemsForRecipe() {
-  try {
-    return await _getMenuItemsForRecipe();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getMenuItemsForRecipe = withServerQuery(_getMenuItemsForRecipe);
 
 async function _createRecipe(data: {
   menu_item_id: number;
@@ -464,12 +336,11 @@ async function _createRecipe(data: {
   const parsed = createRecipeSchema.safeParse(data);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
-  // Insert the recipe
   const { data: recipe, error: recipeError } = await supabase
     .from("recipes")
     .insert({
@@ -482,12 +353,11 @@ async function _createRecipe(data: {
 
   if (recipeError) {
     if (recipeError.code === "23505") {
-      return { error: "Mon nay da co cong thuc" };
+      return { error: "Món này đã có công thức" };
     }
     return { error: recipeError.message };
   }
 
-  // Insert recipe ingredients
   const ingredientRows = parsed.data.ingredients.map((ing) => ({
     recipe_id: recipe.id,
     ingredient_id: ing.ingredient_id,
@@ -501,7 +371,6 @@ async function _createRecipe(data: {
     .insert(ingredientRows);
 
   if (ingError) {
-    // Rollback recipe on ingredient insert failure
     await supabase.from("recipes").delete().eq("id", recipe.id);
     return { error: ingError.message };
   }
@@ -534,31 +403,12 @@ async function _createRecipe(data: {
   return { success: true };
 }
 
-export async function createRecipe(data: {
-  menu_item_id: number;
-  yield_qty?: number;
-  yield_unit?: string;
-  ingredients: {
-    ingredient_id: number;
-    quantity: number;
-    unit: string;
-    waste_pct?: number;
-  }[];
-}) {
-  try {
-    return await _createRecipe(data);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createRecipe = withServerAction(_createRecipe);
 
 async function _deleteRecipe(id: number) {
-  const { supabase } = await getTenantId();
+  const { supabase } = await getActionContext();
 
-  // Delete recipe ingredients first (cascade should handle this, but be explicit)
   await supabase.from("recipe_ingredients").delete().eq("recipe_id", id);
-
   const { error } = await supabase.from("recipes").delete().eq("id", id);
 
   if (error) return { error: error.message };
@@ -567,21 +417,14 @@ async function _deleteRecipe(id: number) {
   return { success: true };
 }
 
-export async function deleteRecipe(id: number) {
-  try {
-    return await _deleteRecipe(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteRecipe = withServerAction(_deleteRecipe);
 
 // =====================
 // Suppliers
 // =====================
 
 async function _getSuppliers() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("suppliers")
@@ -593,15 +436,7 @@ async function _getSuppliers() {
   return data ?? [];
 }
 
-export async function getSuppliers() {
-  try {
-    return await _getSuppliers();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getSuppliers = withServerQuery(_getSuppliers);
 
 async function _createSupplier(formData: FormData) {
   const parsed = createSupplierSchema.safeParse({
@@ -615,10 +450,10 @@ async function _createSupplier(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase.from("suppliers").insert({
     tenant_id: tenantId,
@@ -633,7 +468,7 @@ async function _createSupplier(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Nha cung cap da ton tai" };
+      return { error: "Nhà cung cấp đã tồn tại" };
     }
     return { error: error.message };
   }
@@ -642,14 +477,7 @@ async function _createSupplier(formData: FormData) {
   return { success: true };
 }
 
-export async function createSupplier(formData: FormData) {
-  try {
-    return await _createSupplier(formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createSupplier = withServerAction(_createSupplier);
 
 async function _updateSupplier(id: number, formData: FormData) {
   const parsed = createSupplierSchema.safeParse({
@@ -663,10 +491,10 @@ async function _updateSupplier(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("suppliers")
@@ -688,17 +516,10 @@ async function _updateSupplier(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function updateSupplier(id: number, formData: FormData) {
-  try {
-    return await _updateSupplier(id, formData);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const updateSupplier = withServerAction(_updateSupplier);
 
 async function _deleteSupplier(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
     .from("suppliers")
@@ -708,7 +529,7 @@ async function _deleteSupplier(id: number) {
 
   if (error) {
     if (error.code === "23503") {
-      return { error: "Khong the xoa — nha cung cap nay dang co don mua hang" };
+      return { error: "Không thể xóa — nhà cung cấp này đang có đơn mua hàng" };
     }
     return { error: error.message };
   }
@@ -717,27 +538,18 @@ async function _deleteSupplier(id: number) {
   return { success: true };
 }
 
-export async function deleteSupplier(id: number) {
-  try {
-    return await _deleteSupplier(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const deleteSupplier = withServerAction(_deleteSupplier);
 
 // =====================
 // Purchase Orders
 // =====================
 
 async function _getPurchaseOrders() {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("purchase_orders")
-    .select(
-      "*, suppliers(name), branches(name), purchase_order_items(*, ingredients(name, unit))"
-    )
+    .select("*, suppliers(name), branches(name), purchase_order_items(*, ingredients(name, unit))")
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
@@ -745,15 +557,7 @@ async function _getPurchaseOrders() {
   return data ?? [];
 }
 
-export async function getPurchaseOrders() {
-  try {
-    return await _getPurchaseOrders();
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    const result = handleServerActionError(error);
-    throw new Error(result.error);
-  }
-}
+export const getPurchaseOrders = withServerQuery(_getPurchaseOrders);
 
 async function _createPurchaseOrder(input: {
   supplier_id: number;
@@ -765,18 +569,16 @@ async function _createPurchaseOrder(input: {
   const parsed = createPurchaseOrderSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, userId } = await getTenantId();
+  const { supabase, tenantId, userId } = await getActionContext();
 
-  // Calculate total
   const total = parsed.data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
     0
   );
 
-  // Insert purchase order
   const { data: po, error: poError } = await supabase
     .from("purchase_orders")
     .insert({
@@ -794,7 +596,6 @@ async function _createPurchaseOrder(input: {
 
   if (poError) return { error: poError.message };
 
-  // Insert purchase order items
   const itemRows = parsed.data.items.map((item) => ({
     po_id: po.id,
     ingredient_id: item.ingredient_id,
@@ -808,7 +609,6 @@ async function _createPurchaseOrder(input: {
     .insert(itemRows);
 
   if (itemsError) {
-    // Rollback PO on items insert failure
     await supabase.from("purchase_orders").delete().eq("id", po.id);
     return { error: itemsError.message };
   }
@@ -817,25 +617,11 @@ async function _createPurchaseOrder(input: {
   return { success: true };
 }
 
-export async function createPurchaseOrder(input: {
-  supplier_id: number;
-  branch_id: number;
-  expected_at?: string;
-  notes?: string;
-  items: { ingredient_id: number; quantity: number; unit_price: number }[];
-}) {
-  try {
-    return await _createPurchaseOrder(input);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const createPurchaseOrder = withServerAction(_createPurchaseOrder);
 
 async function _sendPurchaseOrder(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Verify current status allows transition to 'sent'
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
     .select("status")
@@ -844,19 +630,16 @@ async function _sendPurchaseOrder(id: number) {
     .single();
 
   if (fetchError) return { error: fetchError.message };
-  if (!po) return { error: "Don mua hang khong ton tai" };
+  if (!po) return { error: "Đơn mua hàng không tồn tại" };
 
   const validNextStatuses = VALID_PO_TRANSITIONS[po.status as PoStatus];
   if (!validNextStatuses || !validNextStatuses.includes("sent")) {
-    return { error: `Khong the gui don o trang thai "${po.status}"` };
+    return { error: `Không thể gửi đơn ở trạng thái "${po.status}"` };
   }
 
   const { error } = await supabase
     .from("purchase_orders")
-    .update({
-      status: "sent",
-      ordered_at: new Date().toISOString(),
-    })
+    .update({ status: "sent", ordered_at: new Date().toISOString() })
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
@@ -866,14 +649,7 @@ async function _sendPurchaseOrder(id: number) {
   return { success: true };
 }
 
-export async function sendPurchaseOrder(id: number) {
-  try {
-    return await _sendPurchaseOrder(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const sendPurchaseOrder = withServerAction(_sendPurchaseOrder);
 
 async function _receivePurchaseOrder(input: {
   po_id: number;
@@ -882,12 +658,11 @@ async function _receivePurchaseOrder(input: {
   const parsed = receivePurchaseOrderSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, userId } = await getTenantId();
+  const { supabase, tenantId, userId } = await getActionContext();
 
-  // Verify current status allows transition to 'received'
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
     .select("status, branch_id")
@@ -896,14 +671,13 @@ async function _receivePurchaseOrder(input: {
     .single();
 
   if (fetchError) return { error: fetchError.message };
-  if (!po) return { error: "Don mua hang khong ton tai" };
+  if (!po) return { error: "Đơn mua hàng không tồn tại" };
 
   const validNextStatuses = VALID_PO_TRANSITIONS[po.status as PoStatus];
   if (!validNextStatuses || !validNextStatuses.includes("received")) {
-    return { error: `Khong the nhan hang o trang thai "${po.status}"` };
+    return { error: `Không thể nhận hàng ở trạng thái "${po.status}"` };
   }
 
-  // Update each PO item's received_qty
   for (const item of parsed.data.items) {
     const { error: itemError } = await supabase
       .from("purchase_order_items")
@@ -913,19 +687,14 @@ async function _receivePurchaseOrder(input: {
     if (itemError) return { error: itemError.message };
   }
 
-  // Update PO status to received
   const { error: poError } = await supabase
     .from("purchase_orders")
-    .update({
-      status: "received",
-      received_at: new Date().toISOString(),
-    })
+    .update({ status: "received", received_at: new Date().toISOString() })
     .eq("id", parsed.data.po_id)
     .eq("tenant_id", tenantId);
 
   if (poError) return { error: poError.message };
 
-  // Get ingredient_id for each PO item to create stock movements
   const poItemIds = parsed.data.items.map((i) => i.po_item_id);
   const { data: poItems, error: poItemsError } = await supabase
     .from("purchase_order_items")
@@ -938,24 +707,21 @@ async function _receivePurchaseOrder(input: {
     (poItems ?? []).map((pi) => [pi.id, pi.ingredient_id])
   );
 
-  // Create stock movements and update stock levels for each received item
   for (const item of parsed.data.items) {
     if (item.received_qty <= 0) continue;
 
     const ingredientId = ingredientMap.get(item.po_item_id);
     if (!ingredientId) continue;
 
-    // Insert stock movement (type = 'in')
     await supabase.from("stock_movements").insert({
       ingredient_id: ingredientId,
       branch_id: po.branch_id,
       type: "in",
       quantity: item.received_qty,
-      notes: `Nhan hang tu don mua #${parsed.data.po_id}`,
+      notes: `Nhận hàng từ đơn mua #${parsed.data.po_id}`,
       created_by: userId,
     });
 
-    // Update stock levels with optimistic concurrency
     const { data: existing } = await supabase
       .from("stock_levels")
       .select("id, quantity, version")
@@ -983,22 +749,11 @@ async function _receivePurchaseOrder(input: {
   return { success: true };
 }
 
-export async function receivePurchaseOrder(input: {
-  po_id: number;
-  items: { po_item_id: number; received_qty: number }[];
-}) {
-  try {
-    return await _receivePurchaseOrder(input);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const receivePurchaseOrder = withServerAction(_receivePurchaseOrder);
 
 async function _cancelPurchaseOrder(id: number) {
-  const { supabase, tenantId } = await getTenantId();
+  const { supabase, tenantId } = await getActionContext();
 
-  // Verify current status allows transition to 'cancelled'
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
     .select("status")
@@ -1007,11 +762,11 @@ async function _cancelPurchaseOrder(id: number) {
     .single();
 
   if (fetchError) return { error: fetchError.message };
-  if (!po) return { error: "Don mua hang khong ton tai" };
+  if (!po) return { error: "Đơn mua hàng không tồn tại" };
 
   const validNextStatuses = VALID_PO_TRANSITIONS[po.status as PoStatus];
   if (!validNextStatuses || !validNextStatuses.includes("cancelled")) {
-    return { error: `Khong the huy don o trang thai "${po.status}"` };
+    return { error: `Không thể huỷ đơn ở trạng thái "${po.status}"` };
   }
 
   const { error } = await supabase
@@ -1026,11 +781,4 @@ async function _cancelPurchaseOrder(id: number) {
   return { success: true };
 }
 
-export async function cancelPurchaseOrder(id: number) {
-  try {
-    return await _cancelPurchaseOrder(id);
-  } catch (error) {
-    if (error instanceof Error && "digest" in error) throw error;
-    return handleServerActionError(error);
-  }
-}
+export const cancelPurchaseOrder = withServerAction(_cancelPurchaseOrder);

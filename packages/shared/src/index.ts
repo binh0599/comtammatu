@@ -210,6 +210,7 @@ export {
   formatElapsedTime,
   formatDateTime,
   getOrderStatusLabel,
+  getOrderTypeLabel,
   getPaymentMethodLabel,
   getTerminalTypeLabel,
   getTableStatusLabel,
@@ -257,3 +258,8 @@ export {
 
 export { auditLog, logSecurityEvent } from "./server/audit-helpers";
 export type { AuditLogEntry, SecurityEventEntry } from "./server/audit-helpers";
+
+export { getActionContext, configureActionContext } from "./server/action-context";
+export type { ActionContext } from "./server/action-context";
+
+export { withServerAction, withServerQuery } from "./server/with-server-action";
