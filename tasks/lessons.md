@@ -50,3 +50,18 @@
 **Pattern:** Customer layout initially imported Supabase and fetched user/customer data, but this was unnecessary since public pages (menu) don't need auth and auth-required pages handle their own redirect.
 **Rule:** Keep route group layouts minimal. The customer layout only needs the shell (header, nav, toaster). Individual pages handle auth checks independently: public pages skip auth, protected pages redirect to /login.
 **Prevention:** For mixed public/private route groups, put auth logic in individual page RSCs, not in the shared layout. This avoids unnecessary DB calls on public pages.
+
+## 2026-03-02: Realtime postgres_changes payloads don't include joined relations
+**Pattern:** KDS board lost order number display after bumping a ticket. The `postgres_changes` payload only contains raw columns from the changed table, not joined relations like `orders(order_number, tables(number))`.
+**Rule:** When merging realtime UPDATE payloads into local state, always preserve existing joined relations that the payload won't include: `{ ...existing, ...updated, joinedField: updated.joinedField ?? existing.joinedField }`.
+**Prevention:** In every `useRealtime*` hook, audit the merge logic for any `.select()` joins in the initial query. Those fields must be explicitly preserved during UPDATE merges.
+
+## 2026-03-02: system_settings key names must be consistent across all consumers
+**Pattern:** Voucher recalculation in `cashier/actions.ts` used `"service_charge_rate"` but the seed data and `orders/actions.ts` used `"service_charge"`. The mismatch caused silent fallback to default values.
+**Rule:** Define system_settings keys as constants in `@comtammatu/shared/constants.ts` and import them everywhere. Never hardcode key strings in action files.
+**Prevention:** Grep for `system_settings` key strings after adding any new settings consumer. Better yet, create a shared `getTaxSettings()` utility function.
+
+## 2026-03-02: Server Actions must validate client-provided IDs against auth context
+**Pattern:** `createOrder` accepted a `terminal_id` from the client without verifying it belonged to the user's branch or was the correct type. A waiter could spoof a cashier terminal ID.
+**Rule:** Every Server Action that receives an entity ID from the client must verify ownership (branch, tenant) before using it. Never trust client-provided foreign keys.
+**Prevention:** Add a verification step for any ID parameter that crosses a trust boundary (client → server). Pattern: fetch the entity, check branch/tenant match, check type/status.

@@ -339,7 +339,7 @@ export async function applyVoucherToOrder(data: {
     .from("system_settings")
     .select("key, value")
     .eq("tenant_id", profile.tenant_id)
-    .in("key", ["tax_rate", "service_charge_rate"]);
+    .in("key", ["tax_rate", "service_charge"]);
 
   const taxRate =
     Number(
@@ -347,7 +347,7 @@ export async function applyVoucherToOrder(data: {
     ) / 100;
   const serviceChargeRate =
     Number(
-      settings?.find((s) => s.key === "service_charge_rate")?.value ?? 5,
+      settings?.find((s) => s.key === "service_charge")?.value ?? 5,
     ) / 100;
 
   const discountedSubtotal = order.subtotal - discountAmount;
@@ -406,7 +406,7 @@ export async function removeVoucherFromOrder(orderId: number) {
     .from("system_settings")
     .select("key, value")
     .eq("tenant_id", profile.tenant_id)
-    .in("key", ["tax_rate", "service_charge_rate"]);
+    .in("key", ["tax_rate", "service_charge"]);
 
   const taxRate =
     Number(
@@ -414,7 +414,7 @@ export async function removeVoucherFromOrder(orderId: number) {
     ) / 100;
   const serviceChargeRate =
     Number(
-      settings?.find((s) => s.key === "service_charge_rate")?.value ?? 5,
+      settings?.find((s) => s.key === "service_charge")?.value ?? 5,
     ) / 100;
 
   const newTax = Math.round(order.subtotal * taxRate);

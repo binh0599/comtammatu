@@ -56,9 +56,14 @@ export function useKdsRealtime(
           // Remove from board
           setTickets((prev) => prev.filter((t) => t.id !== updated.id));
         } else {
-          // Update in place
+          // Update in place — preserve joined relations (orders) that
+          // postgres_changes payloads don't include
           setTickets((prev) =>
-            prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t))
+            prev.map((t) =>
+              t.id === updated.id
+                ? { ...t, ...updated, orders: updated.orders ?? t.orders }
+                : t
+            )
           );
         }
       }

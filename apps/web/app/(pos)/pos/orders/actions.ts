@@ -84,6 +84,26 @@ export async function createOrder(data: {
     return { error: "Đơn hàng phải có ít nhất 1 món" };
   }
 
+  // Validate terminal belongs to user's branch and is the correct type
+  const { data: terminal, error: terminalError } = await supabase
+    .from("pos_terminals")
+    .select("id, type, branch_id, is_active, approved_at")
+    .eq("id", data.terminal_id)
+    .single();
+
+  if (terminalError || !terminal) {
+    return { error: "Thiết bị không tồn tại" };
+  }
+  if (terminal.branch_id !== profile.branch_id) {
+    return { error: "Thiết bị không thuộc chi nhánh của bạn" };
+  }
+  if (!terminal.is_active || !terminal.approved_at) {
+    return { error: "Thiết bị chưa được kích hoạt hoặc phê duyệt" };
+  }
+  if (terminal.type !== "mobile_order") {
+    return { error: "Chỉ thiết bị đặt món (mobile) mới có thể tạo đơn hàng" };
+  }
+
   // Lookup menu item prices
   const itemIds = items.map((i) => i.menu_item_id);
   const { data: menuItems, error: menuError } = await supabase
@@ -235,36 +255,12 @@ export async function createOrder(data: {
   };
 }
 
+/**
+ * Convenience wrapper — delegates to updateOrderStatus.
+ * Kept as a named export for backward compatibility with existing consumers.
+ */
 export async function confirmOrder(orderId: number) {
-  const { supabase } = await getPosProfile();
-
-  const { data: order, error: fetchError } = await supabase
-    .from("orders")
-    .select("id, status")
-    .eq("id", orderId)
-    .single();
-
-  if (fetchError || !order) {
-    return { error: "Đơn hàng không tồn tại" };
-  }
-
-  if (!isValidTransition(order.status as OrderStatus, "confirmed")) {
-    return { error: `Không thể xác nhận đơn ở trạng thái "${order.status}"` };
-  }
-
-  // Update status — KDS ticket creation trigger fires automatically
-  const { error: updateError } = await supabase
-    .from("orders")
-    .update({ status: "confirmed" })
-    .eq("id", orderId);
-
-  if (updateError) return { error: updateError.message };
-
-  revalidatePath("/pos/orders");
-  revalidatePath(`/pos/order/${orderId}`);
-  revalidatePath("/pos/cashier");
-
-  return { error: null };
+  return updateOrderStatus({ order_id: orderId, status: "confirmed" });
 }
 
 export async function updateOrderStatus(data: {
