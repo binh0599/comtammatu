@@ -96,3 +96,99 @@ export const VALID_KDS_TRANSITIONS: Record<
   preparing: ["ready"],
   ready: [],
 };
+
+// ===== Inventory =====
+
+export const STOCK_MOVEMENT_TYPES = [
+  "in",
+  "out",
+  "transfer",
+  "waste",
+  "adjust",
+] as const;
+export type StockMovementType = (typeof STOCK_MOVEMENT_TYPES)[number];
+
+export const WASTE_REASONS = [
+  "expired",
+  "spoiled",
+  "overproduction",
+  "other",
+] as const;
+export type WasteReason = (typeof WASTE_REASONS)[number];
+
+// ===== Supplier / Purchase Orders =====
+
+export const PO_STATUSES = [
+  "draft",
+  "sent",
+  "received",
+  "cancelled",
+] as const;
+export type PoStatus = (typeof PO_STATUSES)[number];
+
+export const VALID_PO_TRANSITIONS: Record<PoStatus, PoStatus[]> = {
+  draft: ["sent", "cancelled"],
+  sent: ["received", "cancelled"],
+  received: [],
+  cancelled: [],
+};
+
+// ===== HR =====
+
+export const EMPLOYMENT_TYPES = ["full", "part", "contract"] as const;
+export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
+
+export const EMPLOYEE_STATUSES = [
+  "active",
+  "inactive",
+  "on_leave",
+  "terminated",
+] as const;
+export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
+
+export const LEAVE_TYPES = ["annual", "sick", "unpaid", "maternity"] as const;
+export type LeaveType = (typeof LEAVE_TYPES)[number];
+
+export const LEAVE_STATUSES = ["pending", "approved", "rejected"] as const;
+export type LeaveStatus = (typeof LEAVE_STATUSES)[number];
+
+export const SHIFT_ASSIGNMENT_STATUSES = [
+  "scheduled",
+  "confirmed",
+  "completed",
+  "no_show",
+] as const;
+export type ShiftAssignmentStatus =
+  (typeof SHIFT_ASSIGNMENT_STATUSES)[number];
+
+export const ATTENDANCE_STATUSES = [
+  "present",
+  "absent",
+  "late",
+  "early_leave",
+] as const;
+export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
+
+export const ATTENDANCE_SOURCES = [
+  "qr",
+  "manual",
+  "pos_session",
+  "terminal_login",
+] as const;
+export type AttendanceSource = (typeof ATTENDANCE_SOURCES)[number];
+
+// ===== Security =====
+
+export const SECURITY_SEVERITIES = ["info", "warning", "critical"] as const;
+export type SecuritySeverity = (typeof SECURITY_SEVERITIES)[number];
+
+// ===== Module-Specific Role Sets =====
+
+/** Roles allowed to manage inventory */
+export const INVENTORY_ROLES = ["inventory", "manager", "owner"] as const;
+
+/** Roles allowed to manage HR */
+export const HR_ROLES = ["hr", "manager", "owner"] as const;
+
+/** Roles allowed to view admin dashboard */
+export const ADMIN_ROLES = ["owner", "manager"] as const;

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Monitor,
   Package,
+  ShieldAlert,
   ShoppingCart,
   Users,
   BarChart3,
@@ -89,6 +90,11 @@ const navigation = [
         title: "Báo cáo",
         url: "/admin/reports",
         icon: BarChart3,
+      },
+      {
+        title: "Bảo mật",
+        url: "/admin/security",
+        icon: ShieldAlert,
       },
       {
         title: "Cài đặt",

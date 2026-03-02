@@ -98,3 +98,118 @@ export function getTableStatusLabel(status: string): string {
   };
   return labels[status] ?? status;
 }
+
+// ===== Week 5-6 Formatters =====
+
+/** Format a date to DD/MM/YYYY */
+export function formatDate(date: string | Date): string {
+  const d = typeof date === "string" ? new Date(date) : date;
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+/** Format time string "HH:mm:ss" → "HH:mm" */
+export function formatTime(time: string): string {
+  return time.slice(0, 5);
+}
+
+export function getStockMovementTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    in: "Nhập kho",
+    out: "Xuất kho",
+    transfer: "Chuyển kho",
+    waste: "Hao hụt",
+    adjust: "Điều chỉnh",
+  };
+  return labels[type] ?? type;
+}
+
+export function getWasteReasonLabel(reason: string): string {
+  const labels: Record<string, string> = {
+    expired: "Hết hạn",
+    spoiled: "Hỏng",
+    overproduction: "Dư sản xuất",
+    other: "Khác",
+  };
+  return labels[reason] ?? reason;
+}
+
+export function getPoStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    draft: "Nháp",
+    sent: "Đã gửi",
+    received: "Đã nhận",
+    cancelled: "Đã hủy",
+  };
+  return labels[status] ?? status;
+}
+
+export function getEmploymentTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    full: "Toàn thời gian",
+    part: "Bán thời gian",
+    contract: "Hợp đồng",
+  };
+  return labels[type] ?? type;
+}
+
+export function getEmployeeStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    active: "Đang làm",
+    inactive: "Nghỉ",
+    on_leave: "Nghỉ phép",
+    terminated: "Đã nghỉ",
+  };
+  return labels[status] ?? status;
+}
+
+export function getLeaveTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    annual: "Phép năm",
+    sick: "Ốm",
+    unpaid: "Không lương",
+    maternity: "Thai sản",
+  };
+  return labels[type] ?? type;
+}
+
+export function getLeaveStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    pending: "Chờ duyệt",
+    approved: "Đã duyệt",
+    rejected: "Từ chối",
+  };
+  return labels[status] ?? status;
+}
+
+export function getSeverityLabel(severity: string): string {
+  const labels: Record<string, string> = {
+    info: "Thông tin",
+    warning: "Cảnh báo",
+    critical: "Nghiêm trọng",
+  };
+  return labels[severity] ?? severity;
+}
+
+export function getAttendanceStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    present: "Có mặt",
+    absent: "Vắng",
+    late: "Đi muộn",
+    early_leave: "Về sớm",
+  };
+  return labels[status] ?? status;
+}
+
+export function getShiftAssignmentStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    scheduled: "Đã lên lịch",
+    confirmed: "Đã xác nhận",
+    completed: "Hoàn tất",
+    no_show: "Vắng mặt",
+  };
+  return labels[status] ?? status;
+}

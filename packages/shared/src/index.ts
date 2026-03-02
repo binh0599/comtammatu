@@ -15,6 +15,22 @@ export {
   KDS_ROLES,
   VALID_ORDER_TRANSITIONS,
   VALID_KDS_TRANSITIONS,
+  // Week 5-6
+  STOCK_MOVEMENT_TYPES,
+  WASTE_REASONS,
+  PO_STATUSES,
+  VALID_PO_TRANSITIONS,
+  EMPLOYMENT_TYPES,
+  EMPLOYEE_STATUSES,
+  LEAVE_TYPES,
+  LEAVE_STATUSES,
+  SHIFT_ASSIGNMENT_STATUSES,
+  ATTENDANCE_STATUSES,
+  ATTENDANCE_SOURCES,
+  SECURITY_SEVERITIES,
+  INVENTORY_ROLES,
+  HR_ROLES,
+  ADMIN_ROLES,
 } from "./constants";
 
 export type {
@@ -28,6 +44,18 @@ export type {
   KdsTicketStatus,
   TableStatus,
   StaffRole,
+  // Week 5-6
+  StockMovementType,
+  WasteReason,
+  PoStatus,
+  EmploymentType,
+  EmployeeStatus,
+  LeaveType,
+  LeaveStatus,
+  ShiftAssignmentStatus,
+  AttendanceStatus,
+  AttendanceSource,
+  SecuritySeverity,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -67,6 +95,52 @@ export type {
   BumpTicketInput,
 } from "./schemas/kds";
 
+// Week 5-6: Inventory
+export {
+  createIngredientSchema,
+  updateIngredientSchema,
+  createStockMovementSchema,
+  createRecipeSchema,
+} from "./schemas/inventory";
+export type {
+  CreateIngredientInput,
+  UpdateIngredientInput,
+  CreateStockMovementInput,
+  CreateRecipeInput,
+} from "./schemas/inventory";
+
+// Week 5-6: Supplier
+export {
+  createSupplierSchema,
+  updateSupplierSchema,
+  createPurchaseOrderSchema,
+  receivePurchaseOrderSchema,
+} from "./schemas/supplier";
+export type {
+  CreateSupplierInput,
+  UpdateSupplierInput,
+  CreatePurchaseOrderInput,
+  ReceivePurchaseOrderInput,
+} from "./schemas/supplier";
+
+// Week 5-6: HR
+export {
+  createEmployeeSchema,
+  updateEmployeeSchema,
+  createShiftSchema,
+  createShiftAssignmentSchema,
+  createLeaveRequestSchema,
+  approveLeaveRequestSchema,
+} from "./schemas/hr";
+export type {
+  CreateEmployeeInput,
+  UpdateEmployeeInput,
+  CreateShiftInput,
+  CreateShiftAssignmentInput,
+  CreateLeaveRequestInput,
+  ApproveLeaveRequestInput,
+} from "./schemas/hr";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -76,4 +150,17 @@ export {
   getPaymentMethodLabel,
   getTerminalTypeLabel,
   getTableStatusLabel,
+  // Week 5-6
+  formatDate,
+  formatTime,
+  getStockMovementTypeLabel,
+  getWasteReasonLabel,
+  getPoStatusLabel,
+  getEmploymentTypeLabel,
+  getEmployeeStatusLabel,
+  getLeaveTypeLabel,
+  getLeaveStatusLabel,
+  getSeverityLabel,
+  getAttendanceStatusLabel,
+  getShiftAssignmentStatusLabel,
 } from "./utils/format";
