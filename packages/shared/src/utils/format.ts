@@ -268,6 +268,18 @@ export function formatPoints(points: number): string {
   return `${sign}${new Intl.NumberFormat("vi-VN").format(points)} điểm`;
 }
 
+// ===== Payment Formatters =====
+
+export function getPaymentStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    pending: "Chờ xử lý",
+    completed: "Thành công",
+    failed: "Thất bại",
+    refunded: "Đã hoàn tiền",
+  };
+  return labels[status] ?? status;
+}
+
 // ===== Post-MVP: Discount Formatters =====
 
 export function getDiscountTypeLabel(type: string): string {

@@ -233,6 +233,8 @@ export {
   getVoucherTypeLabel,
   getDeletionStatusLabel,
   formatPoints,
+  // Payment
+  getPaymentStatusLabel,
   // Post-MVP
   getDiscountTypeLabel,
   formatDiscount,
