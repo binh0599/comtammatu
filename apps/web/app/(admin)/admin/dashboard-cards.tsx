@@ -29,74 +29,62 @@ const statusVariantMap: Record<
   completed: "default",
 };
 
+const metricCards = (stats: DashboardStats) => [
+  {
+    title: "Doanh thu hôm nay",
+    value: formatPrice(stats.todayRevenue),
+    sub: `Trung bình ${formatPrice(stats.avgOrderValue)}/đơn`,
+    icon: DollarSign,
+    iconClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  },
+  {
+    title: "Đơn hàng hôm nay",
+    value: String(stats.todayOrders),
+    sub: "đơn hàng",
+    icon: ShoppingCart,
+    iconClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  },
+  {
+    title: "Doanh thu tuần",
+    value: formatPrice(stats.weekRevenue),
+    sub: "tuần này",
+    icon: TrendingUp,
+    iconClass: "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+  },
+  {
+    title: "Doanh thu tháng",
+    value: formatPrice(stats.monthRevenue),
+    sub: "tháng này",
+    icon: Calendar,
+    iconClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  },
+] as const;
+
 export function DashboardCards({ stats, statusCounts }: DashboardCardsProps) {
   return (
     <div className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Doanh thu hôm nay
-            </CardTitle>
-            <DollarSign className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(stats.todayRevenue)}
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Trung bình {formatPrice(stats.avgOrderValue)}/đơn
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Đơn hàng hôm nay
-            </CardTitle>
-            <ShoppingCart className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.todayOrders}</div>
-            <p className="text-muted-foreground text-xs">đơn hàng</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Doanh thu tuần
-            </CardTitle>
-            <TrendingUp className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(stats.weekRevenue)}
-            </div>
-            <p className="text-muted-foreground text-xs">tuần này</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Doanh thu tháng
-            </CardTitle>
-            <Calendar className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatPrice(stats.monthRevenue)}
-            </div>
-            <p className="text-muted-foreground text-xs">tháng này</p>
-          </CardContent>
-        </Card>
+        {metricCards(stats).map((card) => (
+          <Card key={card.title}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {card.title}
+              </CardTitle>
+              <div className={`flex size-8 items-center justify-center rounded-lg ${card.iconClass}`}>
+                <card.icon className="size-4" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{card.value}</div>
+              <p className="text-muted-foreground text-xs mt-1">{card.sub}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {Object.keys(statusCounts).length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          <span className="text-muted-foreground mr-2 self-center text-sm font-medium">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-muted-foreground text-sm font-medium">
             Trạng thái đơn hôm nay:
           </span>
           {Object.entries(statusCounts)

@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServer } from "@comtammatu/database";
+import { ActionError, handleServerActionError } from "@comtammatu/shared";
 
 // --- Helper: Get tenant_id from authenticated user ---
 
@@ -10,7 +11,7 @@ async function getTenantId() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -19,7 +20,12 @@ async function getTenantId() {
     .single();
 
   const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
+  if (!tenantId)
+    throw new ActionError(
+      "Tai khoan chua duoc gan tenant",
+      "UNAUTHORIZED",
+      403,
+    );
 
   return { supabase, tenantId };
 }
@@ -34,7 +40,7 @@ export interface DashboardStats {
   avgOrderValue: number;
 }
 
-export async function getDashboardStats(): Promise<DashboardStats> {
+async function _getDashboardStats(): Promise<DashboardStats> {
   const { supabase, tenantId } = await getTenantId();
 
   // Get all branch IDs for this tenant
@@ -43,7 +49,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .select("id")
     .eq("tenant_id", tenantId);
 
-  if (branchError) throw new Error(branchError.message);
+  if (branchError)
+    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) {
     return {
       todayRevenue: 0,
@@ -63,7 +70,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     .in("branch_id", branchIds)
     .not("status", "in", '("cancelled","draft")');
 
-  if (orderError) throw new Error(orderError.message);
+  if (orderError)
+    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
   if (!orders || orders.length === 0) {
     return {
       todayRevenue: 0,
@@ -115,6 +123,16 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   };
 }
 
+export async function getDashboardStats(): Promise<DashboardStats> {
+  try {
+    return await _getDashboardStats();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // --- Recent Orders ---
 
 export interface RecentOrder {
@@ -127,7 +145,7 @@ export interface RecentOrder {
   tables: { number: number } | null;
 }
 
-export async function getRecentOrders(limit = 10): Promise<RecentOrder[]> {
+async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
   const { supabase, tenantId } = await getTenantId();
 
   // Get branch IDs for this tenant
@@ -136,7 +154,8 @@ export async function getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .select("id")
     .eq("tenant_id", tenantId);
 
-  if (branchError) throw new Error(branchError.message);
+  if (branchError)
+    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) return [];
 
   const branchIds = branches.map((b) => b.id);
@@ -148,7 +167,8 @@ export async function getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .order("created_at", { ascending: false })
     .limit(limit);
 
-  if (orderError) throw new Error(orderError.message);
+  if (orderError)
+    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
 
   return (orders ?? []).map((o) => ({
     id: o.id,
@@ -161,6 +181,16 @@ export async function getRecentOrders(limit = 10): Promise<RecentOrder[]> {
   }));
 }
 
+export async function getRecentOrders(limit = 10): Promise<RecentOrder[]> {
+  try {
+    return await _getRecentOrders(limit);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // --- Top Selling Items ---
 
 export interface TopSellingItem {
@@ -169,9 +199,7 @@ export interface TopSellingItem {
   total_revenue: number;
 }
 
-export async function getTopSellingItems(
-  limit = 10,
-): Promise<TopSellingItem[]> {
+async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
   const { supabase, tenantId } = await getTenantId();
 
   // Get branch IDs for this tenant
@@ -180,7 +208,8 @@ export async function getTopSellingItems(
     .select("id")
     .eq("tenant_id", tenantId);
 
-  if (branchError) throw new Error(branchError.message);
+  if (branchError)
+    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) return [];
 
   const branchIds = branches.map((b) => b.id);
@@ -196,7 +225,8 @@ export async function getTopSellingItems(
     .eq("status", "completed")
     .gte("created_at", thirtyDaysAgo.toISOString());
 
-  if (orderError) throw new Error(orderError.message);
+  if (orderError)
+    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
   if (!completedOrders || completedOrders.length === 0) return [];
 
   const orderIds = completedOrders.map((o) => o.id);
@@ -207,7 +237,8 @@ export async function getTopSellingItems(
     .select("menu_item_id, quantity, item_total, menu_items(name)")
     .in("order_id", orderIds);
 
-  if (itemError) throw new Error(itemError.message);
+  if (itemError)
+    throw new ActionError(itemError.message, "SERVER_ERROR", 500);
   if (!items || items.length === 0) return [];
 
   // Aggregate by menu_item_id in JS
@@ -218,7 +249,7 @@ export async function getTopSellingItems(
 
   for (const item of items) {
     const menuItem = item.menu_items as { name: string } | null;
-    const name = menuItem?.name ?? "Không rõ";
+    const name = menuItem?.name ?? "Khong ro";
     const existing = aggregated.get(item.menu_item_id);
 
     if (existing) {
@@ -239,9 +270,21 @@ export async function getTopSellingItems(
     .slice(0, limit);
 }
 
+export async function getTopSellingItems(
+  limit = 10,
+): Promise<TopSellingItem[]> {
+  try {
+    return await _getTopSellingItems(limit);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // --- Order Status Counts (today) ---
 
-export async function getOrderStatusCounts(): Promise<Record<string, number>> {
+async function _getOrderStatusCounts(): Promise<Record<string, number>> {
   const { supabase, tenantId } = await getTenantId();
 
   // Get branch IDs for this tenant
@@ -250,7 +293,8 @@ export async function getOrderStatusCounts(): Promise<Record<string, number>> {
     .select("id")
     .eq("tenant_id", tenantId);
 
-  if (branchError) throw new Error(branchError.message);
+  if (branchError)
+    throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) return {};
 
   const branchIds = branches.map((b) => b.id);
@@ -265,7 +309,8 @@ export async function getOrderStatusCounts(): Promise<Record<string, number>> {
     .in("branch_id", branchIds)
     .gte("created_at", todayStart.toISOString());
 
-  if (orderError) throw new Error(orderError.message);
+  if (orderError)
+    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
   if (!orders || orders.length === 0) return {};
 
   // Group by status in JS
@@ -277,9 +322,19 @@ export async function getOrderStatusCounts(): Promise<Record<string, number>> {
   return counts;
 }
 
+export async function getOrderStatusCounts(): Promise<Record<string, number>> {
+  try {
+    return await _getOrderStatusCounts();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // --- Revenue Trend (last N days) ---
 
-export async function getRevenueTrend(days: number = 7) {
+async function _getRevenueTrend(days: number = 7) {
   const { supabase, tenantId } = await getTenantId();
 
   const branchIds =
@@ -333,9 +388,19 @@ export async function getRevenueTrend(days: number = 7) {
   }));
 }
 
+export async function getRevenueTrend(days: number = 7) {
+  try {
+    return await _getRevenueTrend(days);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // --- Hourly Order Volume (today) ---
 
-export async function getHourlyOrderVolume() {
+async function _getHourlyOrderVolume() {
   const { supabase, tenantId } = await getTenantId();
 
   const branchIds =
@@ -371,9 +436,19 @@ export async function getHourlyOrderVolume() {
   }));
 }
 
+export async function getHourlyOrderVolume() {
+  try {
+    return await _getHourlyOrderVolume();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // --- Order Status Distribution (today, for pie chart) ---
 
-export async function getOrderStatusDistribution() {
+async function _getOrderStatusDistribution() {
   const { supabase, tenantId } = await getTenantId();
 
   const branchIds =
@@ -407,13 +482,13 @@ export async function getOrderStatusDistribution() {
   };
 
   const labelMap: Record<string, string> = {
-    draft: "Nháp",
-    confirmed: "Đã xác nhận",
-    preparing: "Đang chuẩn bị",
-    ready: "Sẵn sàng",
-    served: "Đã phục vụ",
-    completed: "Hoàn tất",
-    cancelled: "Đã huỷ",
+    draft: "Nhap",
+    confirmed: "Da xac nhan",
+    preparing: "Dang chuan bi",
+    ready: "San sang",
+    served: "Da phuc vu",
+    completed: "Hoan tat",
+    cancelled: "Da huy",
   };
 
   return Array.from(statusMap.entries())
@@ -424,4 +499,14 @@ export async function getOrderStatusDistribution() {
       count,
       color: colorMap[status] ?? "hsl(var(--muted-foreground))",
     }));
+}
+
+export async function getOrderStatusDistribution() {
+  try {
+    return await _getOrderStatusDistribution();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
 }

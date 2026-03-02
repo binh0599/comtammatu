@@ -3,50 +3,48 @@
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { ActionError, handleServerActionError } from "@comtammatu/shared";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
 });
 
-export async function login(formData: FormData) {
+async function _login(formData: FormData) {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
   if (!parsed.success) {
-    return { error: "Thông tin đăng nhập không hợp lệ" };
+    throw new ActionError(
+      parsed.error.errors[0]?.message ?? "Thông tin đăng nhập không hợp lệ",
+      "VALIDATION_ERROR",
+    );
   }
 
   const supabase = await createSupabaseServer();
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data: authData } = await supabase.auth.signInWithPassword({
     email: parsed.data.email,
     password: parsed.data.password,
   });
 
-  if (error) {
-    // Generic error message (IX.6 — never reveal whether user exists)
-    return { error: "Email hoặc mật khẩu không chính xác" };
+  if (error || !authData.user) {
+    // Generic error message — never reveal whether user exists
+    throw new ActionError(
+      "Email hoặc mật khẩu không chính xác",
+      "UNAUTHORIZED",
+    );
   }
 
-  // Fetch user role for redirect
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    return { error: "Đã xảy ra lỗi, vui lòng thử lại" };
-  }
-
-  const { data } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", authData.user.id)
     .single();
 
-  const role = data?.role ?? "customer";
+  const role = profile?.role ?? "customer";
 
   // Role-based redirect
   switch (role) {
@@ -60,6 +58,18 @@ export async function login(formData: FormData) {
       redirect("/kds");
     default:
       redirect("/customer");
+  }
+}
+
+export async function login(formData: FormData) {
+  try {
+    return await _login(formData);
+  } catch (error) {
+    // Re-throw Next.js redirect errors
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
   }
 }
 

@@ -1,28 +1,29 @@
 "use server";
 
 import { createSupabaseServer } from "@comtammatu/database";
+import { ActionError, handleServerActionError } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 // --- Schemas ---
 
 const menuSchema = z.object({
-  name: z.string().min(1, "Tên thực đơn không được để trống"),
+  name: z.string().min(1, "Ten thuc don khong duoc de trong"),
   type: z.enum(["dine_in", "takeaway", "delivery"]),
   is_active: z.boolean().default(true),
 });
 
 const categorySchema = z.object({
   menu_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Tên danh mục không được để trống"),
+  name: z.string().min(1, "Ten danh muc khong duoc de trong"),
   sort_order: z.coerce.number().int().min(0).default(0),
 });
 
 const menuItemSchema = z.object({
   category_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Tên món không được để trống"),
+  name: z.string().min(1, "Ten mon khong duoc de trong"),
   description: z.string().optional(),
-  base_price: z.coerce.number().positive("Giá phải lớn hơn 0"),
+  base_price: z.coerce.number().positive("Gia phai lon hon 0"),
   is_available: z.boolean().default(true),
 });
 
@@ -34,7 +35,7 @@ async function getTenantId() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -43,14 +44,19 @@ async function getTenantId() {
     .single();
 
   const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
+  if (!tenantId)
+    throw new ActionError(
+      "Tai khoan chua duoc gan tenant",
+      "UNAUTHORIZED",
+      403,
+    );
 
   return { supabase, tenantId };
 }
 
 // --- Menu CRUD ---
 
-export async function getMenus() {
+async function _getMenus() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -59,11 +65,21 @@ export async function getMenus() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data;
 }
 
-export async function createMenu(formData: FormData) {
+export async function getMenus() {
+  try {
+    return await _getMenus();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createMenu(formData: FormData) {
   const parsed = menuSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
@@ -71,7 +87,7 @@ export async function createMenu(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -89,7 +105,16 @@ export async function createMenu(formData: FormData) {
   return { success: true };
 }
 
-export async function updateMenu(id: number, formData: FormData) {
+export async function createMenu(formData: FormData) {
+  try {
+    return await _createMenu(formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _updateMenu(id: number, formData: FormData) {
   const parsed = menuSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
@@ -97,10 +122,10 @@ export async function updateMenu(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase, tenantId } = await getTenantId();
 
   const { error } = await supabase
     .from("menus")
@@ -109,7 +134,32 @@ export async function updateMenu(id: number, formData: FormData) {
       type: parsed.data.type,
       is_active: parsed.data.is_active,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/menu");
+  return { success: true };
+}
+
+export async function updateMenu(id: number, formData: FormData) {
+  try {
+    return await _updateMenu(id, formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _deleteMenu(id: number) {
+  const { supabase, tenantId } = await getTenantId();
+
+  const { error } = await supabase
+    .from("menus")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
@@ -118,19 +168,17 @@ export async function updateMenu(id: number, formData: FormData) {
 }
 
 export async function deleteMenu(id: number) {
-  const { supabase } = await getTenantId();
-
-  const { error } = await supabase.from("menus").delete().eq("id", id);
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/admin/menu");
-  return { success: true };
+  try {
+    return await _deleteMenu(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
 }
 
 // --- Category CRUD ---
 
-export async function getCategories(menuId: number) {
+async function _getCategories(menuId: number) {
   const { supabase } = await getTenantId();
 
   const { data, error } = await supabase
@@ -139,11 +187,21 @@ export async function getCategories(menuId: number) {
     .eq("menu_id", menuId)
     .order("sort_order", { ascending: true });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data;
 }
 
-export async function createCategory(formData: FormData) {
+export async function getCategories(menuId: number) {
+  try {
+    return await _getCategories(menuId);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createCategory(formData: FormData) {
   const parsed = categorySchema.safeParse({
     menu_id: formData.get("menu_id"),
     name: formData.get("name"),
@@ -151,7 +209,7 @@ export async function createCategory(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase } = await getTenantId();
@@ -168,7 +226,16 @@ export async function createCategory(formData: FormData) {
   return { success: true };
 }
 
-export async function deleteCategory(id: number) {
+export async function createCategory(formData: FormData) {
+  try {
+    return await _createCategory(formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _deleteCategory(id: number) {
   const { supabase } = await getTenantId();
 
   const { error } = await supabase.from("menu_categories").delete().eq("id", id);
@@ -179,9 +246,18 @@ export async function deleteCategory(id: number) {
   return { success: true };
 }
 
+export async function deleteCategory(id: number) {
+  try {
+    return await _deleteCategory(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // --- Menu Item CRUD ---
 
-export async function getMenuItems(categoryId: number) {
+async function _getMenuItems(categoryId: number) {
   const { supabase } = await getTenantId();
 
   const { data, error } = await supabase
@@ -190,11 +266,21 @@ export async function getMenuItems(categoryId: number) {
     .eq("category_id", categoryId)
     .order("name", { ascending: true });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data;
 }
 
-export async function createMenuItem(formData: FormData) {
+export async function getMenuItems(categoryId: number) {
+  try {
+    return await _getMenuItems(categoryId);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createMenuItem(formData: FormData) {
   const parsed = menuItemSchema.safeParse({
     category_id: formData.get("category_id"),
     name: formData.get("name"),
@@ -204,7 +290,7 @@ export async function createMenuItem(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -224,7 +310,16 @@ export async function createMenuItem(formData: FormData) {
   return { success: true };
 }
 
-export async function updateMenuItem(id: number, formData: FormData) {
+export async function createMenuItem(formData: FormData) {
+  try {
+    return await _createMenuItem(formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _updateMenuItem(id: number, formData: FormData) {
   const parsed = menuItemSchema.safeParse({
     category_id: formData.get("category_id"),
     name: formData.get("name"),
@@ -234,10 +329,10 @@ export async function updateMenuItem(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase, tenantId } = await getTenantId();
 
   const { error } = await supabase
     .from("menu_items")
@@ -247,7 +342,32 @@ export async function updateMenuItem(id: number, formData: FormData) {
       base_price: parsed.data.base_price,
       is_available: parsed.data.is_available,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/menu");
+  return { success: true };
+}
+
+export async function updateMenuItem(id: number, formData: FormData) {
+  try {
+    return await _updateMenuItem(id, formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _deleteMenuItem(id: number) {
+  const { supabase, tenantId } = await getTenantId();
+
+  const { error } = await supabase
+    .from("menu_items")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
@@ -256,12 +376,10 @@ export async function updateMenuItem(id: number, formData: FormData) {
 }
 
 export async function deleteMenuItem(id: number) {
-  const { supabase } = await getTenantId();
-
-  const { error } = await supabase.from("menu_items").delete().eq("id", id);
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/admin/menu");
-  return { success: true };
+  try {
+    return await _deleteMenuItem(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
 }

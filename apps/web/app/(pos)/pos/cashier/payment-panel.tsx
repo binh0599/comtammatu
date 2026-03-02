@@ -93,13 +93,14 @@ export function PaymentPanel({
       const result = await checkPaymentStatus(momoState.paymentId);
       if (result.error) return;
 
-      if (result.status === "completed") {
+      const data = result as { status: string; reference_no: string | null; paid_at: string | null };
+      if (data.status === "completed") {
         setMomoState((prev) =>
           prev ? { ...prev, status: "completed" } : null,
         );
         toast.success("Thanh toán Momo thành công!");
         onPaymentComplete();
-      } else if (result.status === "failed") {
+      } else if (data.status === "failed") {
         setMomoState((prev) =>
           prev ? { ...prev, status: "failed" } : null,
         );
@@ -157,8 +158,9 @@ export function PaymentPanel({
       if (result.error) {
         toast.error(result.error);
       } else {
+        const data = result as { change: number };
         toast.success(
-          `Thanh toán thành công. Tiền thừa: ${formatPrice(result.change ?? 0)}`,
+          `Thanh toán thành công. Tiền thừa: ${formatPrice(data.change ?? 0)}`,
         );
         setAmountTendered("");
         setVoucherCode("");
@@ -177,9 +179,10 @@ export function PaymentPanel({
         return;
       }
 
+      const data = result as { qrCodeUrl: string; paymentId: number };
       setMomoState({
-        qrUrl: result.qrCodeUrl!,
-        paymentId: result.paymentId!,
+        qrUrl: data.qrCodeUrl,
+        paymentId: data.paymentId,
         status: "pending",
       });
     });
@@ -200,8 +203,9 @@ export function PaymentPanel({
       if (result.error) {
         toast.error(result.error);
       } else {
+        const data = result as { discount_amount: number };
         toast.success(
-          `Áp dụng voucher thành công! Giảm ${formatPrice(result.discount_amount ?? 0)}`,
+          `Áp dụng voucher thành công! Giảm ${formatPrice(data.discount_amount ?? 0)}`,
         );
         setVoucherCode("");
         onPaymentComplete(); // Refresh to get updated totals

@@ -9,6 +9,9 @@ function getServiceClient() {
   );
 }
 
+// Max age for webhook timestamps (1 hour in ms)
+const MAX_WEBHOOK_AGE_MS = 60 * 60 * 1000;
+
 export async function POST(request: Request) {
   let body: MomoIPNPayload;
 
@@ -16,7 +19,7 @@ export async function POST(request: Request) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { resultCode: 1, message: "Invalid JSON" },
+      { resultCode: 1, message: "Invalid request" },
       { status: 400 },
     );
   }
@@ -26,7 +29,7 @@ export async function POST(request: Request) {
   if (!secretKey) {
     console.error("MOMO_SECRET_KEY is not configured");
     return NextResponse.json(
-      { resultCode: 1, message: "Server configuration error" },
+      { resultCode: 1, message: "Server error" },
       { status: 500 },
     );
   }
@@ -42,105 +45,111 @@ export async function POST(request: Request) {
   }
 
   const isValid = verifyMomoSignature(verifyParams, signature, secretKey);
+  const supabase = getServiceClient();
 
   if (!isValid) {
     console.error("Momo IPN signature verification failed", {
       orderId: body.orderId,
       requestId: body.requestId,
     });
+
+    // Log failed HMAC to security_events
+    await supabase
+      .from("security_events")
+      .insert({
+        tenant_id: null,
+        event_type: "webhook_hmac_failure",
+        severity: "warning",
+        description: `Momo IPN HMAC verification failed for requestId: ${body.requestId}`,
+        source_ip: request.headers.get("x-forwarded-for") ?? null,
+      })
+      .then(() => {});
+
     return NextResponse.json(
-      { resultCode: 1, message: "Invalid signature" },
+      { resultCode: 1, message: "Invalid request" },
       { status: 400 },
     );
   }
 
-  const supabase = getServiceClient();
+  // Validate webhook timestamp — reject if older than 1 hour
+  if (body.responseTime) {
+    const webhookAge = Date.now() - body.responseTime;
+    if (webhookAge > MAX_WEBHOOK_AGE_MS) {
+      console.error("Momo IPN stale webhook rejected", {
+        orderId: body.orderId,
+        responseTime: body.responseTime,
+        ageMs: webhookAge,
+      });
 
-  // resultCode 0 = success
-  if (body.resultCode === 0) {
-    // Find pending payment by idempotency_key (= requestId)
-    const { data: payment, error: paymentError } = await supabase
-      .from("payments")
-      .select("id, status, order_id, pos_session_id")
-      .eq("idempotency_key", body.requestId)
-      .maybeSingle();
+      await supabase
+        .from("security_events")
+        .insert({
+          tenant_id: null,
+          event_type: "webhook_stale_request",
+          severity: "warning",
+          description: `Momo IPN stale webhook rejected (age: ${Math.round(webhookAge / 1000)}s) for requestId: ${body.requestId}`,
+          source_ip: request.headers.get("x-forwarded-for") ?? null,
+        })
+        .then(() => {});
 
-    if (paymentError) {
-      console.error("Payment lookup failed", paymentError);
       return NextResponse.json(
-        { resultCode: 1, message: "Payment lookup error" },
+        { resultCode: 1, message: "Invalid request" },
+        { status: 400 },
+      );
+    }
+  }
+
+  // resultCode 0 = success — use atomic RPC
+  if (body.resultCode === 0) {
+    const { data: result, error: rpcError } = await supabase.rpc(
+      "handle_momo_payment_success",
+      {
+        p_request_id: body.requestId,
+        p_trans_id: String(body.transId),
+      },
+    );
+
+    if (rpcError) {
+      console.error("Momo payment RPC failed", rpcError);
+      return NextResponse.json(
+        { resultCode: 1, message: "Processing error" },
         { status: 500 },
       );
     }
 
-    if (!payment) {
-      console.error("No payment found for requestId", body.requestId);
+    const rpcResult = result as {
+      status?: string;
+      error?: string;
+      payment_id?: number;
+      order_id?: number;
+    };
+
+    if (rpcResult.error === "payment_not_found") {
       return NextResponse.json(
-        { resultCode: 1, message: "Payment not found" },
+        { resultCode: 1, message: "Not found" },
         { status: 404 },
       );
     }
 
-    // Idempotent: already completed
-    if (payment.status === "completed") {
-      return NextResponse.json({ resultCode: 0, message: "ok" });
-    }
-
-    // Update payment to completed
-    const { error: updatePaymentError } = await supabase
-      .from("payments")
-      .update({
-        status: "completed",
-        reference_no: String(body.transId),
-        paid_at: new Date().toISOString(),
-      })
-      .eq("id", payment.id);
-
-    if (updatePaymentError) {
-      console.error("Failed to update payment", updatePaymentError);
-      return NextResponse.json(
-        { resultCode: 1, message: "Payment update error" },
-        { status: 500 },
-      );
-    }
-
-    // Update order to completed
-    const { data: order } = await supabase
-      .from("orders")
-      .select("id, table_id, type")
-      .eq("id", payment.order_id)
-      .single();
-
-    if (order) {
-      await supabase
-        .from("orders")
-        .update({
-          status: "completed",
-          pos_session_id: payment.pos_session_id,
+    // Audit log for successful payment (fire-and-forget)
+    if (rpcResult.status === "success" && rpcResult.payment_id) {
+      supabase
+        .from("audit_logs")
+        .insert({
+          tenant_id: null,
+          user_id: null,
+          action: "momo_payment_completed",
+          resource_type: "payment",
+          resource_id: String(rpcResult.payment_id),
+          changes: JSON.stringify({
+            requestId: body.requestId,
+            transId: body.transId,
+            amount: body.amount,
+            order_id: rpcResult.order_id,
+          }),
+          ip_address: request.headers.get("x-forwarded-for") ?? null,
         })
-        .eq("id", order.id);
-
-      // Free table if dine_in
-      if (order.table_id && order.type === "dine_in") {
-        await supabase
-          .from("tables")
-          .update({ status: "available" })
-          .eq("id", order.table_id);
-      }
-
-      // Increment voucher usage if applicable
-      const { data: voucherDiscount } = await supabase
-        .from("order_discounts")
-        .select("voucher_id")
-        .eq("order_id", order.id)
-        .eq("type", "voucher")
-        .maybeSingle();
-
-      if (voucherDiscount?.voucher_id) {
-        await supabase.rpc("increment_voucher_usage", {
-          p_voucher_id: voucherDiscount.voucher_id,
-        });
-      }
+        .then(() => {});
     }
 
     return NextResponse.json({ resultCode: 0, message: "ok" });

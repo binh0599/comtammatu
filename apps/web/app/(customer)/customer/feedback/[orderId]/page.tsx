@@ -46,12 +46,18 @@ export default async function FeedbackPage({
     );
   }
 
-  if (result.error || !result.order) {
+  if (result.error) {
     return (
       <div className="flex flex-col items-center gap-3 py-16">
-        <p className="text-muted-foreground text-sm">
-          {result.error ?? "Don hang khong ton tai"}
-        </p>
+        <p className="text-muted-foreground text-sm">{result.error}</p>
+      </div>
+    );
+  }
+
+  if (!("order" in result) || !result.order) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-16">
+        <p className="text-muted-foreground text-sm">Don hang khong ton tai</p>
       </div>
     );
   }

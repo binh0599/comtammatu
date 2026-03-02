@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServer } from "@comtammatu/database";
+import { ActionError, handleServerActionError } from "@comtammatu/shared";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import {
@@ -26,7 +27,7 @@ async function getTenantId() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -35,7 +36,12 @@ async function getTenantId() {
     .single();
 
   const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
+  if (!tenantId)
+    throw new ActionError(
+      "Tai khoan chua duoc gan tenant",
+      "UNAUTHORIZED",
+      403,
+    );
 
   return { supabase, tenantId, userId: user.id, userRole: profile?.role ?? "customer" };
 }
@@ -48,7 +54,7 @@ const CREATABLE_ROLES: Record<string, string[]> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getBranches(supabase: any, tenantId: number) {
+async function getBranchesInternal(supabase: any, tenantId: number) {
   const { data } = await supabase
     .from("branches")
     .select("id, name")
@@ -61,16 +67,26 @@ async function getBranches(supabase: any, tenantId: number) {
 // Branches (for selectors)
 // =====================
 
-export async function getBranchesForHr() {
+async function _getBranchesForHr() {
   const { supabase, tenantId } = await getTenantId();
-  return getBranches(supabase, tenantId);
+  return getBranchesInternal(supabase, tenantId);
+}
+
+export async function getBranchesForHr() {
+  try {
+    return await _getBranchesForHr();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
 }
 
 // =====================
 // Employees
 // =====================
 
-export async function getEmployees() {
+async function _getEmployees() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -79,21 +95,41 @@ export async function getEmployees() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function getCreatableRoles(): Promise<string[]> {
+export async function getEmployees() {
+  try {
+    return await _getEmployees();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _getCreatableRoles(): Promise<string[]> {
   const { userRole } = await getTenantId();
   return CREATABLE_ROLES[userRole] ?? [];
 }
 
-export async function createStaffAccount(data: CreateStaffAccountInput) {
+export async function getCreatableRoles(): Promise<string[]> {
+  try {
+    return await _getCreatableRoles();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createStaffAccount(data: CreateStaffAccountInput) {
   const parsed = createStaffAccountSchema.safeParse(data);
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -102,7 +138,7 @@ export async function createStaffAccount(data: CreateStaffAccountInput) {
   // Permission check: verify current user can create the requested role
   const allowedRoles = CREATABLE_ROLES[userRole] ?? [];
   if (!allowedRoles.includes(parsed.data.role)) {
-    return { error: "Bạn không có quyền tạo tài khoản với vai trò này" };
+    return { error: "Ban khong co quyen tao tai khoan voi vai tro nay" };
   }
 
   // Service role client for admin user creation
@@ -126,7 +162,7 @@ export async function createStaffAccount(data: CreateStaffAccountInput) {
 
   if (createError) {
     if (createError.message.includes("already registered")) {
-      return { error: "Email này đã được sử dụng" };
+      return { error: "Email nay da duoc su dung" };
     }
     return { error: createError.message };
   }
@@ -166,7 +202,16 @@ export async function createStaffAccount(data: CreateStaffAccountInput) {
   return { success: true };
 }
 
-export async function createEmployee(data: CreateEmployeeInput) {
+export async function createStaffAccount(data: CreateStaffAccountInput) {
+  try {
+    return await _createStaffAccount(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _createEmployee(data: CreateEmployeeInput) {
   const parsed = createEmployeeSchema.safeParse(data);
 
   if (!parsed.success) {
@@ -202,7 +247,16 @@ export async function createEmployee(data: CreateEmployeeInput) {
   return { success: true };
 }
 
-export async function updateEmployee(id: number, data: UpdateEmployeeInput) {
+export async function createEmployee(data: CreateEmployeeInput) {
+  try {
+    return await _createEmployee(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _updateEmployee(id: number, data: UpdateEmployeeInput) {
   const parsed = updateEmployeeSchema.safeParse(data);
 
   if (!parsed.success) {
@@ -211,7 +265,7 @@ export async function updateEmployee(id: number, data: UpdateEmployeeInput) {
     };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase, tenantId } = await getTenantId();
 
   // Build update payload, only include defined fields
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -228,7 +282,8 @@ export async function updateEmployee(id: number, data: UpdateEmployeeInput) {
   const { error } = await supabase
     .from("employees")
     .update(payload)
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
@@ -236,14 +291,23 @@ export async function updateEmployee(id: number, data: UpdateEmployeeInput) {
   return { success: true };
 }
 
+export async function updateEmployee(id: number, data: UpdateEmployeeInput) {
+  try {
+    return await _updateEmployee(id, data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Shifts
 // =====================
 
-export async function getShifts() {
+async function _getShifts() {
   const { supabase, tenantId } = await getTenantId();
 
-  const branchList = await getBranches(supabase, tenantId);
+  const branchList = await getBranchesInternal(supabase, tenantId);
   const branchIds = branchList.map((b: { id: number }) => b.id);
 
   if (branchIds.length === 0) return [];
@@ -254,11 +318,21 @@ export async function getShifts() {
     .in("branch_id", branchIds)
     .order("name");
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createShift(formData: FormData) {
+export async function getShifts() {
+  try {
+    return await _getShifts();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createShift(formData: FormData) {
   const parsed = createShiftSchema.safeParse({
     branch_id: formData.get("branch_id"),
     name: formData.get("name"),
@@ -291,7 +365,16 @@ export async function createShift(formData: FormData) {
   return { success: true };
 }
 
-export async function deleteShift(id: number) {
+export async function createShift(formData: FormData) {
+  try {
+    return await _createShift(formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _deleteShift(id: number) {
   const { supabase } = await getTenantId();
 
   const { error } = await supabase.from("shifts").delete().eq("id", id);
@@ -302,14 +385,23 @@ export async function deleteShift(id: number) {
   return { success: true };
 }
 
+export async function deleteShift(id: number) {
+  try {
+    return await _deleteShift(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Shift Assignments (Schedule)
 // =====================
 
-export async function getShiftAssignments(startDate: string, endDate: string) {
+async function _getShiftAssignments(startDate: string, endDate: string) {
   const { supabase, tenantId } = await getTenantId();
 
-  const branchList = await getBranches(supabase, tenantId);
+  const branchList = await getBranchesInternal(supabase, tenantId);
   const branchIds = branchList.map((b: { id: number }) => b.id);
 
   if (branchIds.length === 0) return [];
@@ -325,11 +417,21 @@ export async function getShiftAssignments(startDate: string, endDate: string) {
     .order("date")
     .order("shifts(start_time)");
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createShiftAssignment(data: CreateShiftAssignmentInput) {
+export async function getShiftAssignments(startDate: string, endDate: string) {
+  try {
+    return await _getShiftAssignments(startDate, endDate);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createShiftAssignment(data: CreateShiftAssignmentInput) {
   const parsed = createShiftAssignmentSchema.safeParse(data);
 
   if (!parsed.success) {
@@ -359,14 +461,23 @@ export async function createShiftAssignment(data: CreateShiftAssignmentInput) {
   return { success: true };
 }
 
+export async function createShiftAssignment(data: CreateShiftAssignmentInput) {
+  try {
+    return await _createShiftAssignment(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Attendance
 // =====================
 
-export async function getAttendanceRecords(date: string) {
+async function _getAttendanceRecords(date: string) {
   const { supabase, tenantId } = await getTenantId();
 
-  const branchList = await getBranches(supabase, tenantId);
+  const branchList = await getBranchesInternal(supabase, tenantId);
   const branchIds = branchList.map((b: { id: number }) => b.id);
 
   if (branchIds.length === 0) return [];
@@ -380,15 +491,25 @@ export async function getAttendanceRecords(date: string) {
     .eq("date", date)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
+}
+
+export async function getAttendanceRecords(date: string) {
+  try {
+    return await _getAttendanceRecords(date);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
 }
 
 // =====================
 // Leave Requests
 // =====================
 
-export async function getLeaveRequests() {
+async function _getLeaveRequests() {
   const { supabase, tenantId } = await getTenantId();
 
   // Get employees for this tenant to filter leave requests
@@ -397,7 +518,7 @@ export async function getLeaveRequests() {
     .select("id")
     .eq("tenant_id", tenantId);
 
-  if (empError) throw new Error(empError.message);
+  if (empError) throw new ActionError(empError.message, "SERVER_ERROR", 500);
 
   const empIds = (employees ?? []).map((e) => e.id);
 
@@ -411,11 +532,21 @@ export async function getLeaveRequests() {
     .in("employee_id", empIds)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createLeaveRequest(data: CreateLeaveRequestInput) {
+export async function getLeaveRequests() {
+  try {
+    return await _getLeaveRequests();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createLeaveRequest(data: CreateLeaveRequestInput) {
   const parsed = createLeaveRequestSchema.safeParse(data);
 
   if (!parsed.success) {
@@ -442,7 +573,16 @@ export async function createLeaveRequest(data: CreateLeaveRequestInput) {
   return { success: true };
 }
 
-export async function approveLeaveRequest(data: ApproveLeaveRequestInput) {
+export async function createLeaveRequest(data: CreateLeaveRequestInput) {
+  try {
+    return await _createLeaveRequest(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _approveLeaveRequest(data: ApproveLeaveRequestInput) {
   const parsed = approveLeaveRequestSchema.safeParse(data);
 
   if (!parsed.success) {
@@ -465,4 +605,13 @@ export async function approveLeaveRequest(data: ApproveLeaveRequestInput) {
 
   revalidatePath("/admin/hr");
   return { success: true };
+}
+
+export async function approveLeaveRequest(data: ApproveLeaveRequestInput) {
+  try {
+    return await _approveLeaveRequest(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
 }

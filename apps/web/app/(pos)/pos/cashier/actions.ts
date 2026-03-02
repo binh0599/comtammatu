@@ -6,6 +6,9 @@ import {
   processPaymentSchema,
   validateVoucherSchema,
   applyVoucherSchema,
+  ActionError,
+  handleServerActionError,
+  auditLog,
 } from "@comtammatu/shared";
 
 async function getCashierProfile() {
@@ -13,7 +16,8 @@ async function getCashierProfile() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user)
+    throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -21,12 +25,18 @@ async function getCashierProfile() {
     .eq("id", user.id)
     .single();
 
-  if (!profile) throw new Error("Profile not found");
-  if (!profile.branch_id) throw new Error("No branch assigned");
+  if (!profile)
+    throw new ActionError("Hồ sơ không tìm thấy", "NOT_FOUND", 404);
+  if (!profile.branch_id)
+    throw new ActionError("Chưa được gán chi nhánh", "VALIDATION_ERROR", 400);
 
   const role = profile.role;
   if (!["cashier", "manager", "owner"].includes(role)) {
-    throw new Error("Not authorized for cashier operations");
+    throw new ActionError(
+      "Bạn không có quyền thực hiện thao tác thu ngân",
+      "UNAUTHORIZED",
+      403,
+    );
   }
 
   return { supabase, userId: user.id, profile };
@@ -34,13 +44,13 @@ async function getCashierProfile() {
 
 // ===== Payment Processing =====
 
-export async function processPayment(data: {
+async function _processPayment(data: {
   order_id: number;
   method: "cash" | "qr";
   amount_tendered?: number;
   tip?: number;
 }) {
-  const { supabase, userId } = await getCashierProfile();
+  const { supabase, userId, profile } = await getCashierProfile();
 
   const parsed = processPaymentSchema.safeParse(data);
   if (!parsed.success) {
@@ -73,11 +83,12 @@ export async function processPayment(data: {
     return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
   }
 
-  // Get order
+  // Get order — validate branch ownership
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("id, total, status, table_id, type")
     .eq("id", parsed.data.order_id)
+    .eq("branch_id", profile.branch_id!)
     .single();
 
   if (orderError || !order) return { error: "Đơn hàng không tồn tại" };
@@ -165,6 +176,23 @@ export async function processPayment(data: {
     }
   }
 
+  // Audit log: payment processed
+  await auditLog(supabase, {
+    tenant_id: profile.tenant_id,
+    user_id: userId,
+    action: "payment_processed",
+    resource_type: "payment",
+    resource_id: order.id,
+    changes: {
+      order_id: order.id,
+      method: parsed.data.method,
+      amount: order.total,
+      tip,
+      change,
+      idempotency_key: idempotencyKey,
+    },
+  });
+
   revalidatePath("/pos/cashier");
   revalidatePath("/pos/orders");
 
@@ -178,9 +206,25 @@ export async function processPayment(data: {
   };
 }
 
+export async function processPayment(data: {
+  order_id: number;
+  method: "cash" | "qr";
+  amount_tendered?: number;
+  tip?: number;
+}) {
+  try {
+    return await _processPayment(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
 // ===== Voucher Validation & Application =====
 
-export async function validateVoucher(data: {
+async function _validateVoucher(data: {
   code: string;
   branch_id: number;
   subtotal: number;
@@ -268,7 +312,22 @@ export async function validateVoucher(data: {
   };
 }
 
-export async function applyVoucherToOrder(data: {
+export async function validateVoucher(data: {
+  code: string;
+  branch_id: number;
+  subtotal: number;
+}) {
+  try {
+    return await _validateVoucher(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
+async function _applyVoucherToOrder(data: {
   order_id: number;
   voucher_code: string;
 }) {
@@ -281,13 +340,14 @@ export async function applyVoucherToOrder(data: {
     };
   }
 
-  // Get order
+  // Get order — validate branch ownership
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select(
       "id, subtotal, tax, service_charge, discount_total, total, status, branch_id",
     )
     .eq("id", parsed.data.order_id)
+    .eq("branch_id", profile.branch_id!)
     .single();
 
   if (orderError || !order) return { error: "Đơn hàng không tồn tại" };
@@ -309,8 +369,8 @@ export async function applyVoucherToOrder(data: {
     };
   }
 
-  // Validate voucher
-  const validation = await validateVoucher({
+  // Validate voucher (call internal fn to preserve type narrowing)
+  const validation = await _validateVoucher({
     code: parsed.data.voucher_code,
     branch_id: order.branch_id,
     subtotal: order.subtotal,
@@ -367,6 +427,22 @@ export async function applyVoucherToOrder(data: {
 
   if (updateError) return { error: updateError.message };
 
+  // Audit log: voucher applied
+  await auditLog(supabase, {
+    tenant_id: profile.tenant_id,
+    user_id: userId,
+    action: "voucher_applied",
+    resource_type: "order_discount",
+    resource_id: order.id,
+    changes: {
+      order_id: order.id,
+      voucher_code: validation.code,
+      voucher_id: validation.voucher_id,
+      discount_amount: discountAmount,
+      new_total: newTotal,
+    },
+  });
+
   revalidatePath("/pos/cashier");
 
   return {
@@ -377,20 +453,43 @@ export async function applyVoucherToOrder(data: {
   };
 }
 
-export async function removeVoucherFromOrder(orderId: number) {
-  const { supabase, profile } = await getCashierProfile();
+export async function applyVoucherToOrder(data: {
+  order_id: number;
+  voucher_code: string;
+}) {
+  try {
+    return await _applyVoucherToOrder(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
 
-  // Get order
+async function _removeVoucherFromOrder(orderId: number) {
+  const { supabase, userId, profile } = await getCashierProfile();
+
+  // Get order — validate branch ownership
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("id, subtotal, status")
     .eq("id", orderId)
+    .eq("branch_id", profile.branch_id!)
     .single();
 
   if (orderError || !order) return { error: "Đơn hàng không tồn tại" };
   if (order.status === "completed" || order.status === "cancelled") {
     return { error: "Không thể chỉnh sửa đơn đã hoàn tất/hủy" };
   }
+
+  // Get voucher info before deletion for audit log
+  const { data: voucherDiscount } = await supabase
+    .from("order_discounts")
+    .select("id, value, voucher_id, reason")
+    .eq("order_id", orderId)
+    .eq("type", "voucher")
+    .maybeSingle();
 
   // Delete voucher discount
   const { error: deleteError } = await supabase
@@ -431,15 +530,43 @@ export async function removeVoucherFromOrder(orderId: number) {
     })
     .eq("id", orderId);
 
+  // Audit log: voucher removed
+  await auditLog(supabase, {
+    tenant_id: profile.tenant_id,
+    user_id: userId,
+    action: "voucher_removed",
+    resource_type: "order_discount",
+    resource_id: orderId,
+    changes: {
+      order_id: orderId,
+      removed_discount_id: voucherDiscount?.id ?? null,
+      removed_voucher_id: voucherDiscount?.voucher_id ?? null,
+      removed_voucher_code: voucherDiscount?.reason ?? null,
+      removed_discount_amount: voucherDiscount?.value ?? null,
+      new_total: newTotal,
+    },
+  });
+
   revalidatePath("/pos/cashier");
 
   return { error: null, new_total: newTotal };
 }
 
+export async function removeVoucherFromOrder(orderId: number) {
+  try {
+    return await _removeVoucherFromOrder(orderId);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
 // ===== Momo Payment =====
 
-export async function createMomoPayment(orderId: number) {
-  const { supabase, userId } = await getCashierProfile();
+async function _createMomoPayment(orderId: number) {
+  const { supabase, userId, profile } = await getCashierProfile();
 
   // Get active session
   const { data: session } = await supabase
@@ -451,11 +578,12 @@ export async function createMomoPayment(orderId: number) {
 
   if (!session) return { error: "Chưa mở ca." };
 
-  // Get order
+  // Get order — validate branch ownership
   const { data: order } = await supabase
     .from("orders")
     .select("id, order_number, total, status")
     .eq("id", orderId)
+    .eq("branch_id", profile.branch_id!)
     .single();
 
   if (!order) return { error: "Đơn hàng không tồn tại" };
@@ -493,7 +621,7 @@ export async function createMomoPayment(orderId: number) {
       process.env.NEXT_PUBLIC_APP_URL || "https://comtammatu.vercel.app";
     const result = await createMomoPaymentRequest({
       orderId: `ORDER-${order.id}-${idempotencyKey.slice(0, 8)}`,
-      orderInfo: `Thanh toan don ${order.order_number}`,
+      orderInfo: `Thanh toán đơn ${order.order_number}`,
       amount: Math.round(order.total),
       requestId: idempotencyKey,
       ipnUrl: `${appUrl}/api/webhooks/momo`,
@@ -517,16 +645,37 @@ export async function createMomoPayment(orderId: number) {
   }
 }
 
-export async function checkPaymentStatus(paymentId: number) {
-  const { supabase } = await getCashierProfile();
+export async function createMomoPayment(orderId: number) {
+  try {
+    return await _createMomoPayment(orderId);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
+async function _checkPaymentStatus(paymentId: number) {
+  const { supabase, profile } = await getCashierProfile();
 
   const { data: payment } = await supabase
     .from("payments")
-    .select("id, status, reference_no, paid_at")
+    .select("id, status, reference_no, paid_at, order_id")
     .eq("id", paymentId)
     .single();
 
   if (!payment) return { error: "Không tìm thấy giao dịch" };
+
+  // Validate payment belongs to user's branch via order
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("id", payment.order_id)
+    .eq("branch_id", profile.branch_id!)
+    .single();
+
+  if (!order) return { error: "Không tìm thấy giao dịch" };
 
   return {
     error: null,
@@ -536,9 +685,20 @@ export async function checkPaymentStatus(paymentId: number) {
   };
 }
 
+export async function checkPaymentStatus(paymentId: number) {
+  try {
+    return await _checkPaymentStatus(paymentId);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
 // ===== Cashier Order Queue =====
 
-export async function getCashierOrders() {
+async function _getCashierOrders() {
   const { supabase, profile } = await getCashierProfile();
 
   const { data, error } = await supabase
@@ -550,6 +710,16 @@ export async function getCashierOrders() {
     .in("status", ["confirmed", "preparing", "ready", "served"])
     .order("created_at", { ascending: true });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
+}
+
+export async function getCashierOrders() {
+  try {
+    return await _getCashierOrders();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
 }

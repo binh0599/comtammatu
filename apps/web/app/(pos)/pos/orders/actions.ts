@@ -7,6 +7,8 @@ import {
   updateOrderStatusSchema,
   addOrderItemsSchema,
   type OrderStatus,
+  ActionError,
+  handleServerActionError,
 } from "@comtammatu/shared";
 import { isValidTransition, calculateOrderTotals } from "./helpers";
 
@@ -15,7 +17,8 @@ async function getPosProfile() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user)
+    throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -23,8 +26,14 @@ async function getPosProfile() {
     .eq("id", user.id)
     .single();
 
-  if (!profile) throw new Error("Profile not found");
-  if (!profile.branch_id) throw new Error("No branch assigned");
+  if (!profile)
+    throw new ActionError("Hồ sơ không tìm thấy", "NOT_FOUND", 404);
+  if (!profile.branch_id)
+    throw new ActionError(
+      "Bạn chưa được gán chi nhánh",
+      "VALIDATION_ERROR",
+      400
+    );
 
   return { supabase, userId: user.id, profile };
 }
@@ -56,7 +65,11 @@ async function getTaxSettings(
   return { taxRate, serviceChargeRate };
 }
 
-export async function createOrder(data: {
+// ---------------------------------------------------------------------------
+// createOrder
+// ---------------------------------------------------------------------------
+
+async function _createOrder(data: {
   table_id?: number | null;
   type: string;
   notes?: string;
@@ -73,15 +86,19 @@ export async function createOrder(data: {
 
   const parsed = createOrderSchema.safeParse(data);
   if (!parsed.success) {
-    return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
-    };
+    throw new ActionError(
+      parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR"
+    );
   }
 
   const { table_id, type, notes, items } = parsed.data;
 
   if (items.length === 0) {
-    return { error: "Đơn hàng phải có ít nhất 1 món" };
+    throw new ActionError(
+      "Đơn hàng phải có ít nhất 1 món",
+      "VALIDATION_ERROR"
+    );
   }
 
   // Validate terminal belongs to user's branch and is the correct type
@@ -92,35 +109,48 @@ export async function createOrder(data: {
     .single();
 
   if (terminalError || !terminal) {
-    return { error: "Thiết bị không tồn tại" };
+    throw new ActionError("Thiết bị không tồn tại", "NOT_FOUND", 404);
   }
   if (terminal.branch_id !== profile.branch_id) {
-    return { error: "Thiết bị không thuộc chi nhánh của bạn" };
+    throw new ActionError(
+      "Thiết bị không thuộc chi nhánh của bạn",
+      "UNAUTHORIZED",
+      403
+    );
   }
   if (!terminal.is_active || !terminal.approved_at) {
-    return { error: "Thiết bị chưa được kích hoạt hoặc phê duyệt" };
+    throw new ActionError(
+      "Thiết bị chưa được kích hoạt hoặc phê duyệt",
+      "VALIDATION_ERROR"
+    );
   }
   if (terminal.type !== "mobile_order") {
-    return { error: "Chỉ thiết bị đặt món (mobile) mới có thể tạo đơn hàng" };
+    throw new ActionError(
+      "Chỉ thiết bị đặt món (mobile) mới có thể tạo đơn hàng",
+      "VALIDATION_ERROR"
+    );
   }
 
-  // Lookup menu item prices
+  // Lookup menu item prices — scoped to tenant
   const itemIds = items.map((i) => i.menu_item_id);
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
     .select("id, base_price, is_available, name")
-    .in("id", itemIds);
+    .in("id", itemIds)
+    .eq("tenant_id", profile.tenant_id);
 
-  if (menuError) return { error: menuError.message };
+  if (menuError) {
+    throw new ActionError(menuError.message, "SERVER_ERROR", 500);
+  }
   if (!menuItems || menuItems.length === 0) {
-    return { error: "Không tìm thấy món ăn" };
+    throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
 
   // Check availability
   const unavailable = menuItems.filter((mi) => !mi.is_available);
   if (unavailable.length > 0) {
     const names = unavailable.map((mi) => mi.name).join(", ");
-    return { error: `Các món sau đã hết: ${names}` };
+    throw new ActionError(`Các món sau đã hết: ${names}`, "CONFLICT", 409);
   }
 
   // Build price map
@@ -144,7 +174,11 @@ export async function createOrder(data: {
     if (variants) {
       for (const v of variants) {
         if (!v.is_available) {
-          return { error: "Một số biến thể đã hết hàng" };
+          throw new ActionError(
+            "Một số biến thể đã hết hàng",
+            "CONFLICT",
+            409
+          );
         }
         variantPriceMap.set(v.id, v.price_adjustment);
       }
@@ -189,7 +223,13 @@ export async function createOrder(data: {
     { p_branch_id: profile.branch_id! }
   );
 
-  if (numError) return { error: `Lỗi tạo mã đơn: ${numError.message}` };
+  if (numError) {
+    throw new ActionError(
+      `Lỗi tạo mã đơn: ${numError.message}`,
+      "SERVER_ERROR",
+      500
+    );
+  }
 
   // Generate idempotency key
   const idempotencyKey = crypto.randomUUID();
@@ -216,7 +256,9 @@ export async function createOrder(data: {
     .select("id, order_number")
     .single();
 
-  if (orderError) return { error: orderError.message };
+  if (orderError) {
+    throw new ActionError(orderError.message, "SERVER_ERROR", 500);
+  }
 
   // Insert order items
   const itemInserts = orderItems.map((item) => ({
@@ -235,7 +277,9 @@ export async function createOrder(data: {
     .from("order_items")
     .insert(itemInserts);
 
-  if (itemsError) return { error: itemsError.message };
+  if (itemsError) {
+    throw new ActionError(itemsError.message, "SERVER_ERROR", 500);
+  }
 
   // Update table status to occupied if dine-in
   if (table_id && type === "dine_in") {
@@ -255,6 +299,33 @@ export async function createOrder(data: {
   };
 }
 
+export async function createOrder(data: {
+  table_id?: number | null;
+  type: string;
+  notes?: string;
+  terminal_id: number;
+  items: {
+    menu_item_id: number;
+    variant_id?: number | null;
+    quantity: number;
+    modifiers?: { name: string; price: number }[];
+    notes?: string;
+  }[];
+}) {
+  try {
+    return await _createOrder(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// confirmOrder
+// ---------------------------------------------------------------------------
+
 /**
  * Convenience wrapper — delegates to updateOrderStatus.
  * Kept as a named export for backward compatibility with existing consumers.
@@ -263,17 +334,22 @@ export async function confirmOrder(orderId: number) {
   return updateOrderStatus({ order_id: orderId, status: "confirmed" });
 }
 
-export async function updateOrderStatus(data: {
+// ---------------------------------------------------------------------------
+// updateOrderStatus
+// ---------------------------------------------------------------------------
+
+async function _updateOrderStatus(data: {
   order_id: number;
   status: string;
 }) {
-  const { supabase } = await getPosProfile();
+  const { supabase, profile } = await getPosProfile();
 
   const parsed = updateOrderStatusSchema.safeParse(data);
   if (!parsed.success) {
-    return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
-    };
+    throw new ActionError(
+      parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR"
+    );
   }
 
   const { order_id, status: newStatus } = parsed.data;
@@ -282,10 +358,11 @@ export async function updateOrderStatus(data: {
     .from("orders")
     .select("id, status, table_id, type")
     .eq("id", order_id)
+    .eq("branch_id", profile.branch_id!)
     .single();
 
   if (fetchError || !order) {
-    return { error: "Đơn hàng không tồn tại" };
+    throw new ActionError("Đơn hàng không tồn tại", "NOT_FOUND", 404);
   }
 
   if (
@@ -294,9 +371,11 @@ export async function updateOrderStatus(data: {
       newStatus as OrderStatus
     )
   ) {
-    return {
-      error: `Không thể chuyển từ "${order.status}" sang "${newStatus}"`,
-    };
+    throw new ActionError(
+      `Không thể chuyển từ "${order.status}" sang "${newStatus}"`,
+      "CONFLICT",
+      409
+    );
   }
 
   const { error: updateError } = await supabase
@@ -304,7 +383,9 @@ export async function updateOrderStatus(data: {
     .update({ status: newStatus })
     .eq("id", order_id);
 
-  if (updateError) return { error: updateError.message };
+  if (updateError) {
+    throw new ActionError(updateError.message, "SERVER_ERROR", 500);
+  }
 
   // Free up table when order is completed or cancelled
   if (
@@ -324,6 +405,24 @@ export async function updateOrderStatus(data: {
 
   return { error: null };
 }
+
+export async function updateOrderStatus(data: {
+  order_id: number;
+  status: string;
+}) {
+  try {
+    return await _updateOrderStatus(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// getOrders (data-fetching — throws on error for RSC error boundaries)
+// ---------------------------------------------------------------------------
 
 export async function getOrders(filters?: {
   status?: string;
@@ -349,9 +448,15 @@ export async function getOrders(filters?: {
 
   const { data, error } = await query;
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new ActionError(error.message, "SERVER_ERROR", 500);
+  }
   return data ?? [];
 }
+
+// ---------------------------------------------------------------------------
+// getOrderDetail (data-fetching — throws on error for RSC error boundaries)
+// ---------------------------------------------------------------------------
 
 export async function getOrderDetail(orderId: number) {
   const { supabase } = await getPosProfile();
@@ -369,11 +474,17 @@ export async function getOrderDetail(orderId: number) {
     .eq("id", orderId)
     .single();
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new ActionError(error.message, "SERVER_ERROR", 500);
+  }
   return order;
 }
 
-export async function addOrderItems(data: {
+// ---------------------------------------------------------------------------
+// addOrderItems
+// ---------------------------------------------------------------------------
+
+async function _addOrderItems(data: {
   order_id: number;
   items: {
     menu_item_id: number;
@@ -387,9 +498,10 @@ export async function addOrderItems(data: {
 
   const parsed = addOrderItemsSchema.safeParse(data);
   if (!parsed.success) {
-    return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
-    };
+    throw new ActionError(
+      parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR"
+    );
   }
 
   const { order_id, items } = parsed.data;
@@ -402,25 +514,34 @@ export async function addOrderItems(data: {
     .single();
 
   if (orderError || !order) {
-    return { error: "Đơn hàng không tồn tại" };
+    throw new ActionError("Đơn hàng không tồn tại", "NOT_FOUND", 404);
   }
 
   if (order.status !== "draft" && order.status !== "confirmed") {
-    return { error: "Chỉ có thể thêm món khi đơn ở trạng thái nháp hoặc đã xác nhận" };
+    throw new ActionError(
+      "Chỉ có thể thêm món khi đơn ở trạng thái nháp hoặc đã xác nhận",
+      "CONFLICT",
+      409
+    );
   }
 
-  // Lookup prices
+  // Lookup prices — scoped to tenant
   const itemIds = items.map((i) => i.menu_item_id);
   const { data: menuItems } = await supabase
     .from("menu_items")
     .select("id, base_price, is_available")
-    .in("id", itemIds);
+    .in("id", itemIds)
+    .eq("tenant_id", profile.tenant_id);
 
-  if (!menuItems) return { error: "Không tìm thấy món ăn" };
+  if (!menuItems) {
+    throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
+  }
 
   const priceMap = new Map<number, number>();
   for (const mi of menuItems) {
-    if (!mi.is_available) return { error: "Một số món đã hết" };
+    if (!mi.is_available) {
+      throw new ActionError("Một số món đã hết", "CONFLICT", 409);
+    }
     priceMap.set(mi.id, mi.base_price);
   }
 
@@ -472,7 +593,9 @@ export async function addOrderItems(data: {
     .from("order_items")
     .insert(newItems);
 
-  if (insertError) return { error: insertError.message };
+  if (insertError) {
+    throw new ActionError(insertError.message, "SERVER_ERROR", 500);
+  }
 
   // Recalculate order totals
   const { data: allItems } = await supabase
@@ -504,6 +627,30 @@ export async function addOrderItems(data: {
   return { error: null };
 }
 
+export async function addOrderItems(data: {
+  order_id: number;
+  items: {
+    menu_item_id: number;
+    variant_id?: number | null;
+    quantity: number;
+    modifiers?: { name: string; price: number }[];
+    notes?: string;
+  }[];
+}) {
+  try {
+    return await _addOrderItems(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) {
+      throw error;
+    }
+    return handleServerActionError(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// getTables (data-fetching — throws on error for RSC error boundaries)
+// ---------------------------------------------------------------------------
+
 /**
  * Get tables for the user's branch (for waiter UI)
  */
@@ -516,9 +663,15 @@ export async function getTables() {
     .eq("branch_id", profile.branch_id!)
     .order("number");
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new ActionError(error.message, "SERVER_ERROR", 500);
+  }
   return data ?? [];
 }
+
+// ---------------------------------------------------------------------------
+// getMenuItems (data-fetching — throws on error for RSC error boundaries)
+// ---------------------------------------------------------------------------
 
 /**
  * Get menu items for the user's branch (for waiter UI)
@@ -535,9 +688,15 @@ export async function getMenuItems() {
     .eq("is_available", true)
     .order("name");
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new ActionError(error.message, "SERVER_ERROR", 500);
+  }
   return data ?? [];
 }
+
+// ---------------------------------------------------------------------------
+// getMenuCategories (data-fetching — throws on error for RSC error boundaries)
+// ---------------------------------------------------------------------------
 
 /**
  * Get categories for filtering
@@ -550,6 +709,8 @@ export async function getMenuCategories() {
     .select("id, name, menu_id")
     .order("sort_order");
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    throw new ActionError(error.message, "SERVER_ERROR", 500);
+  }
   return data ?? [];
 }

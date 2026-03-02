@@ -8,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Fragment } from "react";
 
 interface HeaderProps {
   breadcrumbs?: { label: string; href?: string }[];
@@ -24,7 +25,7 @@ export function Header({ breadcrumbs }: HeaderProps) {
             <BreadcrumbLink href="/admin">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
           {breadcrumbs?.map((crumb, i) => (
-            <span key={crumb.label} className="flex items-center gap-1.5">
+            <Fragment key={crumb.label}>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
                 {i === (breadcrumbs?.length ?? 0) - 1 ? (
@@ -35,7 +36,7 @@ export function Header({ breadcrumbs }: HeaderProps) {
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-            </span>
+            </Fragment>
           ))}
         </BreadcrumbList>
       </Breadcrumb>

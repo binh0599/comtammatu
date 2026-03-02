@@ -162,28 +162,46 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ---
 
-## POST-MVP BACKLOG
+## POST-MVP BACKLOG (Updated 2026-03-02)
 
 ```
-Priority 1 (Core):
-- [ ] VNPay/Momo payment integration (webhooks, HMAC verification)
-- [ ] Stock auto-deduction on order completion (DB trigger)
-- [ ] Voucher redemption at POS during order creation
-- [ ] Retention cron jobs (auto-delete after 30-day grace period)
+Completed (Post-MVP Sprint 1):
+- [x] Momo payment integration (webhook, HMAC)
+- [x] Stock auto-deduction on order completion (DB trigger)
+- [x] Voucher redemption at POS
+- [x] Charts/graphs for admin dashboard
+- [x] Admin payment management page
+- [x] WCAG AAA accessibility fixes
+- [x] Security hardening (POS/KDS device flow, KDS station actions)
+- [x] HR employee auth account creation from admin
 
-Priority 2 (Operations):
-- [ ] Charts/graphs for admin dashboard (recharts or similar)
+Priority 1 (Core — Week 11-12):
+- [ ] VNPay payment integration (webhooks, HMAC verification)
+- [ ] Retention cron jobs (auto-delete after 30-day grace period)
+- [ ] Auto-tier upgrade triggers for loyalty
+- [ ] Receipt printing (thermal printer)
+- [ ] Notifications system (in-app + push)
+
+Priority 2 (Operations — Week 13-14):
 - [ ] Payroll calculations (HR module)
 - [ ] Attendance clock-in/clock-out (QR scan)
-- [ ] Auto-tier upgrade triggers for loyalty
+- [ ] Branch comparison in dashboard
+- [ ] Offline support (Service Worker, IndexedDB, AES-256-GCM)
+- [ ] Device fingerprinting for terminal registration
 
-Priority 3 (Quality):
+Priority 3 (Quality — Week 15-16):
 - [ ] E2E testing (Playwright)
 - [ ] RLS validation test suite
-- [ ] API documentation
-- [ ] Offline support (Service Worker, IndexedDB, AES-256-GCM)
-- [ ] Campaigns & notifications (email/SMS/push)
-- [ ] Receipt printing + peripheral config
+- [ ] API documentation (OpenAPI)
+- [ ] Upstash Redis rate limiting
+- [ ] Peripheral config (printers, cash drawers)
+
+Priority 4 (Growth — Week 17+):
+- [ ] Campaigns & notifications (email/SMS/push marketing)
+- [ ] Customer online ordering via PWA
+- [ ] Multi-branch reporting & analytics
+- [ ] Inventory forecasting
+- [ ] Staff performance metrics
 ```
 
 ---
@@ -203,11 +221,17 @@ Priority 3 (Quality):
 ## GIT HISTORY
 
 ```
+ef127d6 fix: harden KDS station actions — role check, ownership verification, tenant filtering
+96398c0 improve: WCAG AAA accessibility fixes across admin components
+49299b6 improve: accessibility across all modules + add state machine docs
+60bcbef feat: add admin payment management page
+34c8462 fix: complete order flow — KDS sync, Momo webhook, and served status guidance
+f6f5183 fix: harden POS/KDS device flow — 7 security and correctness fixes
+05a8df3 feat: redesign HR employee management — create auth accounts from admin
+e2bc0dc feat: add Momo payment, voucher POS, stock auto-deduction, dashboard charts
+82e5c12 fix: migrate middleware.ts to proxy.ts for Next.js 16.1 compatibility
 244fa73 feat: complete Week 7-8 — CRM Admin, Customer PWA, GDPR Privacy
 0c9f776 feat: complete Week 5-6 — Inventory, HR, Dashboard, Security
-a629b37 fix(lint): resolve React purity violations and unused vars
-3c1c1ca fix(ci): Turborepo typecheck must depend on own build task
-d7042d4 fix(ci): resolve Prisma DIRECT_URL crash in CI/Vercel builds
 8adbbf7 feat: complete Week 3-4 — Split POS, Orders, KDS & Cash Payment
 8b48166 feat: complete Week 1-2 foundation — auth, admin layout, menu CRUD
 ```

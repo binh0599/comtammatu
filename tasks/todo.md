@@ -140,19 +140,74 @@
 - [ ] Documentation (API docs, user guide, deployment runbook)
 - [ ] Order discounts/voucher redemption at POS (voucher application during order creation)
 
-## Next: Post-MVP Enhancements
+## Completed: Post-MVP Sprint 1 (Week 9-10)
 
+### Payment & Order Flow Hardening
+- [x] Momo payment integration (webhook, HMAC verification) — commit `e2bc0dc`
+- [x] Stock auto-deduction on order completion (DB trigger) — commit `e2bc0dc`
+- [x] Voucher redemption at POS during order creation — commit `e2bc0dc`
+- [x] Dashboard charts (revenue chart, hourly chart, status chart) — commit `e2bc0dc`
+- [x] Allow takeaway orders (null table_id) — commit `b1848f4`
+- [x] Allow null variant_id, modifiers, notes in order items — commit `6fa2fa6`
+- [x] Complete order flow fix — KDS sync, Momo webhook, served status — commit `34c8462`
+- [x] Admin payment management page — commit `60bcbef`
+- [x] Next.js 16.1 middleware → proxy.ts migration — commit `82e5c12`
+
+### HR Redesign
+- [x] Redesign HR employee management — create auth accounts from admin — commit `05a8df3`
+
+### Security Hardening
+- [x] Harden POS/KDS device flow — 7 security and correctness fixes — commit `f6f5183`
+- [x] Harden KDS station actions — role check, ownership verification, tenant filtering — commit `ef127d6`
+- [x] Validate client-provided IDs against auth context (VALIDATE_CLIENT_IDS rule)
+
+### Accessibility & Quality
+- [x] WCAG AAA accessibility fixes across admin components — commit `96398c0`
+- [x] Accessibility improvements across all modules — commit `49299b6`
+- [x] State machine documentation for order flow
+- [x] CLAUDE.md workflow restructure for production use — commit `cebc9f0`
+
+### What was NOT done in Post-MVP Sprint 1 (deferred)
+- [ ] VNPay payment integration (only Momo done)
+- [ ] Retention cron jobs (auto-delete after 30-day grace period)
+- [ ] Auto-tier upgrade triggers for loyalty
+
+---
+
+## Current Roadmap — Post-MVP
+
+### Priority 1 — Core Business (Week 11-12)
 ```
-- [ ] VNPay/Momo payment integration
-- [ ] Offline support (Service Worker, IndexedDB)
-- [ ] Charts/graphs for admin dashboard
-- [ ] E2E testing (Vitest/Playwright)
-- [ ] RLS validation suite
-- [ ] API documentation
-- [ ] Stock auto-deduction on order completion
-- [ ] Payroll calculations
+- [ ] VNPay payment integration (webhooks, HMAC verification)
+- [ ] Retention cron jobs (scheduled deletion after 30-day GDPR grace period)
+- [ ] Auto-tier upgrade triggers (auto-promote customer when points reach tier)
+- [ ] Receipt printing (thermal printer integration)
+- [ ] Notifications system (in-app + push for order status)
+```
+
+### Priority 2 — Operations (Week 13-14)
+```
+- [ ] Payroll calculations (HR module)
 - [ ] Attendance clock-in/clock-out (QR scan)
-- [ ] Receipt printing + peripheral config
-- [ ] Campaigns & notifications
-- [ ] Voucher redemption at POS
+- [ ] Branch comparison in dashboard
+- [ ] Offline support — Service Worker + IndexedDB (critical for POS reliability)
+- [ ] Device fingerprinting for terminal registration
+```
+
+### Priority 3 — Quality & Scale (Week 15-16)
+```
+- [ ] E2E testing (Playwright — critical flows: login, order, payment, KDS)
+- [ ] RLS validation test suite
+- [ ] API documentation (OpenAPI spec)
+- [ ] Upstash Redis rate limiting
+- [ ] Peripheral config (printers, cash drawers)
+```
+
+### Priority 4 — Growth (Week 17+)
+```
+- [ ] Campaigns & notifications (email/SMS/push marketing)
+- [ ] Customer ordering (online menu → place order via PWA)
+- [ ] Multi-branch reporting & analytics
+- [ ] Inventory forecasting (based on order history)
+- [ ] Staff performance metrics
 ```

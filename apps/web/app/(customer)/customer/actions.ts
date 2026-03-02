@@ -1,7 +1,12 @@
 "use server";
 
 import { createSupabaseServer } from "@comtammatu/database";
-import { createFeedbackSchema, deletionRequestSchema } from "@comtammatu/shared";
+import {
+  createFeedbackSchema,
+  deletionRequestSchema,
+  ActionError,
+  handleServerActionError,
+} from "@comtammatu/shared";
 
 // ---------------------------------------------------------------------------
 // Auth helper — resolves current user + customer record
@@ -13,7 +18,7 @@ async function getCustomerAuth() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
 
   const { data: customer } = await supabase
     .from("customers")
@@ -21,7 +26,8 @@ async function getCustomerAuth() {
     .eq("email", user.email ?? "")
     .single();
 
-  if (!customer) throw new Error("Customer not found");
+  if (!customer)
+    throw new ActionError("Khach hang khong ton tai", "NOT_FOUND", 404);
 
   return { supabase, user, customer };
 }
@@ -30,7 +36,7 @@ async function getCustomerAuth() {
 // Public: Menu browsing (no auth required)
 // ---------------------------------------------------------------------------
 
-export async function getPublicMenu() {
+async function _getPublicMenu() {
   const supabase = await createSupabaseServer();
 
   // Single-tenant: resolve tenant from the first branch
@@ -44,19 +50,21 @@ export async function getPublicMenu() {
 
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
-    .select("id, name, description, base_price, image_url, category_id, allergens, menu_categories(id, name, sort_order)")
+    .select(
+      "id, name, description, base_price, image_url, category_id, allergens, menu_categories(id, name, sort_order)",
+    )
     .eq("tenant_id", tenantId)
     .eq("is_available", true)
     .order("name");
 
-  if (itemsError) throw new Error(itemsError.message);
+  if (itemsError) throw new ActionError(itemsError.message, "SERVER_ERROR");
 
   const { data: categories, error: catError } = await supabase
     .from("menu_categories")
     .select("id, name, sort_order")
     .order("sort_order");
 
-  if (catError) throw new Error(catError.message);
+  if (catError) throw new ActionError(catError.message, "SERVER_ERROR");
 
   return {
     items: items ?? [],
@@ -64,31 +72,51 @@ export async function getPublicMenu() {
   };
 }
 
+export async function getPublicMenu() {
+  try {
+    return await _getPublicMenu();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Auth: Customer orders
 // ---------------------------------------------------------------------------
 
-export async function getCustomerOrders() {
+async function _getCustomerOrders() {
   const { supabase, customer } = await getCustomerAuth();
 
   const { data: orders, error } = await supabase
     .from("orders")
     .select(
-      "id, order_number, status, type, subtotal, tax, service_charge, total, created_at, order_items(id, quantity, unit_price, item_total, menu_items(name))"
+      "id, order_number, status, type, subtotal, tax, service_charge, total, created_at, order_items(id, quantity, unit_price, item_total, menu_items(name))",
     )
     .eq("customer_id", customer.id)
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR");
   return orders ?? [];
+}
+
+export async function getCustomerOrders() {
+  try {
+    return await _getCustomerOrders();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Auth: Loyalty dashboard
 // ---------------------------------------------------------------------------
 
-export async function getCustomerLoyalty() {
+async function _getCustomerLoyalty() {
   const { supabase, customer } = await getCustomerAuth();
 
   // Get loyalty tier info
@@ -125,7 +153,7 @@ export async function getCustomerLoyalty() {
 
   const currentPoints = (allTransactions ?? []).reduce(
     (sum, row) => sum + (row.points ?? 0),
-    0
+    0,
   );
 
   // Get recent 10 transactions
@@ -140,7 +168,7 @@ export async function getCustomerLoyalty() {
   let nextTier: { name: string; min_points: number } | null = null;
   if (allTiers) {
     const sortedTiers = [...allTiers].sort(
-      (a, b) => a.min_points - b.min_points
+      (a, b) => a.min_points - b.min_points,
     );
     for (const t of sortedTiers) {
       if (t.min_points > currentPoints) {
@@ -162,17 +190,27 @@ export async function getCustomerLoyalty() {
   };
 }
 
+export async function getCustomerLoyalty() {
+  try {
+    return await _getCustomerLoyalty();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Auth: Feedback
 // ---------------------------------------------------------------------------
 
-export async function getOrderForFeedback(orderId: number) {
+async function _getOrderForFeedback(orderId: number) {
   const { supabase, customer } = await getCustomerAuth();
 
   const { data: order, error } = await supabase
     .from("orders")
     .select(
-      "id, order_number, status, total, created_at, branch_id, order_items(id, quantity, unit_price, item_total, menu_items(name))"
+      "id, order_number, status, total, created_at, branch_id, order_items(id, quantity, unit_price, item_total, menu_items(name))",
     )
     .eq("id", orderId)
     .eq("customer_id", customer.id)
@@ -195,7 +233,16 @@ export async function getOrderForFeedback(orderId: number) {
   return { order, alreadyReviewed, error: null };
 }
 
-export async function submitFeedback(data: {
+export async function getOrderForFeedback(orderId: number) {
+  try {
+    return await _getOrderForFeedback(orderId);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _submitFeedback(data: {
   order_id: number;
   branch_id: number;
   rating: number;
@@ -249,11 +296,25 @@ export async function submitFeedback(data: {
   return { error: null };
 }
 
+export async function submitFeedback(data: {
+  order_id: number;
+  branch_id: number;
+  rating: number;
+  comment?: string;
+}) {
+  try {
+    return await _submitFeedback(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Auth: Account & Profile
 // ---------------------------------------------------------------------------
 
-export async function getCustomerProfile() {
+async function _getCustomerProfile() {
   const { customer } = await getCustomerAuth();
 
   return {
@@ -268,17 +329,29 @@ export async function getCustomerProfile() {
   };
 }
 
+export async function getCustomerProfile() {
+  try {
+    return await _getCustomerProfile();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Auth: GDPR — Data Export
 // ---------------------------------------------------------------------------
 
-export async function requestDataExport() {
+async function _requestDataExport() {
   const { supabase, customer } = await getCustomerAuth();
 
   // Collect all customer data
   const { data: orders } = await supabase
     .from("orders")
-    .select("id, order_number, status, type, total, created_at, order_items(id, quantity, unit_price, menu_items(name))")
+    .select(
+      "id, order_number, status, type, total, created_at, order_items(id, quantity, unit_price, menu_items(name))",
+    )
     .eq("customer_id", customer.id)
     .order("created_at", { ascending: false });
 
@@ -314,11 +387,21 @@ export async function requestDataExport() {
   return exportData;
 }
 
+export async function requestDataExport() {
+  try {
+    return await _requestDataExport();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Auth: GDPR — Deletion Request
 // ---------------------------------------------------------------------------
 
-export async function requestDeletion(reason?: string) {
+async function _requestDeletion(reason?: string) {
   const { supabase, customer } = await getCustomerAuth();
 
   const parsed = deletionRequestSchema.safeParse({ reason });
@@ -358,4 +441,13 @@ export async function requestDeletion(reason?: string) {
     error: null,
     scheduledDate: scheduledDate.toISOString(),
   };
+}
+
+export async function requestDeletion(reason?: string) {
+  try {
+    return await _requestDeletion(reason);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
 }

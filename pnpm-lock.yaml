@@ -168,6 +168,9 @@ importers:
         specifier: ^3.24.0
         version: 3.25.76
     devDependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.49.0
+        version: 2.98.0
       typescript:
         specifier: ^5.9.0
         version: 5.9.3

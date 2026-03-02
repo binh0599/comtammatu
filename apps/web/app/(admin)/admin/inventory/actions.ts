@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServer } from "@comtammatu/database";
+import { ActionError, handleServerActionError } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 import {
   createIngredientSchema,
@@ -20,7 +21,7 @@ async function getTenantId() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -29,7 +30,12 @@ async function getTenantId() {
     .single();
 
   const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
+  if (!tenantId)
+    throw new ActionError(
+      "Tai khoan chua duoc gan tenant",
+      "UNAUTHORIZED",
+      403,
+    );
 
   return { supabase, tenantId, userId: user.id };
 }
@@ -38,7 +44,7 @@ async function getTenantId() {
 // Ingredients
 // =====================
 
-export async function getIngredients() {
+async function _getIngredients() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -47,11 +53,21 @@ export async function getIngredients() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function getBranches() {
+export async function getIngredients() {
+  try {
+    return await _getIngredients();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _getBranches() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -60,11 +76,21 @@ export async function getBranches() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createIngredient(formData: FormData) {
+export async function getBranches() {
+  try {
+    return await _getBranches();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createIngredient(formData: FormData) {
   const parsed = createIngredientSchema.safeParse({
     name: formData.get("name"),
     sku: formData.get("sku"),
@@ -105,7 +131,16 @@ export async function createIngredient(formData: FormData) {
   return { success: true };
 }
 
-export async function updateIngredient(id: number, formData: FormData) {
+export async function createIngredient(formData: FormData) {
+  try {
+    return await _createIngredient(formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _updateIngredient(id: number, formData: FormData) {
   const parsed = createIngredientSchema.safeParse({
     name: formData.get("name"),
     sku: formData.get("sku"),
@@ -121,7 +156,7 @@ export async function updateIngredient(id: number, formData: FormData) {
     return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase, tenantId } = await getTenantId();
 
   const { error } = await supabase
     .from("ingredients")
@@ -135,7 +170,32 @@ export async function updateIngredient(id: number, formData: FormData) {
       cost_price: parsed.data.cost_price ?? null,
       is_active: parsed.data.is_active,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/inventory");
+  return { success: true };
+}
+
+export async function updateIngredient(id: number, formData: FormData) {
+  try {
+    return await _updateIngredient(id, formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _deleteIngredient(id: number) {
+  const { supabase, tenantId } = await getTenantId();
+
+  const { error } = await supabase
+    .from("ingredients")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
@@ -144,21 +204,19 @@ export async function updateIngredient(id: number, formData: FormData) {
 }
 
 export async function deleteIngredient(id: number) {
-  const { supabase } = await getTenantId();
-
-  const { error } = await supabase.from("ingredients").delete().eq("id", id);
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/admin/inventory");
-  return { success: true };
+  try {
+    return await _deleteIngredient(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
 }
 
 // =====================
 // Stock Levels
 // =====================
 
-export async function getStockLevels() {
+async function _getStockLevels() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -167,11 +225,21 @@ export async function getStockLevels() {
     .eq("ingredients.tenant_id", tenantId)
     .order("updated_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function initStockLevel(data: {
+export async function getStockLevels() {
+  try {
+    return await _getStockLevels();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _initStockLevel(data: {
   ingredient_id: number;
   branch_id: number;
   quantity: number;
@@ -195,11 +263,24 @@ export async function initStockLevel(data: {
   return { success: true };
 }
 
+export async function initStockLevel(data: {
+  ingredient_id: number;
+  branch_id: number;
+  quantity: number;
+}) {
+  try {
+    return await _initStockLevel(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Stock Movements
 // =====================
 
-export async function getStockMovements() {
+async function _getStockMovements() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -211,11 +292,21 @@ export async function getStockMovements() {
     .order("created_at", { ascending: false })
     .limit(100);
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createStockMovement(data: {
+export async function getStockMovements() {
+  try {
+    return await _getStockMovements();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createStockMovement(data: {
   ingredient_id: number;
   branch_id: number;
   type: string;
@@ -278,11 +369,26 @@ export async function createStockMovement(data: {
   return { success: true };
 }
 
+export async function createStockMovement(data: {
+  ingredient_id: number;
+  branch_id: number;
+  type: string;
+  quantity: number;
+  notes?: string;
+}) {
+  try {
+    return await _createStockMovement(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Recipes
 // =====================
 
-export async function getRecipes() {
+async function _getRecipes() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -293,11 +399,21 @@ export async function getRecipes() {
     .eq("menu_items.tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function getMenuItemsForRecipe() {
+export async function getRecipes() {
+  try {
+    return await _getRecipes();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _getMenuItemsForRecipe() {
   const { supabase, tenantId } = await getTenantId();
 
   // Get all menu items for tenant
@@ -308,7 +424,8 @@ export async function getMenuItemsForRecipe() {
     .eq("is_available", true)
     .order("name");
 
-  if (itemsError) throw new Error(itemsError.message);
+  if (itemsError)
+    throw new ActionError(itemsError.message, "SERVER_ERROR", 500);
 
   // Get all recipe menu_item_ids
   const { data: existingRecipes, error: recipesError } = await supabase
@@ -316,13 +433,24 @@ export async function getMenuItemsForRecipe() {
     .select("menu_item_id, menu_items!inner(tenant_id)")
     .eq("menu_items.tenant_id", tenantId);
 
-  if (recipesError) throw new Error(recipesError.message);
+  if (recipesError)
+    throw new ActionError(recipesError.message, "SERVER_ERROR", 500);
 
   const usedIds = new Set(existingRecipes?.map((r) => r.menu_item_id) ?? []);
   return (allItems ?? []).filter((item) => !usedIds.has(item.id));
 }
 
-export async function createRecipe(data: {
+export async function getMenuItemsForRecipe() {
+  try {
+    return await _getMenuItemsForRecipe();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createRecipe(data: {
   menu_item_id: number;
   yield_qty?: number;
   yield_unit?: string;
@@ -406,7 +534,26 @@ export async function createRecipe(data: {
   return { success: true };
 }
 
-export async function deleteRecipe(id: number) {
+export async function createRecipe(data: {
+  menu_item_id: number;
+  yield_qty?: number;
+  yield_unit?: string;
+  ingredients: {
+    ingredient_id: number;
+    quantity: number;
+    unit: string;
+    waste_pct?: number;
+  }[];
+}) {
+  try {
+    return await _createRecipe(data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _deleteRecipe(id: number) {
   const { supabase } = await getTenantId();
 
   // Delete recipe ingredients first (cascade should handle this, but be explicit)
@@ -420,11 +567,20 @@ export async function deleteRecipe(id: number) {
   return { success: true };
 }
 
+export async function deleteRecipe(id: number) {
+  try {
+    return await _deleteRecipe(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Suppliers
 // =====================
 
-export async function getSuppliers() {
+async function _getSuppliers() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -433,11 +589,21 @@ export async function getSuppliers() {
     .eq("tenant_id", tenantId)
     .order("name");
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createSupplier(formData: FormData) {
+export async function getSuppliers() {
+  try {
+    return await _getSuppliers();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createSupplier(formData: FormData) {
   const parsed = createSupplierSchema.safeParse({
     name: formData.get("name"),
     contact_name: formData.get("contact_name"),
@@ -476,7 +642,16 @@ export async function createSupplier(formData: FormData) {
   return { success: true };
 }
 
-export async function updateSupplier(id: number, formData: FormData) {
+export async function createSupplier(formData: FormData) {
+  try {
+    return await _createSupplier(formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _updateSupplier(id: number, formData: FormData) {
   const parsed = createSupplierSchema.safeParse({
     name: formData.get("name"),
     contact_name: formData.get("contact_name"),
@@ -491,7 +666,7 @@ export async function updateSupplier(id: number, formData: FormData) {
     return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
-  const { supabase } = await getTenantId();
+  const { supabase, tenantId } = await getTenantId();
 
   const { error } = await supabase
     .from("suppliers")
@@ -504,7 +679,8 @@ export async function updateSupplier(id: number, formData: FormData) {
       payment_terms: parsed.data.payment_terms || null,
       rating: parsed.data.rating ?? null,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
@@ -512,10 +688,23 @@ export async function updateSupplier(id: number, formData: FormData) {
   return { success: true };
 }
 
-export async function deleteSupplier(id: number) {
-  const { supabase } = await getTenantId();
+export async function updateSupplier(id: number, formData: FormData) {
+  try {
+    return await _updateSupplier(id, formData);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
 
-  const { error } = await supabase.from("suppliers").delete().eq("id", id);
+async function _deleteSupplier(id: number) {
+  const { supabase, tenantId } = await getTenantId();
+
+  const { error } = await supabase
+    .from("suppliers")
+    .delete()
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) {
     if (error.code === "23503") {
@@ -528,11 +717,20 @@ export async function deleteSupplier(id: number) {
   return { success: true };
 }
 
+export async function deleteSupplier(id: number) {
+  try {
+    return await _deleteSupplier(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
 // =====================
 // Purchase Orders
 // =====================
 
-export async function getPurchaseOrders() {
+async function _getPurchaseOrders() {
   const { supabase, tenantId } = await getTenantId();
 
   const { data, error } = await supabase
@@ -543,11 +741,21 @@ export async function getPurchaseOrders() {
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
   return data ?? [];
 }
 
-export async function createPurchaseOrder(input: {
+export async function getPurchaseOrders() {
+  try {
+    return await _getPurchaseOrders();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error);
+  }
+}
+
+async function _createPurchaseOrder(input: {
   supplier_id: number;
   branch_id: number;
   expected_at?: string;
@@ -609,14 +817,30 @@ export async function createPurchaseOrder(input: {
   return { success: true };
 }
 
-export async function sendPurchaseOrder(id: number) {
-  const { supabase } = await getTenantId();
+export async function createPurchaseOrder(input: {
+  supplier_id: number;
+  branch_id: number;
+  expected_at?: string;
+  notes?: string;
+  items: { ingredient_id: number; quantity: number; unit_price: number }[];
+}) {
+  try {
+    return await _createPurchaseOrder(input);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _sendPurchaseOrder(id: number) {
+  const { supabase, tenantId } = await getTenantId();
 
   // Verify current status allows transition to 'sent'
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (fetchError) return { error: fetchError.message };
@@ -633,7 +857,8 @@ export async function sendPurchaseOrder(id: number) {
       status: "sent",
       ordered_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
@@ -641,7 +866,16 @@ export async function sendPurchaseOrder(id: number) {
   return { success: true };
 }
 
-export async function receivePurchaseOrder(input: {
+export async function sendPurchaseOrder(id: number) {
+  try {
+    return await _sendPurchaseOrder(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _receivePurchaseOrder(input: {
   po_id: number;
   items: { po_item_id: number; received_qty: number }[];
 }) {
@@ -651,13 +885,14 @@ export async function receivePurchaseOrder(input: {
     return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
   }
 
-  const { supabase, userId } = await getTenantId();
+  const { supabase, tenantId, userId } = await getTenantId();
 
   // Verify current status allows transition to 'received'
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
     .select("status, branch_id")
     .eq("id", parsed.data.po_id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (fetchError) return { error: fetchError.message };
@@ -685,7 +920,8 @@ export async function receivePurchaseOrder(input: {
       status: "received",
       received_at: new Date().toISOString(),
     })
-    .eq("id", parsed.data.po_id);
+    .eq("id", parsed.data.po_id)
+    .eq("tenant_id", tenantId);
 
   if (poError) return { error: poError.message };
 
@@ -747,14 +983,27 @@ export async function receivePurchaseOrder(input: {
   return { success: true };
 }
 
-export async function cancelPurchaseOrder(id: number) {
-  const { supabase } = await getTenantId();
+export async function receivePurchaseOrder(input: {
+  po_id: number;
+  items: { po_item_id: number; received_qty: number }[];
+}) {
+  try {
+    return await _receivePurchaseOrder(input);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+async function _cancelPurchaseOrder(id: number) {
+  const { supabase, tenantId } = await getTenantId();
 
   // Verify current status allows transition to 'cancelled'
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("tenant_id", tenantId)
     .single();
 
   if (fetchError) return { error: fetchError.message };
@@ -768,10 +1017,20 @@ export async function cancelPurchaseOrder(id: number) {
   const { error } = await supabase
     .from("purchase_orders")
     .update({ status: "cancelled" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return { error: error.message };
 
   revalidatePath("/admin/inventory");
   return { success: true };
+}
+
+export async function cancelPurchaseOrder(id: number) {
+  try {
+    return await _cancelPurchaseOrder(id);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
 }

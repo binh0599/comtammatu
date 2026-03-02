@@ -239,3 +239,21 @@ export {
   getDiscountTypeLabel,
   formatDiscount,
 } from "./utils/format";
+
+// ===== Error Handling =====
+export {
+  ActionError,
+  handleServerActionError,
+  requireRole,
+} from "./utils/errors";
+export type { ActionErrorCode, ActionResult } from "./utils/errors";
+
+// ===== Server Helpers (import only in server-side code) =====
+export {
+  getAuthenticatedProfile,
+  verifyBranchOwnership,
+  verifyTenantOwnership,
+} from "./server/auth-helpers";
+
+export { auditLog, logSecurityEvent } from "./server/audit-helpers";
+export type { AuditLogEntry, SecurityEventEntry } from "./server/audit-helpers";

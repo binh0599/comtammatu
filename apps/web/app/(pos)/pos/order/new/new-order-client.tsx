@@ -128,7 +128,7 @@ export function NewOrderClient({
       })),
     });
 
-    if (result.error) {
+    if (result.error !== null) {
       toast.error(result.error);
       return;
     }
@@ -136,7 +136,7 @@ export function NewOrderClient({
     // Auto-confirm the order to send to kitchen
     if (result.orderId) {
       const confirmResult = await confirmOrder(result.orderId);
-      if (confirmResult.error) {
+      if (confirmResult.error !== null) {
         toast.error(
           `Đơn tạo thành công nhưng chưa gửi bếp: ${confirmResult.error}`
         );

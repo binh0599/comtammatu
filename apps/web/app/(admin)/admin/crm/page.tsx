@@ -24,14 +24,14 @@ export default async function CrmPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Khach hang" }]} />
+      <Header breadcrumbs={[{ label: "Khách hàng" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <Tabs defaultValue="customers" className="w-full">
           <TabsList>
-            <TabsTrigger value="customers">Khach hang</TabsTrigger>
-            <TabsTrigger value="loyalty">Hang thanh vien</TabsTrigger>
+            <TabsTrigger value="customers">Khách hàng</TabsTrigger>
+            <TabsTrigger value="loyalty">Hạng thành viên</TabsTrigger>
             <TabsTrigger value="vouchers">Voucher</TabsTrigger>
-            <TabsTrigger value="feedback">Phan hoi</TabsTrigger>
+            <TabsTrigger value="feedback">Phản hồi</TabsTrigger>
           </TabsList>
           <TabsContent value="customers">
             <CustomersTab
