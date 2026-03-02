@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { getOrderForFeedback } from "../../actions";
 import { FeedbackForm } from "./feedback-form";
+
+export const metadata: Metadata = {
+  title: "Đánh giá - Com Tấm Mã Tú",
+};
 
 export default async function FeedbackPage({
   params,

@@ -38,15 +38,15 @@ function parseItems(items: unknown): TicketItem[] {
 }
 
 function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
-  if (!rule) return { border: "border-green-500", bg: "bg-green-950" };
+  if (!rule) return { border: "border-green-500", bg: "bg-green-950", label: "Bình thường" };
 
   if (rule.critical_min && elapsedMinutes >= rule.critical_min) {
-    return { border: "border-red-500", bg: "bg-red-950" };
+    return { border: "border-red-500", bg: "bg-red-950", label: "Trễ" };
   }
   if (rule.warning_min && elapsedMinutes >= rule.warning_min) {
-    return { border: "border-yellow-500", bg: "bg-yellow-950" };
+    return { border: "border-yellow-500", bg: "bg-yellow-950", label: "Gần trễ" };
   }
-  return { border: "border-green-500", bg: "bg-green-950" };
+  return { border: "border-green-500", bg: "bg-green-950", label: "Bình thường" };
 }
 
 export function TicketCard({
@@ -88,7 +88,9 @@ export function TicketCard({
   }
 
   return (
-    <div
+    <article
+      role="article"
+      aria-label={`Đơn hàng ${orderNumber}${tableNumber ? ` bàn ${tableNumber}` : ""}, ${colors.label}, ${elapsed} phút`}
       className={cn(
         "flex flex-col rounded-xl border-2 p-4 transition-all",
         colors.border,
@@ -116,6 +118,19 @@ export function TicketCard({
           >
             {elapsed}m
           </p>
+          <span
+            className={cn(
+              "mt-1 inline-block rounded px-2 py-1 text-xs font-medium text-foreground",
+              elapsed >= (timingRule?.critical_min ?? 999)
+                ? "bg-red-900"
+                : elapsed >= (timingRule?.warning_min ?? 999)
+                  ? "bg-yellow-900"
+                  : "bg-green-900"
+            )}
+            aria-hidden="false"
+          >
+            {colors.label}
+          </span>
         </div>
       </div>
 
@@ -134,6 +149,7 @@ export function TicketCard({
         onClick={handleBump}
         disabled={isPending}
         size="lg"
+        aria-label={ticket.status === "pending" ? `Bắt đầu chuẩn bị ${orderNumber}` : `Hoàn thành ${orderNumber}`}
         className={cn(
           "mt-4 min-h-[64px] w-full text-lg font-bold",
           ticket.status === "pending"
@@ -147,6 +163,6 @@ export function TicketCard({
             ? "BẮT ĐẦU"
             : "XONG"}
       </Button>
-    </div>
+    </article>
   );
 }

@@ -221,7 +221,7 @@ export function StationsTable({
         >
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               Thêm bếp KDS
             </Button>
           </DialogTrigger>
@@ -299,11 +299,11 @@ export function StationsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên bếp</TableHead>
-              <TableHead>Chi nhánh</TableHead>
-              <TableHead>Danh mục</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead scope="col">Tên bếp</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Danh mục</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -356,9 +356,9 @@ export function StationsTable({
                             variant="ghost"
                             size="icon"
                             onClick={() => openEditDialog(station)}
-                            title="Sửa bếp"
+                            aria-label="Sửa bếp"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -440,11 +440,11 @@ export function StationsTable({
                         size="icon"
                         onClick={() => handleToggle(station.id)}
                         disabled={isPending}
-                        title={
+                        aria-label={
                           station.is_active ? "Tắt bếp" : "Bật bếp"
                         }
                       >
-                        <Power className="h-4 w-4" />
+                        <Power className="h-4 w-4" aria-hidden="true" />
                       </Button>
 
                       {/* Delete Dialog */}
@@ -453,9 +453,9 @@ export function StationsTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            title="Xóa bếp"
+                            aria-label="Xóa bếp"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

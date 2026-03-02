@@ -1,6 +1,12 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getStationInfo, getStationTickets, getTimingRules } from "./actions";
 import { KdsBoard } from "./kds-board";
+
+export const metadata: Metadata = {
+  title: "KDS - Com Tấm Mã Tú",
+  description: "Kitchen Display System",
+};
 
 export default async function KdsStationPage({
   params,

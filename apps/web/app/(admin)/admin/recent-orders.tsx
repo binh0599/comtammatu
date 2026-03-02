@@ -60,11 +60,11 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Mã đơn</TableHead>
-                <TableHead>Loại</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Tổng tiền</TableHead>
-                <TableHead>Thời gian</TableHead>
+                <TableHead scope="col">Mã đơn</TableHead>
+                <TableHead scope="col">Loại</TableHead>
+                <TableHead scope="col">Trạng thái</TableHead>
+                <TableHead scope="col" className="text-right">Tổng tiền</TableHead>
+                <TableHead scope="col">Thời gian</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -123,7 +123,7 @@ export function OrdersList({
               <div className="text-right">
                 <p className="font-semibold">{formatPrice(order.total)}</p>
               </div>
-              <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" />
+              <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" aria-hidden="true" />
             </Link>
           );
         })}

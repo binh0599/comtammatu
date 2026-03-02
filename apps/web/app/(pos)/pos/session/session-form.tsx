@@ -83,7 +83,7 @@ export function OpenSessionForm({
       <form action={handleSubmit}>
         <CardContent className="grid gap-4">
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div id="error-opening-session" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
               {error}
             </div>
           )}
@@ -96,7 +96,7 @@ export function OpenSessionForm({
             <>
               <div className="grid gap-2">
                 <Label htmlFor="terminal_id">Thiết bị thu ngân</Label>
-                <Select name="terminal_id" required>
+                <Select name="terminal_id" required aria-describedby={error ? "error-opening-session" : undefined}>
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn máy thu ngân" />
                   </SelectTrigger>
@@ -119,6 +119,7 @@ export function OpenSessionForm({
                   step={1000}
                   defaultValue={500000}
                   required
+                  aria-describedby={error ? "error-opening-session" : undefined}
                 />
                 <p className="text-muted-foreground text-xs">
                   Số tiền mặt có sẵn khi bắt đầu ca
@@ -189,7 +190,7 @@ export function ActiveSessionCard({
       </CardHeader>
       <CardContent className="grid gap-4">
         {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+          <div id="error-close-session" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
             {error}
           </div>
         )}
@@ -260,11 +261,15 @@ export function ActiveSessionCard({
                     value={closingAmount}
                     onChange={(e) => setClosingAmount(e.target.value)}
                     required
+                    aria-describedby={error ? "error-close-session" : undefined}
                   />
                 </div>
 
                 {difference !== null && (
                   <div
+                    id="closing-difference"
+                    role="status"
+                    aria-live="polite"
                     className={`rounded-md p-3 text-sm ${
                       difference === 0
                         ? "bg-green-50 text-green-700"

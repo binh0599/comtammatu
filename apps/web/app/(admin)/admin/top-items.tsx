@@ -36,10 +36,10 @@ export function TopItems({ items }: TopItemsProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-10">#</TableHead>
-                <TableHead>Tên món</TableHead>
-                <TableHead className="text-right">Số lượng</TableHead>
-                <TableHead className="text-right">Doanh thu</TableHead>
+                <TableHead scope="col" className="w-10">#</TableHead>
+                <TableHead scope="col">Tên món</TableHead>
+                <TableHead scope="col" className="text-right">Số lượng</TableHead>
+                <TableHead scope="col" className="text-right">Doanh thu</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

@@ -82,12 +82,14 @@ function OrderCard({ order }: { order: Order }) {
         {/* Expand/collapse items */}
         <button
           onClick={() => setExpanded(!expanded)}
+          aria-expanded={expanded}
+          aria-label={`${expanded ? "Ẩn" : "Hiển thị"} chi tiết ${order.order_items.length} món ăn trong đơn hàng #${order.order_number}`}
           className="text-muted-foreground mt-3 flex w-full items-center gap-1 text-sm"
         >
           {expanded ? (
-            <ChevronUp className="h-4 w-4" />
+            <ChevronUp aria-hidden="true" className="h-4 w-4" />
           ) : (
-            <ChevronDown className="h-4 w-4" />
+            <ChevronDown aria-hidden="true" className="h-4 w-4" />
           )}
           {order.order_items.length} mon
         </button>

@@ -99,6 +99,7 @@ export function OrderQueue({
                 key={order.id}
                 type="button"
                 onClick={() => onSelectOrder(order)}
+                aria-label={`Chọn đơn ${order.order_number}, trạng thái ${getOrderStatusLabel(order.status)}, tổng cộng ${formatPrice(order.total)}`}
                 className={cn(
                   "w-full rounded-lg border p-4 text-left transition-all",
                   isSelected

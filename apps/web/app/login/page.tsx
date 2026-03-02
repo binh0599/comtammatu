@@ -1,6 +1,11 @@
+import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
+
+export const metadata: Metadata = {
+  title: "Đăng nhập - Com Tấm Mã Tú",
+};
 
 export default async function LoginPage() {
   // Check if already authenticated

@@ -117,7 +117,11 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
       {/* Star rating */}
       <div className="space-y-3">
         <Label className="text-base font-medium">Chat luong dich vu</Label>
-        <div className="flex items-center justify-center gap-2">
+        <div
+          role="group"
+          aria-label="Đánh giá sao"
+          className="flex items-center justify-center gap-2"
+        >
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
@@ -125,12 +129,15 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
               onClick={() => setRating(star)}
               onMouseEnter={() => setHoverRating(star)}
               onMouseLeave={() => setHoverRating(0)}
+              aria-label={`Đánh giá ${star} sao`}
+              aria-pressed={rating === star}
               className={cn(
                 "flex h-12 w-12 items-center justify-center rounded-lg transition-all",
                 "hover:scale-110 active:scale-95"
               )}
             >
               <Star
+                aria-hidden="true"
                 className={cn(
                   "h-8 w-8 transition-colors",
                   star <= (hoverRating || rating)

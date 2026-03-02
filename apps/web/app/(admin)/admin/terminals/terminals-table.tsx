@@ -137,7 +137,7 @@ export function TerminalsTable({
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               Thêm thiết bị
             </Button>
           </DialogTrigger>
@@ -235,12 +235,12 @@ export function TerminalsTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên</TableHead>
-              <TableHead>Loại</TableHead>
-              <TableHead>Chi nhánh</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead>Phê duyệt</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead scope="col">Tên</TableHead>
+              <TableHead scope="col">Loại</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col">Phê duyệt</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -287,9 +287,9 @@ export function TerminalsTable({
                           size="icon"
                           onClick={() => handleApprove(terminal.id)}
                           disabled={isPending}
-                          title="Phê duyệt"
+                          aria-label="Phê duyệt"
                         >
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
                       <Button
@@ -297,22 +297,22 @@ export function TerminalsTable({
                         size="icon"
                         onClick={() => handleToggle(terminal.id)}
                         disabled={isPending}
-                        title={
+                        aria-label={
                           terminal.is_active
                             ? "Tắt thiết bị"
                             : "Bật thiết bị"
                         }
                       >
-                        <Power className="h-4 w-4" />
+                        <Power className="h-4 w-4" aria-hidden="true" />
                       </Button>
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            title="Xóa thiết bị"
+                            aria-label="Xóa thiết bị"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

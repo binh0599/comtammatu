@@ -110,7 +110,7 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               Thêm thực đơn
             </Button>
           </DialogTrigger>
@@ -166,10 +166,10 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên thực đơn</TableHead>
-              <TableHead>Loại</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead scope="col">Tên thực đơn</TableHead>
+              <TableHead scope="col">Loại</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -200,9 +200,9 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
+                      <Button variant="ghost" size="icon" asChild aria-label="Xem chi tiết">
                         <Link href={`/admin/menu/${menu.id}`}>
-                          <Eye className="h-4 w-4" />
+                          <Eye className="h-4 w-4" aria-hidden="true" />
                         </Link>
                       </Button>
 
@@ -218,8 +218,9 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                             variant="ghost"
                             size="icon"
                             onClick={() => setEditingMenu(menu)}
+                            aria-label="Sửa thực đơn"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -307,8 +308,8 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                          <Button variant="ghost" size="icon" aria-label="Xóa thực đơn">
+                            <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
