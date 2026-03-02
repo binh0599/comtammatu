@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const orderItemInput = z.object({
   menu_item_id: z.number().int().positive(),
-  variant_id: z.number().int().positive().optional(),
+  variant_id: z.number().int().positive().nullish(),
   quantity: z.number().int().positive().max(99),
   modifiers: z
     .array(
@@ -13,8 +13,8 @@ const orderItemInput = z.object({
         price: z.number().min(0),
       }),
     )
-    .optional(),
-  notes: z.string().max(200).optional(),
+    .nullish(),
+  notes: z.string().max(200).nullish(),
 });
 
 // ===== Create Order =====
@@ -22,7 +22,7 @@ const orderItemInput = z.object({
 export const createOrderSchema = z.object({
   table_id: z.number().int().positive().nullish(),
   type: z.enum(["dine_in", "takeaway", "delivery"]),
-  notes: z.string().max(500).optional(),
+  notes: z.string().max(500).nullish(),
   items: z
     .array(orderItemInput)
     .min(1, "Đơn hàng phải có ít nhất 1 món"),
