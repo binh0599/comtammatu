@@ -1,3 +1,4 @@
+/* eslint-disable @eslint-react/no-nested-component-definitions */
 "use client"
 
 import * as React from "react"

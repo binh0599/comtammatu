@@ -61,18 +61,10 @@ async function _login(formData: FormData) {
   const role = profile?.role ?? "customer";
 
   // Role-based redirect
-  switch (role) {
-    case "owner":
-    case "manager":
-      redirect("/admin");
-    case "cashier":
-    case "waiter":
-      redirect("/pos");
-    case "chef":
-      redirect("/kds");
-    default:
-      redirect("/customer");
-  }
+  if (role === "owner" || role === "manager") redirect("/admin");
+  else if (role === "cashier" || role === "waiter") redirect("/pos");
+  else if (role === "chef") redirect("/kds");
+  else redirect("/customer");
 }
 
 export async function login(formData: FormData) {
