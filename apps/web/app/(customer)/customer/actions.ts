@@ -6,6 +6,7 @@ import {
   deletionRequestSchema,
   ActionError,
   handleServerActionError,
+  safeDbError,
 } from "@comtammatu/shared";
 
 // ---------------------------------------------------------------------------
@@ -57,14 +58,14 @@ async function _getPublicMenu() {
     .eq("is_available", true)
     .order("name");
 
-  if (itemsError) throw new ActionError(itemsError.message, "SERVER_ERROR");
+  if (itemsError) throw safeDbError(itemsError, "db");
 
   const { data: categories, error: catError } = await supabase
     .from("menu_categories")
     .select("id, name, sort_order")
     .order("sort_order");
 
-  if (catError) throw new ActionError(catError.message, "SERVER_ERROR");
+  if (catError) throw safeDbError(catError, "db");
 
   return {
     items: items ?? [],
@@ -78,7 +79,7 @@ export async function getPublicMenu() {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -98,7 +99,7 @@ async function _getCustomerOrders() {
     .order("created_at", { ascending: false })
     .limit(20);
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR");
+  if (error) throw safeDbError(error, "db");
   return orders ?? [];
 }
 
@@ -108,7 +109,7 @@ export async function getCustomerOrders() {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -196,7 +197,7 @@ export async function getCustomerLoyalty() {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -335,7 +336,7 @@ export async function getCustomerProfile() {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -393,7 +394,7 @@ export async function requestDataExport() {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 

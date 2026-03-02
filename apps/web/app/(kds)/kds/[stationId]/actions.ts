@@ -8,6 +8,8 @@ import {
   type KdsTicketStatus,
   ActionError,
   handleServerActionError,
+  safeDbError,
+  safeDbErrorResult,
 } from "@comtammatu/shared";
 
 async function getKdsProfile() {
@@ -52,7 +54,7 @@ async function _getStationTickets(stationId: number) {
     .in("status", ["pending", "preparing"])
     .order("created_at", { ascending: true });
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -62,7 +64,7 @@ export async function getStationTickets(stationId: number) {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -87,7 +89,7 @@ export async function getStationInfo(stationId: number) {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -99,7 +101,7 @@ async function _getTimingRules(stationId: number) {
     .select("category_id, prep_time_min, warning_min, critical_min")
     .eq("station_id", stationId);
 
-  if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+  if (error) throw safeDbError(error, "db");
   return data ?? [];
 }
 
@@ -109,7 +111,7 @@ export async function getTimingRules(stationId: number) {
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
-    throw new Error(result.error);
+    throw new Error(result.error, { cause: error });
   }
 }
 
@@ -163,7 +165,7 @@ async function _bumpTicket(
     .update(updateData)
     .eq("id", ticketId);
 
-  if (error) return { error: error.message };
+  if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/kds");
   return { error: null };
