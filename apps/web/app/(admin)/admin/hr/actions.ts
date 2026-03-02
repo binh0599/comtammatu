@@ -387,7 +387,7 @@ async function _getLeaveRequests() {
 
   if (empError) throw new ActionError(empError.message, "SERVER_ERROR", 500);
 
-  const empIds = (employees ?? []).map((e) => e.id);
+  const empIds = (employees ?? []).map((e: { id: number }) => e.id);
   if (empIds.length === 0) return [];
 
   const { data, error } = await supabase

@@ -28,7 +28,7 @@ export default async function MenuDetailPage({ params }: Props) {
 
   // Fetch items for all categories
   const categoriesWithItems = await Promise.all(
-    categories.map(async (cat) => {
+    categories.map(async (cat: { id: number; [key: string]: unknown }) => {
       const items = await getMenuItems(cat.id);
       return { ...cat, items };
     }),

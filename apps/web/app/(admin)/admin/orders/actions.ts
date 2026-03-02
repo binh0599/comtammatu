@@ -61,7 +61,7 @@ export async function getAdminOrders() {
   if (branchError) throw new Error(branchError.message);
   if (!branches || branches.length === 0) return [];
 
-  const branchIds = branches.map((b) => b.id);
+  const branchIds = branches.map((b: { id: number }) => b.id);
 
   // Get orders with related data
   const { data, error } = await supabase

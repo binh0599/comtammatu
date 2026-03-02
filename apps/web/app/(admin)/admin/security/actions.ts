@@ -27,10 +27,10 @@ async function _getSecurityEvents(severity?: string) {
   if (!events || events.length === 0) return [];
 
   const userIds = [
-    ...new Set(events.map((e) => e.user_id).filter(Boolean)),
+    ...new Set(events.map((e: Record<string, unknown>) => e.user_id).filter(Boolean)),
   ] as string[];
   const terminalIds = [
-    ...new Set(events.map((e) => e.terminal_id).filter(Boolean)),
+    ...new Set(events.map((e: Record<string, unknown>) => e.terminal_id).filter(Boolean)),
   ] as number[];
 
   let profilesMap: Record<string, string> = {};
@@ -41,7 +41,7 @@ async function _getSecurityEvents(severity?: string) {
       .in("id", userIds);
     if (profiles) {
       profilesMap = Object.fromEntries(
-        profiles.map((p) => [p.id, p.full_name ?? ""])
+        profiles.map((p: { id: string; full_name: string | null }) => [p.id, p.full_name ?? ""])
       );
     }
   }
@@ -54,17 +54,17 @@ async function _getSecurityEvents(severity?: string) {
       .in("id", terminalIds);
     if (terminals) {
       terminalsMap = Object.fromEntries(
-        terminals.map((t) => [t.id, t.name ?? ""])
+        terminals.map((t: { id: number; name: string | null }) => [t.id, t.name ?? ""])
       );
     }
   }
 
-  return events.map((event) => ({
+  return events.map((event: Record<string, unknown>) => ({
     ...event,
     source_ip: event.source_ip ? String(event.source_ip) : null,
-    user_name: event.user_id ? (profilesMap[event.user_id] ?? null) : null,
+    user_name: event.user_id ? (profilesMap[event.user_id as string] ?? null) : null,
     terminal_name: event.terminal_id
-      ? (terminalsMap[event.terminal_id] ?? null)
+      ? (terminalsMap[event.terminal_id as number] ?? null)
       : null,
   }));
 }
@@ -125,7 +125,7 @@ async function _getAuditLogs(resourceType?: string) {
 
   if (!logs || logs.length === 0) return [];
 
-  const userIds = [...new Set(logs.map((l) => l.user_id).filter(Boolean))];
+  const userIds = [...new Set(logs.map((l: Record<string, unknown>) => l.user_id).filter(Boolean))] as string[];
 
   let profilesMap: Record<string, string> = {};
   if (userIds.length > 0) {
@@ -135,15 +135,15 @@ async function _getAuditLogs(resourceType?: string) {
       .in("id", userIds);
     if (profiles) {
       profilesMap = Object.fromEntries(
-        profiles.map((p) => [p.id, p.full_name ?? ""])
+        profiles.map((p: { id: string; full_name: string | null }) => [p.id, p.full_name ?? ""])
       );
     }
   }
 
-  return logs.map((log) => ({
+  return logs.map((log: Record<string, unknown>) => ({
     ...log,
     ip_address: log.ip_address ? String(log.ip_address) : null,
-    user_name: log.user_id ? (profilesMap[log.user_id] ?? null) : null,
+    user_name: log.user_id ? (profilesMap[log.user_id as string] ?? null) : null,
   }));
 }
 
@@ -161,7 +161,7 @@ async function _getAuditResourceTypes() {
 
   if (!data) return [];
 
-  const types = [...new Set(data.map((d) => d.resource_type))];
+  const types = [...new Set<string>(data.map((d: { resource_type: string }) => d.resource_type))];
   return types.sort();
 }
 

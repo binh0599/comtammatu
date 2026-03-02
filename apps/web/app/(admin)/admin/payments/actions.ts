@@ -62,7 +62,7 @@ export async function getPayments() {
   if (branchError) throw new Error(branchError.message);
   if (!branches || branches.length === 0) return [];
 
-  const branchIds = branches.map((b) => b.id);
+  const branchIds = branches.map((b: { id: number }) => b.id);
 
   // Get terminals for those branches
   const { data: terminals, error: termError } = await supabase
@@ -73,7 +73,7 @@ export async function getPayments() {
   if (termError) throw new Error(termError.message);
   if (!terminals || terminals.length === 0) return [];
 
-  const terminalIds = terminals.map((t) => t.id);
+  const terminalIds = terminals.map((t: { id: number }) => t.id);
 
   // Get payments with related data
   const { data, error } = await supabase

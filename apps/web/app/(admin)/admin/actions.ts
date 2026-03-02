@@ -34,7 +34,7 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
 
-  const branchIds = branches.map((b) => b.id);
+  const branchIds = branches.map((b: { id: number }) => b.id);
 
   const { data: orders, error: orderError } = await supabase
     .from("orders")
@@ -108,7 +108,7 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) return [];
 
-  const branchIds = branches.map((b) => b.id);
+  const branchIds = branches.map((b: { id: number }) => b.id);
 
   const { data: orders, error: orderError } = await supabase
     .from("orders")
@@ -120,13 +120,13 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
   if (orderError)
     throw new ActionError(orderError.message, "SERVER_ERROR", 500);
 
-  return (orders ?? []).map((o) => ({
-    id: o.id,
-    order_number: o.order_number,
-    status: o.status,
+  return (orders ?? []).map((o: Record<string, unknown>) => ({
+    id: o.id as number,
+    order_number: o.order_number as string,
+    status: o.status as string,
     total: Number(o.total),
-    type: o.type,
-    created_at: o.created_at,
+    type: o.type as string,
+    created_at: o.created_at as string,
     tables: o.tables as { number: number } | null,
   }));
 }
@@ -155,7 +155,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) return [];
 
-  const branchIds = branches.map((b) => b.id);
+  const branchIds = branches.map((b: { id: number }) => b.id);
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -171,7 +171,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     throw new ActionError(orderError.message, "SERVER_ERROR", 500);
   if (!completedOrders || completedOrders.length === 0) return [];
 
-  const orderIds = completedOrders.map((o) => o.id);
+  const orderIds = completedOrders.map((o: { id: number }) => o.id);
 
   const { data: items, error: itemError } = await supabase
     .from("order_items")
@@ -224,7 +224,7 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
     throw new ActionError(branchError.message, "SERVER_ERROR", 500);
   if (!branches || branches.length === 0) return {};
 
-  const branchIds = branches.map((b) => b.id);
+  const branchIds = branches.map((b: { id: number }) => b.id);
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -258,7 +258,7 @@ async function _getRevenueTrend(days: number = 7) {
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b) => b.id) ?? [];
+      .data?.map((b: { id: number }) => b.id) ?? [];
 
   if (branchIds.length === 0) return [];
 
@@ -310,7 +310,7 @@ async function _getHourlyOrderVolume() {
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b) => b.id) ?? [];
+      .data?.map((b: { id: number }) => b.id) ?? [];
 
   if (branchIds.length === 0) return [];
 
@@ -351,7 +351,7 @@ async function _getOrderStatusDistribution() {
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b) => b.id) ?? [];
+      .data?.map((b: { id: number }) => b.id) ?? [];
 
   if (branchIds.length === 0) return [];
 
