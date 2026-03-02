@@ -198,7 +198,7 @@ export async function deleteTerminal(id: number) {
 
   const { error } = await supabase
     .from("pos_terminals")
-    .delete()
+    .update({ is_active: false })
     .eq("id", id);
 
   if (error) return { error: error.message };
