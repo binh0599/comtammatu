@@ -60,3 +60,4 @@ coverage/
 # Prisma
 packages/database/prisma/*.db
 packages/database/generated/
+.vercel

@@ -276,3 +276,152 @@ export async function getOrderStatusCounts(): Promise<Record<string, number>> {
 
   return counts;
 }
+
+// --- Revenue Trend (last N days) ---
+
+export async function getRevenueTrend(days: number = 7) {
+  const { supabase, tenantId } = await getTenantId();
+
+  const branchIds =
+    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
+      .data?.map((b) => b.id) ?? [];
+
+  if (branchIds.length === 0) return [];
+
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days + 1);
+  startDate.setHours(0, 0, 0, 0);
+
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("total, created_at")
+    .in("branch_id", branchIds)
+    .not("status", "in", '("cancelled","draft")')
+    .gte("created_at", startDate.toISOString());
+
+  // Group by date
+  const dateMap = new Map<string, { revenue: number; orders: number }>();
+
+  // Initialize all days with 0
+  for (let i = 0; i < days; i++) {
+    const d = new Date(startDate);
+    d.setDate(d.getDate() + i);
+    const key = d.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+    dateMap.set(key, { revenue: 0, orders: 0 });
+  }
+
+  for (const order of orders ?? []) {
+    const d = new Date(order.created_at);
+    const key = d.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+    });
+    const entry = dateMap.get(key);
+    if (entry) {
+      entry.revenue += Number(order.total);
+      entry.orders += 1;
+    }
+  }
+
+  return Array.from(dateMap.entries()).map(([date, data]) => ({
+    date,
+    revenue: data.revenue,
+    orders: data.orders,
+  }));
+}
+
+// --- Hourly Order Volume (today) ---
+
+export async function getHourlyOrderVolume() {
+  const { supabase, tenantId } = await getTenantId();
+
+  const branchIds =
+    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
+      .data?.map((b) => b.id) ?? [];
+
+  if (branchIds.length === 0) return [];
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("created_at")
+    .in("branch_id", branchIds)
+    .not("status", "in", '("cancelled","draft")')
+    .gte("created_at", todayStart.toISOString());
+
+  // Initialize all hours 6-23 with 0
+  const hourMap = new Map<number, number>();
+  for (let h = 6; h <= 23; h++) {
+    hourMap.set(h, 0);
+  }
+
+  for (const order of orders ?? []) {
+    const hour = new Date(order.created_at).getHours();
+    hourMap.set(hour, (hourMap.get(hour) ?? 0) + 1);
+  }
+
+  return Array.from(hourMap.entries()).map(([hour, count]) => ({
+    hour: `${hour}h`,
+    count,
+  }));
+}
+
+// --- Order Status Distribution (today, for pie chart) ---
+
+export async function getOrderStatusDistribution() {
+  const { supabase, tenantId } = await getTenantId();
+
+  const branchIds =
+    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
+      .data?.map((b) => b.id) ?? [];
+
+  if (branchIds.length === 0) return [];
+
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
+
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("status")
+    .in("branch_id", branchIds)
+    .gte("created_at", todayStart.toISOString());
+
+  const statusMap = new Map<string, number>();
+  for (const order of orders ?? []) {
+    statusMap.set(order.status, (statusMap.get(order.status) ?? 0) + 1);
+  }
+
+  const colorMap: Record<string, string> = {
+    draft: "hsl(var(--muted-foreground))",
+    confirmed: "hsl(210, 80%, 55%)",
+    preparing: "hsl(45, 90%, 50%)",
+    ready: "hsl(150, 70%, 45%)",
+    served: "hsl(170, 60%, 40%)",
+    completed: "hsl(142, 76%, 36%)",
+    cancelled: "hsl(0, 70%, 50%)",
+  };
+
+  const labelMap: Record<string, string> = {
+    draft: "Nháp",
+    confirmed: "Đã xác nhận",
+    preparing: "Đang chuẩn bị",
+    ready: "Sẵn sàng",
+    served: "Đã phục vụ",
+    completed: "Hoàn tất",
+    cancelled: "Đã huỷ",
+  };
+
+  return Array.from(statusMap.entries())
+    .filter(([, count]) => count > 0)
+    .map(([status, count]) => ({
+      status,
+      label: labelMap[status] ?? status,
+      count,
+      color: colorMap[status] ?? "hsl(var(--muted-foreground))",
+    }));
+}

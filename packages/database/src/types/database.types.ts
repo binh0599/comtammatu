@@ -2642,6 +2642,10 @@ export type Database = {
       auth_role: { Args: never; Returns: string }
       auth_tenant_id: { Args: never; Returns: number }
       generate_order_number: { Args: { p_branch_id: number }; Returns: string }
+      increment_voucher_usage: {
+        Args: { p_voucher_id: number }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

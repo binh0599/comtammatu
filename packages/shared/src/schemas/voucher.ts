@@ -29,3 +29,24 @@ export type CreateVoucherInput = z.infer<typeof createVoucherSchema>;
 
 export const updateVoucherSchema = createVoucherSchema.partial();
 export type UpdateVoucherInput = z.infer<typeof updateVoucherSchema>;
+
+// ===== Voucher Validation at POS =====
+
+export const validateVoucherSchema = z.object({
+  code: z
+    .string()
+    .min(1, "Mã voucher không được để trống")
+    .transform((v) => v.toUpperCase().trim()),
+  branch_id: z.number().int().positive(),
+  subtotal: z.number().min(0),
+});
+export type ValidateVoucherInput = z.infer<typeof validateVoucherSchema>;
+
+export const applyVoucherSchema = z.object({
+  order_id: z.number().int().positive(),
+  voucher_code: z
+    .string()
+    .min(1, "Mã voucher không được để trống")
+    .transform((v) => v.toUpperCase().trim()),
+});
+export type ApplyVoucherInput = z.infer<typeof applyVoucherSchema>;

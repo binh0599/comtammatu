@@ -267,3 +267,20 @@ export function formatPoints(points: number): string {
   const sign = points > 0 ? "+" : "";
   return `${sign}${new Intl.NumberFormat("vi-VN").format(points)} điểm`;
 }
+
+// ===== Post-MVP: Discount Formatters =====
+
+export function getDiscountTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    percent: "Giảm %",
+    fixed: "Giảm cố định",
+    voucher: "Voucher",
+  };
+  return labels[type] ?? type;
+}
+
+/** Format discount display. e.g. "10%" or "50.000₫" */
+export function formatDiscount(type: string, value: number): string {
+  if (type === "percent") return `${value}%`;
+  return formatPrice(value);
+}

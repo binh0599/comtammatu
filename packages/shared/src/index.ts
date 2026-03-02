@@ -38,6 +38,8 @@ export {
   VOUCHER_TYPES,
   DELETION_REQUEST_STATUSES,
   CRM_ROLES,
+  // Post-MVP
+  DISCOUNT_TYPES,
 } from "./constants";
 
 export type {
@@ -69,6 +71,8 @@ export type {
   LoyaltyTransactionType,
   VoucherType,
   DeletionRequestStatus,
+  // Post-MVP
+  DiscountType,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -171,10 +175,17 @@ export type {
 } from "./schemas/crm";
 
 // Week 7-8: Voucher
-export { createVoucherSchema, updateVoucherSchema } from "./schemas/voucher";
+export {
+  createVoucherSchema,
+  updateVoucherSchema,
+  validateVoucherSchema,
+  applyVoucherSchema,
+} from "./schemas/voucher";
 export type {
   CreateVoucherInput,
   UpdateVoucherInput,
+  ValidateVoucherInput,
+  ApplyVoucherInput,
 } from "./schemas/voucher";
 
 // Week 7-8: Feedback
@@ -220,4 +231,7 @@ export {
   getVoucherTypeLabel,
   getDeletionStatusLabel,
   formatPoints,
+  // Post-MVP
+  getDiscountTypeLabel,
+  formatDiscount,
 } from "./utils/format";

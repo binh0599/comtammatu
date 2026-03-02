@@ -202,6 +202,9 @@ export type LoyaltyTransactionType =
 export const VOUCHER_TYPES = ["percent", "fixed", "free_item"] as const;
 export type VoucherType = (typeof VOUCHER_TYPES)[number];
 
+export const DISCOUNT_TYPES = ["percent", "fixed", "voucher"] as const;
+export type DiscountType = (typeof DISCOUNT_TYPES)[number];
+
 export const DELETION_REQUEST_STATUSES = [
   "pending",
   "cancelled",
