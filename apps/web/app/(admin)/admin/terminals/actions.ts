@@ -138,6 +138,17 @@ export async function approveTerminal(id: number) {
   const ownership = await verifyTerminalOwnership(supabase, id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
+  // Check if already approved — idempotent guard
+  const { data: existing } = await supabase
+    .from("pos_terminals")
+    .select("approved_at")
+    .eq("id", id)
+    .single();
+
+  if (existing?.approved_at) {
+    return { error: "Thiết bị đã được phê duyệt trước đó" };
+  }
+
   const { error } = await supabase
     .from("pos_terminals")
     .update({
