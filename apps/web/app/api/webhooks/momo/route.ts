@@ -58,34 +58,10 @@ export async function POST(request: Request) {
 
   // resultCode 0 = success
   if (body.resultCode === 0) {
-    // Extract our internal order ID from extraData
-    let internalOrderId: number | null = null;
-    try {
-      const extraData = JSON.parse(body.extraData);
-      // extraData.orderId format: "ORDER-{id}-{uuid_prefix}"
-      const match = extraData.orderId?.match(/^ORDER-(\d+)-/);
-      if (match) {
-        internalOrderId = Number(match[1]);
-      }
-    } catch {
-      console.error("Failed to parse Momo extraData", body.extraData);
-    }
-
-    if (!internalOrderId) {
-      console.error("Could not extract order ID from Momo IPN", {
-        extraData: body.extraData,
-        orderId: body.orderId,
-      });
-      return NextResponse.json(
-        { resultCode: 1, message: "Invalid extraData" },
-        { status: 400 },
-      );
-    }
-
     // Find pending payment by idempotency_key (= requestId)
     const { data: payment, error: paymentError } = await supabase
       .from("payments")
-      .select("id, status, order_id")
+      .select("id, status, order_id, pos_session_id")
       .eq("idempotency_key", body.requestId)
       .maybeSingle();
 
@@ -138,7 +114,10 @@ export async function POST(request: Request) {
     if (order) {
       await supabase
         .from("orders")
-        .update({ status: "completed" })
+        .update({
+          status: "completed",
+          pos_session_id: payment.pos_session_id,
+        })
         .eq("id", order.id);
 
       // Free table if dine_in

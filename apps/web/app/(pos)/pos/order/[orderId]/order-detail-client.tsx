@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Send, CheckCircle } from "lucide-react";
+import { ArrowLeft, Send, CheckCircle, Banknote } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -152,6 +152,14 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
             Đã phục vụ
           </Button>
         )}
+        {order.status === "served" && (
+          <Link href="/pos/cashier" className="flex-1">
+            <Button variant="outline" className="w-full gap-2">
+              <Banknote className="h-4 w-4" />
+              Chuyển sang thu ngân
+            </Button>
+          </Link>
+        )}
         {(order.status === "draft" || order.status === "confirmed") && (
           <Button
             variant="destructive"
@@ -162,6 +170,18 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
           </Button>
         )}
       </div>
+
+      {/* Status guidance */}
+      {order.status === "served" && (
+        <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 text-center text-sm text-blue-700">
+          Đơn hàng đã phục vụ — chờ thanh toán tại quầy thu ngân
+        </div>
+      )}
+      {order.status === "preparing" && (
+        <div className="mb-4 rounded-lg border border-orange-200 bg-orange-50 p-3 text-center text-sm text-orange-700">
+          Bếp đang chuẩn bị đơn hàng
+        </div>
+      )}
 
       {/* Items */}
       <Card className="mb-4">
