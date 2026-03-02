@@ -108,7 +108,7 @@ async function _createCustomer(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -157,7 +157,7 @@ async function _updateCustomer(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -264,7 +264,7 @@ async function _adjustLoyaltyPoints(input: {
   const parsed = adjustLoyaltyPointsSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase } = await getTenantId();
@@ -358,7 +358,7 @@ async function _createLoyaltyTier(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -402,7 +402,7 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -514,7 +514,7 @@ async function _createVoucher(data: {
   const parsed = createVoucherSchema.safeParse(data);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -771,7 +771,7 @@ async function _respondToFeedback(id: number, input: { response: string }) {
   const parsed = respondFeedbackSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, userId } = await getTenantId();

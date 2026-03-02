@@ -19,7 +19,7 @@ export const createStockMovementSchema = z.object({
   ingredient_id: z.coerce.number().int().positive("Chọn nguyên liệu"),
   branch_id: z.coerce.number().int().positive("Chọn chi nhánh"),
   type: z.enum(["in", "out", "transfer", "waste", "adjust"], {
-    required_error: "Chọn loại phiếu",
+    error: "Chọn loại phiếu",
   }),
   quantity: z.coerce.number().positive("Số lượng phải lớn hơn 0"),
   cost_at_time: z.coerce.number().min(0).optional(),

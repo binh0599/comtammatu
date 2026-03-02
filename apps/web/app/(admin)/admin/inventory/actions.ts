@@ -103,7 +103,7 @@ async function _createIngredient(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -153,7 +153,7 @@ async function _updateIngredient(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -316,7 +316,7 @@ async function _createStockMovement(data: {
   const parsed = createStockMovementSchema.safeParse(data);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, userId } = await getTenantId();
@@ -464,7 +464,7 @@ async function _createRecipe(data: {
   const parsed = createRecipeSchema.safeParse(data);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase } = await getTenantId();
@@ -615,7 +615,7 @@ async function _createSupplier(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -663,7 +663,7 @@ async function _updateSupplier(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId } = await getTenantId();
@@ -765,7 +765,7 @@ async function _createPurchaseOrder(input: {
   const parsed = createPurchaseOrderSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId, userId } = await getTenantId();
@@ -882,7 +882,7 @@ async function _receivePurchaseOrder(input: {
   const parsed = receivePurchaseOrderSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
   }
 
   const { supabase, tenantId, userId } = await getTenantId();

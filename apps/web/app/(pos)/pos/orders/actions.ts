@@ -87,7 +87,7 @@ async function _createOrder(data: {
   const parsed = createOrderSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
-      parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
       "VALIDATION_ERROR"
     );
   }
@@ -347,7 +347,7 @@ async function _updateOrderStatus(data: {
   const parsed = updateOrderStatusSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
-      parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
       "VALIDATION_ERROR"
     );
   }
@@ -499,7 +499,7 @@ async function _addOrderItems(data: {
   const parsed = addOrderItemsSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
-      parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
       "VALIDATION_ERROR"
     );
   }

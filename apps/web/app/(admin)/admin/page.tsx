@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
 import {
   Card,
@@ -5,12 +6,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardCards } from "./dashboard-cards";
 import { RecentOrders } from "./recent-orders";
 import { TopItems } from "./top-items";
-import { RevenueChart } from "./revenue-chart";
-import { StatusChart } from "./status-chart";
-import { HourlyChart } from "./hourly-chart";
 import {
   getDashboardStats,
   getRecentOrders,
@@ -20,6 +19,25 @@ import {
   getHourlyOrderVolume,
   getOrderStatusDistribution,
 } from "./actions";
+
+function ChartFallback() {
+  return <Skeleton className="h-[300px] w-full" />;
+}
+
+const RevenueChart = dynamic(
+  () => import("./revenue-chart").then((m) => ({ default: m.RevenueChart })),
+  { loading: ChartFallback },
+);
+
+const StatusChart = dynamic(
+  () => import("./status-chart").then((m) => ({ default: m.StatusChart })),
+  { loading: ChartFallback },
+);
+
+const HourlyChart = dynamic(
+  () => import("./hourly-chart").then((m) => ({ default: m.HourlyChart })),
+  { loading: ChartFallback },
+);
 
 export default async function AdminDashboard() {
   const [

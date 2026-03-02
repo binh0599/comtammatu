@@ -111,7 +111,7 @@ export async function createKdsStation(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   const { name, branch_id, category_ids } = parsed.data;
@@ -172,7 +172,7 @@ export async function updateKdsStation(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   const { name, category_ids } = parsed.data;

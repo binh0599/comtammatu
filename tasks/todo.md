@@ -172,6 +172,34 @@
 - [ ] Retention cron jobs (auto-delete after 30-day grace period)
 - [ ] Auto-tier upgrade triggers for loyalty
 
+## Completed: Post-MVP Sprint 2 — Production Resilience
+
+### Loading States (22 loading.tsx files)
+- [x] Reusable skeleton components — `StatCardSkeleton`, `ChartSkeleton`, `TableSkeleton`, `TabsSkeleton`, `CardSkeleton`, `OrderCardSkeleton`, `KdsTicketSkeleton`
+- [x] Admin routes (9) — dashboard, menu, crm, hr, inventory, payments, security, terminals, kds-stations
+- [x] POS routes (5) — pos, orders, order/new, cashier, session
+- [x] KDS routes (2) — station list, station board (dark theme)
+- [x] Customer routes (6) — home, menu, orders, loyalty, account, feedback
+
+### Error Boundaries (8 files)
+- [x] Route group level (4) — admin, pos, kds (dark), customer (mobile)
+- [x] Critical sub-routes (3) — pos/orders, pos/cashier, kds/[stationId]
+- [x] Global not-found.tsx — Vietnamese 404 page
+
+### Lazy Loading
+- [x] Recharts lazy loaded via `next/dynamic` on admin dashboard (3 chart components)
+
+### Rate Limiting
+- [x] `@comtammatu/security` — Upstash Redis sliding window rate limiter with graceful degradation
+- [x] `authLimiter` (5/60s) on login
+- [x] `webhookLimiter` (10/60s) on Momo webhook
+- [x] `apiLimiter` (30/60s) on privacy data-export and deletion-request
+
+### Zod v4 Compatibility Fixes
+- [x] `.error.errors` → `.error.issues` (41 occurrences across 11 action files)
+- [x] `required_error` → `error` in `z.enum()` (5 occurrences in hr.ts, inventory.ts)
+- [x] `z.record(schema)` → `z.record(z.string(), schema)` (3 occurrences in kds.ts, pos.ts)
+
 ---
 
 ## Current Roadmap — Post-MVP
@@ -199,7 +227,7 @@
 - [ ] E2E testing (Playwright — critical flows: login, order, payment, KDS)
 - [ ] RLS validation test suite
 - [ ] API documentation (OpenAPI spec)
-- [ ] Upstash Redis rate limiting
+- [x] Upstash Redis rate limiting ← Sprint 2
 - [ ] Peripheral config (printers, cash drawers)
 ```
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { verifyMomoSignature, type MomoIPNPayload } from "@/lib/momo";
+import { webhookLimiter, getClientIp } from "@comtammatu/security";
 
 function getServiceClient() {
   return createClient(
@@ -13,6 +14,16 @@ function getServiceClient() {
 const MAX_WEBHOOK_AGE_MS = 60 * 60 * 1000;
 
 export async function POST(request: Request) {
+  // Rate limit by IP
+  const ip = getClientIp(request);
+  const { success: rateLimitOk } = await webhookLimiter.limit(ip);
+  if (!rateLimitOk) {
+    return NextResponse.json(
+      { resultCode: 1, message: "Too many requests" },
+      { status: 429 },
+    );
+  }
+
   let body: MomoIPNPayload;
 
   try {

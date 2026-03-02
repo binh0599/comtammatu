@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedCustomer } from "../helpers";
+import { apiLimiter } from "@comtammatu/security";
 
 /**
  * GET /api/privacy/data-export
@@ -16,6 +17,17 @@ export async function GET() {
   }
 
   const { supabase, customer } = result;
+
+  // Rate limit by customer ID
+  const { success: rateLimitOk } = await apiLimiter.limit(
+    `data-export:${customer.id}`,
+  );
+  if (!rateLimitOk) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
 
   // Collect all customer data in parallel
   const [

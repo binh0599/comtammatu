@@ -55,7 +55,7 @@ async function _processPayment(data: {
   const parsed = processPaymentSchema.safeParse(data);
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
     };
   }
 
@@ -234,7 +234,7 @@ async function _validateVoucher(data: {
   const parsed = validateVoucherSchema.safeParse(data);
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
     };
   }
 
@@ -336,7 +336,7 @@ async function _applyVoucherToOrder(data: {
   const parsed = applyVoucherSchema.safeParse(data);
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
     };
   }
 

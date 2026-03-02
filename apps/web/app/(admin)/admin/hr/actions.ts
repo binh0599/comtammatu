@@ -129,7 +129,7 @@ async function _createStaffAccount(data: CreateStaffAccountInput) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -216,7 +216,7 @@ async function _createEmployee(data: CreateEmployeeInput) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -261,7 +261,7 @@ async function _updateEmployee(id: number, data: UpdateEmployeeInput) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -344,7 +344,7 @@ async function _createShift(formData: FormData) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -436,7 +436,7 @@ async function _createShiftAssignment(data: CreateShiftAssignmentInput) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -551,7 +551,7 @@ async function _createLeaveRequest(data: CreateLeaveRequestInput) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -587,7 +587,7 @@ async function _approveLeaveRequest(data: ApproveLeaveRequestInput) {
 
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 

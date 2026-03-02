@@ -253,7 +253,7 @@ async function _submitFeedback(data: {
   const parsed = createFeedbackSchema.safeParse(data);
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 
@@ -407,7 +407,7 @@ async function _requestDeletion(reason?: string) {
   const parsed = deletionRequestSchema.safeParse({ reason });
   if (!parsed.success) {
     return {
-      error: parsed.error.errors[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
     };
   }
 

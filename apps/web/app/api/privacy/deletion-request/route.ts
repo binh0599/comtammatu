@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { deletionRequestSchema } from "@comtammatu/shared";
 import { getAuthenticatedCustomer } from "../helpers";
+import { apiLimiter } from "@comtammatu/security";
 
 /**
  * GET /api/privacy/deletion-request
@@ -44,6 +45,17 @@ export async function POST(request: Request) {
   }
 
   const { supabase, customer } = result;
+
+  // Rate limit by customer ID
+  const { success: rateLimitOk } = await apiLimiter.limit(
+    `deletion-request:${customer.id}`,
+  );
+  if (!rateLimitOk) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
 
   // Check for existing pending request
   const { data: existing } = await supabase

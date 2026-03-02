@@ -67,7 +67,7 @@ export async function openSession(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   // Verify terminal is a cashier_station in the same branch
@@ -139,7 +139,7 @@ export async function closeSession(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   // Verify session belongs to this cashier and is open

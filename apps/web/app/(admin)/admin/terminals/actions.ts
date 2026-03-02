@@ -96,7 +96,7 @@ export async function createTerminal(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   // Verify branch belongs to caller's tenant

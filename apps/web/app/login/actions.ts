@@ -2,8 +2,10 @@
 
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { z } from "zod";
 import { ActionError, handleServerActionError } from "@comtammatu/shared";
+import { authLimiter } from "@comtammatu/security";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -11,6 +13,18 @@ const loginSchema = z.object({
 });
 
 async function _login(formData: FormData) {
+  // Rate limit by IP
+  const headersList = await headers();
+  const ip =
+    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const { success } = await authLimiter.limit(ip);
+  if (!success) {
+    throw new ActionError(
+      "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.",
+      "VALIDATION_ERROR",
+    );
+  }
+
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -18,7 +32,7 @@ async function _login(formData: FormData) {
 
   if (!parsed.success) {
     throw new ActionError(
-      parsed.error.errors[0]?.message ?? "Thông tin đăng nhập không hợp lệ",
+      parsed.error.issues[0]?.message ?? "Thông tin đăng nhập không hợp lệ",
       "VALIDATION_ERROR",
     );
   }

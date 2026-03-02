@@ -8,7 +8,7 @@ export const createKdsStationSchema = z.object({
   category_ids: z
     .array(z.number().int().positive())
     .min(1, "Phải chọn ít nhất 1 danh mục"),
-  display_config: z.record(z.unknown()).optional(),
+  display_config: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type CreateKdsStationInput = z.infer<typeof createKdsStationSchema>;
@@ -19,7 +19,7 @@ export const updateKdsStationSchema = z.object({
   station_id: z.number().int().positive(),
   name: z.string().min(1).max(100).optional(),
   category_ids: z.array(z.number().int().positive()).min(1).optional(),
-  display_config: z.record(z.unknown()).optional(),
+  display_config: z.record(z.string(), z.unknown()).optional(),
   is_active: z.boolean().optional(),
 });
 
