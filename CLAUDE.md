@@ -7,9 +7,9 @@
 
 ## I. PROJECT STATUS
 
-**Phase: WEEK 3-4 COMPLETE — Week 5-6 Ready (Operations)**
+**Phase: WEEK 5-6 COMPLETE — Week 7-8 Ready (CRM, Privacy & Polish)**
 
-Weeks 1-4 are complete. The full order lifecycle works end-to-end: waiter creates order on mobile → KDS displays with realtime → chef bumps → cashier processes cash payment → shift close. Ready for Week 5-6 Operations (Inventory, HR, Dashboard).
+Weeks 1-6 are complete. Full order lifecycle works end-to-end (waiter → KDS → chef → cashier → cash payment). Operations management delivered: admin dashboard with real stats, inventory management with supplier/PO workflows, HR basics (employees, shifts, schedule, attendance, leave), and security monitoring. Ready for Week 7-8 CRM, Privacy & Polish.
 
 | Aspect                            | Status                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------ |
@@ -17,32 +17,36 @@ Weeks 1-4 are complete. The full order lifecycle works end-to-end: waiter create
 | Development Roadmap               | Complete (`docs/ROADMAP.md`) — timeline, milestones, migration path            |
 | Project Operating System          | Complete (`docs/PROJECT_OPERATING_SYSTEM_ENGLISH.md`)                    |
 | AI boot file (this file)          | Complete                                                                 |
-| Git repository                    | Active (`main` branch, 6 commits)                                        |
+| Git repository                    | Active (`main` branch, 10 commits)                                       |
 | Monorepo scaffolding              | Complete (Turborepo + pnpm workspaces)                                   |
 | CI/CD pipeline                    | Complete (`.github/workflows/ci.yml` + Prisma generate step)             |
-| Next.js app shell                 | **Working** — 18 routes, auth, admin, POS, KDS, cashier                  |
+| Next.js app shell                 | **Working** — 21 routes, auth, admin, POS, KDS, cashier, inventory, HR, security |
 | Domain modules                    | 10 stubs created (not yet used — logic lives in app routes)              |
-| Shared packages                   | `database` implemented, `shared` implemented (Zod schemas + constants + formatters), `security` + `ui` are stubs |
+| Shared packages                   | `database` implemented, `shared` implemented (7 Zod schema files + constants + formatters), `security` + `ui` are stubs |
 | Database schema                   | **Complete** — 5 migrations, v2.2 with RLS + POS/KDS triggers           |
 | Supabase project                  | **Linked** (project: `zrlriuednoaqrsvnjjyo`)                             |
 | Vercel project                    | **Deployed** (`comtammatu.vercel.app`)                                   |
 | shadcn/ui                         | **Installed** (new-york style, 24 components)                            |
 | Tailwind CSS                      | **Installed** (v4.2.1 + design tokens + dark mode)                       |
 | Auth module                       | **Working** — login, middleware, role-based routing, RBAC                 |
-| Admin UI                          | **Working** — sidebar, nav, dashboard placeholder, menu CRUD, terminal CRUD, KDS station CRUD |
+| Admin UI                          | **Working** — dashboard (real data), menu CRUD, terminal CRUD, KDS station CRUD, inventory (6 tabs), HR (5 tabs), security (2 tabs) |
 | POS (Waiter)                      | **Working** — table grid, menu selector, cart, order creation, order list |
 | POS (Cashier)                     | **Working** — order queue, cash payment, session open/close              |
 | KDS                               | **Working** — realtime board, ticket cards, bump system, timing colors   |
 | Realtime                          | **Working** — 4 hooks (orders, tables, KDS tickets, broadcast)           |
 | Prisma                            | **Configured** — v7.2 with `@prisma/adapter-pg` driver adapter           |
 | Agent skills                      | 4 project-level + 70+ platform skills mapped (Section XIX)               |
-| tasks/ directory                  | Active — lessons (5), regressions (3), predictions (1)                   |
+| tasks/ directory                  | Active — lessons (7), regressions (3), predictions (2)                   |
 
-**Current file count:** ~114 source files (excluding generated/node_modules)
+**Current file count:** ~145 source files (excluding generated/node_modules)
 
 ### Git History
 
 ```
+0c9f776 feat: complete Week 5-6 — Inventory, HR, Dashboard, Security
+a629b37 fix(lint): resolve React purity violations and unused vars
+3c1c1ca fix(ci): Turborepo typecheck must depend on own build task
+d7042d4 fix(ci): resolve Prisma DIRECT_URL crash in CI/Vercel builds
 8adbbf7 feat: complete Week 3-4 — Split POS, Orders, KDS & Cash Payment
 8b48166 feat: complete Week 1-2 foundation — auth, admin layout, menu CRUD
 15ee48d merge: schema v2.2 upgrade (junction tables, index policy)
@@ -58,6 +62,8 @@ a4d9dcf chore: initial project scaffold
 3. **Prisma 7 breaking changes** — Use `prisma.config.ts` for datasource URL, `@prisma/adapter-pg` driver adapter, generated client at `../generated/prisma/client`
 4. **Client components must bypass supabase barrel** — Import from `@comtammatu/database/src/supabase/client` directly (not barrel which re-exports `server.ts` with `next/headers`)
 5. **Regenerate DB types after adding SQL functions** — `supabase gen types typescript` after every migration with `CREATE FUNCTION`
+6. **Date.now() is impure in RSC** — ESLint `react-hooks/purity` flags `Date.now()`. Use `const now = new Date(); now.getTime() - offset` instead.
+7. **Parallel Task agents for independent modules** — When modules don't share files, build concurrently. Shared package first, then consumers in parallel.
 
 ---
 
@@ -95,7 +101,33 @@ comtammatu/
 │   │   ├── (admin)/
 │   │   │   ├── layout.tsx             # Admin layout (auth guard, RBAC: owner/manager only)
 │   │   │   └── admin/
-│   │   │       ├── page.tsx           # Dashboard (revenue, orders, customers placeholders)
+│   │   │       ├── page.tsx           # Dashboard (real data — revenue, orders, top items)
+│   │   │       ├── actions.ts         # getDashboardStats(), getRecentOrders(), getTopSellingItems()
+│   │   │       ├── dashboard-cards.tsx # Stat cards: revenue, order count, avg value
+│   │   │       ├── recent-orders.tsx  # Recent orders table (last 10)
+│   │   │       ├── top-items.tsx      # Top selling items table (last 30 days)
+│   │   │       ├── inventory/
+│   │   │       │   ├── page.tsx       # Inventory hub (6 tabs RSC)
+│   │   │       │   ├── actions.ts     # All inventory + supplier Server Actions
+│   │   │       │   ├── ingredients-tab.tsx     # Ingredient CRUD table + dialogs
+│   │   │       │   ├── stock-levels-tab.tsx    # Stock per branch, low-stock alerts
+│   │   │       │   ├── stock-movements-tab.tsx # Movement log + create dialog
+│   │   │       │   ├── recipes-tab.tsx         # Recipe editor (multi-row ingredients)
+│   │   │       │   ├── suppliers-tab.tsx       # Supplier CRUD with rating
+│   │   │       │   └── purchase-orders-tab.tsx # PO workflow (draft→send→receive)
+│   │   │       ├── hr/
+│   │   │       │   ├── page.tsx       # HR hub (5 tabs RSC)
+│   │   │       │   ├── actions.ts     # All HR Server Actions
+│   │   │       │   ├── employees-tab.tsx  # Employee directory CRUD
+│   │   │       │   ├── shifts-tab.tsx     # Shift template management
+│   │   │       │   ├── schedule-tab.tsx   # Shift assignments by date
+│   │   │       │   ├── attendance-tab.tsx # Attendance records (read-only)
+│   │   │       │   └── leave-tab.tsx      # Leave requests + approve/reject
+│   │   │       ├── security/
+│   │   │       │   ├── page.tsx       # Security hub (2 tabs RSC)
+│   │   │       │   ├── actions.ts     # getSecurityEvents(), getAuditLogs()
+│   │   │       │   ├── events-tab.tsx # Security events with severity filter
+│   │   │       │   └── audit-tab.tsx  # Audit log viewer with JSON diff
 │   │   │       ├── menu/
 │   │   │       │   ├── page.tsx       # Menu list (RSC, fetches via Server Action)
 │   │   │       │   ├── actions.ts     # Server Actions: getMenus(), createMenu(), etc.
@@ -157,7 +189,7 @@ comtammatu/
 │   │       └── auth/callback/route.ts # Supabase PKCE auth callback
 │   ├── components/
 │   │   ├── admin/
-│   │   │   ├── app-sidebar.tsx        # Admin sidebar (Menu, Terminals, KDS Stations links)
+│   │   │   ├── app-sidebar.tsx        # Admin sidebar (Dashboard, Menu, Terminals, KDS, Inventory, HR, Security links)
 │   │   │   ├── header.tsx             # Admin header with breadcrumbs
 │   │   │   └── nav-user.tsx           # User dropdown (avatar, logout)
 │   │   ├── pos/
@@ -209,18 +241,21 @@ comtammatu/
 │   │   ├── generated/prisma/client/   # Generated Prisma client (git-ignored)
 │   │   ├── package.json               # prisma, @prisma/client, @prisma/adapter-pg, pg
 │   │   └── tsconfig.json
-│   ├── shared/                        # @comtammatu/shared (IMPLEMENTED — Zod schemas + constants)
+│   ├── shared/                        # @comtammatu/shared (IMPLEMENTED — 7 Zod schema files + constants + formatters)
 │   │   ├── package.json               # zod
 │   │   ├── src/
 │   │   │   ├── index.ts               # Barrel: all schemas, constants, formatters
-│   │   │   ├── constants.ts           # Status enums, role arrays, valid transitions
+│   │   │   ├── constants.ts           # Status enums, role arrays, valid transitions (30+ exports)
 │   │   │   ├── schemas/
 │   │   │   │   ├── order.ts           # createOrderSchema, updateOrderStatusSchema, addOrderItemsSchema
 │   │   │   │   ├── pos.ts             # registerTerminalSchema, openSessionSchema, closeSessionSchema
 │   │   │   │   ├── payment.ts         # processPaymentSchema (cash-only MVP)
-│   │   │   │   └── kds.ts             # createKdsStationSchema, updateKdsStationSchema, bumpTicketSchema
+│   │   │   │   ├── kds.ts             # createKdsStationSchema, updateKdsStationSchema, bumpTicketSchema
+│   │   │   │   ├── inventory.ts       # createIngredientSchema, createStockMovementSchema, createRecipeSchema
+│   │   │   │   ├── supplier.ts        # createSupplierSchema, createPurchaseOrderSchema, receivePurchaseOrderSchema
+│   │   │   │   └── hr.ts             # createEmployeeSchema, createShiftSchema, createLeaveRequestSchema, etc.
 │   │   │   └── utils/
-│   │   │       └── format.ts          # formatPrice, formatElapsedTime, Vietnamese labels
+│   │   │       └── format.ts          # formatPrice, formatElapsedTime, 12+ Vietnamese label functions
 │   │   └── tsconfig.json
 │   ├── security/                      # @comtammatu/security (Upstash) — STUB
 │   │   ├── package.json               # @upstash/ratelimit, @upstash/redis
@@ -679,24 +714,28 @@ All three phases are done. See `tasks/todo.md` for full checklist.
 - Realtime hooks for orders, tables, KDS tickets, and broadcast notifications
 - DB triggers: `generate_order_number()`, `create_kds_tickets`, `update_order_from_kds`, `record_order_status_change`
 
-**Deferred from Week 3-4 (enhancements, not blockers):**
+### Completed: Week 5-6 — Operations
+
+**Week 5-6 delivered (31 files, +7,274 lines, 3 new routes → 21 total):**
+- Admin Dashboard with real data — revenue (today/week/month), order counts, recent orders, top items
+- Inventory Management (6 tabs) — ingredients CRUD, stock levels with low-stock alerts, stock movements with optimistic concurrency, recipes, suppliers CRUD, purchase orders (draft→send→receive workflow)
+- HR Basic (5 tabs) — employee directory linked to profiles, shift templates, schedule assignments, attendance records, leave requests with approve/reject
+- Security Monitoring (2 tabs) — security events with severity filter + 24h summary, audit logs with resource type filter + JSON diff
+- Shared package extended — 3 new Zod schema files (inventory, supplier, hr), 15 new constants, 12 new formatters
+- Sidebar navigation updated — Kho hàng, Nhân sự, Bảo mật links
+
+**Deferred from Week 3-4 + 5-6 (enhancements, not blockers):**
 - VNPay/Momo payment integration (webhooks, HMAC verification)
 - Offline support (Service Worker, IndexedDB, AES-256-GCM)
 - Device fingerprinting, peripheral config, receipt printing
 - Order discounts/voucher application
 - Upstash Redis rate limiting
+- Stock auto-deduction trigger on order completion
+- Charts/graphs for dashboard (plain Cards + Tables for MVP)
+- Payroll calculations
+- Attendance clock-in/clock-out mechanism
 
-### Current Phase: Week 5-6 — Operations
-
-```
-- [ ] Inventory Management (stock levels, movements, recipes, auto-deduction, alerts)
-- [ ] Supplier Management (CRUD, purchase orders)
-- [ ] HR Basic (employee profiles, shift scheduling, attendance, leave)
-- [ ] Admin Dashboard (revenue reports, daily summary, branch comparison)
-- [ ] Security Monitoring (events dashboard, failed logins, terminal heartbeat)
-```
-
-### Next: Week 7-8 — CRM, Privacy & Polish
+### Current Phase: Week 7-8 — CRM, Privacy & Polish
 
 ```
 - [ ] CRM (customer profiles, loyalty points/tiers, feedback)

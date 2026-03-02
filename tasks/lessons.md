@@ -30,3 +30,13 @@
 **Pattern:** TypeScript error `TS2345` — Supabase RPC function `generate_order_number` not found in `Database['public']['Functions']`.
 **Rule:** After adding SQL functions via migration (`CREATE OR REPLACE FUNCTION`), you must regenerate `database.types.ts` before the app can call `supabase.rpc("function_name")`.
 **Prevention:** After every migration that adds/modifies functions, run `supabase gen types typescript` (or Supabase MCP `generate_typescript_types`) and update `packages/database/src/types/database.types.ts`.
+
+## 2026-03-02: Date.now() is flagged as impure in React Server Components
+**Pattern:** ESLint `react-hooks/purity` rule flags `Date.now()` as impure function call during render in RSC.
+**Rule:** In React Server Components (async function components), avoid `Date.now()`. Instead, create a `new Date()` once and use `.getTime()` for arithmetic.
+**Prevention:** Use `const now = new Date(); const ts = now.getTime() - offset;` instead of `new Date(Date.now() - offset)`.
+
+## 2026-03-02: Parallel Task agents accelerate multi-module delivery
+**Pattern:** Week 5-6 had 6 independent modules (shared, dashboard, inventory, suppliers, HR, security). Sequential implementation would take much longer.
+**Rule:** When modules are independent (different routes, different files), launch multiple Task agents in parallel. Group by dependency: shared package first, then consumer modules in parallel.
+**Prevention:** Identify module boundaries early. If modules don't share new files, they can be built concurrently. Verify with typecheck + lint + build after all agents complete.

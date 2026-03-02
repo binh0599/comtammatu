@@ -182,6 +182,34 @@ export type AttendanceSource = (typeof ATTENDANCE_SOURCES)[number];
 export const SECURITY_SEVERITIES = ["info", "warning", "critical"] as const;
 export type SecuritySeverity = (typeof SECURITY_SEVERITIES)[number];
 
+// ===== CRM =====
+
+export const CUSTOMER_GENDERS = ["M", "F", "Other"] as const;
+export type CustomerGender = (typeof CUSTOMER_GENDERS)[number];
+
+export const CUSTOMER_SOURCES = ["pos", "app", "website"] as const;
+export type CustomerSource = (typeof CUSTOMER_SOURCES)[number];
+
+export const LOYALTY_TRANSACTION_TYPES = [
+  "earn",
+  "redeem",
+  "expire",
+  "adjust",
+] as const;
+export type LoyaltyTransactionType =
+  (typeof LOYALTY_TRANSACTION_TYPES)[number];
+
+export const VOUCHER_TYPES = ["percent", "fixed", "free_item"] as const;
+export type VoucherType = (typeof VOUCHER_TYPES)[number];
+
+export const DELETION_REQUEST_STATUSES = [
+  "pending",
+  "cancelled",
+  "completed",
+] as const;
+export type DeletionRequestStatus =
+  (typeof DELETION_REQUEST_STATUSES)[number];
+
 // ===== Module-Specific Role Sets =====
 
 /** Roles allowed to manage inventory */
@@ -192,3 +220,6 @@ export const HR_ROLES = ["hr", "manager", "owner"] as const;
 
 /** Roles allowed to view admin dashboard */
 export const ADMIN_ROLES = ["owner", "manager"] as const;
+
+/** Roles allowed to manage CRM */
+export const CRM_ROLES = ["manager", "owner"] as const;

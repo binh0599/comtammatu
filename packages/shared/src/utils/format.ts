@@ -213,3 +213,57 @@ export function getShiftAssignmentStatusLabel(status: string): string {
   };
   return labels[status] ?? status;
 }
+
+// ===== Week 7-8 CRM Formatters =====
+
+export function getCustomerGenderLabel(gender: string): string {
+  const labels: Record<string, string> = {
+    M: "Nam",
+    F: "Nữ",
+    Other: "Khác",
+  };
+  return labels[gender] ?? gender;
+}
+
+export function getCustomerSourceLabel(source: string): string {
+  const labels: Record<string, string> = {
+    pos: "Tại quán",
+    app: "Ứng dụng",
+    website: "Website",
+  };
+  return labels[source] ?? source;
+}
+
+export function getLoyaltyTransactionTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    earn: "Tích điểm",
+    redeem: "Đổi điểm",
+    expire: "Hết hạn",
+    adjust: "Điều chỉnh",
+  };
+  return labels[type] ?? type;
+}
+
+export function getVoucherTypeLabel(type: string): string {
+  const labels: Record<string, string> = {
+    percent: "Giảm %",
+    fixed: "Giảm cố định",
+    free_item: "Tặng món",
+  };
+  return labels[type] ?? type;
+}
+
+export function getDeletionStatusLabel(status: string): string {
+  const labels: Record<string, string> = {
+    pending: "Đang chờ",
+    cancelled: "Đã hủy",
+    completed: "Hoàn tất",
+  };
+  return labels[status] ?? status;
+}
+
+/** Format loyalty points with sign. e.g. +150, -50 */
+export function formatPoints(points: number): string {
+  const sign = points > 0 ? "+" : "";
+  return `${sign}${new Intl.NumberFormat("vi-VN").format(points)} điểm`;
+}

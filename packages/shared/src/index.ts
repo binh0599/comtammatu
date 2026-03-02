@@ -31,6 +31,13 @@ export {
   INVENTORY_ROLES,
   HR_ROLES,
   ADMIN_ROLES,
+  // Week 7-8: CRM
+  CUSTOMER_GENDERS,
+  CUSTOMER_SOURCES,
+  LOYALTY_TRANSACTION_TYPES,
+  VOUCHER_TYPES,
+  DELETION_REQUEST_STATUSES,
+  CRM_ROLES,
 } from "./constants";
 
 export type {
@@ -56,6 +63,12 @@ export type {
   AttendanceStatus,
   AttendanceSource,
   SecuritySeverity,
+  // Week 7-8: CRM
+  CustomerGender,
+  CustomerSource,
+  LoyaltyTransactionType,
+  VoucherType,
+  DeletionRequestStatus,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -141,6 +154,43 @@ export type {
   ApproveLeaveRequestInput,
 } from "./schemas/hr";
 
+// Week 7-8: CRM
+export {
+  createCustomerSchema,
+  updateCustomerSchema,
+  createLoyaltyTierSchema,
+  updateLoyaltyTierSchema,
+  adjustLoyaltyPointsSchema,
+} from "./schemas/crm";
+export type {
+  CreateCustomerInput,
+  UpdateCustomerInput,
+  CreateLoyaltyTierInput,
+  UpdateLoyaltyTierInput,
+  AdjustLoyaltyPointsInput,
+} from "./schemas/crm";
+
+// Week 7-8: Voucher
+export { createVoucherSchema, updateVoucherSchema } from "./schemas/voucher";
+export type {
+  CreateVoucherInput,
+  UpdateVoucherInput,
+} from "./schemas/voucher";
+
+// Week 7-8: Feedback
+export {
+  createFeedbackSchema,
+  respondFeedbackSchema,
+} from "./schemas/feedback";
+export type {
+  CreateFeedbackInput,
+  RespondFeedbackInput,
+} from "./schemas/feedback";
+
+// Week 7-8: Privacy
+export { deletionRequestSchema } from "./schemas/privacy";
+export type { DeletionRequestInput } from "./schemas/privacy";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -163,4 +213,11 @@ export {
   getSeverityLabel,
   getAttendanceStatusLabel,
   getShiftAssignmentStatusLabel,
+  // Week 7-8: CRM
+  getCustomerGenderLabel,
+  getCustomerSourceLabel,
+  getLoyaltyTransactionTypeLabel,
+  getVoucherTypeLabel,
+  getDeletionStatusLabel,
+  formatPoints,
 } from "./utils/format";
