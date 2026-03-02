@@ -20,7 +20,7 @@ const orderItemInput = z.object({
 // ===== Create Order =====
 
 export const createOrderSchema = z.object({
-  table_id: z.number().int().positive().optional(),
+  table_id: z.number().int().positive().nullish(),
   type: z.enum(["dine_in", "takeaway", "delivery"]),
   notes: z.string().max(500).optional(),
   items: z
