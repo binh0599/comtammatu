@@ -50,20 +50,20 @@ export function KdsBoard({
       <div className="flex items-center justify-between border-b border-gray-700 px-6 py-3">
         <h1 className="text-2xl font-bold text-white">{stationName}</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-gray-400" role="status">
             {tickets.length} đơn đang chờ
           </span>
-          <div className="flex gap-2">
+          <div className="flex gap-2" aria-label="Huyền tích thời gian">
             <span className="flex items-center gap-1 text-xs text-green-400">
-              <span className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
               Bình thường
             </span>
             <span className="flex items-center gap-1 text-xs text-yellow-400">
-              <span className="h-2 w-2 rounded-full bg-yellow-500" />
+              <span className="h-2 w-2 rounded-full bg-yellow-500" aria-hidden="true" />
               Cảnh báo
             </span>
             <span className="flex items-center gap-1 text-xs text-red-400">
-              <span className="h-2 w-2 rounded-full bg-red-500" />
+              <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
               Trễ
             </span>
           </div>
@@ -74,12 +74,16 @@ export function KdsBoard({
       <div className="flex-1 overflow-auto p-4">
         {tickets.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-2xl text-gray-500">
+            <p className="text-2xl text-gray-500" role="status">
               Không có đơn hàng — Sẵn sàng!
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            aria-live="polite"
+            aria-label="Danh sách đơn hàng"
+          >
             {tickets.map((ticket) => (
               <TicketCard
                 key={ticket.id}

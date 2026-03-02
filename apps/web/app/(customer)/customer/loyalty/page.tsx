@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { getCustomerLoyalty } from "../actions";
 import { LoyaltyDashboard } from "./loyalty-dashboard";
+
+export const metadata: Metadata = {
+  title: "Tích điểm - Com Tấm Mã Tú",
+};
 
 export default async function LoyaltyPage() {
   const supabase = await createSupabaseServer();

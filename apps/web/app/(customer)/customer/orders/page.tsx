@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { getCustomerOrders } from "../actions";
 import { OrderHistory } from "./order-history";
+
+export const metadata: Metadata = {
+  title: "Đơn hàng - Com Tấm Mã Tú",
+};
 
 export default async function OrdersPage() {
   const supabase = await createSupabaseServer();

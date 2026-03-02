@@ -80,7 +80,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
         <CardContent className="p-5">
           <div className="flex items-center gap-4">
             <div className="bg-primary/10 flex h-14 w-14 items-center justify-center rounded-full">
-              <Award className="text-primary h-7 w-7" />
+              <Award aria-hidden="true" className="text-primary h-7 w-7" />
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -109,8 +109,16 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
                   {new Intl.NumberFormat("vi-VN").format(nextTier.min_points)}
                 </span>
               </div>
-              <div className="bg-muted h-2 overflow-hidden rounded-full">
+              <div
+                role="progressbar"
+                aria-valuenow={currentPoints}
+                aria-valuemin={0}
+                aria-valuemax={nextTier.min_points}
+                aria-label={`Tiến độ đến hạng ${nextTier.name}: ${progressPercent}%`}
+                className="bg-muted h-2 overflow-hidden rounded-full"
+              >
                 <div
+                  aria-hidden="true"
                   className="bg-primary h-full rounded-full transition-all"
                   style={{ width: `${progressPercent}%` }}
                 />
@@ -124,7 +132,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
       <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <ShoppingBag className="text-muted-foreground h-5 w-5" />
+            <ShoppingBag aria-hidden="true" className="text-muted-foreground h-5 w-5" />
             <div>
               <p className="text-lg font-bold">{totalVisits}</p>
               <p className="text-muted-foreground text-xs">Lan ghe tham</p>
@@ -133,7 +141,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
         </Card>
         <Card>
           <CardContent className="flex items-center gap-3 p-4">
-            <TrendingUp className="text-muted-foreground h-5 w-5" />
+            <TrendingUp aria-hidden="true" className="text-muted-foreground h-5 w-5" />
             <div>
               <p className="text-lg font-bold">{formatPrice(totalSpent)}</p>
               <p className="text-muted-foreground text-xs">Tong chi tieu</p>

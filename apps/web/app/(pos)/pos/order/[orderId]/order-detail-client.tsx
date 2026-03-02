@@ -112,8 +112,8 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
       {/* Header */}
       <div className="mb-4 flex items-center gap-3">
         <Link href="/pos/orders">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" size="icon" aria-label="Quay lại danh sách đơn">
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
           </Button>
         </Link>
         <div className="flex-1">
@@ -138,7 +138,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
             disabled={isPending}
             className="flex-1 gap-2"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-4 w-4" aria-hidden="true" />
             Gửi bếp
           </Button>
         )}
@@ -148,14 +148,14 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
             disabled={isPending}
             className="flex-1 gap-2"
           >
-            <CheckCircle className="h-4 w-4" />
+            <CheckCircle className="h-4 w-4" aria-hidden="true" />
             Đã phục vụ
           </Button>
         )}
         {order.status === "served" && (
           <Link href="/pos/cashier" className="flex-1">
             <Button variant="outline" className="w-full gap-2">
-              <Banknote className="h-4 w-4" />
+              <Banknote className="h-4 w-4" aria-hidden="true" />
               Chuyển sang thu ngân
             </Button>
           </Link>

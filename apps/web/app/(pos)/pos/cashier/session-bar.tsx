@@ -30,16 +30,16 @@ export function SessionBar({ session }: { session: SessionInfo }) {
   const minutes = elapsed % 60;
 
   return (
-    <div className="bg-muted/50 flex items-center gap-4 border-b px-4 py-2">
+    <div className="bg-muted/50 flex items-center gap-4 border-b px-4 py-2" role="status">
       <Badge variant="default" className="shrink-0">
         Ca đang mở
       </Badge>
       <div className="text-muted-foreground flex items-center gap-1 text-sm">
-        <DollarSign className="h-3.5 w-3.5" />
+        <DollarSign className="h-3.5 w-3.5" aria-hidden="true" />
         <span>{formatPrice(session.opening_amount)}</span>
       </div>
       <div className="text-muted-foreground flex items-center gap-1 text-sm">
-        <Clock className="h-3.5 w-3.5" />
+        <Clock className="h-3.5 w-3.5" aria-hidden="true" />
         <span>
           {hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`}
         </span>

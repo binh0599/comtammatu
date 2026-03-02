@@ -107,7 +107,7 @@ export function MenuSelector({
     <div className="flex flex-col gap-3">
       {/* Search */}
       <div className="relative">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+        <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" aria-hidden="true" />
         <Input
           placeholder="Tìm món..."
           value={search}
@@ -163,17 +163,21 @@ export function MenuSelector({
                     {item.menu_item_variants!.map((v) => {
                       const vQty = getCartQuantity(item.id, v.id);
                       return (
-                        <Badge
+                        <button
                           key={v.id}
-                          variant={vQty > 0 ? "default" : "outline"}
-                          className="cursor-pointer text-xs"
                           onClick={() => handleAdd(item, v.id)}
+                          className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                            vQty > 0
+                              ? "bg-primary text-primary-foreground"
+                              : "border border-input bg-background"
+                          }`}
+                          aria-label={`Thêm ${v.name}${v.price_adjustment > 0 ? ` +${formatPrice(v.price_adjustment)}` : ""}${vQty > 0 ? `, ${vQty} trong giỏ` : ""}`}
                         >
                           {v.name}
                           {v.price_adjustment > 0 &&
                             ` +${formatPrice(v.price_adjustment)}`}
                           {vQty > 0 && ` (${vQty})`}
-                        </Badge>
+                        </button>
                       );
                     })}
                   </div>
@@ -187,10 +191,11 @@ export function MenuSelector({
                       <Button
                         variant="outline"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-11 w-11"
                         onClick={() => onRemoveItem(item.id, null)}
+                        aria-label={`Bớt ${item.name}`}
                       >
-                        <Minus className="h-3 w-3" />
+                        <Minus className="h-3 w-3" aria-hidden="true" />
                       </Button>
                       <span className="w-6 text-center text-sm font-medium">
                         {qty}
@@ -200,10 +205,11 @@ export function MenuSelector({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-11 w-11"
                     onClick={() => handleAdd(item)}
+                    aria-label={`Thêm ${item.name}`}
                   >
-                    <Plus className="h-3 w-3" />
+                    <Plus className="h-3 w-3" aria-hidden="true" />
                   </Button>
                 </div>
               )}

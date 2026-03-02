@@ -269,7 +269,7 @@ export function PaymentPanel({
           {voucherDiscount ? (
             <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-2">
               <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-green-600" />
+                <Tag className="h-4 w-4 text-green-600" aria-hidden="true" />
                 <span className="text-sm font-medium text-green-700">
                   {voucherDiscount.vouchers?.code ?? "Voucher"}
                 </span>
@@ -283,8 +283,9 @@ export function PaymentPanel({
                 className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
                 onClick={handleRemoveVoucher}
                 disabled={isVoucherPending}
+                aria-label="Xóa mã giảm giá"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           ) : (
@@ -295,6 +296,7 @@ export function PaymentPanel({
                 onChange={(e) => setVoucherCode(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleApplyVoucher()}
                 className="text-sm"
+                aria-label="Mã voucher"
               />
               <Button
                 variant="outline"
@@ -446,8 +448,8 @@ export function PaymentPanel({
           {paymentMethod === "momo" && (
             <div className="flex flex-col items-center gap-4">
               {isMomoPending && !momoState && (
-                <div className="flex flex-col items-center gap-2 py-6">
-                  <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
+                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                  <Loader2 className="h-8 w-8 animate-spin text-pink-500" aria-hidden="true" />
                   <p className="text-muted-foreground text-sm">
                     Đang tạo mã QR...
                   </p>
@@ -464,8 +466,8 @@ export function PaymentPanel({
                       className="mx-auto h-48 w-48"
                     />
                   </div>
-                  <div className="flex items-center gap-2 text-pink-600">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                  <div className="flex items-center gap-2 text-pink-600" role="status" aria-live="polite">
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                     <span className="text-sm font-medium">
                       Đang chờ thanh toán...
                     </span>
@@ -477,8 +479,8 @@ export function PaymentPanel({
               )}
 
               {momoState && momoState.status === "completed" && (
-                <div className="flex flex-col items-center gap-2 py-6">
-                  <CheckCircle2 className="h-12 w-12 text-green-500" />
+                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                  <CheckCircle2 className="h-12 w-12 text-green-500" aria-hidden="true" />
                   <p className="text-lg font-bold text-green-700">
                     Thanh toán thành công!
                   </p>

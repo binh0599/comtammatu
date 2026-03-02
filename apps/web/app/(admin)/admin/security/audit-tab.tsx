@@ -150,13 +150,13 @@ export function AuditTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Thời gian</TableHead>
-              <TableHead>Hành động</TableHead>
-              <TableHead>Đối tượng</TableHead>
-              <TableHead>ID</TableHead>
-              <TableHead>Người thực hiện</TableHead>
-              <TableHead>IP</TableHead>
-              <TableHead>Chi tiết</TableHead>
+              <TableHead scope="col">Thời gian</TableHead>
+              <TableHead scope="col">Hành động</TableHead>
+              <TableHead scope="col">Đối tượng</TableHead>
+              <TableHead scope="col">ID</TableHead>
+              <TableHead scope="col">Người thực hiện</TableHead>
+              <TableHead scope="col">IP</TableHead>
+              <TableHead scope="col">Chi tiết</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -1,6 +1,12 @@
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Chọn Bếp KDS - Com Tấm Mã Tú",
+  description: "Chọn bếp để bắt đầu",
+};
 
 export default async function KdsPage() {
   const supabase = await createSupabaseServer();
@@ -44,6 +50,7 @@ export default async function KdsPage() {
             <Link
               key={station.id}
               href={`/kds/${station.id}`}
+              aria-label={`Mở KDS ${station.name}`}
               className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-xl border-2 border-gray-700 bg-gray-800 p-8 text-center text-xl font-bold transition-colors hover:border-green-500 hover:bg-gray-700 active:scale-95"
             >
               {station.name}

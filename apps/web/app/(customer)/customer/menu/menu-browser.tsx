@@ -65,8 +65,12 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
 
       {/* Search bar */}
       <div className="relative">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+        <Search
+          aria-hidden="true"
+          className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2"
+        />
         <Input
+          aria-label="Tìm món ăn"
           placeholder="Tim mon an..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
@@ -79,8 +83,9 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
         <div className="flex gap-2 pb-2">
           <button
             onClick={() => setSelectedCategory(null)}
+            aria-pressed={selectedCategory === null}
             className={cn(
-              "inline-flex min-h-[36px] items-center rounded-full border px-4 text-sm font-medium transition-colors",
+              "inline-flex min-h-[44px] items-center rounded-full border px-4 text-sm font-medium transition-colors",
               selectedCategory === null
                 ? "bg-primary text-primary-foreground border-primary"
                 : "bg-background hover:bg-accent border-border"
@@ -92,8 +97,9 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
+              aria-pressed={selectedCategory === cat.id}
               className={cn(
-                "inline-flex min-h-[36px] items-center rounded-full border px-4 text-sm font-medium transition-colors",
+                "inline-flex min-h-[44px] items-center rounded-full border px-4 text-sm font-medium transition-colors",
                 selectedCategory === cat.id
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-background hover:bg-accent border-border"

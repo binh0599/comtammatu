@@ -121,7 +121,7 @@ function CustomerForm({
   return (
     <form action={onSubmit}>
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+        <div id="form-error" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>
       )}
@@ -292,10 +292,10 @@ function LoyaltyHistoryDialog({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Ngay</TableHead>
-                  <TableHead>Loai</TableHead>
-                  <TableHead className="text-right">Diem</TableHead>
-                  <TableHead className="text-right">So du</TableHead>
+                  <TableHead scope="col">Ngay</TableHead>
+                  <TableHead scope="col">Loai</TableHead>
+                  <TableHead scope="col" className="text-right">Diem</TableHead>
+                  <TableHead scope="col" className="text-right">So du</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -392,7 +392,7 @@ function AdjustPointsDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           {error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div id="points-adjust-error" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
               {error}
             </div>
           )}
@@ -514,7 +514,7 @@ export function CustomersTab({
         >
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               Them khach hang
             </Button>
           </DialogTrigger>
@@ -547,15 +547,15 @@ export function CustomersTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ten</TableHead>
-              <TableHead>SDT</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Gioi tinh</TableHead>
-              <TableHead>Nguon</TableHead>
-              <TableHead>Hang</TableHead>
-              <TableHead className="text-right">Tong chi</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ten</TableHead>
+              <TableHead scope="col">SDT</TableHead>
+              <TableHead scope="col">Email</TableHead>
+              <TableHead scope="col">Gioi tinh</TableHead>
+              <TableHead scope="col">Nguon</TableHead>
+              <TableHead scope="col">Hang</TableHead>
+              <TableHead scope="col" className="text-right">Tong chi</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -611,20 +611,20 @@ export function CustomersTab({
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Lich su diem"
+                        aria-label="Lich su diem"
                         onClick={() => setHistoryCustomer(customer)}
                       >
-                        <History className="h-4 w-4" />
+                        <History className="h-4 w-4" aria-hidden="true" />
                       </Button>
 
                       {/* Adjust Points */}
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Dieu chinh diem"
+                        aria-label="Dieu chinh diem"
                         onClick={() => setPointsCustomer(customer)}
                       >
-                        <Coins className="h-4 w-4" />
+                        <Coins className="h-4 w-4" aria-hidden="true" />
                       </Button>
 
                       {/* Edit Dialog */}
@@ -645,9 +645,9 @@ export function CustomersTab({
                               setError(null);
                               setEditingItem(customer);
                             }}
-                            title="Sua"
+                            aria-label="Sua"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-lg">
@@ -677,15 +677,15 @@ export function CustomersTab({
                       <Button
                         variant="ghost"
                         size="icon"
-                        title={
+                        aria-label={
                           customer.is_active ? "Vo hieu hoa" : "Kich hoat"
                         }
                         onClick={() => handleToggleActive(customer.id)}
                       >
                         {customer.is_active ? (
-                          <ToggleRight className="h-4 w-4" />
+                          <ToggleRight className="h-4 w-4" aria-hidden="true" />
                         ) : (
-                          <ToggleLeft className="h-4 w-4" />
+                          <ToggleLeft className="h-4 w-4" aria-hidden="true" />
                         )}
                       </Button>
                     </div>

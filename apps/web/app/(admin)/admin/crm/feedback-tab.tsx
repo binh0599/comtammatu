@@ -102,14 +102,14 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Khach hang</TableHead>
-              <TableHead>Don hang</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Danh gia</TableHead>
-              <TableHead>Binh luan</TableHead>
-              <TableHead>Phan hoi</TableHead>
-              <TableHead>Ngay</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Khach hang</TableHead>
+              <TableHead scope="col">Don hang</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col">Danh gia</TableHead>
+              <TableHead scope="col">Binh luan</TableHead>
+              <TableHead scope="col">Phan hoi</TableHead>
+              <TableHead scope="col">Ngay</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

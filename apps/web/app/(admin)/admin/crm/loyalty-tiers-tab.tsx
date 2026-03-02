@@ -252,12 +252,12 @@ export function LoyaltyTiersTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ten hang</TableHead>
-              <TableHead className="text-right">Diem toi thieu</TableHead>
-              <TableHead className="text-right">Giam gia %</TableHead>
-              <TableHead>Quyen loi</TableHead>
-              <TableHead className="text-right">Thu tu</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ten hang</TableHead>
+              <TableHead scope="col" className="text-right">Diem toi thieu</TableHead>
+              <TableHead scope="col" className="text-right">Giam gia %</TableHead>
+              <TableHead scope="col">Quyen loi</TableHead>
+              <TableHead scope="col" className="text-right">Thu tu</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

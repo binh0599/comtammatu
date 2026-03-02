@@ -3,6 +3,7 @@
 import {
   ChefHat,
   CookingPot,
+  CreditCard,
   LayoutDashboard,
   Monitor,
   Package,
@@ -55,6 +56,11 @@ const navigation = [
         title: "Đơn hàng",
         url: "/admin/orders",
         icon: ShoppingCart,
+      },
+      {
+        title: "Thanh toán",
+        url: "/admin/payments",
+        icon: CreditCard,
       },
       {
         title: "Thiết bị POS",
@@ -130,7 +136,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
   const homeHref = user.role === "hr" ? "/admin/hr" : "/admin";
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" aria-label="Admin navigation">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

@@ -60,6 +60,8 @@ export function TableGrid({
                     if (isSelectable && onSelect) onSelect(table.id);
                   }}
                   disabled={!isSelectable}
+                  aria-pressed={isSelected}
+                  aria-label={`Bàn ${table.number}, ${getTableStatusLabel(table.status)}${table.capacity ? `, ${table.capacity} chỗ` : ""}`}
                   className={cn(
                     "flex min-h-[72px] flex-col items-center justify-center rounded-lg border-2 p-3 text-center transition-all",
                     statusColors[table.status] ??

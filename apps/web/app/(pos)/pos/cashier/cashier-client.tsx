@@ -56,9 +56,11 @@ export function CashierClient({
 
   return (
     <div className="flex h-screen flex-col">
-      <SessionBar session={session} />
+      <div aria-live="polite" aria-atomic="false">
+        <SessionBar session={session} />
+      </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden" aria-live="polite">
         {/* Left: Order Queue (60%) */}
         <div className="w-3/5 border-r">
           <OrderQueue
@@ -69,7 +71,7 @@ export function CashierClient({
         </div>
 
         {/* Right: Payment Panel (40%) */}
-        <div className="w-2/5">
+        <div className="w-2/5" aria-live="polite" aria-atomic="true">
           <PaymentPanel
             order={selectedOrder}
             onPaymentComplete={handlePaymentComplete}

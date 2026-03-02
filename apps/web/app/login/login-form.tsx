@@ -32,7 +32,11 @@ export function LoginForm() {
       <CardContent>
         <form action={formAction} className="space-y-4">
           {state?.error && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div
+              id="login-error"
+              role="alert"
+              className="rounded-md bg-red-50 p-3 text-sm text-red-600"
+            >
               {state.error}
             </div>
           )}
@@ -46,6 +50,7 @@ export function LoginForm() {
               required
               autoComplete="email"
               disabled={isPending}
+              aria-describedby={state?.error ? "login-error" : undefined}
             />
           </div>
           <div className="space-y-2">

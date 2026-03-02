@@ -404,7 +404,7 @@ export function VouchersTab({
         >
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               Them voucher
             </Button>
           </DialogTrigger>
@@ -437,15 +437,15 @@ export function VouchersTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ma</TableHead>
-              <TableHead>Loai</TableHead>
-              <TableHead className="text-right">Gia tri</TableHead>
-              <TableHead className="text-right">Don toi thieu</TableHead>
-              <TableHead className="text-right">Giam toi da</TableHead>
-              <TableHead>Hieu luc</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ma</TableHead>
+              <TableHead scope="col">Loai</TableHead>
+              <TableHead scope="col" className="text-right">Gia tri</TableHead>
+              <TableHead scope="col" className="text-right">Don toi thieu</TableHead>
+              <TableHead scope="col" className="text-right">Giam toi da</TableHead>
+              <TableHead scope="col">Hieu luc</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -510,15 +510,15 @@ export function VouchersTab({
                       <Button
                         variant="ghost"
                         size="icon"
-                        title={
+                        aria-label={
                           voucher.is_active ? "Tam dung" : "Kich hoat"
                         }
                         onClick={() => handleToggle(voucher.id)}
                       >
                         {voucher.is_active ? (
-                          <ToggleRight className="h-4 w-4" />
+                          <ToggleRight className="h-4 w-4" aria-hidden="true" />
                         ) : (
-                          <ToggleLeft className="h-4 w-4" />
+                          <ToggleLeft className="h-4 w-4" aria-hidden="true" />
                         )}
                       </Button>
 
@@ -540,9 +540,9 @@ export function VouchersTab({
                               setError(null);
                               setEditingItem(voucher);
                             }}
-                            title="Sua"
+                            aria-label="Sua"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
@@ -569,8 +569,8 @@ export function VouchersTab({
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Xoa">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" aria-label="Xoa">
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
