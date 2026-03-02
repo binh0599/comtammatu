@@ -39,95 +39,96 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 
 ---
 
-## 2. Week 1-2: Foundation + Security Baseline
+## 2. Week 1-2: Foundation + Security Baseline ✅ COMPLETE
 
 ### Infrastructure Setup
 
-- [ ] GitHub repo with branch protection, CODEOWNERS
-- [ ] Turborepo + pnpm workspace configuration
-- [ ] Vercel project linked, auto-deploy configured
-- [ ] Supabase project linked (Pro plan)
-- [ ] Environment variables configured (Vercel + .env.local)
+- [x] GitHub repo with branch protection, CODEOWNERS
+- [x] Turborepo + pnpm workspace configuration
+- [x] Vercel project linked, auto-deploy configured
+- [x] Supabase project linked (project: `zrlriuednoaqrsvnjjyo`)
+- [x] Environment variables configured (Vercel + .env.local)
 
 ### Database
 
-- [ ] Corrected schema (v2.1 DDL) — all ~35 tables
-- [ ] RLS policies on every table
-- [ ] Seed data for development
-- [ ] RLS validation test suite
+- [x] Corrected schema (v2.1 → v2.2 DDL) — all ~35 tables
+- [x] RLS policies on every table
+- [x] Seed data for development
+- [ ] RLS validation test suite *(deferred to Week 7-8)*
 
 ### Authentication & Security
 
-- [ ] Supabase Auth configuration
-- [ ] RBAC via custom claims + RLS
-- [ ] MFA (TOTP) for admin/manager/owner roles
-- [ ] Login/register pages
-- [ ] Pre-commit hooks (detect-secrets)
-- [ ] CI pipeline (secrets scan, dependency scan, typecheck, lint, test)
+- [x] Supabase Auth configuration
+- [x] RBAC via custom claims + RLS
+- [ ] MFA (TOTP) for admin/manager/owner roles *(deferred)*
+- [x] Login pages
+- [x] Pre-commit hooks (detect-secrets)
+- [x] CI pipeline (secrets scan, dependency scan, typecheck, lint, Prisma generate)
 
 ### Core UI
 
-- [ ] shadcn/ui installation and configuration
-- [ ] App layout (admin, POS, KDS, customer route groups)
-- [ ] Navigation components
-- [ ] Theme setup
+- [x] shadcn/ui installation and configuration (24 components)
+- [x] App layout (admin, POS, KDS, customer route groups)
+- [x] Navigation components (admin sidebar, POS bottom nav)
+- [x] Theme setup (dark mode support)
 
 ### Menu Management
 
-- [ ] CRUD menu items
-- [ ] Menu categories
-- [ ] Item modifiers and variants
-- [ ] Menu assignment to branches
+- [x] CRUD menu items
+- [x] Menu categories
+- [x] Item modifiers and variants
+- [x] Menu assignment to branches
 
 ---
 
-## 3. Week 3-4: Split POS & Orders
+## 3. Week 3-4: Split POS & Orders ✅ COMPLETE (Cash-Only MVP)
 
 ### Terminal Management
 
-- [ ] Device registration with manager approval
-- [ ] Device fingerprinting
-- [ ] Peripheral config (printers, cash drawers)
-- [ ] Terminal type enforcement (`mobile_order` vs `cashier_station`)
+- [x] Device registration with manager approval
+- [ ] Device fingerprinting *(deferred — enhancement)*
+- [ ] Peripheral config (printers, cash drawers) *(deferred)*
+- [x] Terminal type enforcement (`mobile_order` vs `cashier_station`)
 
 ### Mobile Order (Waiter — `mobile_order`)
 
-- [ ] PWA for waiter's phone (mobile-first)
-- [ ] Select table → choose items → modifiers → submit order
-- [ ] Order tracking (status updates via Realtime)
-- [ ] Cannot process payments (enforced by RLS + triggers)
+- [x] Mobile-first UI (table grid, menu selector, cart drawer)
+- [x] Select table → choose items → modifiers → submit order
+- [x] Order tracking (status updates via Realtime)
+- [x] Cannot process payments (enforced by role checks)
 
 ### Cashier Station (`cashier_station`)
 
-- [ ] Cashier screen — view orders by status
-- [ ] Process payment (cash, card, eWallet, QR)
-- [ ] Open/close cash shifts (POS sessions)
-- [ ] Print receipt
-- [ ] Shift reconciliation (opening vs closing amount)
+- [x] Cashier screen — view orders by status (60/40 split layout)
+- [x] Process payment (cash only — MVP)
+- [x] Open/close cash shifts (POS sessions)
+- [ ] Print receipt *(deferred)*
+- [x] Shift reconciliation (opening vs closing amount + difference tracking)
 
 ### Payment Integration
 
-- [ ] Cash payment flow
-- [ ] VNPay integration with webhook signature verification
-- [ ] Momo integration with webhook signature verification
-- [ ] Idempotency enforcement on all payments
-- [ ] Cashier-station-only restriction enforced
+- [x] Cash payment flow (with change calculator, quick amounts)
+- [ ] VNPay integration with webhook signature verification *(deferred)*
+- [ ] Momo integration with webhook signature verification *(deferred)*
+- [x] Idempotency enforcement on all payments (`idempotency_key UUID`)
+- [x] Cashier-station-only restriction enforced
 
 ### Order Lifecycle
 
-- [ ] Order state machine: draft → confirmed → preparing → ready → served → completed
-- [ ] Status history tracking
-- [ ] Order discounts and voucher application
-- [ ] Split POS flow (waiter creates, cashier pays)
+- [x] Order state machine: draft → confirmed → preparing → ready → served → completed
+- [x] Status history tracking (DB trigger: `record_order_status_change`)
+- [ ] Order discounts and voucher application *(deferred to Week 7-8)*
+- [x] Split POS flow (waiter creates, cashier pays)
 
 ### KDS (Kitchen Display System)
 
-- [ ] Realtime order display with channel authorization
-- [ ] Per-station routing (by menu category)
-- [ ] Bump system (mark items as preparing → ready)
-- [ ] Timing rules and alerts (warning, critical thresholds)
+- [x] Realtime order display (Supabase postgres_changes)
+- [x] Per-station routing (by menu category via junction table)
+- [x] Bump system (mark items as preparing → ready)
+- [x] Timing rules and alerts (warning, critical thresholds with color coding)
+- [x] DB triggers: `create_kds_tickets`, `update_order_from_kds`
 
-### POS Offline Support
+### POS Offline Support *(DEFERRED)*
 
 - [ ] Service Worker + PWA setup for both terminal types
 - [ ] IndexedDB for pending orders (waiter) and pending payments (cashier)
@@ -136,7 +137,7 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 - [ ] Cash-only restriction when offline (code enforced)
 - [ ] Idempotency key deduplication on server
 
-### API Protection
+### API Protection *(DEFERRED)*
 
 - [ ] Upstash Redis rate limiting middleware
 - [ ] Rate limits per endpoint category (auth, GET, mutation, webhook, export, customer)
@@ -263,28 +264,30 @@ The Modular Monolith architecture is designed for easy module extraction — eac
 
 ## 8. Current Progress
 
-**Phase: Project Scaffolded — Ready for Active Development**
+**Phase: Week 3-4 COMPLETE — Ready for Week 5-6 Operations**
 
 ### Completed
 
-- [x] Architecture specification (v2.1) — complete
+- [x] Architecture specification (v2.2) — complete
 - [x] Project Operating System — complete
 - [x] AI boot file (CLAUDE.md) — complete
-- [x] Git repository initialized
+- [x] Git repository (6 commits on `main`)
 - [x] Monorepo scaffolding (Turborepo + pnpm)
-- [x] CI/CD pipeline (GitHub Actions)
-- [x] Next.js app shell (route groups + health endpoint)
-- [x] 10 domain module stubs
-- [x] 4 shared packages created
+- [x] CI/CD pipeline (GitHub Actions + Prisma generate step)
+- [x] Next.js app — 18 routes, 114 source files
+- [x] Database — 5 migrations, v2.2 schema + POS/KDS triggers, RLS on all tables
+- [x] Auth — login, middleware, role-based routing, RBAC
+- [x] Admin — menu CRUD, terminal CRUD, KDS station CRUD
+- [x] POS — waiter mobile order, cashier cash payment, session management
+- [x] KDS — realtime board with bump system and timing
+- [x] Realtime — 4 hooks (orders, tables, KDS tickets, broadcast)
+- [x] Shared package — Zod schemas, constants, Vietnamese formatters
+- [x] Deployed to Vercel (`comtammatu.vercel.app`)
 
-### Next Steps (Blocking)
+### Next Steps
 
-- [ ] Run `pnpm install` to verify workspace resolution
-- [ ] Initialize Supabase project (`supabase link`)
-- [ ] Create initial database migration (v2.1 schema)
-- [ ] Configure shadcn/ui in `apps/web`
-- [ ] Set up ESLint + Prettier properly
-- [ ] First Vercel deployment test
+- [ ] **Week 5-6:** Inventory management, suppliers, HR basic, admin dashboard, security monitoring
+- [ ] **Week 7-8:** CRM + loyalty, vouchers, customer PWA, GDPR, testing, documentation
 
 ---
 

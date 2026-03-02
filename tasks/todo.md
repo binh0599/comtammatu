@@ -19,12 +19,65 @@
 - [x] Admin layout — sidebar, navigation, header
 - [x] Menu Management CRUD — list, create, edit, delete
 
-## Next Phase: Week 3-4 — Split POS & Orders
+## Completed: Week 3-4 — Split POS & Orders
 
-- [ ] Terminal Management (mobile_order + cashier_station)
-- [ ] Mobile Order (Waiter) — create/edit orders, select tables
-- [ ] Cashier Station — view orders, process payments, shifts
-- [ ] Payment: Cash + VNPay/Momo
-- [ ] Order Lifecycle (order status flow)
-- [ ] KDS — kitchen display, ticket routing
-- [ ] Offline support (basic)
+- [x] Shared package — Zod schemas (order, pos, payment, kds), constants, Vietnamese formatters
+- [x] DB migration — `generate_order_number()`, KDS triggers (`create_kds_tickets`, `update_order_from_kds`, `record_order_status_change`)
+- [x] Terminal Management — admin CRUD for `mobile_order` + `cashier_station`
+- [x] KDS Station Management — admin CRUD with category routing (junction table)
+- [x] POS Session Management — open/close shifts, cash reconciliation
+- [x] Order Module — create, confirm, status transitions, totals with tax/service charge
+- [x] Waiter Mobile Order UI — table grid, menu selector with search, cart drawer
+- [x] Cashier Station UI — order queue (60/40 split), cash payment with change calculator
+- [x] KDS Display UI — realtime board with bump system, timing colors, dark theme
+- [x] Realtime hooks — orders, tables, KDS tickets (postgres_changes), broadcast notifications
+- [x] CI update — Prisma generate step added to GitHub Actions
+- [x] Build fix — client-side imports bypass server barrel (`@comtammatu/database/src/supabase/client`)
+
+### What was NOT done in Week 3-4 (deferred)
+
+- [ ] VNPay/Momo payment integration (webhooks, HMAC verification) — **cash-only MVP**
+- [ ] Offline support (Service Worker, IndexedDB, AES-256-GCM encryption)
+- [ ] Device fingerprinting for terminal registration
+- [ ] Peripheral config (printers, cash drawers)
+- [ ] Receipt printing
+- [ ] Order discounts and voucher application
+- [ ] Upstash Redis rate limiting
+
+## Next Phase: Week 5-6 — Operations
+
+### Inventory Management
+- [ ] Stock levels per branch with optimistic concurrency (`version` column)
+- [ ] Stock movements (in, out, transfer, waste, adjust)
+- [ ] Recipes linked to menu items
+- [ ] Auto-deduction on order completion
+- [ ] Low stock alerts
+
+### Suppliers
+- [ ] Supplier management (CRUD)
+- [ ] Purchase orders (create, receive)
+
+### HR Basic
+- [ ] Employee profiles linked to user accounts
+- [ ] Shift scheduling and assignment
+- [ ] Attendance records
+- [ ] Leave requests
+
+### Admin Dashboard
+- [ ] Revenue reports (daily, weekly, monthly)
+- [ ] Daily summary (orders, payments, top items)
+- [ ] Branch comparison charts
+
+### Security Monitoring
+- [ ] Security events dashboard
+- [ ] Failed login monitoring
+- [ ] Terminal heartbeat / last-seen tracking
+
+## Future: Week 7-8 — CRM, Privacy & Polish
+
+- [ ] Customer profiles, loyalty points, loyalty tiers
+- [ ] Vouchers & promotions
+- [ ] Customer PWA (menu browsing, order tracking, feedback)
+- [ ] GDPR — deletion requests, DSAR export, retention cron jobs
+- [ ] Testing — E2E for critical flows, RLS validation suite
+- [ ] Documentation — API docs, user guide, deployment runbook

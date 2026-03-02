@@ -1,4 +1,4 @@
-import { updateSession } from "@comtammatu/database/src/supabase";
+import { updateSession } from "@comtammatu/database/src/supabase/middleware";
 import type { NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {

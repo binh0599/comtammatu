@@ -17,3 +17,16 @@
 **Pattern:** Prisma 7 removed `url`/`directUrl` from `schema.prisma`, changed generator provider from `prisma-client-js` to `prisma-client`, requires explicit output directory.
 **Rule:** Use `prisma.config.ts` for datasource URL config. Use `@prisma/adapter-pg` driver adapter pattern. Generated client is at `../generated/prisma/client` (not `@prisma/client`).
 **Prevention:** Always check Prisma version migration guides when upgrading major versions.
+
+## 2026-03-01: Client components CANNOT import from supabase barrel — must use direct file import
+**Pattern:** Turbopack build fails with "Module not found: Can't resolve 'next/headers'" in client components that import from `@comtammatu/database/src/supabase` (the barrel `index.ts`).
+**Rule:** The barrel at `packages/database/src/supabase/index.ts` re-exports both `server.ts` (uses `next/headers`) and `client.ts`. Client components pulling this barrel get server-only code bundled. Client components MUST import from `@comtammatu/database/src/supabase/client` directly.
+**Prevention:** Three-tier import strategy:
+  - **Server components / Server Actions:** `@comtammatu/database` (full barrel with Prisma) or `@comtammatu/database/src/supabase` (Supabase server+client)
+  - **Middleware / Edge routes:** `@comtammatu/database/src/supabase` (no Prisma)
+  - **Client components (hooks, "use client"):** `@comtammatu/database/src/supabase/client` (direct file, no server deps)
+
+## 2026-03-01: Regenerate database types after adding SQL functions
+**Pattern:** TypeScript error `TS2345` — Supabase RPC function `generate_order_number` not found in `Database['public']['Functions']`.
+**Rule:** After adding SQL functions via migration (`CREATE OR REPLACE FUNCTION`), you must regenerate `database.types.ts` before the app can call `supabase.rpc("function_name")`.
+**Prevention:** After every migration that adds/modifies functions, run `supabase gen types typescript` (or Supabase MCP `generate_typescript_types`) and update `packages/database/src/types/database.types.ts`.

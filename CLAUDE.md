@@ -7,9 +7,9 @@
 
 ## I. PROJECT STATUS
 
-**Phase: FOUNDATION COMPLETE — Week 3-4 Ready (Split POS & Orders)**
+**Phase: WEEK 3-4 COMPLETE — Week 5-6 Ready (Operations)**
 
-Week 1-2 Foundation is complete. The database schema (v2.2), auth module, admin layout, and menu management CRUD are all implemented and deployed. The project is ready to begin Split POS & Orders development.
+Weeks 1-4 are complete. The full order lifecycle works end-to-end: waiter creates order on mobile → KDS displays with realtime → chef bumps → cashier processes cash payment → shift close. Ready for Week 5-6 Operations (Inventory, HR, Dashboard).
 
 | Aspect                            | Status                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------ |
@@ -17,28 +17,33 @@ Week 1-2 Foundation is complete. The database schema (v2.2), auth module, admin 
 | Development Roadmap               | Complete (`docs/ROADMAP.md`) — timeline, milestones, migration path            |
 | Project Operating System          | Complete (`docs/PROJECT_OPERATING_SYSTEM_ENGLISH.md`)                    |
 | AI boot file (this file)          | Complete                                                                 |
-| Git repository                    | Active (`main` branch, 5 commits)                                        |
+| Git repository                    | Active (`main` branch, 6 commits)                                        |
 | Monorepo scaffolding              | Complete (Turborepo + pnpm workspaces)                                   |
-| CI/CD pipeline                    | Complete (`.github/workflows/ci.yml`)                                    |
-| Next.js app shell                 | **Working** — auth, admin layout, menu CRUD, route groups                |
+| CI/CD pipeline                    | Complete (`.github/workflows/ci.yml` + Prisma generate step)             |
+| Next.js app shell                 | **Working** — 18 routes, auth, admin, POS, KDS, cashier                  |
 | Domain modules                    | 10 stubs created (not yet used — logic lives in app routes)              |
-| Shared packages                   | 4 packages — `database` implemented, others are stubs                    |
-| Database schema                   | **Complete** — 4 migrations (1,947 lines SQL), v2.2 with RLS            |
+| Shared packages                   | `database` implemented, `shared` implemented (Zod schemas + constants + formatters), `security` + `ui` are stubs |
+| Database schema                   | **Complete** — 5 migrations, v2.2 with RLS + POS/KDS triggers           |
 | Supabase project                  | **Linked** (project: `zrlriuednoaqrsvnjjyo`)                             |
 | Vercel project                    | **Deployed** (`comtammatu.vercel.app`)                                   |
-| shadcn/ui                         | **Installed** (new-york style, 21 components)                            |
+| shadcn/ui                         | **Installed** (new-york style, 24 components)                            |
 | Tailwind CSS                      | **Installed** (v4.2.1 + design tokens + dark mode)                       |
 | Auth module                       | **Working** — login, middleware, role-based routing, RBAC                 |
-| Admin UI                          | **Working** — sidebar, navigation, dashboard placeholder, menu CRUD      |
+| Admin UI                          | **Working** — sidebar, nav, dashboard placeholder, menu CRUD, terminal CRUD, KDS station CRUD |
+| POS (Waiter)                      | **Working** — table grid, menu selector, cart, order creation, order list |
+| POS (Cashier)                     | **Working** — order queue, cash payment, session open/close              |
+| KDS                               | **Working** — realtime board, ticket cards, bump system, timing colors   |
+| Realtime                          | **Working** — 4 hooks (orders, tables, KDS tickets, broadcast)           |
 | Prisma                            | **Configured** — v7.2 with `@prisma/adapter-pg` driver adapter           |
 | Agent skills                      | 4 project-level + 70+ platform skills mapped (Section XIX)               |
-| tasks/ directory                  | Active — lessons (3), todo tracking in use                               |
+| tasks/ directory                  | Active — lessons (5), regressions (3), predictions (1)                   |
 
-**Current file count:** ~71 source files (excluding generated/node_modules)
+**Current file count:** ~114 source files (excluding generated/node_modules)
 
 ### Git History
 
 ```
+8adbbf7 feat: complete Week 3-4 — Split POS, Orders, KDS & Cash Payment
 8b48166 feat: complete Week 1-2 foundation — auth, admin layout, menu CRUD
 15ee48d merge: schema v2.2 upgrade (junction tables, index policy)
 18ad052 feat(db): schema v2.2 — junction tables, index policy, RLS
@@ -51,6 +56,8 @@ a4d9dcf chore: initial project scaffold
 1. **@supabase/ssr version must match @supabase/supabase-js** — Use `@supabase/ssr@0.8.0+` with `@supabase/supabase-js@2.98.0`
 2. **Separate Prisma from Supabase exports for Edge Runtime** — Middleware imports from `@comtammatu/database/src/supabase` subpath (never barrel export)
 3. **Prisma 7 breaking changes** — Use `prisma.config.ts` for datasource URL, `@prisma/adapter-pg` driver adapter, generated client at `../generated/prisma/client`
+4. **Client components must bypass supabase barrel** — Import from `@comtammatu/database/src/supabase/client` directly (not barrel which re-exports `server.ts` with `next/headers`)
+5. **Regenerate DB types after adding SQL functions** — `supabase gen types typescript` after every migration with `CREATE FUNCTION`
 
 ---
 
@@ -89,34 +96,83 @@ comtammatu/
 │   │   │   ├── layout.tsx             # Admin layout (auth guard, RBAC: owner/manager only)
 │   │   │   └── admin/
 │   │   │       ├── page.tsx           # Dashboard (revenue, orders, customers placeholders)
-│   │   │       └── menu/
-│   │   │           ├── page.tsx       # Menu list (RSC, fetches via Server Action)
-│   │   │           ├── actions.ts     # Server Actions: getMenus(), createMenu(), etc.
-│   │   │           ├── menus-table.tsx # Client component — data table
-│   │   │           └── [menuId]/
-│   │   │               ├── page.tsx           # Menu detail/edit page
-│   │   │               └── menu-detail.tsx    # Client component — edit form
-│   │   ├── (pos)/layout.tsx           # POS route group (stub)
-│   │   ├── (kds)/layout.tsx           # KDS route group (stub)
+│   │   │       ├── menu/
+│   │   │       │   ├── page.tsx       # Menu list (RSC, fetches via Server Action)
+│   │   │       │   ├── actions.ts     # Server Actions: getMenus(), createMenu(), etc.
+│   │   │       │   ├── menus-table.tsx # Client component — data table
+│   │   │       │   └── [menuId]/
+│   │   │       │       ├── page.tsx           # Menu detail/edit page
+│   │   │       │       └── menu-detail.tsx    # Client component — edit form
+│   │   │       ├── terminals/
+│   │   │       │   ├── page.tsx       # Terminal list (RSC)
+│   │   │       │   ├── actions.ts     # CRUD: register, approve, revoke, delete terminals
+│   │   │       │   └── terminals-table.tsx # Client — table with approve/revoke actions
+│   │   │       └── kds-stations/
+│   │   │           ├── page.tsx       # KDS station list (RSC)
+│   │   │           ├── actions.ts     # CRUD: create, update, toggle, delete stations
+│   │   │           └── stations-table.tsx # Client — table with category multi-select
+│   │   ├── (pos)/
+│   │   │   ├── layout.tsx             # POS layout (auth guard, BottomNav, Toaster)
+│   │   │   └── pos/
+│   │   │       ├── page.tsx           # POS landing — table grid overview
+│   │   │       ├── session/
+│   │   │       │   ├── page.tsx       # Cashier shift management
+│   │   │       │   ├── actions.ts     # open/close session, reconciliation
+│   │   │       │   └── session-form.tsx # OpenSessionForm + ActiveSessionCard
+│   │   │       ├── order/
+│   │   │       │   ├── new/
+│   │   │       │   │   ├── page.tsx           # New order (RSC — loads tables, menu, categories)
+│   │   │       │   │   ├── new-order-client.tsx # Orchestrator (table → menu → cart → submit)
+│   │   │       │   │   ├── table-selector.tsx  # Table grid with zone grouping + status colors
+│   │   │       │   │   ├── menu-selector.tsx   # Category tabs, search, item cards with +/-
+│   │   │       │   │   └── order-cart.tsx      # Drawer-based cart with subtotal
+│   │   │       │   └── [orderId]/
+│   │   │       │       ├── page.tsx               # Order detail (RSC)
+│   │   │       │       └── order-detail-client.tsx # Status actions (confirm/serve/cancel)
+│   │   │       ├── orders/
+│   │   │       │   ├── page.tsx       # Order list (RSC)
+│   │   │       │   ├── actions.ts     # createOrder, confirmOrder, updateStatus, getOrders, etc.
+│   │   │       │   ├── helpers.ts     # isValidTransition(), calculateOrderTotals()
+│   │   │       │   └── orders-list.tsx # Filterable order list with status tabs
+│   │   │       └── cashier/
+│   │   │           ├── page.tsx       # Cashier station (RSC — session check)
+│   │   │           ├── actions.ts     # processPayment(), getCashierOrders()
+│   │   │           ├── cashier-client.tsx # Split layout (60/40)
+│   │   │           ├── session-bar.tsx    # Top bar with session info + elapsed time
+│   │   │           ├── order-queue.tsx    # Left panel — scrollable order cards
+│   │   │           └── payment-panel.tsx  # Right panel — cash payment + change calculator
+│   │   ├── (kds)/
+│   │   │   ├── layout.tsx             # KDS layout (auth guard, dark theme)
+│   │   │   └── kds/
+│   │   │       ├── page.tsx           # Station picker (auto-redirect if single station)
+│   │   │       └── [stationId]/
+│   │   │           ├── page.tsx           # KDS board (RSC — loads station + tickets)
+│   │   │           ├── actions.ts         # getStationTickets(), bumpTicket()
+│   │   │           ├── kds-board.tsx      # Realtime grid with timing legend
+│   │   │           ├── ticket-card.tsx    # Large card with timing colors + bump buttons
+│   │   │           └── use-kds-realtime.ts # Supabase postgres_changes subscription
 │   │   ├── (customer)/layout.tsx      # Customer route group (stub)
 │   │   └── api/
 │   │       ├── health/route.ts        # Health check endpoint (working)
 │   │       └── auth/callback/route.ts # Supabase PKCE auth callback
 │   ├── components/
 │   │   ├── admin/
-│   │   │   ├── app-sidebar.tsx        # Admin sidebar navigation (shadcn Sidebar)
+│   │   │   ├── app-sidebar.tsx        # Admin sidebar (Menu, Terminals, KDS Stations links)
 │   │   │   ├── header.tsx             # Admin header with breadcrumbs
 │   │   │   └── nav-user.tsx           # User dropdown (avatar, logout)
-│   │   └── ui/                        # 21 shadcn/ui components (auto-generated)
-│   │       ├── button.tsx, card.tsx, dialog.tsx, dropdown-menu.tsx,
-│   │       │   input.tsx, label.tsx, select.tsx, separator.tsx,
-│   │       │   sheet.tsx, sidebar.tsx, skeleton.tsx, table.tsx,
-│   │       │   tabs.tsx, textarea.tsx, tooltip.tsx, sonner.tsx,
-│   │       │   alert-dialog.tsx, avatar.tsx, badge.tsx,
-│   │       │   breadcrumb.tsx, switch.tsx
+│   │   ├── pos/
+│   │   │   └── bottom-nav.tsx         # Mobile bottom nav (Bàn, Tạo đơn, Đơn hàng, Ca làm)
+│   │   └── ui/                        # 24 shadcn/ui components (auto-generated)
+│   │       ├── button, card, dialog, dropdown-menu, input, label, select,
+│   │       │   separator, sheet, sidebar, skeleton, table, tabs, textarea,
+│   │       │   tooltip, sonner, alert-dialog, avatar, badge, breadcrumb,
+│   │       │   switch, checkbox, drawer, scroll-area
 │   │       └── (New-York style, RSC-compatible, Tailwind CSS vars)
 │   ├── hooks/
-│   │   └── use-mobile.ts             # Mobile breakpoint detection hook
+│   │   ├── use-mobile.ts             # Mobile breakpoint detection hook
+│   │   ├── use-realtime-orders.ts    # Realtime subscription for orders (postgres_changes)
+│   │   ├── use-realtime-tables.ts    # Realtime subscription for table status
+│   │   └── use-realtime-broadcast.ts # Broadcast channel for toast notifications
 │   ├── lib/
 │   │   └── utils.ts                   # cn() helper (clsx + tailwind-merge)
 │   ├── middleware.ts                   # Supabase session refresh + auth redirect
@@ -124,7 +180,7 @@ comtammatu/
 │   ├── components.json                # shadcn/ui config (new-york, RSC, Tailwind vars)
 │   ├── postcss.config.mjs             # @tailwindcss/postcss plugin
 │   ├── eslint.config.mjs              # ESLint flat config (core-web-vitals + TS)
-│   ├── package.json                   # Next 16.1, React 19.1, Supabase, shadcn, Tailwind
+│   ├── package.json                   # Next 16.1, React 19.1, Supabase, shadcn, Tailwind, vaul
 │   └── tsconfig.json                  # Extends root, Next.js plugin, @/* alias
 ├── modules/                           # Domain modules (all export-only stubs — NOT YET USED)
 │   ├── auth/index.ts                  # Authentication & RBAC
@@ -144,18 +200,27 @@ comtammatu/
 │   │   │   ├── index.ts               # Barrel: prisma client + Supabase clients + types
 │   │   │   ├── prisma.ts              # Prisma singleton (PrismaPg adapter, global cache)
 │   │   │   ├── supabase/
-│   │   │   │   ├── index.ts           # Edge-safe exports (no Prisma dependency)
+│   │   │   │   ├── index.ts           # Edge-safe exports (server + client, no Prisma)
 │   │   │   │   ├── server.ts          # createServerClient (cookie-based, RSC/Actions)
-│   │   │   │   ├── client.ts          # createBrowserClient (client components)
+│   │   │   │   ├── client.ts          # createBrowserClient (client components — DIRECT IMPORT)
 │   │   │   │   └── middleware.ts       # updateSession (auth guard + role-based redirect)
 │   │   │   └── types/
-│   │   │       └── database.types.ts  # Supabase generated types
+│   │   │       └── database.types.ts  # Supabase generated types (incl. RPC functions)
 │   │   ├── generated/prisma/client/   # Generated Prisma client (git-ignored)
 │   │   ├── package.json               # prisma, @prisma/client, @prisma/adapter-pg, pg
 │   │   └── tsconfig.json
-│   ├── shared/                        # @comtammatu/shared (Zod 3.24) — STUB
+│   ├── shared/                        # @comtammatu/shared (IMPLEMENTED — Zod schemas + constants)
 │   │   ├── package.json               # zod
-│   │   ├── src/index.ts               # Export stub
+│   │   ├── src/
+│   │   │   ├── index.ts               # Barrel: all schemas, constants, formatters
+│   │   │   ├── constants.ts           # Status enums, role arrays, valid transitions
+│   │   │   ├── schemas/
+│   │   │   │   ├── order.ts           # createOrderSchema, updateOrderStatusSchema, addOrderItemsSchema
+│   │   │   │   ├── pos.ts             # registerTerminalSchema, openSessionSchema, closeSessionSchema
+│   │   │   │   ├── payment.ts         # processPaymentSchema (cash-only MVP)
+│   │   │   │   └── kds.ts             # createKdsStationSchema, updateKdsStationSchema, bumpTicketSchema
+│   │   │   └── utils/
+│   │   │       └── format.ts          # formatPrice, formatElapsedTime, Vietnamese labels
 │   │   └── tsconfig.json
 │   ├── security/                      # @comtammatu/security (Upstash) — STUB
 │   │   ├── package.json               # @upstash/ratelimit, @upstash/redis
@@ -172,16 +237,17 @@ comtammatu/
 │   │   ├── 20260228000000_initial_schema.sql       # v2.1 base schema (1,782 lines)
 │   │   ├── 20260228000001_fix_security_advisors.sql # Security advisory fixes
 │   │   ├── 20260228000002_schema_v2_2.sql          # v2.2 upgrade (junction tables, indexes)
-│   │   └── 20260228000003_profile_trigger.sql       # Auto-create profile on auth.users insert
+│   │   ├── 20260228000003_profile_trigger.sql       # Auto-create profile on auth.users insert
+│   │   └── 20260228100000_pos_kds_functions.sql     # POS/KDS: order_number gen, KDS ticket triggers
 │   ├── tests/.gitkeep                 # RLS tests (empty)
-│   └── seed.sql                       # Seed data (tenant, branches, users, menus)
-├── .github/workflows/ci.yml           # CI: typecheck, lint, test, secrets, audit
+│   └── seed.sql                       # Seed data (tenant, branches, users, menus, terminals, KDS)
+├── .github/workflows/ci.yml           # CI: Prisma generate, typecheck, lint, test, secrets, audit
 ├── tasks/                             # Task tracking (Operating System)
 │   ├── todo.md                        # Current plan & progress (active)
-│   ├── regressions.md                 # Named failure rules
-│   ├── lessons.md                     # Learning log (3 lessons)
+│   ├── regressions.md                 # Named failure rules (3 rules)
+│   ├── lessons.md                     # Learning log (5 lessons)
 │   ├── friction.md                    # Contradiction tracker
-│   └── predictions.md                 # Prediction log
+│   └── predictions.md                 # Prediction log (1 entry)
 ├── docs/
 │   ├── F&B_CRM_Lightweight_Architecture_v2.2.md  # Architecture spec (source of truth)
 │   ├── ROADMAP.md                                # Development roadmap & migration path
@@ -599,57 +665,54 @@ At the start of every new task:
 
 Per `tasks/todo.md`, the completed and upcoming phases are:
 
-### Completed: Project Initialization
+### Completed: Project Initialization + Week 1-2 Foundation + Week 3-4 Split POS & Orders
+
+All three phases are done. See `tasks/todo.md` for full checklist.
+
+**Week 3-4 delivered (18 routes, 8,849 lines):**
+- Terminal & KDS Station admin management
+- POS session open/close with cash reconciliation
+- Full order lifecycle: draft → confirmed → preparing → ready → served → completed
+- Waiter mobile UI: table grid, menu selector, cart drawer
+- Cashier station: order queue (60/40 split), cash payment with change calculator
+- KDS realtime board: ticket cards with timing colors, bump system
+- Realtime hooks for orders, tables, KDS tickets, and broadcast notifications
+- DB triggers: `generate_order_number()`, `create_kds_tickets`, `update_order_from_kds`, `record_order_status_change`
+
+**Deferred from Week 3-4 (enhancements, not blockers):**
+- VNPay/Momo payment integration (webhooks, HMAC verification)
+- Offline support (Service Worker, IndexedDB, AES-256-GCM)
+- Device fingerprinting, peripheral config, receipt printing
+- Order discounts/voucher application
+- Upstash Redis rate limiting
+
+### Current Phase: Week 5-6 — Operations
 
 ```
-- [x] Create project file structure
-- [x] Run pnpm install to verify workspace resolution
-- [x] Configure shadcn/ui in apps/web (Tailwind v4 + shadcn v3)
-- [x] Set up ESLint + Prettier
-- [x] Initialize Supabase project (supabase link → zrlriuednoaqrsvnjjyo)
-- [x] Create initial database migration (v2.1 schema)
-- [x] First Vercel deployment test (comtammatu.vercel.app)
+- [ ] Inventory Management (stock levels, movements, recipes, auto-deduction, alerts)
+- [ ] Supplier Management (CRUD, purchase orders)
+- [ ] HR Basic (employee profiles, shift scheduling, attendance, leave)
+- [ ] Admin Dashboard (revenue reports, daily summary, branch comparison)
+- [ ] Security Monitoring (events dashboard, failed logins, terminal heartbeat)
 ```
 
-### Completed: Week 1-2 Foundation
+### Next: Week 7-8 — CRM, Privacy & Polish
 
 ```
-- [x] v2.2 schema migration (junction tables + drop redundant indexes)
-- [x] Database package — Prisma 7.2 + Supabase client setup
-- [x] Auth module — login page, middleware, role-based routing
-- [x] Seed data — tenant, branches, users, menus
-- [x] Admin layout — sidebar, navigation, header
-- [x] Menu Management CRUD — list, create, edit, delete
+- [ ] CRM (customer profiles, loyalty points/tiers, feedback)
+- [ ] Vouchers & Promotions (percent/fixed/free item, branch-scoped)
+- [ ] Customer PWA (menu browsing, order tracking, loyalty)
+- [ ] GDPR (deletion requests, DSAR export, retention cron)
+- [ ] Testing (E2E, RLS validation, security review)
+- [ ] Documentation (API docs, user guide, deployment runbook)
 ```
-
-### Current Phase: Week 3-4 — Split POS & Orders
-
-```
-- [ ] Terminal Management (mobile_order + cashier_station)
-- [ ] Mobile Order (Waiter) — create/edit orders, select tables
-- [ ] Cashier Station — view orders, process payments, shifts
-- [ ] Payment: Cash + VNPay/Momo
-- [ ] Order Lifecycle (order status flow)
-- [ ] KDS — kitchen display, ticket routing
-- [ ] Offline support (basic)
-```
-
-### Development Roadmap (Remaining)
-
-**Week 5-6: Operations**
-
-- Inventory, Suppliers, HR Basic, Admin Dashboard, Security Events
-
-**Week 7-8: CRM, Privacy & Polish**
-
-- CRM, Vouchers, Customer PWA, GDPR, Testing, Documentation
 
 ### Open Technical Decisions
 
-1. **`modules/` directory** — 10 stubs exist but are unused. Domain logic currently lives in `apps/web/app/` route files. Decide: implement modules pattern or remove stubs.
-2. **`packages/ui`** — Stub package, but shadcn components live in `apps/web/components/ui/`. Decide: centralize or keep local.
-3. **`packages/shared`** — Zod schemas are defined inline in Server Actions. Decide: centralize validation schemas as API surface grows.
-4. **Prisma schema** — No `.prisma` file in repo. Uses `db:pull` from Supabase. Decide: commit pulled schema or document pull-based workflow.
+1. **`modules/` directory** — 10 stubs exist but are unused. Domain logic lives in `apps/web/app/` route files. Decide: implement modules pattern or remove stubs. (Recommendation: remove stubs — route-colocated Server Actions work well at current scale.)
+2. **`packages/ui`** — Stub package, but shadcn components live in `apps/web/components/ui/`. Decide: centralize or keep local. (Recommendation: keep local until multi-app needed.)
+3. **Prisma schema** — No `.prisma` file in repo. Uses `db:pull` from Supabase. Decide: commit pulled schema or document pull-based workflow.
+4. **Import boundary enforcement** — Three-tier import strategy works but is convention-based. Consider adding ESLint `no-restricted-imports` rules to enforce at CI level.
 
 ---
 
