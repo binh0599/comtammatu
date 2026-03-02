@@ -144,14 +144,14 @@ export function LeaveTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nhan vien</TableHead>
-              <TableHead>Loai</TableHead>
-              <TableHead>Tu ngay</TableHead>
-              <TableHead>Den ngay</TableHead>
-              <TableHead>So ngay</TableHead>
-              <TableHead>Ly do</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Nhan vien</TableHead>
+              <TableHead scope="col">Loai</TableHead>
+              <TableHead scope="col">Tu ngay</TableHead>
+              <TableHead scope="col">Den ngay</TableHead>
+              <TableHead scope="col">So ngay</TableHead>
+              <TableHead scope="col">Ly do</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

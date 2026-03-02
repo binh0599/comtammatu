@@ -270,15 +270,15 @@ export function IngredientsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ten</TableHead>
-              <TableHead>SKU</TableHead>
-              <TableHead>Don vi</TableHead>
-              <TableHead>Danh muc</TableHead>
-              <TableHead className="text-right">Gia nhap</TableHead>
-              <TableHead className="text-right">Toi thieu</TableHead>
-              <TableHead className="text-right">Toi da</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ten</TableHead>
+              <TableHead scope="col">SKU</TableHead>
+              <TableHead scope="col">Don vi</TableHead>
+              <TableHead scope="col">Danh muc</TableHead>
+              <TableHead scope="col" className="text-right">Gia nhap</TableHead>
+              <TableHead scope="col" className="text-right">Toi thieu</TableHead>
+              <TableHead scope="col" className="text-right">Toi da</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

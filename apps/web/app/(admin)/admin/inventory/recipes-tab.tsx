@@ -429,10 +429,10 @@ export function RecipesTab({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nguyen lieu</TableHead>
-                      <TableHead className="text-right">So luong</TableHead>
-                      <TableHead>Don vi</TableHead>
-                      <TableHead className="text-right">Hao hut %</TableHead>
+                      <TableHead scope="col">Nguyen lieu</TableHead>
+                      <TableHead scope="col" className="text-right">So luong</TableHead>
+                      <TableHead scope="col">Don vi</TableHead>
+                      <TableHead scope="col" className="text-right">Hao hut %</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

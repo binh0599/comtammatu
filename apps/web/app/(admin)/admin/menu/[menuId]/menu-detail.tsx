@@ -335,11 +335,11 @@ export function MenuDetail({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Tên món</TableHead>
-                    <TableHead>Mô tả</TableHead>
-                    <TableHead className="text-right">Giá</TableHead>
-                    <TableHead>Trạng thái</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead scope="col">Tên món</TableHead>
+                    <TableHead scope="col">Mô tả</TableHead>
+                    <TableHead scope="col" className="text-right">Giá</TableHead>
+                    <TableHead scope="col">Trạng thái</TableHead>
+                    <TableHead scope="col" className="text-right">Thao tác</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

@@ -283,14 +283,14 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ten</TableHead>
-              <TableHead>Lien he</TableHead>
-              <TableHead>SDT</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Dieu khoan TT</TableHead>
-              <TableHead>Danh gia</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ten</TableHead>
+              <TableHead scope="col">Lien he</TableHead>
+              <TableHead scope="col">SDT</TableHead>
+              <TableHead scope="col">Email</TableHead>
+              <TableHead scope="col">Dieu khoan TT</TableHead>
+              <TableHead scope="col">Danh gia</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

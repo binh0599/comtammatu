@@ -78,14 +78,14 @@ export function AttendanceTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nhan vien</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Vao ca</TableHead>
-              <TableHead>Ra ca</TableHead>
-              <TableHead>So gio</TableHead>
-              <TableHead>Tang ca</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead>Nguon</TableHead>
+              <TableHead scope="col">Nhan vien</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col">Vao ca</TableHead>
+              <TableHead scope="col">Ra ca</TableHead>
+              <TableHead scope="col">So gio</TableHead>
+              <TableHead scope="col">Tang ca</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col">Nguon</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

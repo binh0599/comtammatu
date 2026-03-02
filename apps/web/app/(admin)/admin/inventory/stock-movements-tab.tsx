@@ -258,13 +258,13 @@ export function StockMovementsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Loai</TableHead>
-              <TableHead>Nguyen lieu</TableHead>
-              <TableHead className="text-right">So luong</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Ghi chu</TableHead>
-              <TableHead>Nguoi tao</TableHead>
-              <TableHead>Thoi gian</TableHead>
+              <TableHead scope="col">Loai</TableHead>
+              <TableHead scope="col">Nguyen lieu</TableHead>
+              <TableHead scope="col" className="text-right">So luong</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col">Ghi chu</TableHead>
+              <TableHead scope="col">Nguoi tao</TableHead>
+              <TableHead scope="col">Thoi gian</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
