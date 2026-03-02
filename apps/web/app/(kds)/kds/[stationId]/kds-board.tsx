@@ -1,5 +1,7 @@
 "use client";
 
+import { LogOut } from "lucide-react";
+import { logout } from "@/app/login/actions";
 import { useKdsRealtime } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
 
@@ -67,6 +69,16 @@ export function KdsBoard({
               Trễ
             </span>
           </div>
+          <form action={logout}>
+            <button
+              type="submit"
+              className="flex items-center gap-1.5 rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-400 transition-colors hover:border-red-500 hover:text-red-400"
+              aria-label="Đăng xuất"
+            >
+              <LogOut className="h-4 w-4" />
+              Thoát
+            </button>
+          </form>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { LogoutButton } from "@/components/logout-button";
 
 export const metadata: Metadata = {
   title: "Chọn Bếp KDS - Com Tấm Mã Tú",
@@ -38,6 +39,9 @@ export default async function KdsPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
+      <div className="absolute right-6 top-6">
+        <LogoutButton className="text-gray-400 hover:text-red-400" />
+      </div>
       <h1 className="mb-8 text-3xl font-bold">Chọn bếp</h1>
 
       {!stations || stations.length === 0 ? (

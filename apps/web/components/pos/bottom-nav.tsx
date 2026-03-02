@@ -7,8 +7,10 @@ import {
   PlusCircle,
   ClipboardList,
   User,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logout } from "@/app/login/actions";
 
 const navItems = [
   { href: "/pos", icon: LayoutGrid, label: "Bàn" },
@@ -44,6 +46,16 @@ export function BottomNav() {
             </Link>
           );
         })}
+        <form action={logout} className="flex-1">
+          <button
+            type="submit"
+            className="flex min-h-[56px] w-full flex-col items-center justify-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"
+            aria-label="Đăng xuất"
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Thoát</span>
+          </button>
+        </form>
       </div>
     </nav>
   );
