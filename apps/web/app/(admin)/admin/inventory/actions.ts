@@ -1,7 +1,11 @@
 "use server";
 
+import "@/lib/server-bootstrap";
 import {
   ActionError,
+  getActionContext,
+  withServerAction,
+  withServerQuery,
   VALID_PO_TRANSITIONS,
   type PoStatus,
   createIngredientSchema,
@@ -11,8 +15,6 @@ import {
   createPurchaseOrderSchema,
   receivePurchaseOrderSchema,
 } from "@comtammatu/shared";
-import { getActionContext } from "@comtammatu/shared/src/server/action-context";
-import { withServerAction, withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
 import { revalidatePath } from "next/cache";
 
 // =====================

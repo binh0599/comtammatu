@@ -1,7 +1,7 @@
 "use server";
 
-import { getActionContext } from "@comtammatu/shared/src/server/action-context";
-import { withServerQuery } from "@comtammatu/shared/src/server/with-server-action";
+import "@/lib/server-bootstrap";
+import { getActionContext, withServerQuery } from "@comtammatu/shared";
 
 // =====================
 // Security Events
