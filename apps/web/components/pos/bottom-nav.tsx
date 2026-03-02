@@ -23,7 +23,7 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-background fixed bottom-0 left-0 right-0 z-50 border-t">
+    <nav aria-label="POS navigation" className="bg-background fixed bottom-0 left-0 right-0 z-50 border-t">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive =
@@ -34,6 +34,7 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 text-xs",
                 isActive

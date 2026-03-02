@@ -35,11 +35,8 @@ export default async function KdsLayout({
   return (
     <div
       data-route-group="kds"
-      className="min-h-screen bg-gray-900 text-white"
+      className="dark min-h-screen bg-background text-foreground"
     >
-      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow-lg focus:ring-2 focus:ring-ring">
-        Bỏ qua đến nội dung chính
-      </a>
       <main id="main-content">{children}</main>
     </div>
   );

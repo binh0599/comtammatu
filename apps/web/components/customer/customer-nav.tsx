@@ -6,10 +6,10 @@ import { Home, BookOpen, ClipboardList, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/customer", icon: Home, label: "Trang chu" },
-  { href: "/customer/menu", icon: BookOpen, label: "Thuc don" },
-  { href: "/customer/orders", icon: ClipboardList, label: "Don hang" },
-  { href: "/customer/account", icon: User, label: "Tai khoan" },
+  { href: "/customer", icon: Home, label: "Trang chủ" },
+  { href: "/customer/menu", icon: BookOpen, label: "Thực đơn" },
+  { href: "/customer/orders", icon: ClipboardList, label: "Đơn hàng" },
+  { href: "/customer/account", icon: User, label: "Tài khoản" },
 ];
 
 export function CustomerNav() {

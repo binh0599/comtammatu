@@ -31,6 +31,7 @@ interface NavUserProps {
 const roleLabels: Record<string, string> = {
   owner: "Chủ sở hữu",
   manager: "Quản lý",
+  hr: "Nhân sự",
   cashier: "Thu ngân",
   chef: "Đầu bếp",
   waiter: "Phục vụ",

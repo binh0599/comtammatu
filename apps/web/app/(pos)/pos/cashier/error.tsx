@@ -13,11 +13,11 @@ export default function CashierError({
     <div className="p-4">
       <div className="rounded-lg border border-destructive bg-destructive/10 p-4">
         <p className="text-sm font-medium text-destructive mb-1">
-          Khong the tai may thu ngan
+          Không thể tải máy thu ngân
         </p>
-        <p className="text-xs text-muted-foreground mb-3">{error.message}</p>
+        <p className="text-xs text-muted-foreground mb-3">{error.digest ? "Lỗi hệ thống. Vui lòng thử lại sau." : error.message}</p>
         <Button size="sm" variant="outline" onClick={reset}>
-          Tai lai
+          Tải lại
         </Button>
       </div>
     </div>

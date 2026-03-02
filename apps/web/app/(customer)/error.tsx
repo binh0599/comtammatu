@@ -16,10 +16,10 @@ export default function CustomerError({
       <Card className="w-full max-w-sm">
         <CardContent className="flex flex-col items-center gap-4 p-6 text-center">
           <AlertCircle className="h-10 w-10 text-destructive" />
-          <h2 className="font-semibold">Co loi xay ra</h2>
-          <p className="text-sm text-muted-foreground">{error.message}</p>
+          <h2 className="font-semibold">Có lỗi xảy ra</h2>
+          <p className="text-sm text-muted-foreground">{error.digest ? "Lỗi hệ thống. Vui lòng thử lại sau." : error.message}</p>
           <Button onClick={reset} className="w-full">
-            Thu lai
+            Thử lại
           </Button>
         </CardContent>
       </Card>
