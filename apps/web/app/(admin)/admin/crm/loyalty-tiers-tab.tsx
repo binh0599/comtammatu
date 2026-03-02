@@ -220,7 +220,7 @@ export function LoyaltyTiersTab({
         >
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
               Them hang
             </Button>
           </DialogTrigger>
@@ -306,9 +306,9 @@ export function LoyaltyTiersTab({
                               setError(null);
                               setEditingItem(tier);
                             }}
-                            title="Sua"
+                            aria-label="Sua"
                           >
-                            <Pencil className="h-4 w-4" />
+                            <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -334,8 +334,8 @@ export function LoyaltyTiersTab({
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Xoa">
-                            <Trash2 className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" aria-label="Xoa">
+                            <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>

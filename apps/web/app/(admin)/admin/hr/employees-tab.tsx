@@ -372,15 +372,15 @@ export function EmployeesTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên</TableHead>
-              <TableHead>Vai trò</TableHead>
-              <TableHead>Vị trí</TableHead>
-              <TableHead>Bộ phận</TableHead>
-              <TableHead>Chi nhánh</TableHead>
-              <TableHead>Loại HĐ</TableHead>
-              <TableHead>Lương</TableHead>
-              <TableHead>Trạng thái</TableHead>
-              <TableHead className="text-right">Thao tác</TableHead>
+              <TableHead scope="col">Tên</TableHead>
+              <TableHead scope="col">Vai trò</TableHead>
+              <TableHead scope="col">Vị trí</TableHead>
+              <TableHead scope="col">Bộ phận</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Loại HĐ</TableHead>
+              <TableHead scope="col">Lương</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

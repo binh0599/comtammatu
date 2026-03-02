@@ -206,13 +206,13 @@ export function StockLevelsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nguyen lieu</TableHead>
-              <TableHead>Don vi</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead className="text-right">So luong</TableHead>
-              <TableHead className="text-right">Toi thieu</TableHead>
-              <TableHead className="text-right">Toi da</TableHead>
-              <TableHead>Trang thai</TableHead>
+              <TableHead scope="col">Nguyen lieu</TableHead>
+              <TableHead scope="col">Don vi</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col" className="text-right">So luong</TableHead>
+              <TableHead scope="col" className="text-right">Toi thieu</TableHead>
+              <TableHead scope="col" className="text-right">Toi da</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

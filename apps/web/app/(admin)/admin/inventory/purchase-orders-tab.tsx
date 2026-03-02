@@ -253,13 +253,13 @@ function CreatePoForm({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nguyen lieu</TableHead>
-                  <TableHead className="w-[120px]">So luong</TableHead>
-                  <TableHead className="w-[140px]">Don gia</TableHead>
-                  <TableHead className="w-[120px] text-right">
+                  <TableHead scope="col">Nguyen lieu</TableHead>
+                  <TableHead scope="col" className="w-[120px]">So luong</TableHead>
+                  <TableHead scope="col" className="w-[140px]">Don gia</TableHead>
+                  <TableHead scope="col" className="w-[120px] text-right">
                     Thanh tien
                   </TableHead>
-                  <TableHead className="w-[50px]" />
+                  <TableHead scope="col" className="w-[50px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -394,9 +394,9 @@ function ReceiveDialog({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nguyen lieu</TableHead>
-                <TableHead className="text-right">Dat hang</TableHead>
-                <TableHead className="w-[140px]">Thuc nhan</TableHead>
+                <TableHead scope="col">Nguyen lieu</TableHead>
+                <TableHead scope="col" className="text-right">Dat hang</TableHead>
+                <TableHead scope="col" className="w-[140px]">Thuc nhan</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -587,13 +587,13 @@ export function PurchaseOrdersTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ma</TableHead>
-              <TableHead>Nha cung cap</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead className="text-right">Tong tien</TableHead>
-              <TableHead>Ngay tao</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ma</TableHead>
+              <TableHead scope="col">Nha cung cap</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col" className="text-right">Tong tien</TableHead>
+              <TableHead scope="col">Ngay tao</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

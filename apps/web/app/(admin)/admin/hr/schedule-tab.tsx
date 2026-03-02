@@ -259,12 +259,12 @@ export function ScheduleTab({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ca lam</TableHead>
-                      <TableHead>Gio</TableHead>
-                      <TableHead>Chi nhanh</TableHead>
-                      <TableHead>Nhan vien</TableHead>
-                      <TableHead>Trang thai</TableHead>
-                      <TableHead>Ghi chu</TableHead>
+                      <TableHead scope="col">Ca lam</TableHead>
+                      <TableHead scope="col">Gio</TableHead>
+                      <TableHead scope="col">Chi nhanh</TableHead>
+                      <TableHead scope="col">Nhan vien</TableHead>
+                      <TableHead scope="col">Trang thai</TableHead>
+                      <TableHead scope="col">Ghi chu</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

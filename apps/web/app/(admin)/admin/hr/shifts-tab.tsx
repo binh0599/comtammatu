@@ -221,13 +221,13 @@ export function ShiftsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ten ca</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Gio bat dau</TableHead>
-              <TableHead>Gio ket thuc</TableHead>
-              <TableHead>Nghi giua ca (phut)</TableHead>
-              <TableHead>So NV toi da</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Ten ca</TableHead>
+              <TableHead scope="col">Chi nhanh</TableHead>
+              <TableHead scope="col">Gio bat dau</TableHead>
+              <TableHead scope="col">Gio ket thuc</TableHead>
+              <TableHead scope="col">Nghi giua ca (phut)</TableHead>
+              <TableHead scope="col">So NV toi da</TableHead>
+              <TableHead scope="col" className="text-right">Thao tac</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

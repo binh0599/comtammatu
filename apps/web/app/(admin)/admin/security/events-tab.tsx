@@ -150,13 +150,13 @@ export function EventsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Thời gian</TableHead>
-              <TableHead>Loại sự kiện</TableHead>
-              <TableHead>Mức độ</TableHead>
-              <TableHead>IP</TableHead>
-              <TableHead>Người dùng</TableHead>
-              <TableHead>Thiết bị</TableHead>
-              <TableHead>Chi tiết</TableHead>
+              <TableHead scope="col">Thời gian</TableHead>
+              <TableHead scope="col">Loại sự kiện</TableHead>
+              <TableHead scope="col">Mức độ</TableHead>
+              <TableHead scope="col">IP</TableHead>
+              <TableHead scope="col">Người dùng</TableHead>
+              <TableHead scope="col">Thiết bị</TableHead>
+              <TableHead scope="col">Chi tiết</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
