@@ -2,7 +2,7 @@ import { Header } from "@/components/admin/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getEmployees,
-  getAvailableProfiles,
+  getCreatableRoles,
   getBranchesForHr,
   getShifts,
   getShiftAssignments,
@@ -27,7 +27,7 @@ export default async function HrPage() {
 
   const [
     employees,
-    availableProfiles,
+    creatableRoles,
     branches,
     shifts,
     assignments,
@@ -35,7 +35,7 @@ export default async function HrPage() {
     leaveRequests,
   ] = await Promise.all([
     getEmployees(),
-    getAvailableProfiles(),
+    getCreatableRoles(),
     getBranchesForHr(),
     getShifts(),
     getShiftAssignments(weekStart, weekEnd),
@@ -58,7 +58,7 @@ export default async function HrPage() {
           <TabsContent value="employees">
             <EmployeesTab
               employees={employees}
-              availableProfiles={availableProfiles}
+              creatableRoles={creatableRoles}
               branches={branches}
             />
           </TabsContent>

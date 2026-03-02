@@ -1,5 +1,24 @@
 import { z } from "zod";
 
+export const createStaffAccountSchema = z.object({
+  email: z.string().email("Email không hợp lệ"),
+  full_name: z.string().min(2, "Họ tên tối thiểu 2 ký tự").max(100),
+  password: z.string().min(8, "Mật khẩu tối thiểu 8 ký tự"),
+  role: z.enum(["manager", "hr", "cashier", "waiter", "chef"], {
+    required_error: "Chọn vai trò",
+  }),
+  branch_id: z.coerce.number().int().positive("Chọn chi nhánh"),
+  position: z.string().min(1, "Vị trí không được để trống").max(100),
+  department: z.string().max(100).optional().or(z.literal("")),
+  hire_date: z.string().min(1, "Ngày vào làm không được để trống"),
+  employment_type: z.enum(["full", "part", "contract"], {
+    required_error: "Chọn loại hợp đồng",
+  }),
+  hourly_rate: z.coerce.number().positive().optional(),
+  monthly_salary: z.coerce.number().positive().optional(),
+});
+export type CreateStaffAccountInput = z.infer<typeof createStaffAccountSchema>;
+
 export const createEmployeeSchema = z.object({
   profile_id: z.string().uuid("Profile ID không hợp lệ"),
   branch_id: z.coerce.number().int().positive("Chọn chi nhánh"),

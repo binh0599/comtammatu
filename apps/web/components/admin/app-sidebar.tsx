@@ -116,13 +116,26 @@ interface AppSidebarProps {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
 
+  // HR role only sees the Nhân sự item under Quản lý
+  const hrItem = navigation
+    .find((g) => g.label === "Quản lý")
+    ?.items.find((item) => item.url === "/admin/hr");
+
+  const filteredNav =
+    user.role === "hr" && hrItem
+      ? [{ label: "Quản lý", items: [hrItem] }]
+      : navigation;
+
+  // HR role links to /admin/hr, others link to /admin dashboard
+  const homeHref = user.role === "hr" ? "/admin/hr" : "/admin";
+
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <Link href="/admin">
+              <Link href={homeHref}>
                 <div className="bg-primary text-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
                   <ChefHat className="size-4" />
                 </div>
@@ -138,7 +151,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navigation.map((group) => (
+        {filteredNav.map((group) => (
           <SidebarGroup key={group.label}>
             <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
             <SidebarGroupContent>

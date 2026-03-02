@@ -1,14 +1,17 @@
 "use server";
 
 import { createSupabaseServer } from "@comtammatu/database";
+import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import {
+  createStaffAccountSchema,
   createEmployeeSchema,
   updateEmployeeSchema,
   createShiftSchema,
   createShiftAssignmentSchema,
   createLeaveRequestSchema,
   approveLeaveRequestSchema,
+  type CreateStaffAccountInput,
   type CreateEmployeeInput,
   type UpdateEmployeeInput,
   type CreateShiftAssignmentInput,
@@ -16,7 +19,7 @@ import {
   type ApproveLeaveRequestInput,
 } from "@comtammatu/shared";
 
-// --- Helper: Get tenant_id + userId from authenticated user ---
+// --- Helper: Get tenant_id + userId + role from authenticated user ---
 
 async function getTenantId() {
   const supabase = await createSupabaseServer();
@@ -27,15 +30,22 @@ async function getTenantId() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("tenant_id")
+    .select("tenant_id, role")
     .eq("id", user.id)
     .single();
 
   const tenantId = profile?.tenant_id;
   if (!tenantId) throw new Error("No tenant assigned");
 
-  return { supabase, tenantId, userId: user.id };
+  return { supabase, tenantId, userId: user.id, userRole: profile?.role ?? "customer" };
 }
+
+// Roles that each role is permitted to create
+const CREATABLE_ROLES: Record<string, string[]> = {
+  owner: ["manager", "hr", "cashier", "waiter", "chef"],
+  manager: ["cashier", "waiter", "chef"],
+  hr: ["cashier", "waiter", "chef"],
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getBranches(supabase: any, tenantId: number) {
@@ -73,34 +83,87 @@ export async function getEmployees() {
   return data ?? [];
 }
 
-export async function getAvailableProfiles() {
-  const { supabase, tenantId } = await getTenantId();
+export async function getCreatableRoles(): Promise<string[]> {
+  const { userRole } = await getTenantId();
+  return CREATABLE_ROLES[userRole] ?? [];
+}
 
-  // Get all profiles for the tenant
-  const { data: allProfiles, error: profilesError } = await supabase
+export async function createStaffAccount(data: CreateStaffAccountInput) {
+  const parsed = createStaffAccountSchema.safeParse(data);
+
+  if (!parsed.success) {
+    return {
+      error: parsed.error.errors[0]?.message ?? "Dữ liệu không hợp lệ",
+    };
+  }
+
+  const { supabase, tenantId, userRole } = await getTenantId();
+
+  // Permission check: verify current user can create the requested role
+  const allowedRoles = CREATABLE_ROLES[userRole] ?? [];
+  if (!allowedRoles.includes(parsed.data.role)) {
+    return { error: "Bạn không có quyền tạo tài khoản với vai trò này" };
+  }
+
+  // Service role client for admin user creation
+  const adminClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // 1. Create auth user — trigger handle_new_user will auto-create profile
+  const { data: newUser, error: createError } =
+    await adminClient.auth.admin.createUser({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: parsed.data.full_name,
+        tenant_id: tenantId,
+        role: parsed.data.role,
+      },
+    });
+
+  if (createError) {
+    if (createError.message.includes("already registered")) {
+      return { error: "Email này đã được sử dụng" };
+    }
+    return { error: createError.message };
+  }
+
+  const newUserId = newUser.user.id;
+
+  // 2. Update profile branch_id (trigger doesn't set it)
+  const { error: profileError } = await supabase
     .from("profiles")
-    .select("id, full_name, role")
-    .eq("tenant_id", tenantId)
-    .eq("is_active", true)
-    .order("full_name");
+    .update({ branch_id: parsed.data.branch_id })
+    .eq("id", newUserId);
 
-  if (profilesError) throw new Error(profilesError.message);
+  if (profileError) {
+    // Non-fatal — employee record still needs to be created
+    console.error("Failed to set branch_id on profile:", profileError.message);
+  }
 
-  // Get all employees for the tenant
-  const { data: existingEmployees, error: employeesError } = await supabase
-    .from("employees")
-    .select("profile_id")
-    .eq("tenant_id", tenantId);
+  // 3. Insert employee record
+  const { error: empError } = await supabase.from("employees").insert({
+    tenant_id: tenantId,
+    profile_id: newUserId,
+    branch_id: parsed.data.branch_id,
+    position: parsed.data.position,
+    department: parsed.data.department || null,
+    hire_date: parsed.data.hire_date,
+    employment_type: parsed.data.employment_type,
+    hourly_rate: parsed.data.hourly_rate ?? null,
+    monthly_salary: parsed.data.monthly_salary ?? null,
+    status: "active",
+  });
 
-  if (employeesError) throw new Error(employeesError.message);
+  if (empError) {
+    return { error: empError.message };
+  }
 
-  const usedProfileIds = new Set(
-    existingEmployees?.map((e) => e.profile_id) ?? []
-  );
-
-  return (allProfiles ?? []).filter(
-    (profile) => !usedProfileIds.has(profile.id)
-  );
+  revalidatePath("/admin/hr");
+  return { success: true };
 }
 
 export async function createEmployee(data: CreateEmployeeInput) {

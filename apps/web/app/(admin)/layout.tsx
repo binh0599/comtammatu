@@ -26,8 +26,8 @@ export default async function AdminLayout({
 
   const role = data?.role ?? "customer";
 
-  // Only owner and manager can access admin
-  if (role !== "owner" && role !== "manager") {
+  // Owner, manager, and hr can access admin
+  if (!["owner", "manager", "hr"].includes(role)) {
     redirect("/login");
   }
 

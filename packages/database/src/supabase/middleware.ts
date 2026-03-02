@@ -80,6 +80,9 @@ export async function updateSession(request: NextRequest) {
       case "chef":
         url.pathname = "/kds";
         break;
+      case "hr":
+        url.pathname = "/admin/hr";
+        break;
       default:
         url.pathname = "/customer";
         break;

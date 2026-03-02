@@ -142,6 +142,7 @@ export type {
 
 // Week 5-6: HR
 export {
+  createStaffAccountSchema,
   createEmployeeSchema,
   updateEmployeeSchema,
   createShiftSchema,
@@ -150,6 +151,7 @@ export {
   approveLeaveRequestSchema,
 } from "./schemas/hr";
 export type {
+  CreateStaffAccountInput,
   CreateEmployeeInput,
   UpdateEmployeeInput,
   CreateShiftInput,
