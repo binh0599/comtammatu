@@ -334,7 +334,7 @@ export function LoyaltyTiersTab({
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Xoa">
+                          <Button variant="ghost" size="icon" aria-label="Xóa">
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
