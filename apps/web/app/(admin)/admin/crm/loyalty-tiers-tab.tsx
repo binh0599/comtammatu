@@ -306,7 +306,7 @@ export function LoyaltyTiersTab({
                               setError(null);
                               setEditingItem(tier);
                             }}
-                            aria-label="Sua"
+                            aria-label="Sửa"
                           >
                             <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
