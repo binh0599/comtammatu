@@ -40,3 +40,13 @@
 **Pattern:** Week 5-6 had 6 independent modules (shared, dashboard, inventory, suppliers, HR, security). Sequential implementation would take much longer.
 **Rule:** When modules are independent (different routes, different files), launch multiple Task agents in parallel. Group by dependency: shared package first, then consumer modules in parallel.
 **Prevention:** Identify module boundaries early. If modules don't share new files, they can be built concurrently. Verify with typecheck + lint + build after all agents complete.
+
+## 2026-03-02: Zod `.nonzero()` does not exist — use `.refine()` instead
+**Pattern:** TypeScript error `TS2339: Property 'nonzero' does not exist on type 'ZodNumber'` when using `z.coerce.number().int().nonzero()`.
+**Rule:** The `.nonzero()` method is not available in Zod v3.24. Use `.refine((v) => v !== 0, "message")` to validate non-zero values.
+**Prevention:** When needing non-zero validation, always use `.refine()`. Check Zod API docs for available number methods before assuming a method exists.
+
+## 2026-03-02: Customer layout should be lightweight — auth in individual pages
+**Pattern:** Customer layout initially imported Supabase and fetched user/customer data, but this was unnecessary since public pages (menu) don't need auth and auth-required pages handle their own redirect.
+**Rule:** Keep route group layouts minimal. The customer layout only needs the shell (header, nav, toaster). Individual pages handle auth checks independently: public pages skip auth, protected pages redirect to /login.
+**Prevention:** For mixed public/private route groups, put auth logic in individual page RSCs, not in the shared layout. This avoids unnecessary DB calls on public pages.

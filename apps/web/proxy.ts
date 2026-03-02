@@ -1,8 +1,15 @@
 import { updateSession } from "@comtammatu/database/src/supabase/middleware";
+import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+export async function proxy(request: NextRequest) {
+  try {
+    return await updateSession(request);
+  } catch (error) {
+    console.error("[proxy] Error in updateSession:", error);
+    // If proxy fails, let the request through rather than blocking all traffic
+    return NextResponse.next({ request });
+  }
 }
 
 export const config = {

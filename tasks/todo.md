@@ -92,11 +92,67 @@
 - [ ] Attendance clock-in/clock-out mechanism (QR scan, etc.)
 - [ ] Branch comparison in dashboard
 
-## Next Phase: Week 7-8 — CRM, Privacy & Polish
+## Completed: Week 7-8 — CRM, Privacy & Customer PWA
 
-- [ ] Customer profiles, loyalty points, loyalty tiers
-- [ ] Vouchers & promotions (percent/fixed/free item, branch-scoped)
-- [ ] Customer PWA (menu browsing, order tracking, feedback)
-- [ ] GDPR — deletion requests, DSAR export, retention cron jobs
-- [ ] Testing — E2E for critical flows, RLS validation suite
-- [ ] Documentation — API docs, user guide, deployment runbook
+### Shared Package Extensions (Phase 0)
+- [x] Zod schemas — CRM (customer, loyalty tier, loyalty points), voucher (create/update with branch_ids), feedback (create, respond), privacy (deletion request)
+- [x] Constants — 5 new enums (customer genders, customer sources, loyalty transaction types, voucher types, deletion request statuses) + CRM_ROLES
+- [x] Formatters — 6 new Vietnamese label functions (getCustomerGenderLabel, getCustomerSourceLabel, getLoyaltyTransactionTypeLabel, getVoucherTypeLabel, getDeletionStatusLabel, formatPoints)
+
+### CRM Admin — /admin/crm (Phase 1, 4 tabs)
+- [x] Customers tab — CRUD table with loyalty tier badge, total_spent, active/inactive toggle, loyalty history dialog, points adjust dialog (earn/redeem/adjust)
+- [x] Loyalty Tiers tab — CRUD with min_points, discount_pct, benefits, sort_order. Delete protection if customers linked
+- [x] Vouchers tab — CRUD with type badges (percent/fixed/free_item), branch multi-select via voucher_branches junction, date range, toggle active
+- [x] Feedback tab — Star rating display (1-5), response dialog for admin, responded/unanswered badges
+- [x] Server Actions — 20 actions (customers CRUD, loyalty points, tiers CRUD, vouchers CRUD with junction, feedback response, GDPR admin: deletion requests, cancel, process anonymization)
+
+### Customer PWA — /customer (Phase 2, 6 pages)
+- [x] Layout — Mobile-first with sticky header (Cơm Tấm Mã Tú), bottom nav (Trang chủ, Thực đơn, Đơn hàng, Tài khoản), Toaster
+- [x] Home page — Welcome message, 3 action cards, loyalty summary if logged in
+- [x] Menu page (PUBLIC) — Category tabs with horizontal scroll, search bar, item cards with price. Read-only for MVP
+- [x] Orders page (AUTH) — Order cards with status badges, expandable items, "Đánh giá" link for completed orders
+- [x] Loyalty page (AUTH) — Tier card with discount %, points balance, progress bar to next tier, transaction history
+- [x] Feedback page (AUTH) — Dynamic route /feedback/[orderId], interactive 5-star rating, comment textarea
+- [x] Account page (AUTH) — Profile info, logout, data export (JSON download), deletion request with 30-day grace period AlertDialog
+- [x] Server Actions — 8 actions (getPublicMenu, getCustomerOrders, getCustomerLoyalty, submitFeedback, getOrderForFeedback, getCustomerProfile, requestDataExport, requestDeletion)
+
+### GDPR Privacy API (Phase 3)
+- [x] GET /api/privacy/data-export — Authenticated JSON download of all customer data (orders, loyalty, feedback)
+- [x] GET/POST /api/privacy/deletion-request — Create deletion request (30-day grace) / check status
+- [x] Shared auth helper (helpers.ts) — getAuthenticatedCustomer() for privacy routes
+
+### Middleware & Verification (Phase 4)
+- [x] Middleware updated — Added `/customer` and `/api/privacy` to publicRoutes
+- [x] Typecheck passes (all 5 packages)
+- [x] Lint passes (0 errors, 0 warnings — fixed unused isLoggedIn prop, img→Image)
+- [x] Build passes (30 routes including 9 new: /admin/crm, /customer, /customer/menu, /customer/orders, /customer/loyalty, /customer/feedback/[orderId], /customer/account, /api/privacy/data-export, /api/privacy/deletion-request)
+- [x] Commit: `244fa73` — 37 files, +4,963 lines
+- [x] Pushed to origin/main
+
+### What was NOT done in Week 7-8 (deferred)
+
+- [ ] Campaigns (email/SMS/push notifications)
+- [ ] Notifications system
+- [ ] Auto-tier upgrade triggers (auto-promote customer when points reach tier threshold)
+- [ ] Retention cron jobs (scheduled deletion after 30-day grace)
+- [ ] E2E testing for critical flows
+- [ ] RLS validation test suite
+- [ ] Documentation (API docs, user guide, deployment runbook)
+- [ ] Order discounts/voucher redemption at POS (voucher application during order creation)
+
+## Next: Post-MVP Enhancements
+
+```
+- [ ] VNPay/Momo payment integration
+- [ ] Offline support (Service Worker, IndexedDB)
+- [ ] Charts/graphs for admin dashboard
+- [ ] E2E testing (Vitest/Playwright)
+- [ ] RLS validation suite
+- [ ] API documentation
+- [ ] Stock auto-deduction on order completion
+- [ ] Payroll calculations
+- [ ] Attendance clock-in/clock-out (QR scan)
+- [ ] Receipt printing + peripheral config
+- [ ] Campaigns & notifications
+- [ ] Voucher redemption at POS
+```

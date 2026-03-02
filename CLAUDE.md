@@ -7,9 +7,9 @@
 
 ## I. PROJECT STATUS
 
-**Phase: WEEK 5-6 COMPLETE — Week 7-8 Ready (CRM, Privacy & Polish)**
+**Phase: WEEK 7-8 COMPLETE — MVP Delivered**
 
-Weeks 1-6 are complete. Full order lifecycle works end-to-end (waiter → KDS → chef → cashier → cash payment). Operations management delivered: admin dashboard with real stats, inventory management with supplier/PO workflows, HR basics (employees, shifts, schedule, attendance, leave), and security monitoring. Ready for Week 7-8 CRM, Privacy & Polish.
+All 8 weeks of the roadmap are complete. The full F&B CRM system is functional: order lifecycle (waiter → KDS → chef → cashier → cash payment), operations management (dashboard, inventory, HR, security), CRM (customers, loyalty, vouchers, feedback), customer-facing PWA (menu, orders, loyalty, feedback, account), and GDPR privacy (data export, deletion requests). Post-MVP enhancements (payments, offline, testing, docs) are tracked in `tasks/todo.md`.
 
 | Aspect                            | Status                                                                   |
 | --------------------------------- | ------------------------------------------------------------------------ |
@@ -17,32 +17,35 @@ Weeks 1-6 are complete. Full order lifecycle works end-to-end (waiter → KDS �
 | Development Roadmap               | Complete (`docs/ROADMAP.md`) — timeline, milestones, migration path            |
 | Project Operating System          | Complete (`docs/PROJECT_OPERATING_SYSTEM_ENGLISH.md`)                    |
 | AI boot file (this file)          | Complete                                                                 |
-| Git repository                    | Active (`main` branch, 10 commits)                                       |
+| Git repository                    | Active (`main` branch, 11 commits)                                       |
 | Monorepo scaffolding              | Complete (Turborepo + pnpm workspaces)                                   |
 | CI/CD pipeline                    | Complete (`.github/workflows/ci.yml` + Prisma generate step)             |
-| Next.js app shell                 | **Working** — 21 routes, auth, admin, POS, KDS, cashier, inventory, HR, security |
+| Next.js app shell                 | **Working** — 30 routes, auth, admin, POS, KDS, cashier, inventory, HR, security, CRM, customer PWA, privacy API |
 | Domain modules                    | 10 stubs created (not yet used — logic lives in app routes)              |
-| Shared packages                   | `database` implemented, `shared` implemented (7 Zod schema files + constants + formatters), `security` + `ui` are stubs |
+| Shared packages                   | `database` implemented, `shared` implemented (11 Zod schema files + constants + formatters), `security` + `ui` are stubs |
 | Database schema                   | **Complete** — 5 migrations, v2.2 with RLS + POS/KDS triggers           |
 | Supabase project                  | **Linked** (project: `zrlriuednoaqrsvnjjyo`)                             |
 | Vercel project                    | **Deployed** (`comtammatu.vercel.app`)                                   |
 | shadcn/ui                         | **Installed** (new-york style, 24 components)                            |
 | Tailwind CSS                      | **Installed** (v4.2.1 + design tokens + dark mode)                       |
 | Auth module                       | **Working** — login, middleware, role-based routing, RBAC                 |
-| Admin UI                          | **Working** — dashboard (real data), menu CRUD, terminal CRUD, KDS station CRUD, inventory (6 tabs), HR (5 tabs), security (2 tabs) |
+| Admin UI                          | **Working** — dashboard (real data), menu CRUD, terminal CRUD, KDS station CRUD, inventory (6 tabs), HR (5 tabs), security (2 tabs), CRM (4 tabs) |
+| Customer PWA                      | **Working** — home, menu browse, orders, loyalty, feedback, account (6 pages + GDPR) |
+| GDPR Privacy API                  | **Working** — data export, deletion requests (30-day grace period)        |
 | POS (Waiter)                      | **Working** — table grid, menu selector, cart, order creation, order list |
 | POS (Cashier)                     | **Working** — order queue, cash payment, session open/close              |
 | KDS                               | **Working** — realtime board, ticket cards, bump system, timing colors   |
 | Realtime                          | **Working** — 4 hooks (orders, tables, KDS tickets, broadcast)           |
 | Prisma                            | **Configured** — v7.2 with `@prisma/adapter-pg` driver adapter           |
 | Agent skills                      | 4 project-level + 70+ platform skills mapped (Section XIX)               |
-| tasks/ directory                  | Active — lessons (7), regressions (3), predictions (2)                   |
+| tasks/ directory                  | Active — lessons (9), regressions (3), predictions (3)                   |
 
-**Current file count:** ~145 source files (excluding generated/node_modules)
+**Current file count:** ~180 source files (excluding generated/node_modules)
 
 ### Git History
 
 ```
+244fa73 feat: complete Week 7-8 — CRM Admin, Customer PWA, GDPR Privacy
 0c9f776 feat: complete Week 5-6 — Inventory, HR, Dashboard, Security
 a629b37 fix(lint): resolve React purity violations and unused vars
 3c1c1ca fix(ci): Turborepo typecheck must depend on own build task
@@ -64,6 +67,8 @@ a4d9dcf chore: initial project scaffold
 5. **Regenerate DB types after adding SQL functions** — `supabase gen types typescript` after every migration with `CREATE FUNCTION`
 6. **Date.now() is impure in RSC** — ESLint `react-hooks/purity` flags `Date.now()`. Use `const now = new Date(); now.getTime() - offset` instead.
 7. **Parallel Task agents for independent modules** — When modules don't share files, build concurrently. Shared package first, then consumers in parallel.
+8. **Zod `.nonzero()` does not exist** — Use `.refine((v) => v !== 0, "message")` instead. Always check Zod API docs before assuming a method exists.
+9. **Customer layout should be lightweight** — Keep route group layouts minimal (shell only). Individual pages handle auth checks independently: public pages skip auth, protected pages redirect.
 
 ---
 
@@ -139,10 +144,17 @@ comtammatu/
 │   │   │       │   ├── page.tsx       # Terminal list (RSC)
 │   │   │       │   ├── actions.ts     # CRUD: register, approve, revoke, delete terminals
 │   │   │       │   └── terminals-table.tsx # Client — table with approve/revoke actions
-│   │   │       └── kds-stations/
-│   │   │           ├── page.tsx       # KDS station list (RSC)
-│   │   │           ├── actions.ts     # CRUD: create, update, toggle, delete stations
-│   │   │           └── stations-table.tsx # Client — table with category multi-select
+│   │   │       ├── kds-stations/
+│   │   │       │   ├── page.tsx       # KDS station list (RSC)
+│   │   │       │   ├── actions.ts     # CRUD: create, update, toggle, delete stations
+│   │   │       │   └── stations-table.tsx # Client — table with category multi-select
+│   │   │       └── crm/
+│   │   │           ├── page.tsx       # CRM hub (4 tabs: Khách hàng, Hạng thành viên, Voucher, Phản hồi)
+│   │   │           ├── actions.ts     # 20 Server Actions (customers, loyalty, vouchers, feedback, GDPR admin)
+│   │   │           ├── customers-tab.tsx      # Customer CRUD + loyalty history + points adjust
+│   │   │           ├── loyalty-tiers-tab.tsx  # Tier CRUD with delete protection
+│   │   │           ├── vouchers-tab.tsx       # Voucher CRUD with branch multi-select (junction)
+│   │   │           └── feedback-tab.tsx       # Star ratings + admin response dialog
 │   │   ├── (pos)/
 │   │   │   ├── layout.tsx             # POS layout (auth guard, BottomNav, Toaster)
 │   │   │   └── pos/
@@ -183,15 +195,43 @@ comtammatu/
 │   │   │           ├── kds-board.tsx      # Realtime grid with timing legend
 │   │   │           ├── ticket-card.tsx    # Large card with timing colors + bump buttons
 │   │   │           └── use-kds-realtime.ts # Supabase postgres_changes subscription
-│   │   ├── (customer)/layout.tsx      # Customer route group (stub)
+│   │   ├── (customer)/
+│   │   │   ├── layout.tsx             # Customer layout (mobile-first shell: header, nav, toaster)
+│   │   │   └── customer/
+│   │   │       ├── page.tsx           # Home (welcome, action cards, loyalty summary)
+│   │   │       ├── actions.ts         # 8 customer-facing Server Actions
+│   │   │       ├── customer-home.tsx  # Client — home page with optional auth context
+│   │   │       ├── menu/
+│   │   │       │   ├── page.tsx           # Menu browse (PUBLIC, no auth required)
+│   │   │       │   └── menu-browser.tsx   # Client — category tabs, search, item cards
+│   │   │       ├── orders/
+│   │   │       │   ├── page.tsx           # Order history (AUTH required)
+│   │   │       │   └── order-history.tsx  # Client — order cards with expandable items
+│   │   │       ├── loyalty/
+│   │   │       │   ├── page.tsx               # Loyalty dashboard (AUTH required)
+│   │   │       │   └── loyalty-dashboard.tsx  # Client — tier card, progress bar, transactions
+│   │   │       ├── feedback/
+│   │   │       │   └── [orderId]/
+│   │   │       │       ├── page.tsx           # Feedback form (AUTH, dynamic route)
+│   │   │       │       └── feedback-form.tsx  # Client — interactive 5-star rating + comment
+│   │   │       └── account/
+│   │   │           ├── page.tsx           # Account (AUTH — profile, logout, GDPR)
+│   │   │           └── account-client.tsx # Client — export, deletion request with AlertDialog
 │   │   └── api/
 │   │       ├── health/route.ts        # Health check endpoint (working)
-│   │       └── auth/callback/route.ts # Supabase PKCE auth callback
+│   │       ├── auth/callback/route.ts # Supabase PKCE auth callback
+│   │       └── privacy/
+│   │           ├── helpers.ts             # Shared auth + customer lookup for privacy routes
+│   │           ├── data-export/route.ts   # GET: JSON download of all customer data
+│   │           └── deletion-request/route.ts # GET: check status / POST: create (30-day grace)
 │   ├── components/
 │   │   ├── admin/
-│   │   │   ├── app-sidebar.tsx        # Admin sidebar (Dashboard, Menu, Terminals, KDS, Inventory, HR, Security links)
+│   │   │   ├── app-sidebar.tsx        # Admin sidebar (Dashboard, Menu, Terminals, KDS, Inventory, HR, Security, CRM links)
 │   │   │   ├── header.tsx             # Admin header with breadcrumbs
 │   │   │   └── nav-user.tsx           # User dropdown (avatar, logout)
+│   │   ├── customer/
+│   │   │   ├── customer-header.tsx    # Sticky header with restaurant name + ChefHat icon
+│   │   │   └── customer-nav.tsx       # Bottom nav (Trang chủ, Thực đơn, Đơn hàng, Tài khoản)
 │   │   ├── pos/
 │   │   │   └── bottom-nav.tsx         # Mobile bottom nav (Bàn, Tạo đơn, Đơn hàng, Ca làm)
 │   │   └── ui/                        # 24 shadcn/ui components (auto-generated)
@@ -241,11 +281,11 @@ comtammatu/
 │   │   ├── generated/prisma/client/   # Generated Prisma client (git-ignored)
 │   │   ├── package.json               # prisma, @prisma/client, @prisma/adapter-pg, pg
 │   │   └── tsconfig.json
-│   ├── shared/                        # @comtammatu/shared (IMPLEMENTED — 7 Zod schema files + constants + formatters)
+│   ├── shared/                        # @comtammatu/shared (IMPLEMENTED — 11 Zod schema files + constants + formatters)
 │   │   ├── package.json               # zod
 │   │   ├── src/
 │   │   │   ├── index.ts               # Barrel: all schemas, constants, formatters
-│   │   │   ├── constants.ts           # Status enums, role arrays, valid transitions (30+ exports)
+│   │   │   ├── constants.ts           # Status enums, role arrays, valid transitions (40+ exports)
 │   │   │   ├── schemas/
 │   │   │   │   ├── order.ts           # createOrderSchema, updateOrderStatusSchema, addOrderItemsSchema
 │   │   │   │   ├── pos.ts             # registerTerminalSchema, openSessionSchema, closeSessionSchema
@@ -253,9 +293,13 @@ comtammatu/
 │   │   │   │   ├── kds.ts             # createKdsStationSchema, updateKdsStationSchema, bumpTicketSchema
 │   │   │   │   ├── inventory.ts       # createIngredientSchema, createStockMovementSchema, createRecipeSchema
 │   │   │   │   ├── supplier.ts        # createSupplierSchema, createPurchaseOrderSchema, receivePurchaseOrderSchema
-│   │   │   │   └── hr.ts             # createEmployeeSchema, createShiftSchema, createLeaveRequestSchema, etc.
+│   │   │   │   ├── hr.ts             # createEmployeeSchema, createShiftSchema, createLeaveRequestSchema, etc.
+│   │   │   │   ├── crm.ts            # createCustomerSchema, createLoyaltyTierSchema, adjustLoyaltyPointsSchema
+│   │   │   │   ├── voucher.ts        # createVoucherSchema (with branch_ids), updateVoucherSchema
+│   │   │   │   ├── feedback.ts       # createFeedbackSchema, respondFeedbackSchema
+│   │   │   │   └── privacy.ts        # deletionRequestSchema
 │   │   │   └── utils/
-│   │   │       └── format.ts          # formatPrice, formatElapsedTime, 12+ Vietnamese label functions
+│   │   │       └── format.ts          # formatPrice, formatElapsedTime, 20+ Vietnamese label functions
 │   │   └── tsconfig.json
 │   ├── security/                      # @comtammatu/security (Upstash) — STUB
 │   │   ├── package.json               # @upstash/ratelimit, @upstash/redis
@@ -280,9 +324,9 @@ comtammatu/
 ├── tasks/                             # Task tracking (Operating System)
 │   ├── todo.md                        # Current plan & progress (active)
 │   ├── regressions.md                 # Named failure rules (3 rules)
-│   ├── lessons.md                     # Learning log (5 lessons)
+│   ├── lessons.md                     # Learning log (9 lessons)
 │   ├── friction.md                    # Contradiction tracker
-│   └── predictions.md                 # Prediction log (1 entry)
+│   └── predictions.md                 # Prediction log (3 entries)
 ├── docs/
 │   ├── F&B_CRM_Lightweight_Architecture_v2.2.md  # Architecture spec (source of truth)
 │   ├── ROADMAP.md                                # Development roadmap & migration path
@@ -513,11 +557,12 @@ Two terminal types with different capabilities:
 - Prisma for type-safe database queries
 - `@supabase/supabase-js` for client-side Supabase access
 
-### API Routes (planned structure)
+### API Routes
 
 - Auth endpoints: `/api/auth/*` (no auth required)
-- Webhooks: `/api/webhooks/*` (HMAC signature verification)
-- Public: `/api/public/*` (optional auth)
+- Privacy endpoints: `/api/privacy/*` (self-auth via Supabase, customer-facing)
+- Webhooks: `/api/webhooks/*` (HMAC signature verification) — planned
+- Public: `/api/public/*` (optional auth) — planned
 - Everything else: `/api/*` (JWT required, RLS enforced)
 - Health check: `/api/health` (exists, no auth)
 
@@ -724,7 +769,7 @@ All three phases are done. See `tasks/todo.md` for full checklist.
 - Shared package extended — 3 new Zod schema files (inventory, supplier, hr), 15 new constants, 12 new formatters
 - Sidebar navigation updated — Kho hàng, Nhân sự, Bảo mật links
 
-**Deferred from Week 3-4 + 5-6 (enhancements, not blockers):**
+**Deferred from Weeks 3-6 (enhancements, not blockers):**
 - VNPay/Momo payment integration (webhooks, HMAC verification)
 - Offline support (Service Worker, IndexedDB, AES-256-GCM)
 - Device fingerprinting, peripheral config, receipt printing
@@ -735,15 +780,42 @@ All three phases are done. See `tasks/todo.md` for full checklist.
 - Payroll calculations
 - Attendance clock-in/clock-out mechanism
 
-### Current Phase: Week 7-8 — CRM, Privacy & Polish
+### Completed: Week 7-8 — CRM, Privacy & Customer PWA
+
+**Week 7-8 delivered (30 routes, +4,963 lines, commit `244fa73`):**
+- Shared package extended — 4 new Zod schema files (crm, voucher, feedback, privacy), 5 new constants, 6 new formatters
+- CRM Admin (/admin/crm, 4 tabs) — customers CRUD with loyalty tier badges, loyalty tiers CRUD with delete protection, vouchers CRUD with branch multi-select (junction table), feedback with star ratings + response dialog, 20 Server Actions, GDPR admin (deletion requests list, cancel, process anonymization)
+- Customer PWA (/customer, 6 pages) — home (optional auth, action cards, loyalty summary), menu browse (PUBLIC, category tabs, search), orders (AUTH, expandable items), loyalty (AUTH, tier card, progress bar, transactions), feedback (AUTH, 5-star interactive), account (AUTH, export, deletion request with 30-day grace AlertDialog), 8 Server Actions
+- GDPR Privacy API — data export (JSON download), deletion requests (create with 30-day grace, check status), shared auth helper
+- Sidebar updated — Khách hàng link added
+- Customer layout — lightweight shell (header, nav, toaster), auth in individual pages
+
+**Deferred from Week 7-8 (enhancements, not blockers):**
+- Campaigns (email/SMS/push notifications)
+- Notifications system
+- Auto-tier upgrade triggers
+- Retention cron jobs (scheduled deletion after 30-day grace)
+- E2E testing, RLS validation suite
+- Documentation (API docs, user guide, deployment runbook)
+- Voucher redemption at POS during order creation
+
+### Next: Post-MVP Enhancements
 
 ```
-- [ ] CRM (customer profiles, loyalty points/tiers, feedback)
-- [ ] Vouchers & Promotions (percent/fixed/free item, branch-scoped)
-- [ ] Customer PWA (menu browsing, order tracking, loyalty)
-- [ ] GDPR (deletion requests, DSAR export, retention cron)
-- [ ] Testing (E2E, RLS validation, security review)
-- [ ] Documentation (API docs, user guide, deployment runbook)
+- [ ] VNPay/Momo payment integration
+- [ ] Offline support (Service Worker, IndexedDB)
+- [ ] Charts/graphs for admin dashboard
+- [ ] E2E testing (Vitest/Playwright)
+- [ ] RLS validation suite
+- [ ] API documentation
+- [ ] Stock auto-deduction on order completion
+- [ ] Payroll calculations
+- [ ] Attendance clock-in/clock-out (QR scan)
+- [ ] Receipt printing + peripheral config
+- [ ] Campaigns & notifications
+- [ ] Voucher redemption at POS
+- [ ] Auto-tier upgrade triggers
+- [ ] Retention cron jobs
 ```
 
 ### Open Technical Decisions
@@ -786,10 +858,12 @@ All three phases are done. See `tasks/todo.md` for full checklist.
 ## XVII. GDPR & PRIVACY
 
 - **Data retention:** Configured per data type (see architecture doc Section 11)
-- **Right to erasure:** 30-day grace period, then anonymize orders + delete customer data
-- **DSAR:** JSON/CSV export via `/api/privacy/data-export`
+- **Right to erasure:** 30-day grace period, then anonymize orders + delete customer data — **IMPLEMENTED** (`/api/privacy/deletion-request` + admin CRM actions)
+- **DSAR:** JSON export via `/api/privacy/data-export` — **IMPLEMENTED** (authenticated customer data download)
+- **Admin tools:** Deletion requests list, cancel, process anonymization (sets name/phone to `[Đã xóa]`, email=NULL, is_active=false) — **IMPLEMENTED** (CRM admin actions)
+- **Customer self-service:** Account page with "Xuất dữ liệu" (export) + "Yêu cầu xóa" (deletion request with AlertDialog) — **IMPLEMENTED**
 - **Audit log PII:** Hashed (SHA-256) before storage
-- **Retention jobs:** Daily cron via Supabase Edge Function
+- **Retention jobs:** Daily cron via Supabase Edge Function — **NOT YET IMPLEMENTED** (manual admin processing for now)
 
 ---
 
