@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -155,10 +155,16 @@ export function ActiveSessionCard({
     ? Number(closingAmount) - expectedAmount
     : null;
 
-  const openedAt = new Date(session.opened_at);
-  const elapsed = Math.floor(
-    (Date.now() - openedAt.getTime()) / (1000 * 60)
-  );
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const openedAt = new Date(session.opened_at).getTime();
+    const tick = () => setElapsed(Math.floor((Date.now() - openedAt) / 60_000));
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [session.opened_at]);
+
   const hours = Math.floor(elapsed / 60);
   const minutes = elapsed % 60;
 

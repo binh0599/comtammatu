@@ -34,7 +34,7 @@ export async function processPayment(data: {
   amount_tendered: number;
   tip?: number;
 }) {
-  const { supabase, userId, profile } = await getCashierProfile();
+  const { supabase, userId } = await getCashierProfile();
 
   const parsed = processPaymentSchema.safeParse(data);
   if (!parsed.success) {

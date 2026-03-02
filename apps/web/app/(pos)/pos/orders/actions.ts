@@ -236,7 +236,7 @@ export async function createOrder(data: {
 }
 
 export async function confirmOrder(orderId: number) {
-  const { supabase, userId } = await getPosProfile();
+  const { supabase } = await getPosProfile();
 
   const { data: order, error: fetchError } = await supabase
     .from("orders")
@@ -547,7 +547,7 @@ export async function getMenuItems() {
  * Get categories for filtering
  */
 export async function getMenuCategories() {
-  const { supabase, profile } = await getPosProfile();
+  const { supabase } = await getPosProfile();
 
   const { data, error } = await supabase
     .from("menu_categories")
