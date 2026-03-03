@@ -485,7 +485,7 @@ async function _addOrderItems(data: {
 
   const { order_id, items } = parsed.data;
 
-  // Verify order exists and is in draft/confirmed status
+  // Verify order exists and is not finalized
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select("id, status, branch_id")
@@ -496,9 +496,10 @@ async function _addOrderItems(data: {
     throw new ActionError("Đơn hàng không tồn tại", "NOT_FOUND", 404);
   }
 
-  if (order.status !== "draft" && order.status !== "confirmed") {
+  const finalStatuses = ["completed", "cancelled"];
+  if (finalStatuses.includes(order.status)) {
     throw new ActionError(
-      "Chỉ có thể thêm món khi đơn ở trạng thái nháp hoặc đã xác nhận",
+      "Không thể thêm món khi đơn đã hoàn thành hoặc đã hủy",
       "CONFLICT",
       409
     );

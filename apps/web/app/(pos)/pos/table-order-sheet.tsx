@@ -9,6 +9,8 @@ import {
     Banknote,
     XCircle,
     ArrowRight,
+    PlusCircle,
+    ArrowLeft,
 } from "lucide-react";
 import {
     Sheet,
@@ -29,6 +31,7 @@ import {
     createOrder,
     confirmOrder,
     updateOrderStatus,
+    addOrderItems,
 } from "./orders/actions";
 
 // ---------------------------------------------------------------------------
@@ -87,13 +90,17 @@ function OrderViewMode({
     order,
     tableLabel,
     onClose,
+    onAddItems,
 }: {
     order: ActiveOrder;
     tableLabel: string;
     onClose: () => void;
+    onAddItems: () => void;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
+
+    const canAddItems = !["completed", "cancelled"].includes(order.status);
 
     function handleConfirm() {
         startTransition(async () => {
@@ -164,6 +171,18 @@ function OrderViewMode({
 
             {/* Actions */}
             <div className="mt-auto space-y-2 border-t p-4">
+                {/* Add items button — available for all active orders */}
+                {canAddItems && (
+                    <Button
+                        variant="outline"
+                        onClick={onAddItems}
+                        className="w-full gap-2"
+                    >
+                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        Thêm món
+                    </Button>
+                )}
+
                 {order.status === "draft" && (
                     <Button
                         onClick={handleConfirm}
@@ -222,6 +241,146 @@ function OrderViewMode({
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
             </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
+// AddItemsMode – add items to existing order
+// ---------------------------------------------------------------------------
+
+function AddItemsMode({
+    orderId,
+    orderNumber,
+    tableLabel,
+    menuItems,
+    categories,
+    onClose,
+    onBack,
+}: {
+    orderId: number;
+    orderNumber: string;
+    tableLabel: string;
+    menuItems: MenuItem[];
+    categories: Category[];
+    onClose: () => void;
+    onBack: () => void;
+}) {
+    const router = useRouter();
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [isPending, startTransition] = useTransition();
+
+    const handleAddItem = useCallback((item: CartItem) => {
+        setCart((prev) => {
+            const existingIdx = prev.findIndex(
+                (c) =>
+                    c.menu_item_id === item.menu_item_id &&
+                    c.variant_id === item.variant_id
+            );
+
+            if (existingIdx >= 0) {
+                const updated = [...prev];
+                updated[existingIdx] = {
+                    ...updated[existingIdx]!,
+                    quantity: updated[existingIdx]!.quantity + 1,
+                };
+                return updated;
+            }
+
+            return [...prev, { ...item, quantity: 1 }];
+        });
+    }, []);
+
+    const handleRemoveItem = useCallback(
+        (menuItemId: number, variantId: number | null) => {
+            setCart((prev) => {
+                const existingIdx = prev.findIndex(
+                    (c) =>
+                        c.menu_item_id === menuItemId && c.variant_id === variantId
+                );
+
+                if (existingIdx < 0) return prev;
+
+                const existing = prev[existingIdx]!;
+                if (existing.quantity <= 1) {
+                    return prev.filter((_, i) => i !== existingIdx);
+                }
+
+                const updated = [...prev];
+                updated[existingIdx] = {
+                    ...existing,
+                    quantity: existing.quantity - 1,
+                };
+                return updated;
+            });
+        },
+        []
+    );
+
+    const handleClearCart = useCallback(() => {
+        setCart([]);
+    }, []);
+
+    function handleSubmit() {
+        if (cart.length === 0) {
+            toast.error("Chưa chọn món nào");
+            return;
+        }
+
+        startTransition(async () => {
+            const result = await addOrderItems({
+                order_id: orderId,
+                items: cart.map((item) => ({
+                    menu_item_id: item.menu_item_id,
+                    variant_id: item.variant_id,
+                    quantity: item.quantity,
+                    notes: item.notes || undefined,
+                })),
+            });
+
+            if (result.error !== null) {
+                toast.error(result.error);
+                return;
+            }
+
+            toast.success(`Đã thêm ${cart.length} món vào ${orderNumber}`);
+            onClose();
+            router.refresh();
+        });
+    }
+
+    return (
+        <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex items-center gap-2 px-4 pb-2">
+                <Button variant="ghost" size="icon" onClick={onBack} aria-label="Quay lại">
+                    <ArrowLeft className="h-4 w-4" />
+                </Button>
+                <div>
+                    <p className="text-sm font-medium">Thêm món vào {orderNumber}</p>
+                    <p className="text-muted-foreground text-xs">{tableLabel}</p>
+                </div>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 pb-24">
+                <MenuSelector
+                    menuItems={menuItems}
+                    categories={categories}
+                    cart={cart}
+                    onAddItem={handleAddItem}
+                    onRemoveItem={handleRemoveItem}
+                />
+            </div>
+            {cart.length > 0 && (
+                <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-background p-3">
+                    <Button
+                        className="w-full gap-2"
+                        onClick={handleSubmit}
+                        disabled={isPending}
+                    >
+                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        {isPending ? "Đang thêm..." : `Thêm ${cart.reduce((s, i) => s + i.quantity, 0)} món`}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
@@ -373,7 +532,7 @@ function CreateOrderMode({
 export function TableOrderSheet({
     open,
     onOpenChange,
-    mode,
+    mode: initialMode,
     tableId,
     tableLabel,
     activeOrder,
@@ -391,11 +550,25 @@ export function TableOrderSheet({
     categories: Category[];
     terminalId: number;
 }) {
+    const [internalMode, setInternalMode] = useState<"view" | "create" | "add-items">(initialMode);
+
+    // Reset internal mode when sheet opens/closes or initial mode changes
+    const currentMode = open ? internalMode : initialMode;
+
+    function handleOpenChange(isOpen: boolean) {
+        if (!isOpen) setInternalMode(initialMode);
+        onOpenChange(isOpen);
+    }
+
     const sheetTitle =
-        mode === "view" ? `Đơn hàng — ${tableLabel}` : `Tạo đơn — ${tableLabel}`;
+        currentMode === "view"
+            ? `Đơn hàng — ${tableLabel}`
+            : currentMode === "add-items"
+                ? `Thêm món — ${tableLabel}`
+                : `Tạo đơn — ${tableLabel}`;
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
+        <Sheet open={open} onOpenChange={handleOpenChange}>
             <SheetContent
                 side="bottom"
                 className="flex h-[85vh] flex-col rounded-t-2xl"
@@ -404,17 +577,30 @@ export function TableOrderSheet({
                 <SheetHeader>
                     <SheetTitle>{sheetTitle}</SheetTitle>
                     <SheetDescription className="sr-only">
-                        {mode === "view"
+                        {currentMode === "view"
                             ? "Chi tiết đơn hàng của bàn"
-                            : "Chọn món để tạo đơn hàng mới"}
+                            : currentMode === "add-items"
+                                ? "Thêm món vào đơn hàng hiện tại"
+                                : "Chọn món để tạo đơn hàng mới"}
                     </SheetDescription>
                 </SheetHeader>
 
-                {mode === "view" && activeOrder ? (
+                {currentMode === "view" && activeOrder ? (
                     <OrderViewMode
                         order={activeOrder}
                         tableLabel={tableLabel}
-                        onClose={() => onOpenChange(false)}
+                        onClose={() => handleOpenChange(false)}
+                        onAddItems={() => setInternalMode("add-items")}
+                    />
+                ) : currentMode === "add-items" && activeOrder ? (
+                    <AddItemsMode
+                        orderId={activeOrder.id}
+                        orderNumber={activeOrder.order_number}
+                        tableLabel={tableLabel}
+                        menuItems={menuItems}
+                        categories={categories}
+                        onClose={() => handleOpenChange(false)}
+                        onBack={() => setInternalMode("view")}
                     />
                 ) : (
                     <CreateOrderMode
@@ -423,7 +609,7 @@ export function TableOrderSheet({
                         menuItems={menuItems}
                         categories={categories}
                         terminalId={terminalId}
-                        onClose={() => onOpenChange(false)}
+                        onClose={() => handleOpenChange(false)}
                     />
                 )}
             </SheetContent>
