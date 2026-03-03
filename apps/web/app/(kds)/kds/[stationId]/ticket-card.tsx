@@ -38,15 +38,15 @@ function parseItems(items: unknown): TicketItem[] {
 }
 
 function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
-  if (!rule) return { border: "border-green-500", bg: "bg-green-950", label: "Bình thường" };
+  if (!rule) return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
 
   if (rule.critical_min && elapsedMinutes >= rule.critical_min) {
-    return { border: "border-red-500", bg: "bg-red-950", label: "Trễ" };
+    return { border: "border-red-500", bg: "bg-red-50", label: "Trễ" };
   }
   if (rule.warning_min && elapsedMinutes >= rule.warning_min) {
-    return { border: "border-yellow-500", bg: "bg-yellow-950", label: "Gần trễ" };
+    return { border: "border-yellow-500", bg: "bg-yellow-50", label: "Gần trễ" };
   }
-  return { border: "border-green-500", bg: "bg-green-950", label: "Bình thường" };
+  return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
 }
 
 export function TicketCard({
@@ -100,9 +100,9 @@ export function TicketCard({
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
         <div>
-          <p className="text-lg font-bold">{orderNumber}</p>
+          <p className="text-lg font-bold text-foreground">{orderNumber}</p>
           {tableNumber && (
-            <p className="text-sm text-gray-400">Bàn {tableNumber}</p>
+            <p className="text-sm text-muted-foreground">Bàn {tableNumber}</p>
           )}
         </div>
         <div className="text-right">
@@ -110,22 +110,22 @@ export function TicketCard({
             className={cn(
               "text-2xl font-bold tabular-nums",
               elapsed >= (timingRule?.critical_min ?? 999)
-                ? "text-red-400"
+                ? "text-red-600"
                 : elapsed >= (timingRule?.warning_min ?? 999)
-                  ? "text-yellow-400"
-                  : "text-green-400"
+                  ? "text-yellow-600"
+                  : "text-green-600"
             )}
           >
             {elapsed}m
           </p>
           <span
             className={cn(
-              "mt-1 inline-block rounded px-2 py-1 text-xs font-medium text-foreground",
+              "mt-1 inline-block rounded px-2 py-1 text-xs font-medium",
               elapsed >= (timingRule?.critical_min ?? 999)
-                ? "bg-red-900"
+                ? "bg-red-100 text-red-800"
                 : elapsed >= (timingRule?.warning_min ?? 999)
-                  ? "bg-yellow-900"
-                  : "bg-green-900"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-green-100 text-green-800"
             )}
             aria-hidden="false"
           >
@@ -138,8 +138,8 @@ export function TicketCard({
       <div className="flex-1 space-y-1">
         {items.map((item, idx) => (
           <div key={idx} className="flex gap-2 text-base">
-            <span className="font-bold text-white">{item.quantity}×</span>
-            <span className="text-gray-200">{item.name}</span>
+            <span className="font-bold text-foreground">{item.quantity}×</span>
+            <span className="text-foreground">{item.name}</span>
           </div>
         ))}
       </div>

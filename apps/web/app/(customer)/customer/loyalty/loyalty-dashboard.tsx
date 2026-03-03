@@ -66,9 +66,9 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
   // Progress calculation
   const progressPercent = nextTier
     ? Math.min(
-        100,
-        Math.round((currentPoints / nextTier.min_points) * 100)
-      )
+      100,
+      Math.round((currentPoints / nextTier.min_points) * 100)
+    )
     : 100;
 
   return (
@@ -177,8 +177,8 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
                     <span
                       className={
                         txn.points > 0
-                          ? "font-semibold text-green-600 dark:text-green-400"
-                          : "font-semibold text-red-600 dark:text-red-400"
+                          ? "font-semibold text-green-600"
+                          : "font-semibold text-red-600"
                       }
                     >
                       {formatPoints(txn.points)}

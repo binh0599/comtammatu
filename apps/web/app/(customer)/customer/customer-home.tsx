@@ -20,7 +20,7 @@ const actionCards = [
     label: "Thuc don",
     description: "Xem thuc don nha hang",
     color: "text-orange-500",
-    bg: "bg-orange-50 dark:bg-orange-950/30",
+    bg: "bg-orange-50",
   },
   {
     href: "/customer/orders",
@@ -28,7 +28,7 @@ const actionCards = [
     label: "Don hang",
     description: "Lich su don hang cua ban",
     color: "text-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-950/30",
+    bg: "bg-blue-50",
     authRequired: true,
   },
   {
@@ -37,7 +37,7 @@ const actionCards = [
     label: "Diem thuong",
     description: "Tich diem va uu dai",
     color: "text-purple-500",
-    bg: "bg-purple-50 dark:bg-purple-950/30",
+    bg: "bg-purple-50",
     authRequired: true,
   },
 ];

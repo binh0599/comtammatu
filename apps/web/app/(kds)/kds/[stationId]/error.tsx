@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
+
 export default function KdsStationError({
   error,
   reset,
@@ -8,16 +10,11 @@ export default function KdsStationError({
   reset: () => void;
 }) {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-900 p-4">
-      <div className="rounded-lg border border-red-800 bg-red-950 p-6 text-center max-w-sm">
-        <p className="text-sm font-medium text-red-400 mb-1">KDS gặp lỗi</p>
-        <p className="text-xs text-gray-400 mb-4">{error.digest ? "Lỗi hệ thống. Vui lòng thử lại sau." : error.message}</p>
-        <button
-          onClick={reset}
-          className="rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 transition-colors"
-        >
-          Thử lại
-        </button>
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+      <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-6 text-center max-w-sm">
+        <p className="text-sm font-medium text-destructive mb-1">KDS gặp lỗi</p>
+        <p className="text-xs text-muted-foreground mb-4">{error.digest ? "Lỗi hệ thống. Vui lòng thử lại sau." : error.message}</p>
+        <Button onClick={reset}>Thử lại</Button>
       </div>
     </div>
   );

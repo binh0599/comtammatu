@@ -40,12 +40,12 @@ export default async function KdsPage() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="absolute right-6 top-6">
-        <LogoutButton className="text-gray-400 hover:text-red-400" />
+        <LogoutButton className="text-muted-foreground hover:text-destructive" />
       </div>
       <h1 className="mb-8 text-3xl font-bold">Chọn bếp</h1>
 
       {!stations || stations.length === 0 ? (
-        <p className="text-gray-400">
+        <p className="text-muted-foreground">
           Không có bếp KDS nào được kích hoạt cho chi nhánh này
         </p>
       ) : (
@@ -55,7 +55,7 @@ export default async function KdsPage() {
               key={station.id}
               href={`/kds/${station.id}`}
               aria-label={`Mở KDS ${station.name}`}
-              className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-xl border-2 border-gray-700 bg-gray-800 p-8 text-center text-xl font-bold transition-colors hover:border-green-500 hover:bg-gray-700 active:scale-95"
+              className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-xl border-2 border-border bg-card p-8 text-center text-xl font-bold transition-colors hover:border-primary hover:bg-accent active:scale-95"
             >
               {station.name}
             </Link>

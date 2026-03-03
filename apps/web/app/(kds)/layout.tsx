@@ -37,7 +37,7 @@ export default async function KdsLayout({
   return (
     <div
       data-route-group="kds"
-      className="dark min-h-screen bg-background text-foreground"
+      className="min-h-screen bg-background text-foreground"
     >
       {profile.branch_id && <RealtimeNotifications branchId={profile.branch_id} />}
       <main id="main-content">{children}</main>

@@ -42,7 +42,7 @@ function ConnectionBanner({ status }: { status: ConnectionStatus }) {
 
   return (
     <div
-      className="flex items-center justify-center gap-2 bg-yellow-600 py-1.5 text-sm font-medium text-black"
+      className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-1.5 text-sm font-medium text-yellow-800"
       role="alert"
     >
       {status === "connecting" ? (
@@ -80,22 +80,22 @@ export function KdsBoard({
       <ConnectionBanner status={connectionStatus} />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-gray-700 px-6 py-3">
-        <h1 className="text-2xl font-bold text-white">{stationName}</h1>
+      <div className="flex items-center justify-between border-b border-border px-6 py-3">
+        <h1 className="text-2xl font-bold text-foreground">{stationName}</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-400" role="status">
+          <span className="text-sm text-muted-foreground" role="status">
             {tickets.length} đơn đang chờ
           </span>
           <div className="flex gap-2" aria-label="Huyền tích thời gian">
-            <span className="flex items-center gap-1 text-xs text-green-400">
+            <span className="flex items-center gap-1 text-xs text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
               Bình thường
             </span>
-            <span className="flex items-center gap-1 text-xs text-yellow-400">
+            <span className="flex items-center gap-1 text-xs text-yellow-700">
               <span className="h-2 w-2 rounded-full bg-yellow-500" aria-hidden="true" />
               Cảnh báo
             </span>
-            <span className="flex items-center gap-1 text-xs text-red-400">
+            <span className="flex items-center gap-1 text-xs text-red-700">
               <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
               Trễ
             </span>
@@ -103,7 +103,7 @@ export function KdsBoard({
           <form action={logout}>
             <button
               type="submit"
-              className="flex items-center gap-1.5 rounded-lg border border-gray-600 px-3 py-1.5 text-sm text-gray-400 transition-colors hover:border-red-500 hover:text-red-400"
+              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-red-400 hover:text-red-600"
               aria-label="Đăng xuất"
             >
               <LogOut className="h-4 w-4" />
@@ -117,7 +117,7 @@ export function KdsBoard({
       <div className="flex-1 overflow-auto p-4">
         {tickets.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-2xl text-gray-500" role="status">
+            <p className="text-2xl text-muted-foreground" role="status">
               Không có đơn hàng — Sẵn sàng!
             </p>
           </div>

@@ -181,7 +181,7 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
 
             {/* Deletion request */}
             {deletionScheduled ? (
-              <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950/30">
+              <Card className="border-yellow-200 bg-yellow-50">
                 <CardContent className="flex items-start gap-3 p-4">
                   <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-600" />
                   <div>
