@@ -6,11 +6,14 @@ import {
   ADMIN_ROLES,
   getAdminContext,
   verifyEntityOwnership,
+  entityIdSchema,
   safeDbErrorResult,
   withServerAction,
   withServerQuery,
 } from "@comtammatu/shared";
 import { z } from "zod";
+
+const validateId = (id: number) => entityIdSchema.parse(id);
 
 const stationSchema = z.object({
   name: z.string().min(1, "Tên bếp không được để trống"),
@@ -134,6 +137,7 @@ async function _createKdsStation(formData: FormData) {
 export const createKdsStation = withServerAction(_createKdsStation);
 
 async function _updateKdsStation(id: number, formData: FormData) {
+  validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "kds_stations", id, tenantId);
@@ -190,6 +194,7 @@ async function _updateKdsStation(id: number, formData: FormData) {
 export const updateKdsStation = withServerAction(_updateKdsStation);
 
 async function _toggleKdsStation(id: number) {
+  validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership<{ id: number; is_active: boolean }>(
@@ -211,6 +216,7 @@ async function _toggleKdsStation(id: number) {
 export const toggleKdsStation = withServerAction(_toggleKdsStation);
 
 async function _deleteKdsStation(id: number) {
+  validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "kds_stations", id, tenantId);

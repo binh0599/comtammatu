@@ -88,6 +88,18 @@ export type {
 } from "./schemas/order";
 
 export {
+  menuSchema,
+  menuCategorySchema,
+  menuItemSchema,
+  entityIdSchema,
+} from "./schemas/menu";
+export type {
+  MenuInput,
+  MenuCategoryInput,
+  MenuItemInput,
+} from "./schemas/menu";
+
+export {
   registerTerminalSchema,
   openSessionSchema,
   closeSessionSchema,

@@ -7,6 +7,7 @@ import {
   getAdminContext,
   getBranchesForTenant,
   verifyEntityOwnership,
+  entityIdSchema,
   safeDbErrorResult,
   withServerAction,
   withServerQuery,
@@ -19,6 +20,8 @@ const terminalSchema = z.object({
   branch_id: z.coerce.number().positive(),
   device_fingerprint: z.string().min(1, "Mã thiết bị không được để trống"),
 });
+
+const validateId = (id: number) => entityIdSchema.parse(id);
 
 // =====================
 // Queries
@@ -99,6 +102,7 @@ async function _createTerminal(formData: FormData) {
 export const createTerminal = withServerAction(_createTerminal);
 
 async function _approveTerminal(id: number) {
+  validateId(id);
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
@@ -132,6 +136,7 @@ async function _approveTerminal(id: number) {
 export const approveTerminal = withServerAction(_approveTerminal);
 
 async function _toggleTerminal(id: number) {
+  validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
@@ -159,6 +164,7 @@ async function _toggleTerminal(id: number) {
 export const toggleTerminal = withServerAction(_toggleTerminal);
 
 async function _deleteTerminal(id: number) {
+  validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);

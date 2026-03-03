@@ -8,31 +8,11 @@ import {
   withServerQuery,
   safeDbError,
   safeDbErrorResult,
+  menuSchema,
+  menuCategorySchema,
+  menuItemSchema,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-
-// --- Schemas ---
-
-const menuSchema = z.object({
-  name: z.string().min(1, "Tên thực đơn không được để trống"),
-  type: z.enum(["dine_in", "takeaway", "delivery"]),
-  is_active: z.boolean().default(true),
-});
-
-const categorySchema = z.object({
-  menu_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Tên danh mục không được để trống"),
-  sort_order: z.coerce.number().int().min(0).default(0),
-});
-
-const menuItemSchema = z.object({
-  category_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Tên món không được để trống"),
-  description: z.string().optional(),
-  base_price: z.coerce.number().positive("Giá phải lớn hơn 0"),
-  is_available: z.boolean().default(true),
-});
 
 // --- Menu CRUD ---
 
@@ -145,7 +125,7 @@ async function _getCategories(menuId: number) {
 export const getCategories = withServerQuery(_getCategories);
 
 async function _createCategory(formData: FormData) {
-  const parsed = categorySchema.safeParse({
+  const parsed = menuCategorySchema.safeParse({
     menu_id: formData.get("menu_id"),
     name: formData.get("name"),
     sort_order: formData.get("sort_order"),
