@@ -7,6 +7,7 @@ import {
   Trash2,
   ToggleLeft,
   ToggleRight,
+  Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,6 +39,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -181,7 +186,7 @@ function VoucherForm({
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="code">Ma voucher *</Label>
+            <Label htmlFor="code">Mã voucher *</Label>
             <Input
               id="code"
               name="code"
@@ -191,7 +196,7 @@ function VoucherForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="type">Loai *</Label>
+            <Label htmlFor="type">Loại *</Label>
             <Select value={type} onValueChange={setType}>
               <SelectTrigger>
                 <SelectValue />
@@ -209,7 +214,7 @@ function VoucherForm({
         <div className="grid grid-cols-3 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="value">
-              Gia tri *{" "}
+              Giá trị *{" "}
               {type === "percent" ? "(%)" : type === "fixed" ? "(VND)" : ""}
             </Label>
             <Input
@@ -223,7 +228,7 @@ function VoucherForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="min_order">Don toi thieu</Label>
+            <Label htmlFor="min_order">Đơn tối thiểu</Label>
             <Input
               id="min_order"
               name="min_order"
@@ -235,7 +240,7 @@ function VoucherForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="max_discount">Giam toi da</Label>
+            <Label htmlFor="max_discount">Giảm tối đa</Label>
             <Input
               id="max_discount"
               name="max_discount"
@@ -249,7 +254,7 @@ function VoucherForm({
         </div>
         <div className="grid grid-cols-3 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="valid_from">Tu ngay *</Label>
+            <Label htmlFor="valid_from">Từ ngày *</Label>
             <Input
               id="valid_from"
               name="valid_from"
@@ -263,7 +268,7 @@ function VoucherForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="valid_to">Den ngay *</Label>
+            <Label htmlFor="valid_to">Đến ngày *</Label>
             <Input
               id="valid_to"
               name="valid_to"
@@ -277,20 +282,20 @@ function VoucherForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="max_uses">So lan dung</Label>
+            <Label htmlFor="max_uses">Số lần dùng</Label>
             <Input
               id="max_uses"
               name="max_uses"
               type="number"
               min="1"
               defaultValue={defaultValues?.max_uses ?? ""}
-              placeholder="Khong gioi han"
+              placeholder="Không giới hạn"
             />
           </div>
         </div>
         {branches.length > 0 && (
           <div className="grid gap-2">
-            <Label>Chi nhanh ap dung</Label>
+            <Label>Chi nhánh áp dụng</Label>
             <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
               {branches.map((branch) => (
                 <div key={branch.id} className="flex items-center gap-2">
@@ -309,7 +314,7 @@ function VoucherForm({
               ))}
             </div>
             <p className="text-muted-foreground text-xs">
-              Khong chon = ap dung tat ca chi nhanh
+              Không chọn = áp dụng tất cả chi nhánh
             </p>
           </div>
         )}
@@ -392,7 +397,7 @@ export function VouchersTab({
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Voucher</h2>
           <p className="text-muted-foreground">
-            Quan ly ma giam gia va khuyen mai
+            Quản lý mã giảm giá và khuyến mãi
           </p>
         </div>
         <Dialog
@@ -405,14 +410,14 @@ export function VouchersTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-              Them voucher
+              Thêm voucher
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Them voucher</DialogTitle>
+              <DialogTitle>Thêm voucher</DialogTitle>
               <DialogDescription>
-                Tao ma giam gia moi cho khach hang
+                Tạo mã giảm giá mới cho khách hàng
               </DialogDescription>
             </DialogHeader>
             <VoucherForm
@@ -420,8 +425,8 @@ export function VouchersTab({
               onSubmit={handleCreate}
               isPending={isPending}
               error={error}
-              submitLabel="Tao"
-              pendingLabel="Dang tao..."
+              submitLabel="Tạo"
+              pendingLabel="Đang tạo..."
             />
           </DialogContent>
         </Dialog>
@@ -433,19 +438,20 @@ export function VouchersTab({
         </div>
       )}
 
-      <div className="rounded-md border">
+      <Card>
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ma</TableHead>
-              <TableHead scope="col">Loai</TableHead>
-              <TableHead scope="col" className="text-right">Gia tri</TableHead>
-              <TableHead scope="col" className="text-right">Don toi thieu</TableHead>
-              <TableHead scope="col" className="text-right">Giam toi da</TableHead>
-              <TableHead scope="col">Hieu luc</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Mã</TableHead>
+              <TableHead scope="col">Loại</TableHead>
+              <TableHead scope="col" className="text-right">Giá trị</TableHead>
+              <TableHead scope="col" className="text-right">Đơn tối thiểu</TableHead>
+              <TableHead scope="col" className="text-right">Giảm tối đa</TableHead>
+              <TableHead scope="col">Hiệu lực</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -453,9 +459,14 @@ export function VouchersTab({
               <TableRow>
                 <TableCell
                   colSpan={9}
-                  className="text-muted-foreground h-24 text-center"
+                  className="h-32 text-center"
                 >
-                  Chua co voucher nao
+                  <div className="flex flex-col items-center gap-2">
+                    <Ticket className="text-muted-foreground/50 h-8 w-8" />
+                    <p className="text-muted-foreground text-sm">
+                      Chưa có voucher nào
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -491,7 +502,7 @@ export function VouchersTab({
                   </TableCell>
                   <TableCell className="max-w-[120px] truncate text-sm">
                     {voucher.voucher_branches.length === 0
-                      ? "Tat ca"
+                      ? "Tất cả"
                       : voucher.voucher_branches
                           .map((vb) => vb.branches?.name ?? "")
                           .filter(Boolean)
@@ -501,7 +512,7 @@ export function VouchersTab({
                     <Badge
                       variant={voucher.is_active ? "default" : "secondary"}
                     >
-                      {voucher.is_active ? "Hoat dong" : "Tam dung"}
+                      {voucher.is_active ? "Hoạt động" : "Tạm dừng"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -511,7 +522,7 @@ export function VouchersTab({
                         variant="ghost"
                         size="icon"
                         aria-label={
-                          voucher.is_active ? "Tam dung" : "Kich hoat"
+                          voucher.is_active ? "Tạm dừng" : "Kích hoạt"
                         }
                         onClick={() => handleToggle(voucher.id)}
                       >
@@ -540,16 +551,16 @@ export function VouchersTab({
                               setError(null);
                               setEditingItem(voucher);
                             }}
-                            aria-label="Sua"
+                            aria-label="Sửa"
                           >
                             <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-2xl">
                           <DialogHeader>
-                            <DialogTitle>Sua voucher</DialogTitle>
+                            <DialogTitle>Sửa voucher</DialogTitle>
                             <DialogDescription>
-                              Cap nhat thong tin &quot;{voucher.code}&quot;
+                              Cập nhật thông tin &quot;{voucher.code}&quot;
                             </DialogDescription>
                           </DialogHeader>
                           <VoucherForm
@@ -560,8 +571,8 @@ export function VouchersTab({
                             }
                             isPending={isPending}
                             error={error}
-                            submitLabel="Luu"
-                            pendingLabel="Dang luu..."
+                            submitLabel="Lưu"
+                            pendingLabel="Đang lưu..."
                           />
                         </DialogContent>
                       </Dialog>
@@ -569,24 +580,24 @@ export function VouchersTab({
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Xoa">
+                          <Button variant="ghost" size="icon" aria-label="Xóa">
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Xoa voucher</AlertDialogTitle>
+                            <AlertDialogTitle>Xóa voucher</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Ban co chac muon xoa voucher &quot;{voucher.code}
-                              &quot;? Hanh dong nay khong the hoan tac.
+                              Bạn có chắc muốn xóa voucher &quot;{voucher.code}
+                              &quot;? Hành động này không thể hoàn tác.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Huy</AlertDialogCancel>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(voucher.id)}
                             >
-                              Xoa
+                              Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -598,7 +609,8 @@ export function VouchersTab({
             )}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

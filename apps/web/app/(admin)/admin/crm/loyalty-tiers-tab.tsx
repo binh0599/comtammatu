@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -31,6 +31,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -87,7 +91,7 @@ function TierForm({
       )}
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">Ten hang *</Label>
+          <Label htmlFor="name">Tên hạng *</Label>
           <Input
             id="name"
             name="name"
@@ -98,7 +102,7 @@ function TierForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="min_points">Diem toi thieu *</Label>
+            <Label htmlFor="min_points">Điểm tối thiểu *</Label>
             <Input
               id="min_points"
               name="min_points"
@@ -109,7 +113,7 @@ function TierForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="discount_pct">Giam gia (%)</Label>
+            <Label htmlFor="discount_pct">Giảm giá (%)</Label>
             <Input
               id="discount_pct"
               name="discount_pct"
@@ -123,7 +127,7 @@ function TierForm({
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="sort_order">Thu tu sap xep</Label>
+          <Label htmlFor="sort_order">Thứ tự sắp xếp</Label>
           <Input
             id="sort_order"
             name="sort_order"
@@ -134,7 +138,7 @@ function TierForm({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="benefits">Quyen loi</Label>
+          <Label htmlFor="benefits">Quyền lợi</Label>
           <Textarea
             id="benefits"
             name="benefits"
@@ -205,10 +209,10 @@ export function LoyaltyTiersTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">
-            Hang thanh vien
+            Hạng thành viên
           </h2>
           <p className="text-muted-foreground">
-            Quan ly cac hang thanh vien va quyen loi tuong ung
+            Quản lý các hạng thành viên và quyền lợi tương ứng
           </p>
         </div>
         <Dialog
@@ -221,22 +225,22 @@ export function LoyaltyTiersTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-              Them hang
+              Thêm hạng
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Them hang thanh vien</DialogTitle>
+              <DialogTitle>Thêm hạng thành viên</DialogTitle>
               <DialogDescription>
-                Tao hang thanh vien moi cho chuong trinh khach hang than thiet
+                Tạo hạng thành viên mới cho chương trình khách hàng thân thiết
               </DialogDescription>
             </DialogHeader>
             <TierForm
               onSubmit={handleCreate}
               isPending={isPending}
               error={error}
-              submitLabel="Tao"
-              pendingLabel="Dang tao..."
+              submitLabel="Tạo"
+              pendingLabel="Đang tạo..."
             />
           </DialogContent>
         </Dialog>
@@ -248,16 +252,17 @@ export function LoyaltyTiersTab({
         </div>
       )}
 
-      <div className="rounded-md border">
+      <Card>
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ten hang</TableHead>
-              <TableHead scope="col" className="text-right">Diem toi thieu</TableHead>
-              <TableHead scope="col" className="text-right">Giam gia %</TableHead>
-              <TableHead scope="col">Quyen loi</TableHead>
-              <TableHead scope="col" className="text-right">Thu tu</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Tên hạng</TableHead>
+              <TableHead scope="col" className="text-right">Điểm tối thiểu</TableHead>
+              <TableHead scope="col" className="text-right">Giảm giá %</TableHead>
+              <TableHead scope="col">Quyền lợi</TableHead>
+              <TableHead scope="col" className="text-right">Thứ tự</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -265,9 +270,14 @@ export function LoyaltyTiersTab({
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="text-muted-foreground h-24 text-center"
+                  className="h-32 text-center"
                 >
-                  Chua co hang thanh vien nao
+                  <div className="flex flex-col items-center gap-2">
+                    <Crown className="text-muted-foreground/50 h-8 w-8" />
+                    <p className="text-muted-foreground text-sm">
+                      Chưa có hạng thành viên nào
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
@@ -313,9 +323,9 @@ export function LoyaltyTiersTab({
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Sua hang thanh vien</DialogTitle>
+                            <DialogTitle>Sửa hạng thành viên</DialogTitle>
                             <DialogDescription>
-                              Cap nhat thong tin &quot;{tier.name}&quot;
+                              Cập nhật thông tin &quot;{tier.name}&quot;
                             </DialogDescription>
                           </DialogHeader>
                           <TierForm
@@ -325,8 +335,8 @@ export function LoyaltyTiersTab({
                             }
                             isPending={isPending}
                             error={error}
-                            submitLabel="Luu"
-                            pendingLabel="Dang luu..."
+                            submitLabel="Lưu"
+                            pendingLabel="Đang lưu..."
                           />
                         </DialogContent>
                       </Dialog>
@@ -341,20 +351,20 @@ export function LoyaltyTiersTab({
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>
-                              Xoa hang thanh vien
+                              Xóa hạng thành viên
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Ban co chac muon xoa &quot;{tier.name}&quot;?
-                              Hanh dong nay khong the hoan tac. Neu co khach
-                              hang dang o hang nay, ban khong the xoa.
+                              Bạn có chắc muốn xóa &quot;{tier.name}&quot;?
+                              Hành động này không thể hoàn tác. Nếu có khách
+                              hàng đang ở hạng này, bạn không thể xóa.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Huy</AlertDialogCancel>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(tier.id)}
                             >
-                              Xoa
+                              Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -366,7 +376,8 @@ export function LoyaltyTiersTab({
             )}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
