@@ -22,6 +22,7 @@ import {
   confirmOrder,
   updateOrderStatus,
 } from "../../orders/actions";
+import { ReceiptPrinter } from "../../components/receipt-printer";
 
 interface OrderDetail {
   id: number;
@@ -125,9 +126,14 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
             )}
           </p>
         </div>
-        <Badge variant={statusVariant[order.status] ?? "secondary"}>
-          {getOrderStatusLabel(order.status)}
-        </Badge>
+        <div className="flex gap-2 items-center">
+          {order.status === "completed" && (
+            <ReceiptPrinter order={order} />
+          )}
+          <Badge variant={statusVariant[order.status] ?? "secondary"}>
+            {getOrderStatusLabel(order.status)}
+          </Badge>
+        </div>
       </div>
 
       {/* Actions */}

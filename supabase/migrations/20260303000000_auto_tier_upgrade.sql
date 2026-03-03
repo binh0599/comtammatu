@@ -47,22 +47,23 @@ BEGIN
     SET loyalty_tier_id = v_new_tier_id
     WHERE id = NEW.customer_id;
 
-    -- Audit log for tier change
-    INSERT INTO audit_logs (
-      tenant_id, user_id, action, resource_type, resource_id, changes
+    -- Log security event for tier change
+    INSERT INTO security_events (
+      tenant_id, event_type, severity, details
     ) VALUES (
       v_customer.tenant_id,
-      NULL,
       CASE
         WHEN v_new_tier_id IS NULL THEN 'loyalty_tier_removed'
         WHEN v_customer.loyalty_tier_id IS NULL THEN 'loyalty_tier_assigned'
         ELSE 'loyalty_tier_changed'
       END,
-      'customer',
-      v_customer.id::TEXT,
+      'info',
       jsonb_build_object(
-        'old_tier', v_old_tier_name,
-        'new_tier', v_new_tier_name,
+        'customer_id', v_customer.id,
+        'old_tier_id', v_customer.loyalty_tier_id,
+        'new_tier_id', v_new_tier_id,
+        'old_tier_name', v_old_tier_name,
+        'new_tier_name', v_new_tier_name,
         'balance_after', NEW.balance_after,
         'triggered_by', 'auto_upgrade_trigger'
       )

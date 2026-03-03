@@ -17,6 +17,7 @@ import {
   formatPrice,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
+import { ReceiptPrinter } from "../components/receipt-printer";
 import {
   processPayment,
   applyVoucherToOrder,
@@ -32,13 +33,19 @@ interface SelectedOrder {
   type: string;
   subtotal: number;
   discount_total: number;
+  tax: number;
   total: number;
+  created_at: string;
   table_id: number | null;
   tables: { number: number } | null;
   order_items: {
     id: number;
     quantity: number;
+    unit_price: number;
+    item_total: number;
     menu_items: { name: string } | null;
+    menu_item_variants: { name: string } | null;
+    modifiers?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }[];
   order_discounts: {
     id: number;
@@ -66,6 +73,7 @@ export function PaymentPanel({
     paymentId: number;
     status: string;
   } | null>(null);
+  const [showReceipt, setShowReceipt] = useState(false);
   const [isMomoPending, startMomoTransition] = useTransition();
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevOrderIdRef = useRef<number | undefined>(undefined);
@@ -165,9 +173,16 @@ export function PaymentPanel({
         setAmountTendered("");
         setVoucherCode("");
         setPaymentMethod(null);
-        onPaymentComplete();
+        setShowReceipt(true);
+        // We do NOT call onPaymentComplete() immediately because we want to show the receipt first.
+        // The user can close the receipt to continue, or we can auto-continue after print.
       }
     });
+  }
+
+  function handlePrintComplete() {
+    setShowReceipt(false);
+    onPaymentComplete();
   }
 
   function handleMomoPayment() {
@@ -242,7 +257,12 @@ export function PaymentPanel({
             {order.tables ? `Bàn ${order.tables.number}` : "Mang đi"}
           </p>
         </div>
-        <Badge>{getOrderStatusLabel(order.status)}</Badge>
+        <div className="flex gap-2 items-center">
+          {order.status === "completed" && (
+            <ReceiptPrinter order={order} />
+          )}
+          <Badge>{getOrderStatusLabel(order.status)}</Badge>
+        </div>
       </div>
 
       {/* Items */}

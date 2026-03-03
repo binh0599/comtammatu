@@ -312,7 +312,7 @@ async function _updateOrderStatus(data: {
 
   const { data: order, error: fetchError } = await supabase
     .from("orders")
-    .select("id, status, table_id, type")
+    .select("id, status, table_id, type, order_number")
     .eq("id", order_id)
     .eq("branch_id", branchId)
     .single();
@@ -353,6 +353,31 @@ async function _updateOrderStatus(data: {
       .from("tables")
       .update({ status: "available" })
       .eq("id", order.table_id);
+  }
+
+  // Broadcast realtime notification to all POS/KDS clients in this branch
+  const statusMessages: Record<string, { type: string; message: string }> = {
+    confirmed: { type: "new_order", message: "Đơn mới đã xác nhận" },
+    preparing: { type: "info", message: "Bếp đang chuẩn bị" },
+    ready: { type: "order_ready", message: "Đơn đã sẵn sàng phục vụ!" },
+    served: { type: "info", message: "Đã phục vụ, chờ thanh toán" },
+    completed: { type: "info", message: "Thanh toán hoàn tất" },
+    cancelled: { type: "order_cancelled", message: "Đơn đã bị hủy" },
+  };
+
+  const msg = statusMessages[newStatus];
+  if (msg) {
+    const channel = supabase.channel(`branch:${branchId}:notifications`);
+    await channel.send({
+      type: "broadcast",
+      event: "notification",
+      payload: {
+        type: msg.type,
+        message: msg.message,
+        order_number: order.order_number,
+      },
+    });
+    supabase.removeChannel(channel);
   }
 
   revalidatePath("/pos/orders");

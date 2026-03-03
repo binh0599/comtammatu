@@ -21,6 +21,7 @@ interface QueueOrder {
   type: string;
   subtotal: number;
   discount_total: number;
+  tax: number;
   total: number;
   created_at: string;
   table_id: number | null;
@@ -28,7 +29,10 @@ interface QueueOrder {
   order_items: {
     id: number;
     quantity: number;
+    unit_price: number;
+    item_total: number;
     menu_items: { name: string } | null;
+    menu_item_variants: { name: string } | null;
   }[];
   order_discounts: {
     id: number;

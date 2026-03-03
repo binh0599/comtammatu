@@ -635,7 +635,7 @@ async function _getCashierOrders() {
   const { data, error } = await supabase
     .from("orders")
     .select(
-      "id, order_number, status, type, subtotal, discount_total, total, created_at, table_id, tables(number), order_items(id, quantity, menu_items(name)), order_discounts(id, type, value, voucher_id, vouchers(code))",
+      "id, order_number, status, type, subtotal, tax, discount_total, total, created_at, table_id, tables(number), order_items(id, quantity, unit_price, item_total, menu_items(name), menu_item_variants(name)), order_discounts(id, type, value, voucher_id, vouchers(code))",
     )
     .eq("branch_id", branchId)
     .in("status", ["confirmed", "preparing", "ready", "served"])

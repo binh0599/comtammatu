@@ -1,13 +1,20 @@
 import { NextResponse } from "next/server";
-import { createSupabaseServer } from "@comtammatu/database";
+import { createClient } from "@supabase/supabase-js";
 
 /**
  * GDPR Deletion Cron — Vercel Cron Job
  *
  * Runs daily at 3 AM UTC via vercel.json cron config.
  * Processes pending deletion requests where scheduled_deletion_at <= NOW().
- * Uses Supabase service role (via server client) to bypass RLS.
+ * Uses Supabase service role to bypass RLS (no user session in cron context).
  */
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
 export async function GET(request: Request) {
   // Verify cron secret to prevent unauthorized triggers
@@ -16,7 +23,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = await createSupabaseServer();
+  const supabase = getServiceClient();
 
   // Find pending deletion requests past their scheduled date
   const { data: requests, error: fetchError } = await supabase
@@ -90,25 +97,16 @@ export async function GET(request: Request) {
         continue;
       }
 
-      // 6. Audit log (system-level cron action)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from("audit_logs").insert({
-        tenant_id: 0,
-        user_id: "system-cron",
-        action: "gdpr_scheduled_deletion",
-        resource_type: "customer",
-        resource_id: req.customer_id,
-        new_value: JSON.stringify({ deletion_request_id: req.id }),
-      });
-
-      // 7. Security event for compliance tracking
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from("security_events").insert({
-        tenant_id: 0,
+      // 6. Security event for compliance tracking (fire-and-forget)
+      await supabase.from("security_events").insert({
+        tenant_id: null,
         event_type: "gdpr_deletion_processed",
         severity: "info",
-        description: `GDPR deletion processed for customer ${req.customer_id}`,
-        source_ip: "cron",
+        details: JSON.stringify({
+          deletion_request_id: req.id,
+          customer_id: req.customer_id,
+        }),
+        source_ip: null,
       });
 
       processed++;
@@ -117,13 +115,15 @@ export async function GET(request: Request) {
       errors.push({ id: req.id, error: String(err) });
 
       // Log failure as security event
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from("security_events").insert({
-        tenant_id: 0,
+      await supabase.from("security_events").insert({
+        tenant_id: null,
         event_type: "gdpr_deletion_failed",
-        severity: "high",
-        description: `GDPR deletion failed for request ${req.id}: ${String(err)}`,
-        source_ip: "cron",
+        severity: "critical",
+        details: JSON.stringify({
+          deletion_request_id: req.id,
+          error: String(err),
+        }),
+        source_ip: null,
       });
     }
   }

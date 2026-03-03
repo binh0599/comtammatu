@@ -1,6 +1,8 @@
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { KDS_ROLES } from "@comtammatu/shared";
+import { RealtimeNotifications } from "@/components/pos/realtime-notifications";
+import { Toaster } from "@/components/ui/sonner";
 
 export default async function KdsLayout({
   children,
@@ -18,7 +20,7 @@ export default async function KdsLayout({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, branch_id")
     .eq("id", user.id)
     .single();
 
@@ -37,7 +39,9 @@ export default async function KdsLayout({
       data-route-group="kds"
       className="dark min-h-screen bg-background text-foreground"
     >
+      {profile.branch_id && <RealtimeNotifications branchId={profile.branch_id} />}
       <main id="main-content">{children}</main>
+      <Toaster position="top-center" />
     </div>
   );
 }

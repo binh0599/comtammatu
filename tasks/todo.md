@@ -206,11 +206,15 @@
 
 ### Priority 1 — Core Business (Week 11-12)
 ```
-- [ ] VNPay payment integration (webhooks, HMAC verification)
-- [ ] Retention cron jobs (scheduled deletion after 30-day GDPR grace period)
-- [ ] Auto-tier upgrade triggers (auto-promote customer when points reach tier)
-- [ ] Receipt printing (thermal printer integration)
-- [ ] Notifications system (in-app + push for order status)
+- [x] Retention cron jobs (scheduled deletion after 30-day GDPR grace period) — fixed 5 bugs in existing route
+- [x] Auto-tier upgrade triggers (auto-promote customer when points reach tier) — fixed trigger audit log bug
+- [x] Receipt printing (thermal printer integration)
+- [x] Notifications system (in-app + push for order status)
+```
+
+### Excluded (not planned)
+```
+- [—] VNPay payment integration — Momo QR is sufficient for MVP
 ```
 
 ### Priority 2 — Operations (Week 13-14)

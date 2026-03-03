@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
+import { NotificationBell } from "@/components/pos/notification-bell";
 
 const navItems = [
   { href: "/pos", icon: LayoutGrid, label: "Bàn" },
@@ -47,6 +48,11 @@ export function BottomNav() {
             </Link>
           );
         })}
+        {/* Notification Bell */}
+        <div className="flex min-h-[56px] flex-col items-center justify-center">
+          <NotificationBell />
+          <span className="text-xs text-muted-foreground">Thông báo</span>
+        </div>
         <form action={logout} className="flex-1">
           <button
             type="submit"
