@@ -2,7 +2,7 @@
 
 import { ErrorFallback } from "@/components/error-fallback";
 
-export default function KdsError({
+export default function OrderDetailError({
   error,
   reset,
 }: {
@@ -13,7 +13,9 @@ export default function KdsError({
     <ErrorFallback
       error={error}
       reset={reset}
-      title="KDS gặp lỗi"
+      title="Không thể tải chi tiết đơn hàng"
+      homeHref="/pos/orders"
+      homeLabel="Danh sách đơn"
       variant="minimal"
     />
   );

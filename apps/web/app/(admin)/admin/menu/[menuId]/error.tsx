@@ -2,7 +2,7 @@
 
 import { ErrorFallback } from "@/components/error-fallback";
 
-export default function KdsError({
+export default function MenuDetailError({
   error,
   reset,
 }: {
@@ -13,8 +13,10 @@ export default function KdsError({
     <ErrorFallback
       error={error}
       reset={reset}
-      title="KDS gặp lỗi"
-      variant="minimal"
+      title="Không thể tải chi tiết menu"
+      homeHref="/admin/menu"
+      homeLabel="Danh sách menu"
+      variant="card"
     />
   );
 }
