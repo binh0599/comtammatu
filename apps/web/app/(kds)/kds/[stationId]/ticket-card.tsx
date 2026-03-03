@@ -6,8 +6,13 @@ import { cn } from "@/lib/utils";
 import { bumpTicket } from "./actions";
 
 interface TicketItem {
-  name: string;
+  order_item_id: number;
+  menu_item_id: number;
+  menu_item_name: string;
   quantity: number;
+  modifiers: { name: string; options: string[] }[] | null;
+  notes: string | null;
+  variant_name: string | null;
 }
 
 interface TimingRule {
@@ -135,11 +140,30 @@ export function TicketCard({
       </div>
 
       {/* Items */}
-      <div className="flex-1 space-y-1">
+      <div className="flex-1 space-y-3">
         {items.map((item, idx) => (
-          <div key={idx} className="flex gap-2 text-base">
-            <span className="font-bold text-foreground">{item.quantity}×</span>
-            <span className="text-foreground">{item.name}</span>
+          <div key={idx} className="flex flex-col">
+            <div className="flex gap-2 text-base">
+              <span className="font-bold text-foreground">{item.quantity}×</span>
+              <span className="text-foreground">
+                {item.menu_item_name}
+                {item.variant_name && ` - ${item.variant_name}`}
+              </span>
+            </div>
+            {(item.modifiers || item.notes) && (
+              <div className="ml-6 flex flex-col gap-1 text-sm">
+                {item.modifiers?.map((m: any, mIdx: number) => (
+                  <span key={mIdx} className="text-muted-foreground">
+                    + {m.name}: {m.options.join(", ")}
+                  </span>
+                ))}
+                {item.notes && (
+                  <span className="font-medium italic text-destructive">
+                    * {item.notes}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
