@@ -57,14 +57,21 @@ export const getBranchesForHr = withServerQuery(_getBranchesForHr);
 // Employees
 // =====================
 
-async function _getEmployees() {
+async function _getEmployees(branchId?: number) {
   const { supabase, tenantId } = await getActionContext();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("employees")
     .select("*, profiles!inner(full_name, id, role), branches!inner(name)")
     .eq("tenant_id", tenantId)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(50); // Pagination / max cap
+
+  if (branchId) {
+    query = query.eq("branch_id", branchId);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw safeDbError(error, "db");
   return data ?? [];

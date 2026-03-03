@@ -47,15 +47,36 @@ async function getKdsProfile() {
 async function _getStationTickets(stationId: number) {
   const { supabase, profile } = await getKdsProfile();
 
-  const { data, error } = await supabase
+  const { data: tickets, error: ticketsError } = await supabase
     .from("kds_tickets")
-    .select("*, orders(order_number, table_id, tables(number))")
+    .select("id, order_id, station_id, items, status, priority, created_at, color_code, accepted_at, completed_at")
     .eq("station_id", stationId)
     .in("status", ["pending", "preparing"])
     .order("created_at", { ascending: true });
 
-  if (error) throw safeDbError(error, "db");
-  return data ?? [];
+  if (ticketsError) throw safeDbError(ticketsError, "db");
+  if (!tickets || tickets.length === 0) return [];
+
+  const orderIds = [...new Set(tickets.map(t => t.order_id))];
+
+  if (orderIds.length > 0) {
+    const { batchFetch } = await import("@comtammatu/database");
+    const ordersMap = await batchFetch<any>(
+      supabase as any,
+      "orders",
+      orderIds,
+      "id, order_number, table_id, tables(number)"
+    );
+
+    for (const ticket of tickets) {
+      const order = ordersMap.get(ticket.order_id);
+      if (order) {
+        (ticket as any).orders = order;
+      }
+    }
+  }
+
+  return tickets as any[];
 }
 
 export async function getStationTickets(stationId: number) {

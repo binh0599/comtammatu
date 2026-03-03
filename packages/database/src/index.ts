@@ -7,3 +7,4 @@ export { createClient as createSupabaseServer } from "./supabase/server";
 export { createClient as createSupabaseBrowser } from "./supabase/client";
 export { updateSession } from "./supabase/middleware";
 export type { Database } from "./types/database.types";
+export { batchFetch } from "./client-utils";

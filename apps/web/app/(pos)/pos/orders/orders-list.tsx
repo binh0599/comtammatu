@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
+import { createClient } from "@comtammatu/database/src/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,10 +52,39 @@ const filterOptions = [
 
 export function OrdersList({
   initialOrders,
+  branchId,
 }: {
   initialOrders: Order[];
+  branchId: number;
 }) {
   const [filter, setFilter] = useState("all");
+  const router = useRouter();
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const debouncedRefresh = useCallback(() => {
+    if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+    refreshTimeoutRef.current = setTimeout(() => router.refresh(), 500);
+  }, [router]);
+
+  // Subscribe to realtime order changes
+  useEffect(() => {
+    const supabase = createClient();
+
+    const channel = supabase
+      .channel(`orders-list-${branchId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        debouncedRefresh();
+      })
+      .on("broadcast", { event: "notification" }, () => {
+        debouncedRefresh();
+      })
+      .subscribe();
+
+    return () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current);
+      supabase.removeChannel(channel);
+    };
+  }, [branchId, debouncedRefresh]);
 
   const filteredOrders = initialOrders.filter((order) => {
     if (filter === "all") return true;

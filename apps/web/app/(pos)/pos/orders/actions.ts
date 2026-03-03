@@ -640,19 +640,51 @@ async function _getMenuItems() {
   requireBranch(ctx);
   const { supabase, tenantId } = ctx;
 
-  const { data, error } = await supabase
+  const { data: menuItems, error: itemsError } = await supabase
     .from("menu_items")
-    .select(
-      "*, menu_categories(id, name, menu_id), menu_item_variants(id, name, price_adjustment, is_available)"
-    )
+    .select("id, name, base_price, category_id, is_available, image_url")
     .eq("tenant_id", tenantId)
     .eq("is_available", true)
     .order("name");
 
-  if (error) {
-    throw safeDbError(error, "db");
+  if (itemsError) throw safeDbError(itemsError, "db");
+  if (!menuItems || menuItems.length === 0) return [];
+
+  const categoryIds = [...new Set(menuItems.map((item: any) => item.category_id as number))];
+  const itemIds = menuItems.map((item: any) => item.id as number);
+
+  const { batchFetch } = await import("@comtammatu/database");
+
+  const categoryMap = await batchFetch<any>(
+    supabase as any,
+    "menu_categories",
+    categoryIds as (string | number)[],
+    "id, name, menu_id"
+  );
+
+  const variantsMap = new Map<number, any[]>();
+  if (itemIds.length > 0) {
+    const { data: variants } = await supabase
+      .from("menu_item_variants")
+      .select("id, menu_item_id, name, price_adjustment, is_available")
+      .in("menu_item_id", itemIds);
+
+    if (variants) {
+      for (const variant of variants) {
+        if (!variantsMap.has(variant.menu_item_id)) {
+          variantsMap.set(variant.menu_item_id, []);
+        }
+        variantsMap.get(variant.menu_item_id)!.push(variant);
+      }
+    }
   }
-  return data ?? [];
+
+  for (const item of menuItems) {
+    (item as any).menu_categories = categoryMap.get(item.category_id) ?? null;
+    (item as any).menu_item_variants = variantsMap.get(item.id) ?? [];
+  }
+
+  return menuItems;
 }
 
 export const getMenuItems = withServerQuery(_getMenuItems);
