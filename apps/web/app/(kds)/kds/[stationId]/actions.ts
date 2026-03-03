@@ -167,7 +167,34 @@ async function _bumpTicket(
 
   if (error) return safeDbErrorResult(error, "db");
 
+  // When ticket becomes ready, broadcast to POS clients
+  if (newStatus === "ready") {
+    // Fetch order info for broadcast message
+    const { data: ticketOrder } = await supabase
+      .from("kds_tickets")
+      .select("order_id, orders(order_number, branch_id)")
+      .eq("id", ticketId)
+      .single();
+
+    if (ticketOrder?.orders) {
+      const orderInfo = ticketOrder.orders as { order_number: string; branch_id: number };
+      const channel = supabase.channel(`branch:${orderInfo.branch_id}:notifications`);
+      await channel.send({
+        type: "broadcast",
+        event: "notification",
+        payload: {
+          type: "order_ready",
+          message: "Bếp đã hoàn thành!",
+          order_number: orderInfo.order_number,
+        },
+      });
+      supabase.removeChannel(channel);
+    }
+  }
+
   revalidatePath("/kds");
+  revalidatePath("/pos/cashier");
+  revalidatePath("/pos/orders");
   return { error: null };
 }
 

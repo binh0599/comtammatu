@@ -13,7 +13,7 @@ export default async function CashierPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role, full_name, branch_id")
     .eq("id", user.id)
     .single();
 
@@ -49,6 +49,7 @@ export default async function CashierPage() {
           `Máy #${session.terminal_id}`,
       }}
       orders={orders}
+      branchId={profile.branch_id!}
     />
   );
 }

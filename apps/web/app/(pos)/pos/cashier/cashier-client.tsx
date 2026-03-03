@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { SessionBar } from "./session-bar";
 import { OrderQueue } from "./order-queue";
 import { PaymentPanel } from "./payment-panel";
+import { useCashierRealtime } from "./use-cashier-realtime";
 
 interface SessionInfo {
   id: number;
@@ -45,13 +46,16 @@ interface QueueOrder {
 
 export function CashierClient({
   session,
-  orders,
+  orders: initialOrders,
+  branchId,
 }: {
   session: SessionInfo;
   orders: QueueOrder[];
+  branchId: number;
 }) {
   const router = useRouter();
   const [selectedOrder, setSelectedOrder] = useState<QueueOrder | null>(null);
+  const { orders } = useCashierRealtime(initialOrders, branchId);
 
   function handlePaymentComplete() {
     setSelectedOrder(null);
