@@ -3,35 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import { useRouter } from "next/navigation";
-
-interface QueueOrder {
-    id: number;
-    order_number: string;
-    status: string;
-    type: string;
-    subtotal: number;
-    discount_total: number;
-    tax: number;
-    total: number;
-    created_at: string;
-    table_id: number | null;
-    tables: { number: number } | null;
-    order_items: {
-        id: number;
-        quantity: number;
-        unit_price: number;
-        item_total: number;
-        menu_items: { name: string } | null;
-        menu_item_variants: { name: string } | null;
-    }[];
-    order_discounts: {
-        id: number;
-        type: string;
-        value: number;
-        voucher_id: number | null;
-        vouchers: { code: string } | null;
-    }[];
-}
+import type { QueueOrder } from "./types";
 
 /**
  * Hook that subscribes to real-time order changes for the cashier view.

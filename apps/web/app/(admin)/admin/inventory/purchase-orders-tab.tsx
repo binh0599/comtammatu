@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, Send, PackageCheck, X } from "lucide-react";
+import { Plus, Send, PackageCheck, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -16,7 +16,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -32,16 +31,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, formatDateTime, getPoStatusLabel } from "@comtammatu/shared";
 import {
   createPurchaseOrder,
@@ -49,393 +38,10 @@ import {
   receivePurchaseOrder,
   cancelPurchaseOrder,
 } from "./actions";
-
-interface Supplier {
-  id: number;
-  name: string;
-}
-
-interface Branch {
-  id: number;
-  name: string;
-}
-
-interface Ingredient {
-  id: number;
-  name: string;
-  unit: string;
-}
-
-interface PoItem {
-  id: number;
-  ingredient_id: number;
-  quantity: number;
-  unit_price: number;
-  received_qty: number;
-  ingredients: { name: string; unit: string } | null;
-}
-
-interface PurchaseOrder {
-  id: number;
-  supplier_id: number;
-  branch_id: number;
-  status: string;
-  total: number | null;
-  notes: string | null;
-  expected_at: string | null;
-  ordered_at: string | null;
-  received_at: string | null;
-  created_at: string;
-  updated_at: string;
-  suppliers: { name: string } | null;
-  branches: { name: string } | null;
-  purchase_order_items: PoItem[];
-}
-
-interface NewItem {
-  ingredient_id: string;
-  quantity: string;
-  unit_price: string;
-}
-
-function getStatusBadgeVariant(
-  status: string
-): "secondary" | "outline" | "default" | "destructive" {
-  switch (status) {
-    case "draft":
-      return "secondary";
-    case "sent":
-      return "outline";
-    case "received":
-      return "default";
-    case "cancelled":
-      return "destructive";
-    default:
-      return "secondary";
-  }
-}
-
-function CreatePoForm({
-  suppliers,
-  branches,
-  ingredients,
-  onSubmit,
-  isPending,
-  error,
-}: {
-  suppliers: Supplier[];
-  branches: Branch[];
-  ingredients: Ingredient[];
-  onSubmit: (data: {
-    supplier_id: number;
-    branch_id: number;
-    expected_at?: string;
-    notes?: string;
-    items: { ingredient_id: number; quantity: number; unit_price: number }[];
-  }) => void;
-  isPending: boolean;
-  error: string | null;
-}) {
-  const [supplierId, setSupplierId] = useState("");
-  const [branchId, setBranchId] = useState("");
-  const [expectedAt, setExpectedAt] = useState("");
-  const [notes, setNotes] = useState("");
-  const [items, setItems] = useState<NewItem[]>([
-    { ingredient_id: "", quantity: "", unit_price: "" },
-  ]);
-
-  function addRow() {
-    setItems([...items, { ingredient_id: "", quantity: "", unit_price: "" }]);
-  }
-
-  function removeRow(index: number) {
-    if (items.length <= 1) return;
-    setItems(items.filter((_, i) => i !== index));
-  }
-
-  function updateItem(index: number, field: keyof NewItem, value: string) {
-    const updated = [...items];
-    const current = updated[index];
-    if (!current) return;
-    updated[index] = { ...current, [field]: value };
-    setItems(updated);
-  }
-
-  function getLineTotal(item: NewItem): number {
-    const qty = parseFloat(item.quantity) || 0;
-    const price = parseFloat(item.unit_price) || 0;
-    return qty * price;
-  }
-
-  const grandTotal = items.reduce((sum, item) => sum + getLineTotal(item), 0);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onSubmit({
-      supplier_id: parseInt(supplierId),
-      branch_id: parseInt(branchId),
-      expected_at: expectedAt || undefined,
-      notes: notes || undefined,
-      items: items.map((item) => ({
-        ingredient_id: parseInt(item.ingredient_id),
-        quantity: parseFloat(item.quantity),
-        unit_price: parseFloat(item.unit_price),
-      })),
-    });
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-      <div className="grid gap-4 py-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label>Nha cung cap *</Label>
-            <Select value={supplierId} onValueChange={setSupplierId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chon nha cung cap" />
-              </SelectTrigger>
-              <SelectContent>
-                {suppliers.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="grid gap-2">
-            <Label>Chi nhanh *</Label>
-            <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Chon chi nhanh" />
-              </SelectTrigger>
-              <SelectContent>
-                {branches.map((b) => (
-                  <SelectItem key={b.id} value={String(b.id)}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="expected_at">Ngay giao du kien</Label>
-            <Input
-              id="expected_at"
-              type="date"
-              value={expectedAt}
-              onChange={(e) => setExpectedAt(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="notes">Ghi chu</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ghi chu cho don mua hang"
-              rows={2}
-            />
-          </div>
-        </div>
-
-        {/* Item rows */}
-        <div className="space-y-2">
-          <Label>Danh sach nguyen lieu *</Label>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead scope="col">Nguyen lieu</TableHead>
-                  <TableHead scope="col" className="w-[120px]">So luong</TableHead>
-                  <TableHead scope="col" className="w-[140px]">Don gia</TableHead>
-                  <TableHead scope="col" className="w-[120px] text-right">
-                    Thanh tien
-                  </TableHead>
-                  <TableHead scope="col" className="w-[50px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      <Select
-                        value={item.ingredient_id}
-                        onValueChange={(v) =>
-                          updateItem(index, "ingredient_id", v)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Chon" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ingredients.map((ing) => (
-                            <SelectItem key={ing.id} value={String(ing.id)}>
-                              {ing.name} ({ing.unit})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(index, "quantity", e.target.value)
-                        }
-                        placeholder="0"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={item.unit_price}
-                        onChange={(e) =>
-                          updateItem(index, "unit_price", e.target.value)
-                        }
-                        placeholder="0"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatPrice(getLineTotal(item))}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeRow(index)}
-                        disabled={items.length <= 1}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="flex items-center justify-between">
-            <Button type="button" variant="outline" size="sm" onClick={addRow}>
-              <Plus className="mr-1 h-4 w-4" />
-              Them dong
-            </Button>
-            <div className="text-lg font-semibold">
-              Tong: {formatPrice(grandTotal)}
-            </div>
-          </div>
-        </div>
-      </div>
-      <DialogFooter>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Dang tao..." : "Tao don mua"}
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-}
-
-function ReceiveDialog({
-  po,
-  onReceive,
-  isPending,
-  error,
-}: {
-  po: PurchaseOrder;
-  onReceive: (data: {
-    po_id: number;
-    items: { po_item_id: number; received_qty: number }[];
-  }) => void;
-  isPending: boolean;
-  error: string | null;
-}) {
-  const [receivedQtys, setReceivedQtys] = useState<Record<number, string>>(
-    () => {
-      const initial: Record<number, string> = {};
-      for (const item of po.purchase_order_items) {
-        initial[item.id] = String(item.quantity);
-      }
-      return initial;
-    }
-  );
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    onReceive({
-      po_id: po.id,
-      items: po.purchase_order_items.map((item) => ({
-        po_item_id: item.id,
-        received_qty: parseFloat(receivedQtys[item.id] ?? "0"),
-      })),
-    });
-  }
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
-      <div className="py-4">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead scope="col">Nguyen lieu</TableHead>
-                <TableHead scope="col" className="text-right">Dat hang</TableHead>
-                <TableHead scope="col" className="w-[140px]">Thuc nhan</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {po.purchase_order_items.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell className="font-medium">
-                    {item.ingredients?.name ?? `#${item.ingredient_id}`}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {item.quantity} {item.ingredients?.unit ?? ""}
-                  </TableCell>
-                  <TableCell>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={receivedQtys[item.id] ?? ""}
-                      onChange={(e) =>
-                        setReceivedQtys({
-                          ...receivedQtys,
-                          [item.id]: e.target.value,
-                        })
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
-      <DialogFooter>
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Dang xu ly..." : "Xac nhan nhan hang"}
-        </Button>
-      </DialogFooter>
-    </form>
-  );
-}
+import type { Supplier, Branch, Ingredient, PurchaseOrder, CreatePoData, ReceivePoData } from "./po-types";
+import { getStatusBadgeVariant } from "./po-types";
+import { CreatePoForm } from "./create-po-form";
+import { ReceiveDialog } from "./receive-dialog";
 
 export function PurchaseOrdersTab({
   purchaseOrders,
@@ -453,13 +59,7 @@ export function PurchaseOrdersTab({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  function handleCreate(data: {
-    supplier_id: number;
-    branch_id: number;
-    expected_at?: string;
-    notes?: string;
-    items: { ingredient_id: number; quantity: number; unit_price: number }[];
-  }) {
+  function handleCreate(data: CreatePoData) {
     setError(null);
     startTransition(async () => {
       const result = await createPurchaseOrder(data);
@@ -492,10 +92,7 @@ export function PurchaseOrdersTab({
     });
   }
 
-  function handleReceive(data: {
-    po_id: number;
-    items: { po_item_id: number; received_qty: number }[];
-  }) {
+  function handleReceive(data: ReceivePoData) {
     setError(null);
     startTransition(async () => {
       const result = await receivePurchaseOrder(data);

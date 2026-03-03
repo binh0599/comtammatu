@@ -12,6 +12,7 @@ import {
   formatElapsedTime,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
+import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 
 interface Order {
   id: number;
@@ -32,16 +33,6 @@ interface Order {
     menu_items: { name: string } | null;
   }[];
 }
-
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "secondary",
-  confirmed: "outline",
-  preparing: "outline",
-  ready: "default",
-  served: "default",
-  completed: "default",
-  cancelled: "destructive",
-};
 
 const filterOptions = [
   { value: "all", label: "Tất cả" },
@@ -128,7 +119,7 @@ export function OrdersList({
                 <div className="flex items-center gap-2">
                   <span className="font-bold">{order.order_number}</span>
                   <Badge
-                    variant={statusVariant[order.status] ?? "secondary"}
+                    variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}
                   >
                     {getOrderStatusLabel(order.status)}
                   </Badge>
