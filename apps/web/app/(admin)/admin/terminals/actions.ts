@@ -8,6 +8,8 @@ import {
   getBranchesForTenant,
   verifyEntityOwnership,
   safeDbErrorResult,
+  withServerAction,
+  withServerQuery,
 } from "@comtammatu/shared";
 import { z } from "zod";
 
@@ -18,7 +20,11 @@ const terminalSchema = z.object({
   device_fingerprint: z.string().min(1, "Mã thiết bị không được để trống"),
 });
 
-export async function getTerminals() {
+// =====================
+// Queries
+// =====================
+
+async function _getTerminals() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
@@ -31,12 +37,20 @@ export async function getTerminals() {
   return data ?? [];
 }
 
-export async function getBranches() {
+export const getTerminals = withServerQuery(_getTerminals);
+
+async function _getBranches() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
   return getBranchesForTenant(supabase, tenantId);
 }
 
-export async function createTerminal(formData: FormData) {
+export const getBranches = withServerQuery(_getBranches);
+
+// =====================
+// Mutations
+// =====================
+
+async function _createTerminal(formData: FormData) {
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const parsed = terminalSchema.safeParse({
@@ -82,7 +96,9 @@ export async function createTerminal(formData: FormData) {
   return { error: null };
 }
 
-export async function approveTerminal(id: number) {
+export const createTerminal = withServerAction(_createTerminal);
+
+async function _approveTerminal(id: number) {
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
@@ -113,7 +129,9 @@ export async function approveTerminal(id: number) {
   return { error: null };
 }
 
-export async function toggleTerminal(id: number) {
+export const approveTerminal = withServerAction(_approveTerminal);
+
+async function _toggleTerminal(id: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
@@ -138,7 +156,9 @@ export async function toggleTerminal(id: number) {
   return { error: null };
 }
 
-export async function deleteTerminal(id: number) {
+export const toggleTerminal = withServerAction(_toggleTerminal);
+
+async function _deleteTerminal(id: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
@@ -154,3 +174,5 @@ export async function deleteTerminal(id: number) {
   revalidatePath("/admin/terminals");
   return { error: null };
 }
+
+export const deleteTerminal = withServerAction(_deleteTerminal);

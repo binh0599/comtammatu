@@ -6,22 +6,25 @@ import {
   getAdminContext,
   getBranchesForTenant,
   getBranchIdsForTenant,
+  withServerQuery,
 } from "@comtammatu/shared";
 
 // =====================
 // Branches
 // =====================
 
-export async function getBranches() {
+async function _getBranches() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
   return getBranchesForTenant(supabase, tenantId);
 }
+
+export const getBranches = withServerQuery(_getBranches);
 
 // =====================
 // Admin Orders (all branches, tenant-scoped)
 // =====================
 
-export async function getAdminOrders() {
+async function _getAdminOrders() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds = await getBranchIdsForTenant(supabase, tenantId);
@@ -60,3 +63,5 @@ export async function getAdminOrders() {
   if (error) throw new Error(error.message);
   return data ?? [];
 }
+
+export const getAdminOrders = withServerQuery(_getAdminOrders);

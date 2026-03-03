@@ -7,22 +7,26 @@ import {
   getAdminContext,
   getBranchesForTenant,
   getBranchIdsForTenant,
+  withServerAction,
+  withServerQuery,
 } from "@comtammatu/shared";
 
 // =====================
 // Branches (shared)
 // =====================
 
-export async function getBranches() {
+async function _getBranches() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
   return getBranchesForTenant(supabase, tenantId);
 }
+
+export const getBranches = withServerQuery(_getBranches);
 
 // =====================
 // Payments
 // =====================
 
-export async function getPayments() {
+async function _getPayments() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds = await getBranchIdsForTenant(supabase, tenantId);
@@ -67,11 +71,13 @@ export async function getPayments() {
   return data ?? [];
 }
 
+export const getPayments = withServerQuery(_getPayments);
+
 // =====================
 // Refund Payment
 // =====================
 
-export async function refundPayment(
+async function _refundPayment(
   paymentId: number
 ): Promise<{ error?: string }> {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
@@ -119,3 +125,5 @@ export async function refundPayment(
   revalidatePath("/admin/payments");
   return {};
 }
+
+export const refundPayment = withServerAction(_refundPayment);

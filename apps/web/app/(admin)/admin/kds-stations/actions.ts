@@ -7,6 +7,8 @@ import {
   getAdminContext,
   verifyEntityOwnership,
   safeDbErrorResult,
+  withServerAction,
+  withServerQuery,
 } from "@comtammatu/shared";
 import { z } from "zod";
 
@@ -16,7 +18,11 @@ const stationSchema = z.object({
   category_ids: z.string().min(1, "Phải chọn ít nhất 1 danh mục"),
 });
 
-export async function getKdsStations() {
+// =====================
+// Queries
+// =====================
+
+async function _getKdsStations() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
@@ -31,7 +37,9 @@ export async function getKdsStations() {
   return data ?? [];
 }
 
-export async function getBranchesAndCategories() {
+export const getKdsStations = withServerQuery(_getKdsStations);
+
+async function _getBranchesAndCategories() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const [branchesResult, categoriesResult] = await Promise.all([
@@ -60,7 +68,13 @@ export async function getBranchesAndCategories() {
   };
 }
 
-export async function createKdsStation(formData: FormData) {
+export const getBranchesAndCategories = withServerQuery(_getBranchesAndCategories);
+
+// =====================
+// Mutations
+// =====================
+
+async function _createKdsStation(formData: FormData) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const parsed = stationSchema.safeParse({
@@ -117,7 +131,9 @@ export async function createKdsStation(formData: FormData) {
   return { error: null, success: true };
 }
 
-export async function updateKdsStation(id: number, formData: FormData) {
+export const createKdsStation = withServerAction(_createKdsStation);
+
+async function _updateKdsStation(id: number, formData: FormData) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "kds_stations", id, tenantId);
@@ -171,7 +187,9 @@ export async function updateKdsStation(id: number, formData: FormData) {
   return { error: null, success: true };
 }
 
-export async function toggleKdsStation(id: number) {
+export const updateKdsStation = withServerAction(_updateKdsStation);
+
+async function _toggleKdsStation(id: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership<{ id: number; is_active: boolean }>(
@@ -190,7 +208,9 @@ export async function toggleKdsStation(id: number) {
   return { error: null, success: true };
 }
 
-export async function deleteKdsStation(id: number) {
+export const toggleKdsStation = withServerAction(_toggleKdsStation);
+
+async function _deleteKdsStation(id: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership(supabase, "kds_stations", id, tenantId);
@@ -203,3 +223,5 @@ export async function deleteKdsStation(id: number) {
   revalidatePath("/admin/kds-stations");
   return { error: null, success: true };
 }
+
+export const deleteKdsStation = withServerAction(_deleteKdsStation);
