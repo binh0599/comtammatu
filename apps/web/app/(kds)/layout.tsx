@@ -1,38 +1,17 @@
-import { createSupabaseServer } from "@comtammatu/database";
-import { redirect } from "next/navigation";
 import { KDS_ROLES } from "@comtammatu/shared";
 import { RealtimeNotifications } from "@/components/pos/realtime-notifications";
 import { Toaster } from "@/components/ui/sonner";
+import { requireLayoutAuth } from "@/lib/layout-auth";
 
 export default async function KdsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role, branch_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    redirect("/login");
-  }
-
-  const role = profile.role as (typeof KDS_ROLES)[number];
-
-  if (!KDS_ROLES.includes(role)) {
-    redirect("/login");
-  }
+  const { profile } = await requireLayoutAuth<{ branch_id: number | null }>(
+    KDS_ROLES,
+    "role, branch_id",
+  );
 
   return (
     <div
