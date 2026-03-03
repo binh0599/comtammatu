@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MessageCircle, Star } from "lucide-react";
+import { MessageCircle, Star, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -22,6 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+} from "@/components/ui/card";
 import { formatDateTime } from "@comtammatu/shared";
 import { respondToFeedback } from "./actions";
 
@@ -85,9 +89,9 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Phan hoi</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Phản hồi</h2>
           <p className="text-muted-foreground">
-            Xem va phan hoi danh gia tu khach hang
+            Xem và phản hồi đánh giá từ khách hàng
           </p>
         </div>
       </div>
@@ -98,18 +102,19 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
         </div>
       )}
 
-      <div className="rounded-md border">
+      <Card>
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Khach hang</TableHead>
-              <TableHead scope="col">Don hang</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col">Danh gia</TableHead>
-              <TableHead scope="col">Binh luan</TableHead>
-              <TableHead scope="col">Phan hoi</TableHead>
-              <TableHead scope="col">Ngay</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Khách hàng</TableHead>
+              <TableHead scope="col">Đơn hàng</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Đánh giá</TableHead>
+              <TableHead scope="col">Bình luận</TableHead>
+              <TableHead scope="col">Phản hồi</TableHead>
+              <TableHead scope="col">Ngày</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -117,16 +122,21 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
               <TableRow>
                 <TableCell
                   colSpan={8}
-                  className="text-muted-foreground h-24 text-center"
+                  className="h-32 text-center"
                 >
-                  Chua co phan hoi nao
+                  <div className="flex flex-col items-center gap-2">
+                    <MessageSquare className="text-muted-foreground/50 h-8 w-8" />
+                    <p className="text-muted-foreground text-sm">
+                      Chưa có phản hồi nào
+                    </p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               feedback.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell className="font-medium">
-                    {item.customers?.full_name ?? "Khach vang lai"}
+                    {item.customers?.full_name ?? "Khách vãng lai"}
                   </TableCell>
                   <TableCell>
                     {item.orders?.order_number ?? "-"}
@@ -144,10 +154,10 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
                         variant="outline"
                         className="bg-green-50 text-green-700"
                       >
-                        Da phan hoi
+                        Đã phản hồi
                       </Badge>
                     ) : (
-                      <Badge variant="secondary">Chua phan hoi</Badge>
+                      <Badge variant="secondary">Chưa phản hồi</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-sm">
@@ -157,7 +167,7 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      title={item.response ? "Xem phan hoi" : "Phan hoi"}
+                      title={item.response ? "Xem phản hồi" : "Phản hồi"}
                       onClick={() => {
                         setError(null);
                         setRespondingItem(item);
@@ -171,7 +181,8 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
             )}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Respond Dialog */}
       <Dialog
@@ -186,11 +197,11 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {respondingItem?.response ? "Chi tiet phan hoi" : "Phan hoi khach hang"}
+              {respondingItem?.response ? "Chi tiết phản hồi" : "Phản hồi khách hàng"}
             </DialogTitle>
             <DialogDescription>
-              Danh gia tu{" "}
-              {respondingItem?.customers?.full_name ?? "Khach vang lai"}
+              Đánh giá từ{" "}
+              {respondingItem?.customers?.full_name ?? "Khách vãng lai"}
               {respondingItem?.orders?.order_number
                 ? ` — Don #${respondingItem.orders.order_number}`
                 : ""}
@@ -216,7 +227,7 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
               {respondingItem.response && (
                 <div className="space-y-2 rounded-md border border-green-200 bg-green-50 p-3">
                   <p className="text-sm font-medium text-green-800">
-                    Phan hoi cua nha hang:
+                    Phản hồi của nhà hàng:
                   </p>
                   <p className="text-sm text-green-700">
                     {respondingItem.response}
@@ -233,18 +244,18 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
                     </div>
                   )}
                   <div className="grid gap-2">
-                    <Label htmlFor="response">Phan hoi</Label>
+                    <Label htmlFor="response">Phản hồi</Label>
                     <Textarea
                       id="response"
                       name="response"
-                      placeholder="Nhap phan hoi cho khach hang..."
+                      placeholder="Nhập phản hồi cho khách hàng..."
                       rows={4}
                       required
                     />
                   </div>
                   <DialogFooter className="mt-4">
                     <Button type="submit" disabled={isPending}>
-                      {isPending ? "Dang gui..." : "Gui phan hoi"}
+                      {isPending ? "Đang gửi..." : "Gửi phản hồi"}
                     </Button>
                   </DialogFooter>
                 </form>

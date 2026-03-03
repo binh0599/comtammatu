@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useMemo, useTransition } from "react";
 import {
   Plus,
   Pencil,
@@ -8,6 +8,8 @@ import {
   ToggleRight,
   History,
   Coins,
+  Search,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +30,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -127,7 +136,7 @@ function CustomerForm({
       )}
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="full_name">Ho ten *</Label>
+          <Label htmlFor="full_name">Họ tên *</Label>
           <Input
             id="full_name"
             name="full_name"
@@ -138,7 +147,7 @@ function CustomerForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="phone">So dien thoai *</Label>
+            <Label htmlFor="phone">Số điện thoại *</Label>
             <Input
               id="phone"
               name="phone"
@@ -160,10 +169,10 @@ function CustomerForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="gender">Gioi tinh</Label>
+            <Label htmlFor="gender">Giới tính</Label>
             <Select value={gender} onValueChange={setGender}>
               <SelectTrigger>
-                <SelectValue placeholder="Chon gioi tinh" />
+                <SelectValue placeholder="Chọn giới tính" />
               </SelectTrigger>
               <SelectContent>
                 {CUSTOMER_GENDERS.map((g) => (
@@ -176,7 +185,7 @@ function CustomerForm({
             <input type="hidden" name="gender" value={gender} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="birthday">Ngay sinh</Label>
+            <Label htmlFor="birthday">Ngày sinh</Label>
             <Input
               id="birthday"
               name="birthday"
@@ -187,10 +196,10 @@ function CustomerForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="source">Nguon</Label>
+            <Label htmlFor="source">Nguồn</Label>
             <Select value={source} onValueChange={setSource}>
               <SelectTrigger>
-                <SelectValue placeholder="Chon nguon" />
+                <SelectValue placeholder="Chọn nguồn" />
               </SelectTrigger>
               <SelectContent>
                 {CUSTOMER_SOURCES.map((s) => (
@@ -204,10 +213,10 @@ function CustomerForm({
           </div>
           {showTierField && (
             <div className="grid gap-2">
-              <Label htmlFor="loyalty_tier_id">Hang thanh vien</Label>
+              <Label htmlFor="loyalty_tier_id">Hạng thành viên</Label>
               <Select value={tierId} onValueChange={setTierId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Chon hang" />
+                  <SelectValue placeholder="Chọn hạng" />
                 </SelectTrigger>
                 <SelectContent>
                   {loyaltyTiers.map((tier) => (
@@ -222,12 +231,12 @@ function CustomerForm({
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="notes">Ghi chu</Label>
+          <Label htmlFor="notes">Ghi chú</Label>
           <Textarea
             id="notes"
             name="notes"
             defaultValue={defaultValues?.notes ?? ""}
-            placeholder="Ghi chu ve khach hang"
+            placeholder="Ghi chú về khách hàng"
             rows={2}
           />
         </div>
@@ -274,28 +283,28 @@ function LoyaltyHistoryDialog({
     >
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Lich su diem — {customer.full_name}</DialogTitle>
+          <DialogTitle>Lịch sử điểm — {customer.full_name}</DialogTitle>
           <DialogDescription>
-            20 giao dich gan nhat
+            20 giao dịch gần nhất
           </DialogDescription>
         </DialogHeader>
         {loading ? (
           <div className="flex justify-center py-8">
-            <span className="text-muted-foreground">Dang tai...</span>
+            <span className="text-muted-foreground">Đang tải...</span>
           </div>
         ) : history.length === 0 ? (
           <div className="text-muted-foreground py-8 text-center">
-            Chua co giao dich nao
+            Chưa có giao dịch nào
           </div>
         ) : (
           <div className="max-h-80 overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead scope="col">Ngay</TableHead>
-                  <TableHead scope="col">Loai</TableHead>
-                  <TableHead scope="col" className="text-right">Diem</TableHead>
-                  <TableHead scope="col" className="text-right">So du</TableHead>
+                  <TableHead scope="col">Ngày</TableHead>
+                  <TableHead scope="col">Loại</TableHead>
+                  <TableHead scope="col" className="text-right">Điểm</TableHead>
+                  <TableHead scope="col" className="text-right">Số dư</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -385,9 +394,9 @@ function AdjustPointsDialog({
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Dieu chinh diem — {customer.full_name}</DialogTitle>
+          <DialogTitle>Điều chỉnh điểm — {customer.full_name}</DialogTitle>
           <DialogDescription>
-            Them hoac tru diem thuong cho khach hang
+            Thêm hoặc trừ điểm thưởng cho khách hàng
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -398,7 +407,7 @@ function AdjustPointsDialog({
           )}
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="type">Loai giao dich</Label>
+              <Label htmlFor="type">Loại giao dịch</Label>
               <Select value={type} onValueChange={setType}>
                 <SelectTrigger>
                   <SelectValue />
@@ -415,7 +424,7 @@ function AdjustPointsDialog({
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="points">So diem</Label>
+              <Label htmlFor="points">Số điểm</Label>
               <Input
                 id="points"
                 name="points"
@@ -426,7 +435,7 @@ function AdjustPointsDialog({
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="reference_type">Ly do (tuy chon)</Label>
+              <Label htmlFor="reference_type">Lý do (tùy chọn)</Label>
               <Input
                 id="reference_type"
                 name="reference_type"
@@ -436,7 +445,7 @@ function AdjustPointsDialog({
           </div>
           <DialogFooter>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Dang xu ly..." : "Xac nhan"}
+              {isPending ? "Đang xử lý..." : "Xác nhận"}
             </Button>
           </DialogFooter>
         </form>
@@ -460,6 +469,18 @@ export function CustomersTab({
   const [pointsCustomer, setPointsCustomer] = useState<Customer | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredCustomers = useMemo(() => {
+    if (!searchQuery.trim()) return customers;
+    const q = searchQuery.toLowerCase();
+    return customers.filter(
+      (c) =>
+        c.full_name.toLowerCase().includes(q) ||
+        c.phone.includes(q) ||
+        (c.email && c.email.toLowerCase().includes(q))
+    );
+  }, [customers, searchQuery]);
 
   function handleCreate(formData: FormData) {
     setError(null);
@@ -500,9 +521,9 @@ export function CustomersTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Khach hang</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Khách hàng</h2>
           <p className="text-muted-foreground">
-            Quan ly danh sach khach hang cua nha hang
+            Quản lý danh sách khách hàng của nhà hàng
           </p>
         </div>
         <Dialog
@@ -515,14 +536,14 @@ export function CustomersTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-              Them khach hang
+              Thêm khách hàng
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
-              <DialogTitle>Them khach hang</DialogTitle>
+              <DialogTitle>Thêm khách hàng</DialogTitle>
               <DialogDescription>
-                Tao khach hang moi cho nha hang
+                Tạo khách hàng mới cho nhà hàng
               </DialogDescription>
             </DialogHeader>
             <CustomerForm
@@ -530,8 +551,8 @@ export function CustomersTab({
               onSubmit={handleCreate}
               isPending={isPending}
               error={error}
-              submitLabel="Tao"
-              pendingLabel="Dang tao..."
+              submitLabel="Tạo"
+              pendingLabel="Đang tạo..."
             />
           </DialogContent>
         </Dialog>
@@ -543,33 +564,69 @@ export function CustomersTab({
         </div>
       )}
 
-      <div className="rounded-md border">
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base">Danh sách khách hàng</CardTitle>
+              <CardDescription>
+                {filteredCustomers.length} / {customers.length} khách hàng
+              </CardDescription>
+            </div>
+            <div className="relative w-64">
+              <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+              <Input
+                placeholder="Tìm theo tên, SĐT, email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ten</TableHead>
-              <TableHead scope="col">SDT</TableHead>
+              <TableHead scope="col">Tên</TableHead>
+              <TableHead scope="col">SĐT</TableHead>
               <TableHead scope="col">Email</TableHead>
-              <TableHead scope="col">Gioi tinh</TableHead>
-              <TableHead scope="col">Nguon</TableHead>
-              <TableHead scope="col">Hang</TableHead>
-              <TableHead scope="col" className="text-right">Tong chi</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Giới tính</TableHead>
+              <TableHead scope="col">Nguồn</TableHead>
+              <TableHead scope="col">Hạng</TableHead>
+              <TableHead scope="col" className="text-right">Tổng chi</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers.length === 0 ? (
+            {filteredCustomers.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={9}
-                  className="text-muted-foreground h-24 text-center"
+                  className="h-32 text-center"
                 >
-                  Chua co khach hang nao
+                  <div className="flex flex-col items-center gap-2">
+                    <UserPlus className="text-muted-foreground/50 h-8 w-8" />
+                    <p className="text-muted-foreground text-sm">
+                      {searchQuery
+                        ? "Không tìm thấy khách hàng phù hợp"
+                        : "Chưa có khách hàng nào"}
+                    </p>
+                    {searchQuery && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSearchQuery("")}
+                      >
+                        Xóa bộ lọc
+                      </Button>
+                    )}
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
-              customers.map((customer) => (
+              filteredCustomers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">
                     {customer.full_name}
@@ -602,7 +659,7 @@ export function CustomersTab({
                     <Badge
                       variant={customer.is_active ? "default" : "secondary"}
                     >
-                      {customer.is_active ? "Hoat dong" : "Ngung"}
+                      {customer.is_active ? "Hoạt động" : "Ngưng"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -611,7 +668,7 @@ export function CustomersTab({
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Lich su diem"
+                        aria-label="Lịch sử điểm"
                         onClick={() => setHistoryCustomer(customer)}
                       >
                         <History className="h-4 w-4" aria-hidden="true" />
@@ -621,7 +678,7 @@ export function CustomersTab({
                       <Button
                         variant="ghost"
                         size="icon"
-                        aria-label="Dieu chinh diem"
+                        aria-label="Điều chỉnh điểm"
                         onClick={() => setPointsCustomer(customer)}
                       >
                         <Coins className="h-4 w-4" aria-hidden="true" />
@@ -645,16 +702,16 @@ export function CustomersTab({
                               setError(null);
                               setEditingItem(customer);
                             }}
-                            aria-label="Sua"
+                            aria-label="Sửa"
                           >
                             <Pencil className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="max-w-lg">
                           <DialogHeader>
-                            <DialogTitle>Sua khach hang</DialogTitle>
+                            <DialogTitle>Sửa khách hàng</DialogTitle>
                             <DialogDescription>
-                              Cap nhat thong tin &quot;{customer.full_name}
+                              Cập nhật thông tin &quot;{customer.full_name}
                               &quot;
                             </DialogDescription>
                           </DialogHeader>
@@ -666,8 +723,8 @@ export function CustomersTab({
                             }
                             isPending={isPending}
                             error={error}
-                            submitLabel="Luu"
-                            pendingLabel="Dang luu..."
+                            submitLabel="Lưu"
+                            pendingLabel="Đang lưu..."
                             showTierField
                           />
                         </DialogContent>
@@ -678,7 +735,7 @@ export function CustomersTab({
                         variant="ghost"
                         size="icon"
                         aria-label={
-                          customer.is_active ? "Vo hieu hoa" : "Kich hoat"
+                          customer.is_active ? "Vô hiệu hóa" : "Kích hoạt"
                         }
                         onClick={() => handleToggleActive(customer.id)}
                       >
@@ -695,7 +752,8 @@ export function CustomersTab({
             )}
           </TableBody>
         </Table>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Loyalty History Dialog */}
       {historyCustomer && (
