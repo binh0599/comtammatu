@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
-import { redirect } from "next/navigation";
 import { getCustomerOrders } from "../actions";
 import { OrderHistory } from "./order-history";
 
@@ -15,7 +14,7 @@ export default async function OrdersPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return <OrderHistory orders={[]} />;
   }
 
   let orders: Awaited<ReturnType<typeof getCustomerOrders>> = [];

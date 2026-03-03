@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
-import { redirect } from "next/navigation";
 import { getCustomerLoyalty } from "../actions";
 import { LoyaltyDashboard } from "./loyalty-dashboard";
 
@@ -15,7 +14,13 @@ export default async function LoyaltyPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return (
+      <div className="flex flex-col items-center gap-3 py-16">
+        <p className="text-muted-foreground text-sm">
+          Chua co thong tin tich diem. Vui long lien he nha hang.
+        </p>
+      </div>
+    );
   }
 
   let loyalty: Awaited<ReturnType<typeof getCustomerLoyalty>> | null = null;

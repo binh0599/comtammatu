@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
-import { redirect } from "next/navigation";
 import { getOrderForFeedback } from "../../actions";
 import { FeedbackForm } from "./feedback-form";
 
@@ -19,7 +18,13 @@ export default async function FeedbackPage({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return (
+      <div className="flex flex-col items-center gap-3 py-16">
+        <p className="text-muted-foreground text-sm">
+          Khong the truy cap danh gia
+        </p>
+      </div>
+    );
   }
 
   const { orderId } = await params;

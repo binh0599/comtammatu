@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import {
-  LogOut,
   Download,
   Trash2,
   User,
@@ -26,7 +25,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatDateTime, formatPrice } from "@comtammatu/shared";
-import { logout } from "@/app/login/actions";
 import { requestDataExport, requestDeletion } from "../actions";
 import { toast } from "sonner";
 
@@ -136,103 +134,82 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
             <p className="text-muted-foreground text-sm">
               Chua co thong tin khach hang. Vui long lien he nha hang.
             </p>
-            {userEmail && (
-              <p className="text-muted-foreground mt-2 text-sm">
-                Email: {userEmail}
-              </p>
-            )}
           </CardContent>
         </Card>
       )}
 
-      {/* Actions */}
-      <div className="space-y-3">
-        {/* Logout */}
-        <form action={logout}>
+      {/* Actions — only if profile exists */}
+      {profile && (
+        <div className="space-y-3">
+          <Separator />
+          <p className="text-muted-foreground text-xs">
+            Quyen rieng tu & du lieu
+          </p>
+
           <Button
-            type="submit"
             variant="outline"
             className="w-full gap-2"
             size="lg"
+            onClick={handleExport}
+            disabled={isExporting}
           >
-            <LogOut className="h-4 w-4" />
-            Dang xuat
+            <Download className="h-4 w-4" />
+            {isExporting ? "Dang xuat du lieu..." : "Xuat du lieu cua toi"}
           </Button>
-        </form>
 
-        {/* Data export — only if profile exists */}
-        {profile && (
-          <>
-            <Separator />
-            <p className="text-muted-foreground text-xs">
-              Quyen rieng tu & du lieu
-            </p>
-
-            <Button
-              variant="outline"
-              className="w-full gap-2"
-              size="lg"
-              onClick={handleExport}
-              disabled={isExporting}
-            >
-              <Download className="h-4 w-4" />
-              {isExporting ? "Dang xuat du lieu..." : "Xuat du lieu cua toi"}
-            </Button>
-
-            {/* Deletion request */}
-            {deletionScheduled ? (
-              <Card className="border-yellow-200 bg-yellow-50">
-                <CardContent className="flex items-start gap-3 p-4">
-                  <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-600" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      Yeu cau xoa da duoc ghi nhan
-                    </p>
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      Tai khoan cua ban se bi xoa sau 30 ngay. Lien he nha hang
-                      de huy yeu cau.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    className="w-full gap-2"
-                    size="lg"
+          {/* Deletion request */}
+          {deletionScheduled ? (
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="flex items-start gap-3 p-4">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-600" />
+                <div>
+                  <p className="text-sm font-medium">
+                    Yeu cau xoa da duoc ghi nhan
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Tai khoan cua ban se bi xoa sau 30 ngay. Lien he nha hang
+                    de huy yeu cau.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="w-full gap-2"
+                  size="lg"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Yeu cau xoa tai khoan
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Xoa tai khoan</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tai khoan cua ban se duoc xoa sau 30 ngay. Trong thoi gian
+                    nay, ban co the lien he nha hang de huy yeu cau. Sau khi
+                    xoa, toan bo du lieu (don hang, diem thuong, danh gia) se
+                    bi xoa vinh vien va khong the khoi phuc.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Huy</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeletion}
+                    disabled={isDeleting}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    <Trash2 className="h-4 w-4" />
-                    Yeu cau xoa tai khoan
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Xoa tai khoan</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Tai khoan cua ban se duoc xoa sau 30 ngay. Trong thoi gian
-                      nay, ban co the lien he nha hang de huy yeu cau. Sau khi
-                      xoa, toan bo du lieu (don hang, diem thuong, danh gia) se
-                      bi xoa vinh vien va khong the khoi phuc.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Huy</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeletion}
-                      disabled={isDeleting}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    >
-                      {isDeleting ? "Dang xu ly..." : "Xac nhan xoa"}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            )}
-          </>
-        )}
-      </div>
+                    {isDeleting ? "Dang xu ly..." : "Xac nhan xoa"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+      )}
     </div>
   );
 }

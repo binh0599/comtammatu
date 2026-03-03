@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { createSupabaseServer } from "@comtammatu/database";
-import { redirect } from "next/navigation";
 import { getCustomerProfile } from "../actions";
 import { AccountClient } from "./account-client";
 
@@ -15,7 +14,7 @@ export default async function AccountPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    return <AccountClient profile={null} userEmail={null} />;
   }
 
   let profile: Awaited<ReturnType<typeof getCustomerProfile>> | null = null;
