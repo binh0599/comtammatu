@@ -1,6 +1,6 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import { revalidatePath } from "next/cache";
 import {
   VALID_KDS_TRANSITIONS,
@@ -8,44 +8,15 @@ import {
   type KdsTicketStatus,
   ActionError,
   handleServerActionError,
+  getKdsBranchContext,
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
 
-async function getKdsProfile() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, branch_id, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile)
-    throw new ActionError("Ho so khong tim thay", "NOT_FOUND", 404);
-  if (!profile.branch_id)
-    throw new ActionError("Chua duoc gan chi nhanh", "UNAUTHORIZED", 403);
-
-  const role = profile.role as (typeof KDS_ROLES)[number];
-  if (!KDS_ROLES.includes(role)) {
-    throw new ActionError(
-      "Ban khong co quyen truy cap KDS",
-      "UNAUTHORIZED",
-      403,
-    );
-  }
-
-  return { supabase, userId: user.id, profile };
-}
-
 // --- Data fetching (consumed by RSC — throw on error) ---
 
 async function _getStationTickets(stationId: number) {
-  const { supabase, profile } = await getKdsProfile();
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
 
   const { data: tickets, error: ticketsError } = await supabase
     .from("kds_tickets")
@@ -90,17 +61,17 @@ export async function getStationTickets(stationId: number) {
 }
 
 async function _getStationInfo(stationId: number) {
-  const { supabase, profile } = await getKdsProfile();
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
 
   const { data, error } = await supabase
     .from("kds_stations")
     .select("id, name, branch_id, is_active")
     .eq("id", stationId)
-    .eq("branch_id", profile.branch_id!)
+    .eq("branch_id", profile.branch_id)
     .single();
 
   if (error)
-    throw new ActionError("Tram KDS khong ton tai", "NOT_FOUND", 404);
+    throw new ActionError("Trạm KDS không tồn tại", "NOT_FOUND", 404);
   return data;
 }
 
@@ -115,7 +86,7 @@ export async function getStationInfo(stationId: number) {
 }
 
 async function _getTimingRules(stationId: number) {
-  const { supabase } = await getKdsProfile();
+  const { supabase } = await getKdsBranchContext(KDS_ROLES);
 
   const { data, error } = await supabase
     .from("kds_timing_rules")
@@ -142,7 +113,7 @@ async function _bumpTicket(
   ticketId: number,
   newStatus: "preparing" | "ready",
 ) {
-  const { supabase, profile } = await getKdsProfile();
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
 
   // Fetch current ticket — verify it belongs to a station in user's branch
   const { data: ticket, error: fetchError } = await supabase
@@ -152,7 +123,7 @@ async function _bumpTicket(
     .single();
 
   if (fetchError || !ticket) {
-    return { error: "Ticket khong ton tai" };
+    return { error: "Ticket không tồn tại" };
   }
 
   // Verify branch ownership via station
@@ -160,7 +131,7 @@ async function _bumpTicket(
     | { branch_id: number }
     | null;
   if (stationBranchId?.branch_id !== profile.branch_id) {
-    return { error: "Ticket khong thuoc chi nhanh cua ban" };
+    return { error: "Ticket không thuộc chi nhánh của bạn" };
   }
 
   // Validate state machine transition
@@ -168,7 +139,7 @@ async function _bumpTicket(
   const allowed = VALID_KDS_TRANSITIONS[currentStatus];
   if (!allowed?.includes(newStatus as KdsTicketStatus)) {
     return {
-      error: `Khong the chuyen tu "${currentStatus}" sang "${newStatus}"`,
+      error: `Không thể chuyển từ "${currentStatus}" sang "${newStatus}"`,
     };
   }
 

@@ -1,44 +1,23 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import {
   createFeedbackSchema,
   deletionRequestSchema,
-  ActionError,
   handleServerActionError,
+  getCustomerContext,
+  getActionContext,
   safeDbError,
 } from "@comtammatu/shared";
-
-// ---------------------------------------------------------------------------
-// Auth helper — resolves current user + customer record
-// ---------------------------------------------------------------------------
-
-async function getCustomerAuth() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) throw new ActionError("Ban phai dang nhap", "UNAUTHORIZED", 401);
-
-  const { data: customer } = await supabase
-    .from("customers")
-    .select("*")
-    .eq("email", user.email ?? "")
-    .single();
-
-  if (!customer)
-    throw new ActionError("Khach hang khong ton tai", "NOT_FOUND", 404);
-
-  return { supabase, user, customer };
-}
 
 // ---------------------------------------------------------------------------
 // Public: Menu browsing (no auth required)
 // ---------------------------------------------------------------------------
 
 async function _getPublicMenu() {
-  const supabase = await createSupabaseServer();
+  // Use getActionContext just for supabase client — no role check needed for public menu
+  // But public menu doesn't need auth at all, so we use a minimal approach
+  const { supabase } = await getActionContext();
 
   // Single-tenant: resolve tenant from the first branch
   const { data: branch } = await supabase
@@ -47,7 +26,11 @@ async function _getPublicMenu() {
     .limit(1)
     .single();
 
-  const tenantId = branch?.tenant_id ?? 3; // fallback to seeded tenant
+  if (!branch?.tenant_id) {
+    throw new Error("Không tìm thấy thông tin cửa hàng");
+  }
+
+  const tenantId = branch.tenant_id;
 
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
@@ -88,7 +71,7 @@ export async function getPublicMenu() {
 // ---------------------------------------------------------------------------
 
 async function _getCustomerOrders() {
-  const { supabase, customer } = await getCustomerAuth();
+  const { supabase, customer } = await getCustomerContext();
 
   const { data: orders, error } = await supabase
     .from("orders")
@@ -118,7 +101,7 @@ export async function getCustomerOrders() {
 // ---------------------------------------------------------------------------
 
 async function _getCustomerLoyalty() {
-  const { supabase, customer } = await getCustomerAuth();
+  const { supabase, customer } = await getCustomerContext();
 
   // Get loyalty tier info
   let tierName: string | null = null;
@@ -206,7 +189,7 @@ export async function getCustomerLoyalty() {
 // ---------------------------------------------------------------------------
 
 async function _getOrderForFeedback(orderId: number) {
-  const { supabase, customer } = await getCustomerAuth();
+  const { supabase, customer } = await getCustomerContext();
 
   const { data: order, error } = await supabase
     .from("orders")
@@ -218,7 +201,7 @@ async function _getOrderForFeedback(orderId: number) {
     .single();
 
   if (error || !order) {
-    return { error: "Don hang khong ton tai hoac khong thuoc ve ban" };
+    return { error: "Đơn hàng không tồn tại hoặc không thuộc về bạn" };
   }
 
   // Check if already reviewed
@@ -249,12 +232,12 @@ async function _submitFeedback(data: {
   rating: number;
   comment?: string;
 }) {
-  const { supabase, customer } = await getCustomerAuth();
+  const { supabase, customer } = await getCustomerContext();
 
   const parsed = createFeedbackSchema.safeParse(data);
   if (!parsed.success) {
     return {
-      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
     };
   }
 
@@ -267,7 +250,7 @@ async function _submitFeedback(data: {
     .single();
 
   if (!order) {
-    return { error: "Don hang khong ton tai" };
+    return { error: "Đơn hàng không tồn tại" };
   }
 
   // Check if already reviewed
@@ -279,7 +262,7 @@ async function _submitFeedback(data: {
     .limit(1);
 
   if ((existing?.length ?? 0) > 0) {
-    return { error: "Ban da danh gia don hang nay roi" };
+    return { error: "Bạn đã đánh giá đơn hàng này rồi" };
   }
 
   const { error: insertError } = await supabase
@@ -316,7 +299,7 @@ export async function submitFeedback(data: {
 // ---------------------------------------------------------------------------
 
 async function _getCustomerProfile() {
-  const { customer } = await getCustomerAuth();
+  const { customer } = await getCustomerContext();
 
   return {
     fullName: customer.full_name,
@@ -345,7 +328,7 @@ export async function getCustomerProfile() {
 // ---------------------------------------------------------------------------
 
 async function _requestDataExport() {
-  const { supabase, customer } = await getCustomerAuth();
+  const { supabase, customer } = await getCustomerContext();
 
   // Collect all customer data
   const { data: orders } = await supabase
@@ -403,12 +386,12 @@ export async function requestDataExport() {
 // ---------------------------------------------------------------------------
 
 async function _requestDeletion(reason?: string) {
-  const { supabase, customer } = await getCustomerAuth();
+  const { supabase, customer } = await getCustomerContext();
 
   const parsed = deletionRequestSchema.safeParse({ reason });
   if (!parsed.success) {
     return {
-      error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le",
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
     };
   }
 
@@ -421,7 +404,7 @@ async function _requestDeletion(reason?: string) {
     .limit(1);
 
   if ((existing?.length ?? 0) > 0) {
-    return { error: "Ban da co yeu cau xoa dang cho xu ly" };
+    return { error: "Bạn đã có yêu cầu xóa đang chờ xử lý" };
   }
 
   // Schedule deletion 30 days from now

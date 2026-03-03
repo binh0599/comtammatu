@@ -1,8 +1,14 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import { revalidatePath } from "next/cache";
-import { ADMIN_ROLES, safeDbErrorResult } from "@comtammatu/shared";
+import {
+  ADMIN_ROLES,
+  getAdminContext,
+  getBranchesForTenant,
+  verifyEntityOwnership,
+  safeDbErrorResult,
+} from "@comtammatu/shared";
 import { z } from "zod";
 
 const terminalSchema = z.object({
@@ -12,55 +18,8 @@ const terminalSchema = z.object({
   device_fingerprint: z.string().min(1, "Mã thiết bị không được để trống"),
 });
 
-async function getAdminProfile() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, role")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
-
-  const role = profile.role as (typeof ADMIN_ROLES)[number];
-  if (!ADMIN_ROLES.includes(role)) {
-    throw new Error("Not authorized for terminal management");
-  }
-
-  return { supabase, tenantId, userId: user.id };
-}
-
-/**
- * Verify that a terminal belongs to the caller's tenant.
- * Returns the terminal data on success, or an error.
- */
-async function verifyTerminalOwnership(
-  supabase: Awaited<ReturnType<typeof createSupabaseServer>>,
-  terminalId: number,
-  tenantId: number
-) {
-  const { data: terminal, error } = await supabase
-    .from("pos_terminals")
-    .select("id, is_active, branches!inner(tenant_id)")
-    .eq("id", terminalId)
-    .eq("branches.tenant_id", tenantId)
-    .single();
-
-  if (error || !terminal) {
-    return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
-  }
-
-  return { terminal, error: null };
-}
-
 export async function getTerminals() {
-  const { supabase, tenantId } = await getAdminProfile();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
     .from("pos_terminals")
@@ -73,20 +32,12 @@ export async function getTerminals() {
 }
 
 export async function getBranches() {
-  const { supabase, tenantId } = await getAdminProfile();
-
-  const { data, error } = await supabase
-    .from("branches")
-    .select("id, name")
-    .eq("tenant_id", tenantId)
-    .order("name");
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  return getBranchesForTenant(supabase, tenantId);
 }
 
 export async function createTerminal(formData: FormData) {
-  const { supabase, tenantId, userId } = await getAdminProfile();
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const parsed = terminalSchema.safeParse({
     name: formData.get("name"),
@@ -132,10 +83,9 @@ export async function createTerminal(formData: FormData) {
 }
 
 export async function approveTerminal(id: number) {
-  const { supabase, tenantId, userId } = await getAdminProfile();
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
-  // Verify terminal belongs to caller's tenant
-  const ownership = await verifyTerminalOwnership(supabase, id, tenantId);
+  const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
   // Check if already approved — idempotent guard
@@ -164,10 +114,9 @@ export async function approveTerminal(id: number) {
 }
 
 export async function toggleTerminal(id: number) {
-  const { supabase, tenantId } = await getAdminProfile();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  // Verify terminal belongs to caller's tenant
-  const ownership = await verifyTerminalOwnership(supabase, id, tenantId);
+  const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
   const { data: terminal, error: fetchError } = await supabase
@@ -190,10 +139,9 @@ export async function toggleTerminal(id: number) {
 }
 
 export async function deleteTerminal(id: number) {
-  const { supabase, tenantId } = await getAdminProfile();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  // Verify terminal belongs to caller's tenant
-  const ownership = await verifyTerminalOwnership(supabase, id, tenantId);
+  const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
   const { error } = await supabase
