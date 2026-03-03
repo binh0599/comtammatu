@@ -24,11 +24,16 @@ type LimiterLike = {
   limit(identifier: string): Promise<RateLimitResult>;
 };
 
+let _upstashConfigured: boolean | null = null;
+
 function isUpstashConfigured(): boolean {
-  return !!(
-    process.env.UPSTASH_REDIS_REST_URL &&
-    process.env.UPSTASH_REDIS_REST_TOKEN
-  );
+  if (_upstashConfigured === null) {
+    _upstashConfigured = !!(
+      process.env.UPSTASH_REDIS_REST_URL &&
+      process.env.UPSTASH_REDIS_REST_TOKEN
+    );
+  }
+  return _upstashConfigured;
 }
 
 function createRedis(): Redis {

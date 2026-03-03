@@ -32,7 +32,11 @@ export async function auditLog(
       action: entry.action,
       resource_type: entry.resource_type,
       resource_id: String(entry.resource_id),
-      changes: entry.changes ? JSON.stringify(entry.changes) : null,
+      changes: entry.changes
+        ? JSON.stringify(entry.changes, (_key, value) =>
+            typeof value === "bigint" ? value.toString() : value,
+          )
+        : null,
       ip_address: entry.ip_address ?? null,
     });
   } catch (error) {
