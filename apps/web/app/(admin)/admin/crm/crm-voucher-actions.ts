@@ -3,6 +3,7 @@
 import "@/lib/server-bootstrap";
 import {
   getActionContext,
+  getBranchIdsForTenant,
   withServerAction,
   withServerQuery,
   createVoucherSchema,
@@ -71,6 +72,14 @@ async function _createVoucher(data: {
   }
 
   if (parsed.data.branch_ids && parsed.data.branch_ids.length > 0) {
+    // Validate branch_ids belong to this tenant
+    const tenantBranchIds = await getBranchIdsForTenant(supabase, tenantId);
+    const invalidBranches = parsed.data.branch_ids.filter((id) => !tenantBranchIds.includes(id));
+    if (invalidBranches.length > 0) {
+      await supabase.from("vouchers").delete().eq("id", voucher.id);
+      return { error: "Chi nhánh không hợp lệ hoặc không thuộc đơn vị của bạn" };
+    }
+
     const branchRows = parsed.data.branch_ids.map((branchId) => ({
       voucher_id: voucher.id,
       branch_id: branchId,
@@ -137,9 +146,25 @@ async function _updateVoucher(
   }
 
   if (branch_ids !== undefined) {
+    // Verify voucher belongs to this tenant before modifying voucher_branches
+    const { data: owned } = await supabase
+      .from("vouchers")
+      .select("id")
+      .eq("id", id)
+      .eq("tenant_id", tenantId)
+      .single();
+    if (!owned) return { error: "Voucher không tồn tại hoặc không thuộc đơn vị của bạn" };
+
     await supabase.from("voucher_branches").delete().eq("voucher_id", id);
 
     if (branch_ids.length > 0) {
+      // Validate branch_ids belong to this tenant
+      const tenantBranchIds = await getBranchIdsForTenant(supabase, tenantId);
+      const invalidBranches = branch_ids.filter((bid) => !tenantBranchIds.includes(bid));
+      if (invalidBranches.length > 0) {
+        return { error: "Chi nhánh không hợp lệ hoặc không thuộc đơn vị của bạn" };
+      }
+
       const branchRows = branch_ids.map((branchId) => ({
         voucher_id: id,
         branch_id: branchId,
@@ -161,6 +186,15 @@ export const updateVoucher = withServerAction(_updateVoucher);
 
 async function _deleteVoucher(id: number) {
   const { supabase, tenantId } = await getActionContext();
+
+  // Verify voucher belongs to this tenant before deleting related data
+  const { data: owned } = await supabase
+    .from("vouchers")
+    .select("id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+  if (!owned) return { error: "Voucher không tồn tại hoặc không thuộc đơn vị của bạn" };
 
   await supabase.from("voucher_branches").delete().eq("voucher_id", id);
 

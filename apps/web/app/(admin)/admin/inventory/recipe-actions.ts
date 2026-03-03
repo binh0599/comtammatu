@@ -68,7 +68,27 @@ async function _createRecipe(data: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase } = await getActionContext();
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify menu_item_id belongs to this tenant
+  const { data: menuItem } = await supabase
+    .from("menu_items")
+    .select("id")
+    .eq("id", parsed.data.menu_item_id)
+    .eq("tenant_id", tenantId)
+    .single();
+  if (!menuItem) return { error: "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn" };
+
+  // Verify all ingredient_ids belong to this tenant
+  const inputIngredientIds = parsed.data.ingredients.map((i) => i.ingredient_id);
+  const { data: validIngredients } = await supabase
+    .from("ingredients")
+    .select("id")
+    .eq("tenant_id", tenantId)
+    .in("id", inputIngredientIds);
+  if (!validIngredients || validIngredients.length !== inputIngredientIds.length) {
+    return { error: "Nguyên liệu không hợp lệ hoặc không thuộc đơn vị của bạn" };
+  }
 
   const { data: recipe, error: recipeError } = await supabase
     .from("recipes")
@@ -135,7 +155,16 @@ async function _createRecipe(data: {
 export const createRecipe = withServerAction(_createRecipe);
 
 async function _deleteRecipe(id: number) {
-  const { supabase } = await getActionContext();
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify recipe belongs to this tenant via menu_items
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("id, menu_items!inner(tenant_id)")
+    .eq("id", id)
+    .eq("menu_items.tenant_id", tenantId)
+    .single();
+  if (!recipe) return { error: "Công thức không tồn tại hoặc không thuộc đơn vị của bạn" };
 
   await supabase.from("recipe_ingredients").delete().eq("recipe_id", id);
   const { error } = await supabase.from("recipes").delete().eq("id", id);

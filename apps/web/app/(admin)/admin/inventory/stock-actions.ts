@@ -3,6 +3,7 @@
 import "@/lib/server-bootstrap";
 import {
   getActionContext,
+  getBranchIdsForTenant,
   withServerAction,
   withServerQuery,
   createStockMovementSchema,
@@ -31,7 +32,22 @@ async function _initStockLevel(data: {
   branch_id: number;
   quantity: number;
 }) {
-  const { supabase } = await getActionContext();
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify ingredient belongs to this tenant
+  const { data: ingredient } = await supabase
+    .from("ingredients")
+    .select("id")
+    .eq("id", data.ingredient_id)
+    .eq("tenant_id", tenantId)
+    .single();
+  if (!ingredient) return { error: "Nguyên liệu không thuộc đơn vị của bạn" };
+
+  // Verify branch belongs to this tenant
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (!branchIds.includes(data.branch_id)) {
+    return { error: "Chi nhánh không thuộc đơn vị của bạn" };
+  }
 
   const { error } = await supabase.from("stock_levels").insert({
     ingredient_id: data.ingredient_id,
@@ -81,7 +97,22 @@ async function _createStockMovement(data: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, userId } = await getActionContext();
+  const { supabase, userId, tenantId } = await getActionContext();
+
+  // Verify ingredient belongs to this tenant
+  const { data: ingredient } = await supabase
+    .from("ingredients")
+    .select("id")
+    .eq("id", parsed.data.ingredient_id)
+    .eq("tenant_id", tenantId)
+    .single();
+  if (!ingredient) return { error: "Nguyên liệu không thuộc đơn vị của bạn" };
+
+  // Verify branch belongs to this tenant
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (!branchIds.includes(parsed.data.branch_id)) {
+    return { error: "Chi nhánh không thuộc đơn vị của bạn" };
+  }
 
   const { error: movError } = await supabase.from("stock_movements").insert({
     ingredient_id: parsed.data.ingredient_id,

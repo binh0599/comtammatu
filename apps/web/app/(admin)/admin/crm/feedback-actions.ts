@@ -3,6 +3,7 @@
 import "@/lib/server-bootstrap";
 import {
   getActionContext,
+  getBranchIdsForTenant,
   withServerAction,
   withServerQuery,
   respondFeedbackSchema,
@@ -33,7 +34,11 @@ async function _respondToFeedback(id: number, input: { response: string }) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, userId } = await getActionContext();
+  const { supabase, userId, tenantId } = await getActionContext();
+
+  // Scope feedback update to branches owned by this tenant
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return { error: "Không tìm thấy chi nhánh" };
 
   const { error } = await supabase
     .from("customer_feedback")
@@ -41,7 +46,8 @@ async function _respondToFeedback(id: number, input: { response: string }) {
       response: parsed.data.response,
       responded_by: userId,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .in("branch_id", branchIds);
 
   if (error) return safeDbErrorResult(error, "db");
 

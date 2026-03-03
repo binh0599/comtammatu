@@ -152,7 +152,8 @@ async function _receivePurchaseOrder(input: {
     const { error: itemError } = await supabase
       .from("purchase_order_items")
       .update({ received_qty: item.received_qty })
-      .eq("id", item.po_item_id);
+      .eq("id", item.po_item_id)
+      .eq("po_id", parsed.data.po_id);
 
     if (itemError) return { error: itemError.message };
   }
@@ -169,6 +170,7 @@ async function _receivePurchaseOrder(input: {
   const { data: poItems, error: poItemsError } = await supabase
     .from("purchase_order_items")
     .select("id, ingredient_id")
+    .eq("po_id", parsed.data.po_id)
     .in("id", poItemIds);
 
   if (poItemsError) return { error: poItemsError.message };

@@ -6,7 +6,6 @@ import {
   deletionRequestSchema,
   handleServerActionError,
   getCustomerContext,
-  getActionContext,
   safeDbError,
 } from "@comtammatu/shared";
 
@@ -15,9 +14,9 @@ import {
 // ---------------------------------------------------------------------------
 
 async function _getPublicMenu() {
-  // Use getActionContext just for supabase client — no role check needed for public menu
-  // But public menu doesn't need auth at all, so we use a minimal approach
-  const { supabase } = await getActionContext();
+  // Public menu — no auth required, use Supabase client directly
+  const { createSupabaseServer } = await import("@comtammatu/database");
+  const supabase = await createSupabaseServer();
 
   // Single-tenant: resolve tenant from the first branch
   const { data: branch } = await supabase

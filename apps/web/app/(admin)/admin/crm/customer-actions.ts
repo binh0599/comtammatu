@@ -166,7 +166,16 @@ async function _toggleCustomerActive(id: number) {
 export const toggleCustomerActive = withServerAction(_toggleCustomerActive);
 
 async function _getCustomerLoyaltyHistory(customerId: number) {
-  const { supabase } = await getActionContext();
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify customer belongs to this tenant
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("id")
+    .eq("id", customerId)
+    .eq("tenant_id", tenantId)
+    .single();
+  if (!customer) return { error: "Khách hàng không tồn tại hoặc không thuộc đơn vị của bạn" };
 
   const { data, error } = await supabase
     .from("loyalty_transactions")
@@ -193,7 +202,16 @@ async function _adjustLoyaltyPoints(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase } = await getActionContext();
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify customer belongs to this tenant
+  const { data: customer } = await supabase
+    .from("customers")
+    .select("id")
+    .eq("id", parsed.data.customer_id)
+    .eq("tenant_id", tenantId)
+    .single();
+  if (!customer) return { error: "Khách hàng không tồn tại hoặc không thuộc đơn vị của bạn" };
 
   const { data: latest } = await supabase
     .from("loyalty_transactions")
