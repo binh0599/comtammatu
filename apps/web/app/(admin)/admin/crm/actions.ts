@@ -56,12 +56,13 @@ async function _getCrmStats(): Promise<CrmStats> {
       .eq("is_active", true),
     supabase
       .from("customer_feedback")
-      .select("rating")
+      .select("rating, branches!inner(tenant_id)")
       .eq("branches.tenant_id", tenantId),
     supabase
       .from("customer_feedback")
-      .select("id", { count: "exact", head: true })
-      .is("response", null),
+      .select("id, branches!inner(tenant_id)", { count: "exact", head: true })
+      .is("response", null)
+      .eq("branches.tenant_id", tenantId),
   ]);
 
   const ratings = feedbackResult.data ?? [];
