@@ -2,21 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TableGrid } from "./table-selector";
+import { Button } from "@/components/ui/button";
 import { MenuSelector, type CartItem } from "./menu-selector";
 import { OrderCart } from "./order-cart";
 import { createOrder, confirmOrder } from "../../orders/actions";
-
-interface TableItem {
-  id: number;
-  number: number;
-  capacity: number | null;
-  status: string;
-  zone_id: number;
-  branch_zones: { name: string } | null;
-}
 
 interface MenuItem {
   id: number;
@@ -28,13 +20,13 @@ interface MenuItem {
   category_id: number;
   menu_categories: { id: number; name: string; menu_id: number } | null;
   menu_item_variants:
-    | {
-        id: number;
-        name: string;
-        price_adjustment: number;
-        is_available: boolean;
-      }[]
-    | null;
+  | {
+    id: number;
+    name: string;
+    price_adjustment: number;
+    is_available: boolean;
+  }[]
+  | null;
 }
 
 interface Category {
@@ -44,20 +36,18 @@ interface Category {
 }
 
 export function NewOrderClient({
-  tables,
   menuItems,
   categories,
   terminalId,
+  tableId,
 }: {
-  tables: TableItem[];
   menuItems: MenuItem[];
   categories: Category[];
   terminalId: number;
+  tableId: number | null;
 }) {
   const router = useRouter();
-  const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeTab, setActiveTab] = useState("table");
 
   const handleAddItem = useCallback((item: CartItem) => {
     setCart((prev) => {
@@ -117,8 +107,8 @@ export function NewOrderClient({
     }
 
     const result = await createOrder({
-      table_id: selectedTableId,
-      type: selectedTableId ? "dine_in" : "takeaway",
+      table_id: tableId,
+      type: tableId ? "dine_in" : "takeaway",
       terminal_id: terminalId,
       items: cart.map((item) => ({
         menu_item_id: item.menu_item_id,
@@ -151,56 +141,34 @@ export function NewOrderClient({
 
   return (
     <div className="p-4">
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="w-full">
-          <TabsTrigger value="table" className="flex-1">
-            1. Chọn bàn
-          </TabsTrigger>
-          <TabsTrigger value="menu" className="flex-1">
-            2. Chọn món
-          </TabsTrigger>
-        </TabsList>
+      {/* Header */}
+      <div className="mb-4 flex items-center gap-3">
+        <Link href="/pos">
+          <Button variant="ghost" size="icon" aria-label="Quay lại sơ đồ bàn">
+            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-xl font-bold">
+            {tableId ? `Tạo đơn — Bàn` : "Tạo đơn — Mang về"}
+          </h1>
+          <p className="text-muted-foreground text-sm">Chọn món để thêm vào đơn</p>
+        </div>
+      </div>
 
-        <TabsContent value="table" className="mt-4">
-          <TableGrid
-            tables={tables}
-            selectedId={selectedTableId}
-            onSelect={(id) => {
-              setSelectedTableId(
-                selectedTableId === id ? null : id
-              );
-            }}
-          />
-          <div className="mt-4 flex gap-2">
-            <p className="text-muted-foreground flex-1 text-sm">
-              {selectedTableId
-                ? `Bàn ${tables.find((t) => t.id === selectedTableId)?.number ?? ""} đã chọn`
-                : "Bỏ qua để tạo đơn mang đi"}
-            </p>
-            <button
-              type="button"
-              className="text-primary text-sm font-medium underline"
-              onClick={() => setActiveTab("menu")}
-            >
-              Tiếp tục →
-            </button>
-          </div>
-        </TabsContent>
+      {/* Menu */}
+      <MenuSelector
+        menuItems={menuItems}
+        categories={categories}
+        cart={cart}
+        onAddItem={handleAddItem}
+        onRemoveItem={handleRemoveItem}
+      />
 
-        <TabsContent value="menu" className="mt-4">
-          <MenuSelector
-            menuItems={menuItems}
-            categories={categories}
-            cart={cart}
-            onAddItem={handleAddItem}
-            onRemoveItem={handleRemoveItem}
-          />
-        </TabsContent>
-      </Tabs>
-
+      {/* Cart drawer */}
       <OrderCart
         cart={cart}
-        tableId={selectedTableId}
+        tableId={tableId}
         onAddItem={handleAddItem}
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}

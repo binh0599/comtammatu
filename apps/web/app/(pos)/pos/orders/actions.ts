@@ -632,6 +632,81 @@ async function _getTables() {
 export const getTables = withServerQuery(_getTables);
 
 // ---------------------------------------------------------------------------
+// getTablesWithActiveOrders
+// ---------------------------------------------------------------------------
+
+async function _getTablesWithActiveOrders() {
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
+
+  // 1. Fetch all tables
+  const { data: tables, error: tablesError } = await supabase
+    .from("tables")
+    .select("*, branch_zones(name)")
+    .eq("branch_id", branchId)
+    .order("number");
+
+  if (tablesError) throw safeDbError(tablesError, "db");
+  if (!tables || tables.length === 0) return [];
+
+  // 2. Fetch active orders for this branch (not completed/cancelled)
+  const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
+  const { data: activeOrders, error: ordersError } = await supabase
+    .from("orders")
+    .select(
+      "id, order_number, status, total, table_id, order_items(id, quantity)"
+    )
+    .eq("branch_id", branchId)
+    .in("status", activeStatuses)
+    .not("table_id", "is", null);
+
+  if (ordersError) throw safeDbError(ordersError, "db");
+
+  // 3. Map orders by table_id
+  const orderByTable = new Map<
+    number,
+    {
+      id: number;
+      order_number: string;
+      status: string;
+      total: number;
+      item_count: number;
+    }
+  >();
+
+  if (activeOrders) {
+    for (const order of activeOrders) {
+      if (order.table_id) {
+        const itemCount = Array.isArray(order.order_items)
+          ? order.order_items.reduce(
+            (sum: number, i: { quantity: number }) => sum + i.quantity,
+            0
+          )
+          : 0;
+        orderByTable.set(order.table_id, {
+          id: order.id,
+          order_number: order.order_number,
+          status: order.status,
+          total: order.total,
+          item_count: itemCount,
+        });
+      }
+    }
+  }
+
+  // 4. Merge
+  return tables.map((table: { id: number;[key: string]: unknown }) => ({
+    ...table,
+    active_order: orderByTable.get(table.id) ?? null,
+  }));
+}
+
+export const getTablesWithActiveOrders = withServerQuery(
+  _getTablesWithActiveOrders
+);
+
+// ---------------------------------------------------------------------------
 // getMenuItems (data-fetching — throws on error for RSC error boundaries)
 // ---------------------------------------------------------------------------
 

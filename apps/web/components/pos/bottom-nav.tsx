@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutGrid,
-  PlusCircle,
   ClipboardList,
   User,
   LogOut,
@@ -15,7 +14,6 @@ import { NotificationBell } from "@/components/pos/notification-bell";
 
 const navItems = [
   { href: "/pos", icon: LayoutGrid, label: "Bàn" },
-  { href: "/pos/order/new", icon: PlusCircle, label: "Tạo đơn" },
   { href: "/pos/orders", icon: ClipboardList, label: "Đơn hàng" },
   { href: "/pos/session", icon: User, label: "Ca làm" },
 ];

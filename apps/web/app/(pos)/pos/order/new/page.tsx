@@ -1,14 +1,18 @@
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import {
-  getTables,
   getMenuItems,
   getMenuCategories,
 } from "../../orders/actions";
 import { NewOrderClient } from "./new-order-client";
 
-export default async function NewOrderPage() {
-  // Fetch user's terminal (use first mobile_order terminal in their branch)
+export default async function NewOrderPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ table?: string }>;
+}) {
+  const { table } = await searchParams;
+
   const supabase = await createSupabaseServer();
   const {
     data: { user },
@@ -35,7 +39,6 @@ export default async function NewOrderPage() {
     .limit(1)
     .maybeSingle();
 
-  // Fallback to any active terminal
   const terminalId = terminal?.id;
 
   if (!terminalId) {
@@ -54,18 +57,19 @@ export default async function NewOrderPage() {
     );
   }
 
-  const [tables, menuItems, categories] = await Promise.all([
-    getTables(),
+  const tableId = table ? Number(table) : null;
+
+  const [menuItems, categories] = await Promise.all([
     getMenuItems(),
     getMenuCategories(),
   ]);
 
   return (
     <NewOrderClient
-      tables={tables}
       menuItems={menuItems}
       categories={categories}
       terminalId={terminalId}
+      tableId={tableId}
     />
   );
 }
