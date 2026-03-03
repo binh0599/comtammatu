@@ -28,7 +28,7 @@ async function _getStationTickets(stationId: number) {
   if (ticketsError) throw safeDbError(ticketsError, "db");
   if (!tickets || tickets.length === 0) return [];
 
-  const orderIds = [...new Set(tickets.map(t => t.order_id))];
+  const orderIds = [...new Set(tickets.map((t: { order_id: number }) => t.order_id))] as number[];
 
   if (orderIds.length > 0) {
     const { batchFetch } = await import("@comtammatu/database");

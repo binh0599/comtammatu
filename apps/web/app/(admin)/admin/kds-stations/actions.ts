@@ -63,7 +63,7 @@ async function _getBranchesAndCategories() {
 
   return {
     branches: branchesResult.data ?? [],
-    categories: (categoriesResult.data ?? []).map(({ id, name, menu_id }) => ({
+    categories: (categoriesResult.data ?? []).map(({ id, name, menu_id }: { id: number; name: string; menu_id: number }) => ({
       id,
       name,
       menu_id,

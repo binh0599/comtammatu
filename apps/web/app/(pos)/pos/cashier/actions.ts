@@ -1,6 +1,5 @@
-"use server";
-
 // Barrel re-export — cashier actions split into domain sub-modules.
+// Each sub-module has its own "use server" directive.
 // Consumers can continue importing from "./actions" without changes.
 
 export { processPayment } from "./payment-actions";

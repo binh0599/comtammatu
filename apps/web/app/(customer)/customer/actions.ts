@@ -136,7 +136,7 @@ async function _getCustomerLoyalty() {
     .eq("customer_id", customer.id);
 
   const currentPoints = (allTransactions ?? []).reduce(
-    (sum, row) => sum + (row.points ?? 0),
+    (sum: number, row: { points: number | null }) => sum + (row.points ?? 0),
     0,
   );
 

@@ -37,7 +37,7 @@ export async function requireLayoutAuth<
     redirect("/login");
   }
 
-  const role = (profile as Record<string, unknown>).role as string;
+  const role = (profile as unknown as Record<string, unknown>).role as string;
 
   if (!allowedRoles.includes(role)) {
     redirect("/login");
@@ -45,6 +45,6 @@ export async function requireLayoutAuth<
 
   return {
     user: { id: user.id, email: user.email ?? undefined },
-    profile: profile as T & { role: string },
+    profile: profile as unknown as T & { role: string },
   };
 }
