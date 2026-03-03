@@ -6,6 +6,7 @@ import {
   withServerAction,
   withServerQuery,
   createLoyaltyTierSchema,
+  entityIdSchema,
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
@@ -65,6 +66,7 @@ async function _createLoyaltyTier(formData: FormData) {
 export const createLoyaltyTier = withServerAction(_createLoyaltyTier);
 
 async function _updateLoyaltyTier(id: number, formData: FormData) {
+  entityIdSchema.parse(id);
   const parsed = createLoyaltyTierSchema.safeParse({
     name: formData.get("name"),
     min_points: formData.get("min_points"),
@@ -79,7 +81,7 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
 
   const { supabase, tenantId } = await getActionContext();
 
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("loyalty_tiers")
     .update({
       name: parsed.data.name,
@@ -89,9 +91,12 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
       sort_order: parsed.data.sort_order ?? null,
     })
     .eq("id", id)
-    .eq("tenant_id", tenantId);
+    .eq("tenant_id", tenantId)
+    .select("id")
+    .maybeSingle();
 
   if (error) return safeDbErrorResult(error, "db");
+  if (!updated) return { error: "Hạng không tồn tại hoặc không thuộc đơn vị của bạn" };
 
   revalidatePath("/admin/crm");
   return { error: null, success: true };
@@ -100,12 +105,14 @@ async function _updateLoyaltyTier(id: number, formData: FormData) {
 export const updateLoyaltyTier = withServerAction(_updateLoyaltyTier);
 
 async function _deleteLoyaltyTier(id: number) {
+  entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
   const { count, error: countError } = await supabase
     .from("customers")
     .select("id", { count: "exact", head: true })
-    .eq("loyalty_tier_id", id);
+    .eq("loyalty_tier_id", id)
+    .eq("tenant_id", tenantId);
 
   if (countError) return { error: countError.message };
 

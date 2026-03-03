@@ -240,11 +240,12 @@ export const getMenuItems = withServerQuery(_getMenuItems);
 async function _getMenuCategories() {
   const ctx = await getActionContext();
   requireBranch(ctx);
-  const { supabase } = ctx;
+  const { supabase, tenantId } = ctx;
 
   const { data, error } = await supabase
     .from("menu_categories")
-    .select("id, name, menu_id")
+    .select("id, name, menu_id, menus!inner(tenant_id)")
+    .eq("menus.tenant_id", tenantId)
     .order("sort_order");
 
   if (error) {

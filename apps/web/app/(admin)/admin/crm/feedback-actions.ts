@@ -7,6 +7,7 @@ import {
   withServerAction,
   withServerQuery,
   respondFeedbackSchema,
+  entityIdSchema,
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
@@ -28,6 +29,7 @@ async function _getFeedback() {
 export const getFeedback = withServerQuery(_getFeedback);
 
 async function _respondToFeedback(id: number, input: { response: string }) {
+  entityIdSchema.parse(id);
   const parsed = respondFeedbackSchema.safeParse(input);
 
   if (!parsed.success) {

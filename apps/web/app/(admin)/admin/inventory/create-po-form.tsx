@@ -98,9 +98,9 @@ export function CreatePoForm({
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label>Nha cung cap *</Label>
+            <Label htmlFor="po-supplier">Nha cung cap *</Label>
             <Select value={supplierId} onValueChange={setSupplierId}>
-              <SelectTrigger>
+              <SelectTrigger id="po-supplier">
                 <SelectValue placeholder="Chon nha cung cap" />
               </SelectTrigger>
               <SelectContent>
@@ -113,9 +113,9 @@ export function CreatePoForm({
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label>Chi nhanh *</Label>
+            <Label htmlFor="po-branch">Chi nhanh *</Label>
             <Select value={branchId} onValueChange={setBranchId}>
-              <SelectTrigger>
+              <SelectTrigger id="po-branch">
                 <SelectValue placeholder="Chon chi nhanh" />
               </SelectTrigger>
               <SelectContent>
@@ -222,6 +222,7 @@ export function CreatePoForm({
                         size="icon"
                         onClick={() => removeRow(index)}
                         disabled={items.length <= 1}
+                        aria-label="Xóa dòng"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

@@ -4,6 +4,7 @@ import "@/lib/server-bootstrap";
 import {
   createFeedbackSchema,
   deletionRequestSchema,
+  entityIdSchema,
   handleServerActionError,
   getCustomerContext,
   safeDbError,
@@ -188,6 +189,7 @@ export async function getCustomerLoyalty() {
 // ---------------------------------------------------------------------------
 
 async function _getOrderForFeedback(orderId: number) {
+  entityIdSchema.parse(orderId);
   const { supabase, customer } = await getCustomerContext();
 
   const { data: order, error } = await supabase
@@ -240,10 +242,10 @@ async function _submitFeedback(data: {
     };
   }
 
-  // Verify order belongs to customer
+  // Verify order belongs to customer and derive branch_id from server
   const { data: order } = await supabase
     .from("orders")
-    .select("id")
+    .select("id, branch_id")
     .eq("id", parsed.data.order_id ?? 0)
     .eq("customer_id", customer.id)
     .single();
@@ -269,7 +271,7 @@ async function _submitFeedback(data: {
     .insert({
       customer_id: customer.id,
       order_id: parsed.data.order_id ?? null,
-      branch_id: parsed.data.branch_id,
+      branch_id: order.branch_id,
       rating: parsed.data.rating,
       comment: parsed.data.comment || null,
     });

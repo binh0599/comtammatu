@@ -7,6 +7,7 @@ import {
   withServerAction,
   withServerQuery,
   createVoucherSchema,
+  entityIdSchema,
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
@@ -102,8 +103,7 @@ async function _createVoucher(data: {
 export const createVoucher = withServerAction(_createVoucher);
 
 async function _updateVoucher(
-  id: number,
-  data: {
+  id: number, data: {
     code?: string;
     type?: string;
     value?: number;
@@ -116,6 +116,7 @@ async function _updateVoucher(
     branch_ids?: number[];
   }
 ) {
+  entityIdSchema.parse(id);
   const { branch_ids, ...voucherData } = data;
 
   const { supabase, tenantId } = await getActionContext();
@@ -185,6 +186,7 @@ async function _updateVoucher(
 export const updateVoucher = withServerAction(_updateVoucher);
 
 async function _deleteVoucher(id: number) {
+  entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
   // Verify voucher belongs to this tenant before deleting related data
@@ -213,6 +215,7 @@ async function _deleteVoucher(id: number) {
 export const deleteVoucher = withServerAction(_deleteVoucher);
 
 async function _toggleVoucher(id: number) {
+  entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
   const { data: voucher, error: fetchError } = await supabase

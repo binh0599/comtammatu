@@ -118,6 +118,18 @@ async function _createKdsStation(formData: FormData) {
     .filter((id) => !isNaN(id) && id > 0);
 
   if (categoryIdArray.length > 0) {
+    // Validate all category IDs belong to this tenant
+    const { data: validCats } = await supabase
+      .from("menu_categories")
+      .select("id, menus!inner(tenant_id)")
+      .in("id", categoryIdArray)
+      .eq("menus.tenant_id", tenantId);
+
+    if (!validCats || validCats.length !== categoryIdArray.length) {
+      await supabase.from("kds_stations").delete().eq("id", station.id);
+      return { error: "Một số danh mục không hợp lệ hoặc không thuộc đơn vị của bạn" };
+    }
+
     const junctionRows = categoryIdArray.map((category_id) => ({
       station_id: station.id,
       category_id,
@@ -175,6 +187,17 @@ async function _updateKdsStation(id: number, formData: FormData) {
     .filter((cid) => !isNaN(cid) && cid > 0);
 
   if (categoryIdArray.length > 0) {
+    // Validate all category IDs belong to this tenant
+    const { data: validCats } = await supabase
+      .from("menu_categories")
+      .select("id, menus!inner(tenant_id)")
+      .in("id", categoryIdArray)
+      .eq("menus.tenant_id", tenantId);
+
+    if (!validCats || validCats.length !== categoryIdArray.length) {
+      return { error: "Một số danh mục không hợp lệ hoặc không thuộc đơn vị của bạn" };
+    }
+
     const junctionRows = categoryIdArray.map((category_id) => ({
       station_id: id,
       category_id,

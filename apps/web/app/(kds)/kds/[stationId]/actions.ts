@@ -18,6 +18,18 @@ import {
 async function _getStationTickets(stationId: number) {
   const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
 
+  // Verify station belongs to user's branch
+  const { data: stationCheck } = await supabase
+    .from("kds_stations")
+    .select("id")
+    .eq("id", stationId)
+    .eq("branch_id", profile.branch_id)
+    .single();
+
+  if (!stationCheck) {
+    throw new ActionError("Trạm KDS không thuộc chi nhánh của bạn", "UNAUTHORIZED", 403);
+  }
+
   const { data: tickets, error: ticketsError } = await supabase
     .from("kds_tickets")
     .select("id, order_id, station_id, items, status, priority, created_at, color_code, accepted_at, completed_at")
@@ -86,7 +98,19 @@ export async function getStationInfo(stationId: number) {
 }
 
 async function _getTimingRules(stationId: number) {
-  const { supabase } = await getKdsBranchContext(KDS_ROLES);
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
+
+  // Verify station belongs to user's branch
+  const { data: stationCheck } = await supabase
+    .from("kds_stations")
+    .select("id")
+    .eq("id", stationId)
+    .eq("branch_id", profile.branch_id)
+    .single();
+
+  if (!stationCheck) {
+    throw new ActionError("Trạm KDS không thuộc chi nhánh của bạn", "UNAUTHORIZED", 403);
+  }
 
   const { data, error } = await supabase
     .from("kds_timing_rules")

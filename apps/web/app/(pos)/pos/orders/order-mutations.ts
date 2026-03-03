@@ -255,12 +255,13 @@ async function _createOrder(data: {
     throw safeDbError(itemsError, "db");
   }
 
-  // Update table status to occupied if dine-in
+  // Update table status to occupied if dine-in (scoped to branch)
   if (table_id && type === "dine_in") {
     await supabase
       .from("tables")
       .update({ status: "occupied" })
-      .eq("id", table_id);
+      .eq("id", table_id)
+      .eq("branch_id", branchId);
   }
 
   revalidatePath("/pos/orders");
@@ -351,7 +352,8 @@ async function _updateOrderStatus(data: {
     await supabase
       .from("tables")
       .update({ status: "available" })
-      .eq("id", order.table_id);
+      .eq("id", order.table_id)
+      .eq("branch_id", branchId);
   }
 
   // Broadcast realtime notification to all POS/KDS clients in this branch
@@ -465,11 +467,15 @@ async function _addOrderItems(data: {
   if (variantIds.length > 0) {
     const { data: variants } = await supabase
       .from("menu_item_variants")
-      .select("id, price_adjustment")
-      .in("id", variantIds);
+      .select("id, price_adjustment, is_available, menu_items!inner(tenant_id)")
+      .in("id", variantIds)
+      .eq("menu_items.tenant_id", tenantId);
 
     if (variants) {
       for (const v of variants) {
+        if (!(v as unknown as { is_available: boolean }).is_available) {
+          throw new ActionError("Một số biến thể đã hết hàng", "CONFLICT", 409);
+        }
         variantPriceMap.set(v.id, v.price_adjustment);
       }
     }

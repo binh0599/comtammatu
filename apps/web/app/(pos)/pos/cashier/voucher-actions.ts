@@ -24,7 +24,7 @@ async function _validateVoucher(data: {
   subtotal: number;
 }) {
   const ctx = await getActionContext();
-  requireBranch(ctx);
+  const serverBranchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
   const { supabase, tenantId } = ctx;
 
@@ -71,7 +71,7 @@ async function _validateVoucher(data: {
 
   if (voucherBranches && voucherBranches.length > 0) {
     const branchIds = voucherBranches.map((vb: { branch_id: number }) => vb.branch_id);
-    if (!branchIds.includes(parsed.data.branch_id)) {
+    if (!branchIds.includes(serverBranchId)) {
       return { error: "Voucher không áp dụng cho chi nhánh này" };
     }
   }

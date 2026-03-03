@@ -8,6 +8,7 @@ import {
   createCustomerSchema,
   updateCustomerSchema,
   adjustLoyaltyPointsSchema,
+  entityIdSchema,
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
@@ -93,6 +94,7 @@ async function _createCustomer(formData: FormData) {
 export const createCustomer = withServerAction(_createCustomer);
 
 async function _updateCustomer(id: number, formData: FormData) {
+  entityIdSchema.parse(id);
   const parsed = updateCustomerSchema.safeParse({
     full_name: formData.get("full_name"),
     phone: formData.get("phone"),
@@ -139,6 +141,7 @@ async function _updateCustomer(id: number, formData: FormData) {
 export const updateCustomer = withServerAction(_updateCustomer);
 
 async function _toggleCustomerActive(id: number) {
+  entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
   const { data: customer, error: fetchError } = await supabase
@@ -166,6 +169,7 @@ async function _toggleCustomerActive(id: number) {
 export const toggleCustomerActive = withServerAction(_toggleCustomerActive);
 
 async function _getCustomerLoyaltyHistory(customerId: number) {
+  entityIdSchema.parse(customerId);
   const { supabase, tenantId } = await getActionContext();
 
   // Verify customer belongs to this tenant

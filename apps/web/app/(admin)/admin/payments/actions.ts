@@ -7,6 +7,7 @@ import {
   getAdminContext,
   getBranchesForTenant,
   getBranchIdsForTenant,
+  entityIdSchema,
   withServerAction,
   withServerQuery,
 } from "@comtammatu/shared";
@@ -80,6 +81,7 @@ export const getPayments = withServerQuery(_getPayments);
 async function _refundPayment(
   paymentId: number
 ): Promise<{ error?: string }> {
+  entityIdSchema.parse(paymentId);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   // Verify payment belongs to this tenant
@@ -113,13 +115,20 @@ async function _refundPayment(
     return { error: "Chỉ có thể hoàn tiền cho thanh toán đã hoàn tất" };
   }
 
-  const { error: updateErr } = await supabase
+  // Atomic conditional update to prevent race conditions
+  const { data: updated, error: updateErr } = await supabase
     .from("payments")
     .update({ status: "refunded", updated_at: new Date().toISOString() })
-    .eq("id", paymentId);
+    .eq("id", paymentId)
+    .eq("status", "completed")
+    .select("id")
+    .maybeSingle();
 
   if (updateErr) {
     return { error: updateErr.message };
+  }
+  if (!updated) {
+    return { error: "Thanh toán đã được xử lý bởi người khác" };
   }
 
   revalidatePath("/admin/payments");
