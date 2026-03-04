@@ -1353,6 +1353,13 @@ export type Database = {
             referencedRelation: "menu_item_variants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "order_items_parent_item_id_fkey"
+            columns: ["parent_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
         ]
       }
       order_status_history: {
@@ -2179,6 +2186,89 @@ export type Database = {
           },
         ]
       }
+      registered_devices: {
+        Row: {
+          approval_code: string
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: number
+          created_at: string
+          device_fingerprint: string
+          device_name: string
+          id: number
+          ip_address: string | null
+          registered_by: string
+          rejected_at: string | null
+          status: string
+          tenant_id: number
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          approval_code: string
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id: number
+          created_at?: string
+          device_fingerprint: string
+          device_name?: string
+          id?: never
+          ip_address?: string | null
+          registered_by: string
+          rejected_at?: string | null
+          status?: string
+          tenant_id: number
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          approval_code?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: number
+          created_at?: string
+          device_fingerprint?: string
+          device_name?: string
+          id?: never
+          ip_address?: string | null
+          registered_by?: string
+          rejected_at?: string | null
+          status?: string
+          tenant_id?: number
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registered_devices_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_registered_by_fkey"
+            columns: ["registered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_events: {
         Row: {
           created_at: string
@@ -2893,4 +2983,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
