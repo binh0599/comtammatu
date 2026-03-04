@@ -17,6 +17,7 @@ import {
   formatDateTime,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
+import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import { toast } from "sonner";
 import {
   confirmOrder,
@@ -67,16 +68,6 @@ interface OrderDetail {
   }[];
 }
 
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "secondary",
-  confirmed: "outline",
-  preparing: "outline",
-  ready: "default",
-  served: "default",
-  completed: "default",
-  cancelled: "destructive",
-};
-
 export function OrderDetailClient({ order }: { order: OrderDetail }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -118,7 +109,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-xl font-bold">{order.order_number}</h1>
+          <h1 className="text-2xl font-bold">{order.order_number}</h1>
           <p className="text-muted-foreground text-sm">
             {formatDateTime(order.created_at)}
             {order.tables && (
@@ -130,7 +121,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
           {order.status === "completed" && (
             <ReceiptPrinter order={order} />
           )}
-          <Badge variant={statusVariant[order.status] ?? "secondary"}>
+          <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
             {getOrderStatusLabel(order.status)}
           </Badge>
         </div>

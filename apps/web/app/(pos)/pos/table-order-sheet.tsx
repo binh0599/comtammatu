@@ -25,6 +25,7 @@ import {
     formatPrice,
     getOrderStatusLabel,
 } from "@comtammatu/shared";
+import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import { MenuSelector, type CartItem } from "./order/new/menu-selector";
 import { OrderCart } from "./order/new/order-cart";
 import {
@@ -71,17 +72,6 @@ interface Category {
     menu_id: number;
 }
 
-const statusVariant: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-> = {
-    draft: "secondary",
-    confirmed: "outline",
-    preparing: "outline",
-    ready: "default",
-    served: "default",
-};
-
 // ---------------------------------------------------------------------------
 // OrderListMode – shows multiple active orders on same table
 // ---------------------------------------------------------------------------
@@ -113,7 +103,7 @@ function OrderListMode({
                     >
                         <div className="flex items-center justify-between">
                             <span className="font-bold">{order.order_number}</span>
-                            <Badge variant={statusVariant[order.status] ?? "secondary"}>
+                            <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
                                 {getOrderStatusLabel(order.status)}
                             </Badge>
                         </div>
@@ -202,7 +192,7 @@ function OrderViewMode({
                         <p className="text-lg font-bold">{order.order_number}</p>
                         <p className="text-muted-foreground text-sm">{tableLabel}</p>
                     </div>
-                    <Badge variant={statusVariant[order.status] ?? "secondary"}>
+                    <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
                         {getOrderStatusLabel(order.status)}
                     </Badge>
                 </div>

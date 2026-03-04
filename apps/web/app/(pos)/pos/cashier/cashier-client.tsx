@@ -29,7 +29,7 @@ export function CashierClient({
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-[calc(100dvh-4rem)] flex-col">
       <div aria-live="polite" aria-atomic="false">
         <SessionBar session={session} />
       </div>

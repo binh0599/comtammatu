@@ -136,7 +136,7 @@ export function TableMapClient({
 
     function handleTakeawayClick() {
         setSelectedTableId(null);
-        setSelectedLabel("Mang về");
+        setSelectedLabel("Mang đi");
         setSheetMode("create");
         setSelectedOrder(null);
         setSheetOpen(true);
@@ -155,10 +155,10 @@ export function TableMapClient({
                             type="button"
                             onClick={handleTakeawayClick}
                             className="flex min-h-[72px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-indigo-400 bg-indigo-50 p-3 text-center text-indigo-700 transition-all hover:bg-indigo-100 hover:shadow-md active:scale-95"
-                            aria-label="Tạo đơn mang về"
+                            aria-label="Tạo đơn mang đi"
                         >
                             <Package className="mb-1 h-6 w-6" aria-hidden="true" />
-                            <span className="text-sm font-bold">Mang về</span>
+                            <span className="text-sm font-bold">Mang đi</span>
                         </button>
                     </div>
                 </div>
