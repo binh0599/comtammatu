@@ -154,7 +154,7 @@ export function TicketCard({
               <div className="ml-6 flex flex-col gap-1 text-sm">
                 {item.modifiers?.map((m: any, mIdx: number) => (
                   <span key={mIdx} className="text-muted-foreground">
-                    + {m.name}: {m.options.join(", ")}
+                    + {m.name}: {m.options ? m.options.join(", ") : (m.price ? `(+${m.price}đ)` : " ")}
                   </span>
                 ))}
                 {item.notes && (
