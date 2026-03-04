@@ -59,6 +59,18 @@ export default async function NewOrderPage({
 
   const tableId = table ? Number(table) : null;
 
+  // Fetch table capacity for dine-in guest count validation
+  let tableCapacity: number | null = null;
+  if (tableId) {
+    const { data: tableData } = await supabase
+      .from("tables")
+      .select("capacity")
+      .eq("id", tableId)
+      .eq("branch_id", profile.branch_id)
+      .single();
+    tableCapacity = tableData?.capacity ?? null;
+  }
+
   const [menuItems, categories] = await Promise.all([
     getMenuItems(),
     getMenuCategories(),
@@ -70,6 +82,7 @@ export default async function NewOrderPage({
       categories={categories}
       terminalId={terminalId}
       tableId={tableId}
+      tableCapacity={tableCapacity}
     />
   );
 }

@@ -30,12 +30,21 @@ export const createOrderSchema = z
       .min(1, "Đơn hàng phải có ít nhất 1 món"),
   })
   .superRefine((data, ctx) => {
-    if (data.type === "dine_in" && data.guest_count == null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["guest_count"],
-        message: "Đơn tại bàn phải có số khách",
-      });
+    if (data.type === "dine_in") {
+      if (data.table_id == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["table_id"],
+          message: "Đơn tại bàn phải chọn bàn",
+        });
+      }
+      if (data.guest_count == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["guest_count"],
+          message: "Đơn tại bàn phải có số khách",
+        });
+      }
     }
   });
 
