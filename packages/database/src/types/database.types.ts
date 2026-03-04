@@ -922,6 +922,8 @@ export type Database = {
           menu_id: number
           name: string
           sort_order: number | null
+          type: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -930,6 +932,8 @@ export type Database = {
           menu_id: number
           name: string
           sort_order?: number | null
+          type?: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -938,6 +942,8 @@ export type Database = {
           menu_id?: number
           name?: string
           sort_order?: number | null
+          type?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -945,6 +951,36 @@ export type Database = {
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_item_available_sides: {
+        Row: {
+          menu_item_id: number
+          side_item_id: number
+        }
+        Insert: {
+          menu_item_id: number
+          side_item_id: number
+        }
+        Update: {
+          menu_item_id?: number
+          side_item_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_available_sides_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_available_sides_side_item_id_fkey"
+            columns: ["side_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1249,6 +1285,7 @@ export type Database = {
           modifiers: Json | null
           notes: string | null
           order_id: number
+          parent_item_id: number | null
           quantity: number
           sent_to_kds_at: string | null
           status: string
@@ -1264,6 +1301,7 @@ export type Database = {
           modifiers?: Json | null
           notes?: string | null
           order_id: number
+          parent_item_id?: number | null
           quantity: number
           sent_to_kds_at?: string | null
           status?: string
@@ -1279,6 +1317,7 @@ export type Database = {
           modifiers?: Json | null
           notes?: string | null
           order_id?: number
+          parent_item_id?: number | null
           quantity?: number
           sent_to_kds_at?: string | null
           status?: string

@@ -35,7 +35,7 @@ async function _getPublicMenu() {
   const { data: items, error: itemsError } = await supabase
     .from("menu_items")
     .select(
-      "id, name, description, base_price, image_url, category_id, allergens, menu_categories(id, name, sort_order)",
+      "id, name, description, base_price, image_url, category_id, allergens, menu_categories(id, name, sort_order, type)",
     )
     .eq("tenant_id", tenantId)
     .eq("is_available", true)
@@ -45,7 +45,7 @@ async function _getPublicMenu() {
 
   const { data: categories, error: catError } = await supabase
     .from("menu_categories")
-    .select("id, name, sort_order")
+    .select("id, name, sort_order, type")
     .order("sort_order");
 
   if (catError) throw safeDbError(catError, "db");

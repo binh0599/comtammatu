@@ -60,7 +60,7 @@ interface MenuItem {
     image_url: string | null;
     is_available: boolean;
     category_id: number;
-    menu_categories: { id: number; name: string; menu_id: number } | null;
+    menu_categories: { id: number; name: string; menu_id: number; type: string } | null;
     menu_item_variants:
     | {
         id: number;
@@ -69,12 +69,14 @@ interface MenuItem {
         is_available: boolean;
     }[]
     | null;
+    available_side_ids: number[];
 }
 
 interface Category {
     id: number;
     name: string;
     menu_id: number;
+    type: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -570,6 +572,19 @@ function AddItemsMode({
         []
     );
 
+    const handleUpdateItemNotes = useCallback(
+        (menuItemId: number, variantId: number | null, notes: string) => {
+            setCart((prev) =>
+                prev.map((c) =>
+                    c.menu_item_id === menuItemId && c.variant_id === variantId
+                        ? { ...c, notes }
+                        : c
+                )
+            );
+        },
+        []
+    );
+
     function handleSubmit() {
         if (cart.length === 0) {
             toast.error("Chưa chọn món nào");
@@ -584,6 +599,13 @@ function AddItemsMode({
                     variant_id: item.variant_id,
                     quantity: item.quantity,
                     notes: item.notes || undefined,
+                    side_items: item.side_items.length > 0
+                        ? item.side_items.map((s) => ({
+                            menu_item_id: s.menu_item_id,
+                            quantity: s.quantity,
+                            notes: s.notes || undefined,
+                        }))
+                        : undefined,
                 })),
             });
 
@@ -617,6 +639,7 @@ function AddItemsMode({
                     cart={cart}
                     onAddItem={handleAddItem}
                     onRemoveItem={handleRemoveItem}
+                    onUpdateItemNotes={handleUpdateItemNotes}
                 />
             </div>
             {cart.length > 0 && (
@@ -710,6 +733,19 @@ function CreateOrderMode({
         setCart([]);
     }, []);
 
+    const handleUpdateItemNotes = useCallback(
+        (menuItemId: number, variantId: number | null, notes: string) => {
+            setCart((prev) =>
+                prev.map((c) =>
+                    c.menu_item_id === menuItemId && c.variant_id === variantId
+                        ? { ...c, notes }
+                        : c
+                )
+            );
+        },
+        []
+    );
+
     async function handleSubmit() {
         if (cart.length === 0) {
             toast.error("Giỏ hàng trống");
@@ -726,6 +762,13 @@ function CreateOrderMode({
                 variant_id: item.variant_id,
                 quantity: item.quantity,
                 notes: item.notes || undefined,
+                side_items: item.side_items.length > 0
+                    ? item.side_items.map((s) => ({
+                        menu_item_id: s.menu_item_id,
+                        quantity: s.quantity,
+                        notes: s.notes || undefined,
+                    }))
+                    : undefined,
             })),
         });
 
@@ -772,6 +815,7 @@ function CreateOrderMode({
                     cart={cart}
                     onAddItem={handleAddItem}
                     onRemoveItem={handleRemoveItem}
+                    onUpdateItemNotes={handleUpdateItemNotes}
                 />
             </div>
             <OrderCart

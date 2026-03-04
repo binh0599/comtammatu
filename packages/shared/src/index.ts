@@ -45,6 +45,9 @@ export {
   PAPER_WIDTHS,
   PRINTER_TEST_STATUSES,
   PRINTER_ASSIGNED_TYPES,
+  // Menu
+  MENU_CATEGORY_TYPES,
+  MENU_CATEGORY_TYPE_LABELS,
 } from "./constants";
 
 export type {
@@ -83,6 +86,8 @@ export type {
   PaperWidth,
   PrinterTestStatus,
   PrinterAssignedType,
+  // Menu
+  MenuCategoryType,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -101,12 +106,14 @@ export {
   menuSchema,
   menuCategorySchema,
   menuItemSchema,
+  menuItemAvailableSidesSchema,
   entityIdSchema,
 } from "./schemas/menu";
 export type {
   MenuInput,
   MenuCategoryInput,
   MenuItemInput,
+  MenuItemAvailableSidesInput,
 } from "./schemas/menu";
 
 export {

@@ -41,7 +41,7 @@ interface MenuItem {
     image_url: string | null;
     is_available: boolean;
     category_id: number;
-    menu_categories: { id: number; name: string; menu_id: number } | null;
+    menu_categories: { id: number; name: string; menu_id: number; type: string } | null;
     menu_item_variants:
     | {
         id: number;
@@ -50,12 +50,14 @@ interface MenuItem {
         is_available: boolean;
     }[]
     | null;
+    available_side_ids: number[];
 }
 
 interface Category {
     id: number;
     name: string;
     menu_id: number;
+    type: string;
 }
 
 // ---------------------------------------------------------------------------

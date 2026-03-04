@@ -194,7 +194,7 @@ async function _getMenuItems() {
 
   const { data: menuItems, error: itemsError } = await supabase
     .from("menu_items")
-    .select("id, name, base_price, category_id, is_available, image_url")
+    .select("id, name, base_price, category_id, is_available, image_url, description")
     .eq("tenant_id", tenantId)
     .eq("is_available", true)
     .order("name");
@@ -211,7 +211,7 @@ async function _getMenuItems() {
     supabase as any,
     "menu_categories",
     categoryIds as (string | number)[],
-    "id, name, menu_id"
+    "id, name, menu_id, type"
   );
 
   const variantsMap = new Map<number, any[]>();
@@ -231,9 +231,28 @@ async function _getMenuItems() {
     }
   }
 
+  // Fetch available sides for main dish items
+  const availableSidesMap = new Map<number, number[]>();
+  if (itemIds.length > 0) {
+    const { data: sides } = await supabase
+      .from("menu_item_available_sides")
+      .select("menu_item_id, side_item_id")
+      .in("menu_item_id", itemIds);
+
+    if (sides) {
+      for (const s of sides) {
+        if (!availableSidesMap.has(s.menu_item_id)) {
+          availableSidesMap.set(s.menu_item_id, []);
+        }
+        availableSidesMap.get(s.menu_item_id)!.push(s.side_item_id);
+      }
+    }
+  }
+
   for (const item of menuItems) {
     (item as any).menu_categories = categoryMap.get(item.category_id) ?? null;
     (item as any).menu_item_variants = variantsMap.get(item.id) ?? [];
+    (item as any).available_side_ids = availableSidesMap.get(item.id) ?? [];
   }
 
   return menuItems;
@@ -252,7 +271,7 @@ async function _getMenuCategories() {
 
   const { data, error } = await supabase
     .from("menu_categories")
-    .select("id, name, menu_id, menus!inner(tenant_id)")
+    .select("id, name, menu_id, type, menus!inner(tenant_id)")
     .eq("menus.tenant_id", tenantId)
     .order("sort_order");
 

@@ -60,6 +60,11 @@ async function _createOrder(data: {
     quantity: number;
     modifiers?: { name: string; price: number }[];
     notes?: string;
+    side_items?: {
+      menu_item_id: number;
+      quantity: number;
+      notes?: string;
+    }[];
   }[];
 }) {
   const ctx = await getActionContext();
@@ -149,8 +154,19 @@ async function _createOrder(data: {
     );
   }
 
+  // Collect all menu item IDs (main + side items)
+  const allMenuItemIds = new Set<number>();
+  for (const item of items) {
+    allMenuItemIds.add(item.menu_item_id);
+    if (item.side_items) {
+      for (const side of item.side_items) {
+        allMenuItemIds.add(side.menu_item_id);
+      }
+    }
+  }
+
   // Lookup menu item prices — scoped to tenant
-  const itemIds = items.map((i) => i.menu_item_id);
+  const itemIds = Array.from(allMenuItemIds);
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
     .select("id, base_price, is_available, name")
@@ -276,7 +292,7 @@ async function _createOrder(data: {
     throw safeDbError(orderError, "db");
   }
 
-  // Insert order items
+  // Insert main order items
   const itemInserts = orderItems.map((item) => ({
     order_id: order.id,
     menu_item_id: item.menu_item_id,
@@ -289,12 +305,79 @@ async function _createOrder(data: {
     status: item.status,
   }));
 
-  const { error: itemsError } = await supabase
+  const { data: insertedItems, error: itemsError } = await supabase
     .from("order_items")
-    .insert(itemInserts);
+    .insert(itemInserts)
+    .select("id, menu_item_id");
 
   if (itemsError) {
     throw safeDbError(itemsError, "db");
+  }
+
+  // Insert side items with parent_item_id
+  if (insertedItems) {
+    const sideInserts: {
+      order_id: number;
+      menu_item_id: number;
+      variant_id: null;
+      quantity: number;
+      unit_price: number;
+      item_total: number;
+      modifiers: null;
+      notes: string | null;
+      status: "pending";
+      parent_item_id: number;
+    }[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const originalItem = items[i]!;
+      const insertedItem = insertedItems[i];
+
+      if (originalItem.side_items && originalItem.side_items.length > 0 && insertedItem) {
+        for (const side of originalItem.side_items) {
+          const sidePrice = priceMap.get(side.menu_item_id) ?? 0;
+          sideInserts.push({
+            order_id: order.id,
+            menu_item_id: side.menu_item_id,
+            variant_id: null,
+            quantity: side.quantity,
+            unit_price: sidePrice,
+            item_total: sidePrice * side.quantity,
+            modifiers: null,
+            notes: side.notes ?? null,
+            status: "pending",
+            parent_item_id: insertedItem.id,
+          });
+        }
+      }
+    }
+
+    if (sideInserts.length > 0) {
+      const { error: sidesError } = await supabase
+        .from("order_items")
+        .insert(sideInserts);
+
+      if (sidesError) {
+        throw safeDbError(sidesError, "db");
+      }
+
+      // Recalculate totals including side items
+      const sideSubtotal = sideInserts.reduce((sum, s) => sum + s.item_total, 0);
+      const newSubtotal = totals.subtotal + sideSubtotal;
+      const newTax = newSubtotal * (taxRate / 100);
+      const newServiceCharge = newSubtotal * (serviceChargeRate / 100);
+      const newTotal = newSubtotal + newTax + newServiceCharge;
+
+      await supabase
+        .from("orders")
+        .update({
+          subtotal: newSubtotal,
+          tax: newTax,
+          service_charge: newServiceCharge,
+          total: newTotal,
+        })
+        .eq("id", order.id);
+    }
   }
 
   // Update table status to occupied if dine-in (scoped to branch)

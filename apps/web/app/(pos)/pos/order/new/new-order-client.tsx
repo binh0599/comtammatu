@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { MenuSelector, type CartItem } from "./menu-selector";
 import { OrderCart } from "./order-cart";
 import { createOrder, confirmOrder } from "../../orders/actions";
-
 interface MenuItem {
   id: number;
   name: string;
@@ -18,7 +17,7 @@ interface MenuItem {
   image_url: string | null;
   is_available: boolean;
   category_id: number;
-  menu_categories: { id: number; name: string; menu_id: number } | null;
+  menu_categories: { id: number; name: string; menu_id: number; type: string } | null;
   menu_item_variants:
   | {
     id: number;
@@ -27,12 +26,14 @@ interface MenuItem {
     is_available: boolean;
   }[]
   | null;
+  available_side_ids: number[];
 }
 
 interface Category {
   id: number;
   name: string;
   menu_id: number;
+  type: string;
 }
 
 export function NewOrderClient({
@@ -100,22 +101,45 @@ export function NewOrderClient({
     setCart([]);
   }, []);
 
+  const handleUpdateItemNotes = useCallback(
+    (menuItemId: number, variantId: number | null, notes: string) => {
+      setCart((prev) =>
+        prev.map((c) =>
+          c.menu_item_id === menuItemId && c.variant_id === variantId
+            ? { ...c, notes }
+            : c
+        )
+      );
+    },
+    []
+  );
+
   async function handleSubmit() {
     if (cart.length === 0) {
       toast.error("Giỏ hàng trống");
       return;
     }
 
+    // Build order items: main items + their side items
+    const orderItems = cart.map((item) => ({
+      menu_item_id: item.menu_item_id,
+      variant_id: item.variant_id,
+      quantity: item.quantity,
+      notes: item.notes || undefined,
+      side_items: item.side_items.length > 0
+        ? item.side_items.map((s) => ({
+            menu_item_id: s.menu_item_id,
+            quantity: s.quantity,
+            notes: s.notes || undefined,
+          }))
+        : undefined,
+    }));
+
     const result = await createOrder({
       table_id: tableId,
       type: tableId ? "dine_in" : "takeaway",
       terminal_id: terminalId,
-      items: cart.map((item) => ({
-        menu_item_id: item.menu_item_id,
-        variant_id: item.variant_id,
-        quantity: item.quantity,
-        notes: item.notes || undefined,
-      })),
+      items: orderItems,
     });
 
     if (result.error !== null) {
@@ -163,6 +187,7 @@ export function NewOrderClient({
         cart={cart}
         onAddItem={handleAddItem}
         onRemoveItem={handleRemoveItem}
+        onUpdateItemNotes={handleUpdateItemNotes}
       />
 
       {/* Cart drawer */}
