@@ -106,6 +106,8 @@ async function _createPrinterConfig(formData: FormData) {
     auto_print: formData.get("auto_print") === "true",
     print_delay_ms: formData.get("print_delay_ms") ?? 500,
     connection_config: connectionConfigResult.data,
+    assigned_to_type: formData.get("assigned_to_type") || undefined,
+    assigned_to_id: formData.get("assigned_to_id") || undefined,
   });
 
   if (!parsed.success) {
@@ -115,11 +117,29 @@ async function _createPrinterConfig(formData: FormData) {
   const { supabase, tenantId, branchId, userId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return { error: "Không tìm thấy chi nhánh" };
 
+  // VALIDATE_CLIENT_IDS: verify assigned_to_id belongs to this branch before writing
+  if (parsed.data.assigned_to_id && parsed.data.assigned_to_type) {
+    const targetTable =
+      parsed.data.assigned_to_type === "pos_terminal" ? "pos_terminals" : "kds_stations";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: targetRow, error: targetError } = await (supabase as any)
+      .from(targetTable)
+      .select("id")
+      .eq("id", parsed.data.assigned_to_id)
+      .eq("branch_id", branchId)
+      .maybeSingle();
+
+    if (targetError || !targetRow) {
+      return { error: "Trạm/máy không thuộc chi nhánh hiện tại hoặc không tồn tại" };
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { error } = await (supabase as any).from("printer_configs").insert({
-    branch_id: branchId,
-    ...parsed.data,
-  });
+  const { data: created, error } = await (supabase as any)
+    .from("printer_configs")
+    .insert({ branch_id: branchId, ...parsed.data })
+    .select("id");
 
   if (error) {
     if (error.code === "23505") return { error: "Đã có máy in với thông tin trùng lặp" };
@@ -131,7 +151,7 @@ async function _createPrinterConfig(formData: FormData) {
     user_id: userId,
     action: "create",
     resource_type: "printer_config",
-    resource_id: 0,
+    resource_id: created?.[0]?.id ?? 0,
     changes: parsed.data as Record<string, unknown>,
   });
 

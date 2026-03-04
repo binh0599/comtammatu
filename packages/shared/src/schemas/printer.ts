@@ -39,6 +39,8 @@ export const createPrinterConfigSchema = z.object({
   encoding: z.string().default("utf-8"),
   auto_print: z.boolean().default(false),
   print_delay_ms: z.coerce.number().int().min(0).max(5000).default(500),
+  assigned_to_type: z.enum(["pos_terminal", "kds_station"]).nullish(),
+  assigned_to_id: z.coerce.number().int().positive().nullish(),
 });
 export type CreatePrinterConfigInput = z.infer<typeof createPrinterConfigSchema>;
 

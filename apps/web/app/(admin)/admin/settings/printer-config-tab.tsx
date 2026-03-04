@@ -147,6 +147,8 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
         setPrinters((prev) =>
           prev.map((p) => (p.id === id ? { ...p, auto_print: value } : p)),
         );
+      } else {
+        setError(result.error);
       }
     });
   }
