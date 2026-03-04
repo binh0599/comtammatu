@@ -131,17 +131,15 @@ async function _getTablesWithActiveOrders() {
 
   if (ordersError) throw safeDbError(ordersError, "db");
 
-  // 3. Map orders by table_id
-  const orderByTable = new Map<
-    number,
-    {
-      id: number;
-      order_number: string;
-      status: string;
-      total: number;
-      item_count: number;
-    }
-  >();
+  // 3. Map orders by table_id — supports multiple active orders per table
+  type OrderInfo = {
+    id: number;
+    order_number: string;
+    status: string;
+    total: number;
+    item_count: number;
+  };
+  const ordersByTable = new Map<number, OrderInfo[]>();
 
   if (activeOrders) {
     for (const order of activeOrders) {
@@ -152,13 +150,19 @@ async function _getTablesWithActiveOrders() {
             0
           )
           : 0;
-        orderByTable.set(order.table_id, {
+        const entry: OrderInfo = {
           id: order.id,
           order_number: order.order_number,
           status: order.status,
           total: order.total,
           item_count: itemCount,
-        });
+        };
+        const existing = ordersByTable.get(order.table_id);
+        if (existing) {
+          existing.push(entry);
+        } else {
+          ordersByTable.set(order.table_id, [entry]);
+        }
       }
     }
   }
@@ -166,7 +170,7 @@ async function _getTablesWithActiveOrders() {
   // 4. Merge
   return tables.map((table: { id: number;[key: string]: unknown }) => ({
     ...table,
-    active_order: orderByTable.get(table.id) ?? null,
+    active_orders: ordersByTable.get(table.id) ?? [],
   }));
 }
 

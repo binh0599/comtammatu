@@ -29,7 +29,7 @@ interface TableItem {
     status: string;
     zone_id: number;
     branch_zones: { name: string } | null;
-    active_order: ActiveOrder | null;
+    active_orders: ActiveOrder[];
 }
 
 interface MenuItem {
@@ -95,9 +95,10 @@ export function TableMapClient({
     terminalId: number;
 }) {
     const [sheetOpen, setSheetOpen] = useState(false);
-    const [sheetMode, setSheetMode] = useState<"view" | "create">("create");
+    const [sheetMode, setSheetMode] = useState<"view" | "create" | "list">("create");
     const [selectedTableId, setSelectedTableId] = useState<number | null>(null);
     const [selectedOrder, setSelectedOrder] = useState<ActiveOrder | null>(null);
+    const [selectedActiveOrders, setSelectedActiveOrders] = useState<ActiveOrder[]>([]);
     const [selectedLabel, setSelectedLabel] = useState("");
 
     // Group by zone
@@ -114,10 +115,16 @@ export function TableMapClient({
         setSelectedTableId(table.id);
         setSelectedLabel(label);
 
-        if (table.active_order) {
-            // Has active order → view mode
+        setSelectedActiveOrders(table.active_orders);
+
+        if (table.active_orders.length > 1) {
+            // Multiple active orders → show list so waiter can pick one or create new
+            setSheetMode("list");
+            setSelectedOrder(null);
+        } else if (table.active_orders.length === 1) {
+            // Single active order → view it directly
             setSheetMode("view");
-            setSelectedOrder(table.active_order);
+            setSelectedOrder(table.active_orders[0]!);
         } else {
             // Available → create order
             setSheetMode("create");
@@ -167,7 +174,14 @@ export function TableMapClient({
                                 const isClickable =
                                     table.status !== "cleaning" &&
                                     table.status !== "reserved";
-                                const order = table.active_order;
+                                const orders = table.active_orders;
+                                const orderCount = orders.length;
+                                const firstOrder = orders[0] ?? null;
+
+                                // Build aria label with all active orders
+                                const orderLabels = orders
+                                    .map((o) => o.order_number)
+                                    .join(", ");
 
                                 return (
                                     <button
@@ -177,7 +191,7 @@ export function TableMapClient({
                                             if (isClickable) handleTableClick(table);
                                         }}
                                         disabled={!isClickable}
-                                        aria-label={`Bàn ${table.number}, ${getTableStatusLabel(table.status)}${order ? `, ${order.order_number}` : ""}`}
+                                        aria-label={`Bàn ${table.number}, ${getTableStatusLabel(table.status)}${orderLabels ? `, ${orderLabels}` : ""}`}
                                         className={cn(
                                             "relative flex min-h-[72px] flex-col items-center justify-center rounded-lg border-2 p-3 text-center transition-all",
                                             statusColors[table.status] ??
@@ -198,16 +212,29 @@ export function TableMapClient({
                                             </span>
                                         )}
 
-                                        {/* Active order badge */}
-                                        {order && (
+                                        {/* Active order badge(s) */}
+                                        {orderCount === 1 && firstOrder && (
                                             <div
                                                 className={cn(
                                                     "absolute -right-1 -top-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm",
-                                                    orderStatusBg[order.status] ?? "bg-gray-500"
+                                                    orderStatusBg[firstOrder.status] ?? "bg-gray-500"
                                                 )}
-                                                title={`${order.order_number} · ${getOrderStatusLabel(order.status)} · ${formatPrice(order.total)}`}
+                                                title={`${firstOrder.order_number} · ${getOrderStatusLabel(firstOrder.status)} · ${formatPrice(firstOrder.total)}`}
                                             >
-                                                {order.item_count}
+                                                {firstOrder.item_count}
+                                            </div>
+                                        )}
+                                        {orderCount > 1 && (
+                                            <div
+                                                className="absolute -right-1 -top-1 rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
+                                                title={orders
+                                                    .map(
+                                                        (o) =>
+                                                            `${o.order_number} · ${getOrderStatusLabel(o.status)} · ${formatPrice(o.total)}`
+                                                    )
+                                                    .join("\n")}
+                                            >
+                                                {orderCount} đơn
                                             </div>
                                         )}
                                     </button>
@@ -232,6 +259,7 @@ export function TableMapClient({
                 tableId={selectedTableId}
                 tableLabel={selectedLabel}
                 activeOrder={selectedOrder}
+                activeOrders={selectedActiveOrders}
                 menuItems={menuItems}
                 categories={categories}
                 terminalId={terminalId}

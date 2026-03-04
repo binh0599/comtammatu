@@ -24,11 +24,14 @@ export function TableGrid({
   selectedId,
   onSelect,
   selectable = true,
+  allowOccupied = false,
 }: {
   tables: TableItem[];
   selectedId?: number | null;
   onSelect?: (id: number) => void;
   selectable?: boolean;
+  /** When true, occupied tables can also be selected (for multi-order per table). */
+  allowOccupied?: boolean;
 }) {
   // Group by zone
   const zoneMap = new Map<string, TableItem[]>();
@@ -49,7 +52,9 @@ export function TableGrid({
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
             {zoneTables.map((table) => {
               const isSelectable =
-                selectable && table.status === "available";
+                selectable &&
+                (table.status === "available" ||
+                  (allowOccupied && table.status === "occupied"));
               const isSelected = selectedId === table.id;
 
               return (
