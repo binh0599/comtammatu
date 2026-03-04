@@ -1,40 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { LogOut, WifiOff, Loader2, Printer } from "lucide-react";
+import { WifiOff, Loader2, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { logout } from "@/app/login/actions";
+import { LogoutButton } from "@/components/logout-button";
 import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
 import { getStationTickets } from "./actions";
 import { usePrinterForStation } from "@/hooks/use-printer-config";
 import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
 import { printViaUsb, printViaNetwork } from "@/lib/printing/escpos";
-
-interface KdsTicket {
-  id: number;
-  order_id: number;
-  station_id: number;
-  status: string;
-  items: unknown;
-  priority: number | null;
-  color_code: string | null;
-  accepted_at: string | null;
-  completed_at: string | null;
-  created_at: string;
-  orders: {
-    order_number: string;
-    table_id: number | null;
-    tables: { number: number } | null;
-  } | null;
-}
-
-interface TimingRule {
-  category_id: number;
-  prep_time_min: number;
-  warning_min: number | null;
-  critical_min: number | null;
-}
+import type { KdsTicket, TimingRule } from "./types";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
   if (status === "connected") return null;
@@ -143,30 +119,21 @@ export function KdsBoard({
               {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>
           )}
-          <div className="flex gap-2" aria-label="Huyền tích thời gian">
+          <div className="flex gap-2" aria-label="Chú thích màu">
             <span className="flex items-center gap-1 text-xs text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
               Bình thường
             </span>
             <span className="flex items-center gap-1 text-xs text-yellow-700">
               <span className="h-2 w-2 rounded-full bg-yellow-500" aria-hidden="true" />
-              Cảnh báo
+              Gần trễ
             </span>
             <span className="flex items-center gap-1 text-xs text-red-700">
               <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
               Trễ
             </span>
           </div>
-          <form action={logout}>
-            <button
-              type="submit"
-              className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-red-400 hover:text-red-600"
-              aria-label="Đăng xuất"
-            >
-              <LogOut className="h-4 w-4" />
-              Thoát
-            </button>
-          </form>
+          <LogoutButton className="rounded-lg border border-border px-3 py-1.5 text-sm" />
         </div>
       </div>
 

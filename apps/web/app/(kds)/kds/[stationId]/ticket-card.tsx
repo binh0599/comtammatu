@@ -5,49 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { bumpTicket } from "./actions";
 import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
-
-interface TicketItemModifier {
-  name: string;
-  price?: number;
-  options?: string[];
-}
-
-interface TicketItem {
-  order_item_id: number;
-  menu_item_id: number;
-  menu_item_name: string;
-  quantity: number;
-  modifiers: TicketItemModifier[] | null;
-  notes: string | null;
-  variant_name: string | null;
-}
-
-interface TimingRule {
-  prep_time_min: number;
-  warning_min: number | null;
-  critical_min: number | null;
-}
-
-interface KdsTicket {
-  id: number;
-  order_id: number;
-  status: string;
-  items: unknown;
-  created_at: string;
-  accepted_at: string | null;
-  orders: {
-    order_number: string;
-    table_id: number | null;
-    tables: { number: number } | null;
-  } | null;
-}
-
-function parseItems(items: unknown): TicketItem[] {
-  if (Array.isArray(items)) {
-    return items as TicketItem[];
-  }
-  return [];
-}
+import { parseItems, type KdsTicket, type TimingRule } from "./types";
 
 function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
   if (!rule) return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
@@ -101,7 +59,6 @@ export function TicketCard({
 
   return (
     <article
-      role="article"
       aria-label={`Đơn hàng ${orderNumber}${tableNumber ? ` bàn ${tableNumber}` : ""}, ${colors.label}, ${elapsed} phút`}
       className={cn(
         "flex flex-col rounded-xl border-2 p-4 transition-all",
@@ -144,7 +101,6 @@ export function TicketCard({
                   ? "bg-yellow-100 text-yellow-800"
                   : "bg-green-100 text-green-800"
             )}
-            aria-hidden="false"
           >
             {colors.label}
           </span>

@@ -1,50 +1,16 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@comtammatu/shared";
-
-// ===== Types (mirrors ticket-card.tsx) =====
-
-interface TicketItemModifier {
-  name: string;
-  price?: number;
-  options?: string[];
-}
-
-interface TicketItem {
-  order_item_id: number;
-  menu_item_id: number;
-  menu_item_name: string;
-  quantity: number;
-  modifiers: TicketItemModifier[] | null;
-  notes: string | null;
-  variant_name: string | null;
-}
-
-interface KdsTicketForPrint {
-  id: number;
-  order_id: number;
-  items: unknown;
-  created_at: string;
-  orders: {
-    order_number: string;
-    table_id: number | null;
-    tables: { number: number } | null;
-  } | null;
-}
-
-function parseItems(items: unknown): TicketItem[] {
-  if (Array.isArray(items)) return items as TicketItem[];
-  return [];
-}
+import { parseItems, type KdsTicket } from "../types";
 
 // ===== Component =====
 
 interface KitchenTicketPrinterProps {
-  ticket: KdsTicketForPrint;
+  ticket: KdsTicket;
   stationName?: string;
   onPrintComplete?: () => void;
   autoPrint?: boolean;
@@ -69,12 +35,14 @@ export function KitchenTicketPrinter({
     },
   });
 
-  // Auto-print on mount
-  if (autoPrint) {
-    setTimeout(() => {
+  // Auto-print on mount (U1 fix: moved from render body to useEffect)
+  useEffect(() => {
+    if (!autoPrint) return;
+    const timer = setTimeout(() => {
       handlePrint();
     }, 500);
-  }
+    return () => clearTimeout(timer);
+  }, [autoPrint]); // handlePrint is stable from useReactToPrint
 
   return (
     <>
