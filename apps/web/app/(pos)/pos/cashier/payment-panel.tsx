@@ -17,6 +17,7 @@ import {
   formatPrice,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
+import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import { ReceiptPrinter } from "../components/receipt-printer";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
 import {
@@ -242,7 +243,7 @@ export function PaymentPanel({
               preferThermal={!!printerConfig?.auto_print}
             />
           )}
-          <Badge>{getOrderStatusLabel(order.status)}</Badge>
+          <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>{getOrderStatusLabel(order.status)}</Badge>
         </div>
       </div>
 
@@ -261,6 +262,9 @@ export function PaymentPanel({
                 <span>
                   {item.quantity}x{" "}
                   {item.menu_items?.name ?? "Món đã xóa"}
+                </span>
+                <span className="text-muted-foreground shrink-0">
+                  {formatPrice(item.item_total)}
                 </span>
               </div>
             ))}

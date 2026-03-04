@@ -149,8 +149,8 @@ export function NewOrderClient({
           </Button>
         </Link>
         <div>
-          <h1 className="text-xl font-bold">
-            {tableId ? `Tạo đơn — Bàn` : "Tạo đơn — Mang về"}
+          <h1 className="text-2xl font-bold">
+            {tableId ? "Tạo đơn — Tại bàn" : "Tạo đơn — Mang đi"}
           </h1>
           <p className="text-muted-foreground text-sm">Chọn món để thêm vào đơn</p>
         </div>
