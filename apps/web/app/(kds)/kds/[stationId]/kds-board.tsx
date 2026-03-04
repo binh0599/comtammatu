@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { WifiOff, Loader2, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/logout-button";
@@ -8,8 +7,6 @@ import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
 import { getStationTickets } from "./actions";
 import { usePrinterForStation } from "@/hooks/use-printer-config";
-import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
-import { printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { KdsTicket, TimingRule } from "./types";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
@@ -56,67 +53,6 @@ export function KdsBoard({
 
   const defaultRule = timingRules[0] ?? null;
 
-  // Track known ticket IDs to detect new arrivals for auto-print
-  const knownTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
-  const printTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  useEffect(() => {
-    if (!printerConfig?.auto_print) return;
-    if (printerConfig.type === "browser") return; // Browser auto-print not supported on KDS
-
-    // Find new tickets that weren't in the previous set
-    const newTickets = tickets.filter(
-      (t) => t.status === "pending" && !knownTicketIds.current.has(t.id),
-    );
-
-    // Update known set
-    for (const t of tickets) {
-      knownTicketIds.current.add(t.id);
-    }
-
-    // Auto-print each new ticket
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    for (const ticket of newTickets) {
-      const commands = generateKitchenTicketCommands(ticket, stationName);
-      const connConfig = printerConfig.connection_config;
-
-      const printFn =
-        printerConfig.type === "thermal_usb"
-          ? () =>
-              printViaUsbAuto(commands, {
-                vendor_id: (connConfig.vendor_id as number) ?? 0,
-                product_id: (connConfig.product_id as number) ?? 0,
-                device_serial: (connConfig.device_serial as string) || undefined,
-              })
-          : () =>
-              printViaNetwork(commands, {
-                host: (connConfig.host as string) ?? "",
-                port: (connConfig.port as number) ?? 9100,
-                protocol: (connConfig.protocol as string) ?? "raw",
-              });
-
-      const timer = setTimeout(() => {
-        printFn()
-          .then((result) => {
-            if (!result.success) {
-              console.warn(`KDS auto-print failed for ticket ${ticket.id}:`, result.error);
-            }
-          })
-          .catch((err) =>
-            console.warn("KDS auto-print error:", err),
-          );
-      }, printerConfig.print_delay_ms);
-      timers.push(timer);
-    }
-    printTimersRef.current = timers;
-
-    return () => {
-      for (const t of printTimersRef.current) {
-        clearTimeout(t);
-      }
-      printTimersRef.current = [];
-    };
-  }, [tickets, printerConfig, stationName]);
 
   return (
     <div className="flex h-screen flex-col">
@@ -133,7 +69,7 @@ export function KdsBoard({
           {printerConfig && (
             <Badge variant="outline" className="gap-1 text-xs">
               <Printer className="size-3" />
-              {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
+              Máy in sẵn sàng
             </Badge>
           )}
           <div className="flex gap-2" aria-label="Chú thích màu">
