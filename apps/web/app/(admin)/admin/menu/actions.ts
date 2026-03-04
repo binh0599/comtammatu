@@ -388,6 +388,21 @@ async function _updateAvailableSides(data: {
 
   // Insert new sides
   if (parsed.data.side_item_ids.length > 0) {
+    // Verify all side_item_ids belong to this tenant
+    const { data: validSides, error: validationError } = await supabase
+      .from("menu_items")
+      .select("id")
+      .in("id", parsed.data.side_item_ids)
+      .eq("tenant_id", tenantId);
+
+    if (validationError) return safeDbErrorResult(validationError, "db");
+
+    if (!validSides || validSides.length !== parsed.data.side_item_ids.length) {
+      return {
+        error: "Một số món kèm không hợp lệ hoặc không thuộc đơn vị của bạn",
+      };
+    }
+
     const inserts = parsed.data.side_item_ids.map((sideId) => ({
       menu_item_id: parsed.data.menu_item_id,
       side_item_id: sideId,

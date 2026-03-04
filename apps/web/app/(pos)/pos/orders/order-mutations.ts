@@ -180,9 +180,22 @@ async function _createOrder(data: {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
 
-  // Check availability
+  // Check types + validate all requested IDs were found
   type MenuItem = { id: number; base_price: number; is_available: boolean; name: string };
-  const unavailable = (menuItems as MenuItem[]).filter((mi) => !mi.is_available);
+  const typedMenuItems = menuItems as MenuItem[];
+
+  if (typedMenuItems.length !== itemIds.length) {
+    const foundIds = new Set(typedMenuItems.map((mi) => mi.id));
+    const missing = itemIds.filter((id) => !foundIds.has(id));
+    throw new ActionError(
+      `Các món sau không tồn tại hoặc không thuộc đơn vị: ${missing.join(", ")}`,
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  // Check availability
+  const unavailable = typedMenuItems.filter((mi) => !mi.is_available);
   if (unavailable.length > 0) {
     const names = unavailable.map((mi) => mi.name).join(", ");
     throw new ActionError(`Các món sau đã hết: ${names}`, "CONFLICT", 409);
@@ -190,8 +203,28 @@ async function _createOrder(data: {
 
   // Build price map
   const priceMap = new Map<number, number>();
-  for (const mi of menuItems) {
+  for (const mi of typedMenuItems) {
     priceMap.set(mi.id, mi.base_price);
+  }
+
+  // Validate side items against allowed list
+  for (const item of items) {
+    if (item.side_items && item.side_items.length > 0) {
+      const { data: allowedSides } = await supabase
+        .from("menu_item_available_sides")
+        .select("side_item_id")
+        .eq("menu_item_id", item.menu_item_id);
+
+      const allowedSet = new Set((allowedSides ?? []).map((s: { side_item_id: number }) => s.side_item_id));
+      for (const side of item.side_items) {
+        if (!allowedSet.has(side.menu_item_id)) {
+          throw new ActionError(
+            `Món kèm ${side.menu_item_id} không được phép cho món ${item.menu_item_id}`,
+            "VALIDATION_ERROR"
+          );
+        }
+      }
+    }
   }
 
   // Lookup variant price adjustments if needed
@@ -222,7 +255,7 @@ async function _createOrder(data: {
 
   // Calculate line items
   const orderItems = items.map((item) => {
-    const basePrice = priceMap.get(item.menu_item_id) ?? 0;
+    const basePrice = priceMap.get(item.menu_item_id)!;
     const variantAdj = item.variant_id
       ? (variantPriceMap.get(item.variant_id) ?? 0)
       : 0;
@@ -335,7 +368,7 @@ async function _createOrder(data: {
 
       if (originalItem.side_items && originalItem.side_items.length > 0 && insertedItem) {
         for (const side of originalItem.side_items) {
-          const sidePrice = priceMap.get(side.menu_item_id) ?? 0;
+          const sidePrice = priceMap.get(side.menu_item_id)!;
           sideInserts.push({
             order_id: order.id,
             menu_item_id: side.menu_item_id,
@@ -368,7 +401,7 @@ async function _createOrder(data: {
       const newServiceCharge = newSubtotal * (serviceChargeRate / 100);
       const newTotal = newSubtotal + newTax + newServiceCharge;
 
-      await supabase
+      const { error: updateTotalsError } = await supabase
         .from("orders")
         .update({
           subtotal: newSubtotal,
@@ -377,6 +410,10 @@ async function _createOrder(data: {
           total: newTotal,
         })
         .eq("id", order.id);
+
+      if (updateTotalsError) {
+        throw safeDbError(updateTotalsError, "db");
+      }
     }
   }
 
@@ -524,6 +561,11 @@ async function _addOrderItems(data: {
     quantity: number;
     modifiers?: { name: string; price: number }[];
     notes?: string;
+    side_items?: {
+      menu_item_id: number;
+      quantity: number;
+      notes?: string;
+    }[];
   }[];
 }) {
   const ctx = await getActionContext();
@@ -560,24 +602,69 @@ async function _addOrderItems(data: {
     );
   }
 
+  // Collect all menu item IDs (main + side items)
+  const allMenuItemIds = new Set<number>();
+  for (const item of items) {
+    allMenuItemIds.add(item.menu_item_id);
+    if (item.side_items) {
+      for (const side of item.side_items) {
+        allMenuItemIds.add(side.menu_item_id);
+      }
+    }
+  }
+
   // Lookup prices — scoped to tenant
-  const itemIds = items.map((i) => i.menu_item_id);
+  const itemIds = Array.from(allMenuItemIds);
   const { data: menuItems } = await supabase
     .from("menu_items")
     .select("id, base_price, is_available")
     .in("id", itemIds)
     .eq("tenant_id", tenantId);
 
-  if (!menuItems) {
+  if (!menuItems || menuItems.length === 0) {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
 
+  // Validate all requested IDs were found (prevents price defaulting to 0)
+  type AddMenuItem = { id: number; base_price: number; is_available: boolean };
+  const typedMenuItems = menuItems as AddMenuItem[];
+
+  if (typedMenuItems.length !== itemIds.length) {
+    const foundIds = new Set(typedMenuItems.map((mi) => mi.id));
+    const missing = itemIds.filter((id) => !foundIds.has(id));
+    throw new ActionError(
+      `Các món sau không tồn tại hoặc không thuộc đơn vị: ${missing.join(", ")}`,
+      "NOT_FOUND",
+      404
+    );
+  }
+
   const priceMap = new Map<number, number>();
-  for (const mi of menuItems) {
+  for (const mi of typedMenuItems) {
     if (!mi.is_available) {
       throw new ActionError("Một số món đã hết", "CONFLICT", 409);
     }
     priceMap.set(mi.id, mi.base_price);
+  }
+
+  // Validate side items against allowed list
+  for (const item of items) {
+    if (item.side_items && item.side_items.length > 0) {
+      const { data: allowedSides } = await supabase
+        .from("menu_item_available_sides")
+        .select("side_item_id")
+        .eq("menu_item_id", item.menu_item_id);
+
+      const allowedSet = new Set((allowedSides ?? []).map((s: { side_item_id: number }) => s.side_item_id));
+      for (const side of item.side_items) {
+        if (!allowedSet.has(side.menu_item_id)) {
+          throw new ActionError(
+            `Món kèm ${side.menu_item_id} không được phép cho món ${item.menu_item_id}`,
+            "VALIDATION_ERROR"
+          );
+        }
+      }
+    }
   }
 
   // Lookup variant prices
@@ -603,9 +690,9 @@ async function _addOrderItems(data: {
     }
   }
 
-  // Build items
+  // Build main items
   const newItems = items.map((item) => {
-    const basePrice = priceMap.get(item.menu_item_id) ?? 0;
+    const basePrice = priceMap.get(item.menu_item_id)!;
     const variantAdj = item.variant_id
       ? (variantPriceMap.get(item.variant_id) ?? 0)
       : 0;
@@ -628,12 +715,62 @@ async function _addOrderItems(data: {
     };
   });
 
-  const { error: insertError } = await supabase
+  const { data: insertedItems, error: insertError } = await supabase
     .from("order_items")
-    .insert(newItems);
+    .insert(newItems)
+    .select("id, menu_item_id");
 
   if (insertError) {
     throw safeDbError(insertError, "db");
+  }
+
+  // Insert side items with parent_item_id
+  if (insertedItems) {
+    const sideInserts: {
+      order_id: number;
+      menu_item_id: number;
+      variant_id: null;
+      quantity: number;
+      unit_price: number;
+      item_total: number;
+      modifiers: null;
+      notes: string | null;
+      status: "pending";
+      parent_item_id: number;
+    }[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const originalItem = items[i]!;
+      const insertedItem = insertedItems[i];
+
+      if (originalItem.side_items && originalItem.side_items.length > 0 && insertedItem) {
+        for (const side of originalItem.side_items) {
+          const sidePrice = priceMap.get(side.menu_item_id)!;
+          sideInserts.push({
+            order_id,
+            menu_item_id: side.menu_item_id,
+            variant_id: null,
+            quantity: side.quantity,
+            unit_price: sidePrice,
+            item_total: sidePrice * side.quantity,
+            modifiers: null,
+            notes: side.notes ?? null,
+            status: "pending",
+            parent_item_id: insertedItem.id,
+          });
+        }
+      }
+    }
+
+    if (sideInserts.length > 0) {
+      const { error: sidesError } = await supabase
+        .from("order_items")
+        .insert(sideInserts);
+
+      if (sidesError) {
+        throw safeDbError(sidesError, "db");
+      }
+    }
   }
 
   // Recalculate order totals
@@ -649,7 +786,7 @@ async function _addOrderItems(data: {
     );
     const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
 
-    await supabase
+    const { error: updateError } = await supabase
       .from("orders")
       .update({
         subtotal: totals.subtotal,
@@ -658,6 +795,10 @@ async function _addOrderItems(data: {
         total: totals.total,
       })
       .eq("id", order_id);
+
+    if (updateError) {
+      throw safeDbError(updateError, "db");
+    }
   }
 
   revalidatePath("/pos/orders");

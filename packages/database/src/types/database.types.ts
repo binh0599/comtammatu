@@ -957,14 +957,17 @@ export type Database = {
       }
       menu_item_available_sides: {
         Row: {
+          id: number
           menu_item_id: number
           side_item_id: number
         }
         Insert: {
+          id?: never
           menu_item_id: number
           side_item_id: number
         }
         Update: {
+          id?: never
           menu_item_id?: number
           side_item_id?: number
         }
@@ -1354,11 +1357,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "order_items_parent_item_id_fkey"
-            columns: ["parent_item_id"]
+            foreignKeyName: "order_items_parent_item_order_fk"
+            columns: ["parent_item_id", "order_id"]
             isOneToOne: false
             referencedRelation: "order_items"
-            referencedColumns: ["id"]
+            referencedColumns: ["id", "order_id"]
           },
         ]
       }

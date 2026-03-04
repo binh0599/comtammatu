@@ -78,6 +78,8 @@ export function MenuSelector({
     null
   );
   const [sidesDialogItem, setSidesDialogItem] = useState<MenuItem | null>(null);
+  const [sidesDialogVariantId, setSidesDialogVariantId] = useState<number | null>(null);
+  const [sidesDialogVariantPrice, setSidesDialogVariantPrice] = useState<number>(0);
   const [selectedSides, setSelectedSides] = useState<Map<number, number>>(new Map());
   const [notesDialogKey, setNotesDialogKey] = useState<string | null>(null);
   const [notesText, setNotesText] = useState("");
@@ -152,6 +154,8 @@ export function MenuSelector({
       getCartQuantity(item.id, variant?.id ?? null) === 0
     ) {
       setSidesDialogItem(item);
+      setSidesDialogVariantId(variant?.id ?? null);
+      setSidesDialogVariantPrice(variant?.price_adjustment ?? 0);
       setSelectedSides(new Map());
       return;
     }
@@ -171,7 +175,10 @@ export function MenuSelector({
   function handleConfirmSides() {
     if (!sidesDialogItem) return;
 
-    const unitPrice = sidesDialogItem.base_price;
+    const variant = sidesDialogVariantId
+      ? sidesDialogItem.menu_item_variants?.find((v) => v.id === sidesDialogVariantId)
+      : null;
+    const unitPrice = sidesDialogItem.base_price + sidesDialogVariantPrice;
 
     const sideItems: CartSideItem[] = [];
     for (const [sideId, qty] of selectedSides) {
@@ -190,8 +197,8 @@ export function MenuSelector({
     onAddItem({
       menu_item_id: sidesDialogItem.id,
       name: sidesDialogItem.name,
-      variant_id: null,
-      variant_name: null,
+      variant_id: sidesDialogVariantId,
+      variant_name: variant?.name ?? null,
       quantity: 1,
       unit_price: unitPrice,
       notes: "",
@@ -199,6 +206,8 @@ export function MenuSelector({
     });
 
     setSidesDialogItem(null);
+    setSidesDialogVariantId(null);
+    setSidesDialogVariantPrice(0);
     setSelectedSides(new Map());
   }
 
@@ -279,8 +288,8 @@ export function MenuSelector({
         {filteredItems.map((item) => {
           const hasVariants =
             item.menu_item_variants && item.menu_item_variants.length > 0;
-          const qty = getCartQuantity(item.id, null);
-          const cartItem = getCartItem(item.id, null);
+          const baseQty = getCartQuantity(item.id, null);
+          const baseCartItem = getCartItem(item.id, null);
           const hasSides = item.available_side_ids.length > 0;
           const catType = item.menu_categories?.type;
 
@@ -305,43 +314,76 @@ export function MenuSelector({
                   <div className="mt-1 flex flex-wrap gap-1">
                     {item.menu_item_variants!.map((v) => {
                       const vQty = getCartQuantity(item.id, v.id);
+                      const vCartItem = getCartItem(item.id, v.id);
                       return (
-                        <button
-                          key={v.id}
-                          onClick={() => handleAdd(item, v.id)}
-                          className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                            vQty > 0
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-input bg-background"
-                          }`}
-                          aria-label={`Thêm ${v.name}${v.price_adjustment > 0 ? ` +${formatPrice(v.price_adjustment)}` : ""}${vQty > 0 ? `, ${vQty} trong giỏ` : ""}`}
-                        >
-                          {v.name}
-                          {v.price_adjustment > 0 &&
-                            ` +${formatPrice(v.price_adjustment)}`}
-                          {vQty > 0 && ` (${vQty})`}
-                        </button>
+                        <div key={v.id} className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleAdd(item, v.id)}
+                            className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                              vQty > 0
+                                ? "bg-primary text-primary-foreground"
+                                : "border border-input bg-background"
+                            }`}
+                            aria-label={`Thêm ${v.name}${v.price_adjustment > 0 ? ` +${formatPrice(v.price_adjustment)}` : ""}${vQty > 0 ? `, ${vQty} trong giỏ` : ""}`}
+                          >
+                            {v.name}
+                            {v.price_adjustment > 0 &&
+                              ` +${formatPrice(v.price_adjustment)}`}
+                            {vQty > 0 && ` (${vQty})`}
+                          </button>
+                          {vQty > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => openNotesDialog(item.id, v.id)}
+                              aria-label="Ghi chú"
+                              title="Ghi chú cho bếp"
+                            >
+                              <MessageSquare className={`h-3 w-3 ${vCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                            </Button>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
                 )}
-                {/* Show side items in cart */}
-                {cartItem && cartItem.side_items.length > 0 && (
+                {/* Show side items in cart (base item) */}
+                {baseCartItem && baseCartItem.side_items.length > 0 && (
                   <div className="text-muted-foreground mt-1 text-xs">
-                    Kèm: {cartItem.side_items.map((s) => s.name).join(", ")}
+                    Kèm: {baseCartItem.side_items.map((s) => s.name).join(", ")}
                   </div>
                 )}
-                {/* Show notes indicator */}
-                {cartItem?.notes && (
+                {/* Show notes indicator (base item) */}
+                {baseCartItem?.notes && (
                   <div className="text-muted-foreground mt-0.5 text-xs italic">
-                    &quot;{cartItem.notes}&quot;
+                    &quot;{baseCartItem.notes}&quot;
                   </div>
                 )}
+                {/* Show variant-level sides and notes */}
+                {hasVariants && item.menu_item_variants!.map((v) => {
+                  const vCartItem = getCartItem(item.id, v.id);
+                  if (!vCartItem) return null;
+                  return (
+                    <div key={`info-${v.id}`}>
+                      {vCartItem.side_items.length > 0 && (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          {v.name} kèm: {vCartItem.side_items.map((s) => s.name).join(", ")}
+                        </div>
+                      )}
+                      {vCartItem.notes && (
+                        <div className="text-muted-foreground mt-0.5 text-xs italic">
+                          {v.name}: &quot;{vCartItem.notes}&quot;
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="flex items-center gap-1">
-                {/* Notes button */}
-                {qty > 0 && (
+                {/* Notes button (base item, no variants) */}
+                {!hasVariants && baseQty > 0 && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -350,13 +392,13 @@ export function MenuSelector({
                     aria-label="Ghi chú"
                     title="Ghi chú cho bếp"
                   >
-                    <MessageSquare className={`h-3.5 w-3.5 ${cartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                    <MessageSquare className={`h-3.5 w-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
                   </Button>
                 )}
 
                 {!hasVariants && (
                   <>
-                    {qty > 0 && (
+                    {baseQty > 0 && (
                       <>
                         <Button
                           variant="outline"
@@ -368,7 +410,7 @@ export function MenuSelector({
                           <Minus className="h-3 w-3" aria-hidden="true" />
                         </Button>
                         <span className="w-6 text-center text-sm font-medium">
-                          {qty}
+                          {baseQty}
                         </span>
                       </>
                     )}

@@ -149,27 +149,33 @@ export function MenuDetail({
     let cancelled = false;
 
     async function loadSides() {
-      const [sides, available] = await Promise.all([
-        getSideItems(menu.id),
-        getAvailableSides(sidesDialogItemId!),
-      ]);
+      try {
+        const [sides, available] = await Promise.all([
+          getSideItems(menu.id),
+          getAvailableSides(sidesDialogItemId!),
+        ]);
 
-      if (cancelled) return;
+        if (cancelled) return;
 
-      setAllSideItems(
-        (sides as SideItem[]).map((s) => ({
-          id: s.id,
-          name: s.name,
-          base_price: s.base_price,
-        })),
-      );
-      setSelectedSideIds(
-        new Set(
-          (available as { side_item_id: number }[]).map(
-            (a) => a.side_item_id,
+        setAllSideItems(
+          (sides as SideItem[]).map((s) => ({
+            id: s.id,
+            name: s.name,
+            base_price: s.base_price,
+          })),
+        );
+        setSelectedSideIds(
+          new Set(
+            (available as { side_item_id: number }[]).map(
+              (a) => a.side_item_id,
+            ),
           ),
-        ),
-      );
+        );
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Failed to load side items:", err);
+        setError("Không thể tải danh sách món kèm. Vui lòng thử lại.");
+      }
     }
 
     void loadSides();
