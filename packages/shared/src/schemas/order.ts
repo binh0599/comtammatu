@@ -23,6 +23,7 @@ export const createOrderSchema = z.object({
   table_id: z.number().int().positive().nullish(),
   type: z.enum(["dine_in", "takeaway", "delivery"]),
   notes: z.string().max(500).nullish(),
+  guest_count: z.number().int().positive().max(20).nullish(),
   items: z
     .array(orderItemInput)
     .min(1, "Đơn hàng phải có ít nhất 1 món"),

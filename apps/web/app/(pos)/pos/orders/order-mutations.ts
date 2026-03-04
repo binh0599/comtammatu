@@ -52,6 +52,7 @@ async function _createOrder(data: {
   table_id?: number | null;
   type: string;
   notes?: string;
+  guest_count?: number | null;
   terminal_id: number;
   items: {
     menu_item_id: number;
@@ -73,7 +74,7 @@ async function _createOrder(data: {
     );
   }
 
-  const { table_id, type, notes, items } = parsed.data;
+  const { table_id, type, notes, guest_count, items } = parsed.data;
 
   if (items.length === 0) {
     throw new ActionError(
@@ -230,6 +231,7 @@ async function _createOrder(data: {
       discount_total: 0,
       total: totals.total,
       notes: notes ?? null,
+      guest_count: guest_count ?? null,
     })
     .select("id, order_number")
     .single();
