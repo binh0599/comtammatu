@@ -5,12 +5,18 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { bumpTicket } from "./actions";
 
+interface TicketItemModifier {
+  name: string;
+  price?: number;
+  options?: string[];
+}
+
 interface TicketItem {
   order_item_id: number;
   menu_item_id: number;
   menu_item_name: string;
   quantity: number;
-  modifiers: { name: string; options: string[] }[] | null;
+  modifiers: TicketItemModifier[] | null;
   notes: string | null;
   variant_name: string | null;
 }
@@ -152,9 +158,9 @@ export function TicketCard({
             </div>
             {(item.modifiers || item.notes) && (
               <div className="ml-6 flex flex-col gap-1 text-sm">
-                {item.modifiers?.map((m: any, mIdx: number) => (
+                {item.modifiers?.map((m, mIdx) => (
                   <span key={mIdx} className="text-muted-foreground">
-                    + {m.name}: {m.options ? m.options.join(", ") : (m.price ? `(+${m.price}đ)` : " ")}
+                    + {m.name}{m.options ? `: ${m.options.join(", ")}` : m.price ? ` (+${new Intl.NumberFormat("vi-VN").format(m.price)}đ)` : ""}
                   </span>
                 ))}
                 {item.notes && (

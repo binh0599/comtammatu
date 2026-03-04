@@ -8,21 +8,25 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_station RECORD;
-  v_item    JSONB;
-  v_order   orders%ROWTYPE;
+  v_station    RECORD;
+  v_item       JSONB;
+  v_order_status TEXT;
+  v_branch_id  BIGINT;
+  v_ticket_id  BIGINT;
 BEGIN
-  -- Only process items if their order is already active (confirmed, preparing, ready, served)
-  SELECT * INTO v_order FROM orders WHERE id = NEW.order_id;
-  
-  IF v_order.status IN ('confirmed', 'preparing', 'ready', 'served') AND NEW.status = 'pending' THEN
+  -- Only fetch the columns we need
+  SELECT status, branch_id INTO v_order_status, v_branch_id
+  FROM orders WHERE id = NEW.order_id;
+
+  -- Only process items if their order is already active (not draft, completed, or cancelled)
+  IF v_order_status IN ('confirmed', 'preparing', 'ready', 'served') AND NEW.status = 'pending' THEN
     -- Find which stations need this item
     FOR v_station IN
-      SELECT DISTINCT ks.id AS station_id, ksc.category_id
+      SELECT DISTINCT ks.id AS station_id
       FROM kds_stations ks
       JOIN kds_station_categories ksc ON ksc.station_id = ks.id
       JOIN menu_items mi ON mi.category_id = ksc.category_id AND mi.id = NEW.menu_item_id
-      WHERE ks.branch_id = v_order.branch_id
+      WHERE ks.branch_id = v_branch_id
         AND ks.is_active = true
     LOOP
       -- Build the JSON object for this single ticket item
@@ -39,31 +43,33 @@ BEGIN
       FROM menu_items mi
       LEFT JOIN menu_item_variants miv ON miv.id = NEW.variant_id
       WHERE mi.id = NEW.menu_item_id;
-      
-      -- Check if there's an active ticket for this order on this station
-      IF EXISTS (
-        SELECT 1 FROM kds_tickets
-        WHERE order_id = NEW.order_id AND station_id = v_station.station_id
-          AND status IN ('pending', 'preparing')
-      ) THEN
-        -- Append to existing ticket
+
+      -- Find the most recent active ticket for this order+station (avoid duplicating across multiple)
+      SELECT id INTO v_ticket_id
+      FROM kds_tickets
+      WHERE order_id = NEW.order_id AND station_id = v_station.station_id
+        AND status IN ('pending', 'preparing')
+      ORDER BY created_at DESC
+      LIMIT 1;
+
+      IF v_ticket_id IS NOT NULL THEN
+        -- Append to the most recent active ticket
         UPDATE kds_tickets
         SET items = items || jsonb_build_array(v_item)
-        WHERE order_id = NEW.order_id AND station_id = v_station.station_id
-          AND status IN ('pending', 'preparing');
+        WHERE id = v_ticket_id;
       ELSE
         -- Create a new ticket if none active
         INSERT INTO kds_tickets (order_id, station_id, items, status, priority)
         VALUES (NEW.order_id, v_station.station_id, jsonb_build_array(v_item), 'pending', 0);
       END IF;
-      
+
       -- Update order_item status
       UPDATE order_items
       SET status = 'sent_to_kds',
           kds_station_id = v_station.station_id,
           sent_to_kds_at = NOW()
       WHERE id = NEW.id;
-      
+
     END LOOP;
   END IF;
 
