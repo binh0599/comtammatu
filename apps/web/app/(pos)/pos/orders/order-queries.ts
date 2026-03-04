@@ -123,11 +123,13 @@ async function _getTablesWithActiveOrders() {
   const { data: activeOrders, error: ordersError } = await supabase
     .from("orders")
     .select(
-      "id, order_number, status, total, table_id, order_items(id, quantity)"
+      "id, order_number, status, total, table_id, guest_count, order_items(id, quantity)"
     )
     .eq("branch_id", branchId)
     .in("status", activeStatuses)
-    .not("table_id", "is", null);
+    .not("table_id", "is", null)
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
 
   if (ordersError) throw safeDbError(ordersError, "db");
 
@@ -138,6 +140,7 @@ async function _getTablesWithActiveOrders() {
     status: string;
     total: number;
     item_count: number;
+    guest_count: number | null;
   };
   const ordersByTable = new Map<number, OrderInfo[]>();
 
@@ -156,6 +159,7 @@ async function _getTablesWithActiveOrders() {
           status: order.status,
           total: order.total,
           item_count: itemCount,
+          guest_count: order.guest_count ?? null,
         };
         const existing = ordersByTable.get(order.table_id);
         if (existing) {

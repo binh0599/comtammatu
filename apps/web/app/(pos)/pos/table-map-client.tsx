@@ -5,10 +5,9 @@ import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
     getTableStatusLabel,
-    getOrderStatusLabel,
-    formatPrice,
 } from "@comtammatu/shared";
 import { TableOrderSheet } from "./table-order-sheet";
+import { VisualTable } from "./visual-table";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,6 +19,8 @@ interface ActiveOrder {
     status: string;
     total: number;
     item_count: number;
+    guest_count?: number;
+    sub_order_index?: number;
 }
 
 interface TableItem {
@@ -58,28 +59,6 @@ interface Category {
 }
 
 // ---------------------------------------------------------------------------
-// Status badge styles for occupied tables
-// ---------------------------------------------------------------------------
-
-const orderStatusBg: Record<string, string> = {
-    draft: "bg-gray-500",
-    confirmed: "bg-blue-500",
-    preparing: "bg-orange-500",
-    ready: "bg-green-500",
-    served: "bg-purple-500",
-};
-
-const statusColors: Record<string, string> = {
-    available:
-        "border-green-500 bg-green-50 text-green-700 hover:bg-green-100 hover:shadow-md",
-    occupied:
-        "border-red-500 bg-red-50 text-red-700 hover:bg-red-100 hover:shadow-md",
-    reserved:
-        "border-yellow-500 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:shadow-md",
-    cleaning: "border-gray-400 bg-gray-50 text-gray-600",
-};
-
-// ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
 
@@ -100,6 +79,7 @@ export function TableMapClient({
     const [selectedOrder, setSelectedOrder] = useState<ActiveOrder | null>(null);
     const [selectedActiveOrders, setSelectedActiveOrders] = useState<ActiveOrder[]>([]);
     const [selectedLabel, setSelectedLabel] = useState("");
+    const [selectedCapacity, setSelectedCapacity] = useState<number>(4);
 
     // Group by zone
     const zoneMap = new Map<string, TableItem[]>();
@@ -114,17 +94,23 @@ export function TableMapClient({
         const label = `Bàn ${table.number}`;
         setSelectedTableId(table.id);
         setSelectedLabel(label);
+        setSelectedCapacity(table.capacity ?? 4);
 
-        setSelectedActiveOrders(table.active_orders);
+        // Assign sub_order_index to orders for display
+        const ordersWithIndex = table.active_orders.map((o, i) => ({
+            ...o,
+            sub_order_index: i + 1,
+        }));
+        setSelectedActiveOrders(ordersWithIndex);
 
-        if (table.active_orders.length > 1) {
+        if (ordersWithIndex.length > 1) {
             // Multiple active orders → show list so waiter can pick one or create new
             setSheetMode("list");
             setSelectedOrder(null);
-        } else if (table.active_orders.length === 1) {
+        } else if (ordersWithIndex.length === 1) {
             // Single active order → view it directly
             setSheetMode("view");
-            setSelectedOrder(table.active_orders[0]!);
+            setSelectedOrder(ordersWithIndex[0]!);
         } else {
             // Available → create order
             setSheetMode("create");
@@ -137,6 +123,7 @@ export function TableMapClient({
     function handleTakeawayClick() {
         setSelectedTableId(null);
         setSelectedLabel("Mang đi");
+        setSelectedCapacity(0);
         setSheetMode("create");
         setSelectedOrder(null);
         setSheetOpen(true);
@@ -154,7 +141,7 @@ export function TableMapClient({
                         <button
                             type="button"
                             onClick={handleTakeawayClick}
-                            className="flex min-h-[72px] cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-indigo-400 bg-indigo-50 p-3 text-center text-indigo-700 transition-all hover:bg-indigo-100 hover:shadow-md active:scale-95"
+                            className="flex min-h-[72px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-indigo-400 bg-indigo-50 p-3 text-center text-indigo-700 transition-all hover:bg-indigo-100 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                             aria-label="Tạo đơn mang đi"
                         >
                             <Package className="mb-1 h-6 w-6" aria-hidden="true" />
@@ -169,75 +156,22 @@ export function TableMapClient({
                         <h3 className="text-muted-foreground mb-3 text-sm font-medium uppercase tracking-wide">
                             {zoneName}
                         </h3>
-                        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                             {zoneTables.map((table) => {
                                 const isClickable =
                                     table.status !== "cleaning" &&
                                     table.status !== "reserved";
-                                const orders = table.active_orders;
-                                const orderCount = orders.length;
-                                const firstOrder = orders[0] ?? null;
-
-                                // Build aria label with all active orders
-                                const orderLabels = orders
-                                    .map((o) => o.order_number)
-                                    .join(", ");
 
                                 return (
-                                    <button
+                                    <VisualTable
                                         key={table.id}
-                                        type="button"
-                                        onClick={() => {
-                                            if (isClickable) handleTableClick(table);
-                                        }}
-                                        disabled={!isClickable}
-                                        aria-label={`Bàn ${table.number}, ${getTableStatusLabel(table.status)}${orderLabels ? `, ${orderLabels}` : ""}`}
-                                        className={cn(
-                                            "relative flex min-h-[72px] flex-col items-center justify-center rounded-lg border-2 p-3 text-center transition-all",
-                                            statusColors[table.status] ??
-                                            "border-gray-300 bg-gray-50",
-                                            isClickable && "cursor-pointer active:scale-95",
-                                            !isClickable && "cursor-default opacity-70"
-                                        )}
-                                    >
-                                        <span className="text-lg font-bold">
-                                            Bàn {table.number}
-                                        </span>
-                                        <span className="text-xs">
-                                            {getTableStatusLabel(table.status)}
-                                        </span>
-                                        {table.capacity && (
-                                            <span className="mt-0.5 text-xs opacity-60">
-                                                {table.capacity} chỗ
-                                            </span>
-                                        )}
-
-                                        {/* Active order badge(s) */}
-                                        {orderCount === 1 && firstOrder && (
-                                            <div
-                                                className={cn(
-                                                    "absolute -right-1 -top-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm",
-                                                    orderStatusBg[firstOrder.status] ?? "bg-gray-500"
-                                                )}
-                                                title={`${firstOrder.order_number} · ${getOrderStatusLabel(firstOrder.status)} · ${formatPrice(firstOrder.total)}`}
-                                            >
-                                                {firstOrder.item_count}
-                                            </div>
-                                        )}
-                                        {orderCount > 1 && (
-                                            <div
-                                                className="absolute -right-1 -top-1 rounded-full bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold text-white shadow-sm"
-                                                title={orders
-                                                    .map(
-                                                        (o) =>
-                                                            `${o.order_number} · ${getOrderStatusLabel(o.status)} · ${formatPrice(o.total)}`
-                                                    )
-                                                    .join("\n")}
-                                            >
-                                                {orderCount} đơn
-                                            </div>
-                                        )}
-                                    </button>
+                                        tableNumber={table.number}
+                                        capacity={table.capacity ?? 4}
+                                        status={table.status}
+                                        activeOrders={table.active_orders}
+                                        isClickable={isClickable}
+                                        onClick={() => handleTableClick(table)}
+                                    />
                                 );
                             })}
                         </div>
@@ -258,6 +192,7 @@ export function TableMapClient({
                 mode={sheetMode}
                 tableId={selectedTableId}
                 tableLabel={selectedLabel}
+                tableCapacity={selectedCapacity}
                 activeOrder={selectedOrder}
                 activeOrders={selectedActiveOrders}
                 menuItems={menuItems}
