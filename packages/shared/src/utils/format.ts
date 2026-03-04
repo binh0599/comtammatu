@@ -252,3 +252,10 @@ export const getPrinterAssignedTypeLabel = createLabelMapper({
   pos_terminal: "Máy thu ngân",
   kds_station: "Trạm bếp",
 });
+
+// ===== Device Registration =====
+export const getDeviceStatusLabel = createLabelMapper({
+  pending: "Chờ duyệt",
+  approved: "Đã duyệt",
+  rejected: "Từ chối",
+});

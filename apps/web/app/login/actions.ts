@@ -4,13 +4,41 @@ import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { ActionError, handleServerActionError } from "@comtammatu/shared";
+import {
+  ActionError,
+  handleServerActionError,
+  entityIdSchema,
+} from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
   password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
+  device_fingerprint: z.string().min(1).max(255).optional(),
+  device_name: z.string().max(255).optional(),
 });
+
+/** Roles that require device approval before accessing POS/KDS */
+const DEVICE_CHECK_ROLES = ["cashier", "waiter", "chef"];
+
+function generateApprovalCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No 0/O/1/I to avoid confusion
+  let code = "";
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  for (let i = 0; i < 6; i++) {
+    code += chars[bytes[i]! % chars.length];
+  }
+  return code;
+}
+
+function getRoleRedirectPath(role: string): string {
+  if (role === "owner" || role === "manager") return "/admin";
+  if (role === "cashier" || role === "waiter") return "/pos";
+  if (role === "chef") return "/kds";
+  if (role === "hr") return "/admin/hr";
+  return "/customer";
+}
 
 async function _login(formData: FormData) {
   // Rate limit by IP
@@ -28,6 +56,8 @@ async function _login(formData: FormData) {
   const parsed = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
+    device_fingerprint: formData.get("device_fingerprint") || undefined,
+    device_name: formData.get("device_name") || undefined,
   });
 
   if (!parsed.success) {
@@ -54,17 +84,105 @@ async function _login(formData: FormData) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, tenant_id, branch_id")
     .eq("id", authData.user.id)
     .single();
 
   const role = profile?.role ?? "customer";
 
-  // Role-based redirect
-  if (role === "owner" || role === "manager") redirect("/admin");
-  else if (role === "cashier" || role === "waiter") redirect("/pos");
-  else if (role === "chef") redirect("/kds");
-  else redirect("/customer");
+  // Owner, manager, hr, customer: skip device check, redirect directly
+  if (!DEVICE_CHECK_ROLES.includes(role)) {
+    redirect(getRoleRedirectPath(role));
+  }
+
+  // Staff roles: require device fingerprint and complete profile
+  const fingerprint = parsed.data.device_fingerprint;
+  if (!fingerprint || !profile?.tenant_id || !profile?.branch_id) {
+    // Missing fingerprint or incomplete profile — show error instead of bypassing
+    throw new ActionError(
+      "Thiết bị chưa được nhận diện. Vui lòng thử lại.",
+      "VALIDATION_ERROR",
+    );
+  }
+
+  // Check if device is already registered — scope by tenant + branch
+  const { data: existingDevice } = await supabase
+    .from("registered_devices")
+    .select("id, status, approval_code")
+    .eq("device_fingerprint", fingerprint)
+    .eq("tenant_id", profile.tenant_id)
+    .eq("branch_id", profile.branch_id)
+    .maybeSingle();
+
+  if (existingDevice) {
+    if (existingDevice.status === "approved") {
+      // Device approved — go straight through
+      redirect(getRoleRedirectPath(role));
+    }
+
+    if (existingDevice.status === "pending") {
+      // Device pending — redirect to pending page
+      return {
+        pendingApproval: true,
+        approvalCode: existingDevice.approval_code,
+        deviceId: existingDevice.id,
+        role,
+      };
+    }
+
+    // Device rejected — re-create with new code
+    await supabase
+      .from("registered_devices")
+      .update({
+        status: "pending",
+        approval_code: generateApprovalCode(),
+        registered_by: authData.user.id,
+        ip_address: ip,
+        user_agent: parsed.data.device_name ?? "",
+        approved_by: null,
+        approved_at: null,
+        rejected_at: null,
+      })
+      .eq("id", existingDevice.id);
+
+    const { data: refreshed } = await supabase
+      .from("registered_devices")
+      .select("id, approval_code")
+      .eq("id", existingDevice.id)
+      .single();
+
+    return {
+      pendingApproval: true,
+      approvalCode: refreshed?.approval_code ?? "",
+      deviceId: refreshed?.id ?? existingDevice.id,
+      role,
+    };
+  }
+
+  // New device — register it
+  const approvalCode = generateApprovalCode();
+  const { data: newDevice } = await supabase
+    .from("registered_devices")
+    .insert({
+      tenant_id: profile.tenant_id,
+      branch_id: profile.branch_id,
+      device_fingerprint: fingerprint,
+      device_name: parsed.data.device_name ?? "",
+      approval_code: approvalCode,
+      ip_address: ip,
+      user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
+      registered_by: authData.user.id,
+      status: "pending",
+    })
+    .select("id")
+    .single();
+
+  return {
+    pendingApproval: true,
+    approvalCode: approvalCode,
+    deviceId: newDevice?.id ?? 0,
+    role,
+  };
 }
 
 export async function login(formData: FormData) {
@@ -77,6 +195,56 @@ export async function login(formData: FormData) {
     }
     return handleServerActionError(error);
   }
+}
+
+/**
+ * Check if a device has been approved (called from pending page polling).
+ * Scoped to the requesting user's tenant to prevent cross-tenant queries.
+ */
+export async function checkDeviceStatus(deviceId: number) {
+  const parsed = entityIdSchema.safeParse(deviceId);
+  if (!parsed.success) {
+    return { status: "error" as const, error: "ID không hợp lệ" };
+  }
+
+  const supabase = await createSupabaseServer();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { status: "error" as const, error: "Chưa đăng nhập" };
+  }
+
+  // Get user's tenant for scoping
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.tenant_id) {
+    return { status: "error" as const, error: "Không tìm thấy hồ sơ" };
+  }
+
+  // Only allow querying devices within the user's tenant
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("status, registered_by")
+    .eq("id", parsed.data)
+    .eq("tenant_id", profile.tenant_id)
+    .single();
+
+  if (!device) {
+    return { status: "error" as const, error: "Thiết bị không tồn tại" };
+  }
+
+  // Only the device registrant or an admin can check status
+  if (device.registered_by !== user.id) {
+    return { status: "error" as const, error: "Không có quyền" };
+  }
+
+  return { status: device.status as "pending" | "approved" | "rejected" };
 }
 
 export async function logout() {
