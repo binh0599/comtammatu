@@ -29,6 +29,7 @@ export type NetworkConnectionConfig = z.infer<typeof networkConnectionConfigSche
 
 // Create printer config
 export const createPrinterConfigSchema = z.object({
+  branch_id: z.coerce.number().int().positive("Chi nhánh không hợp lệ"),
   name: z.string().min(1).max(100),
   type: z.enum(PRINTER_TYPES),
   connection_config: z.record(z.string(), z.unknown()).default({}),
