@@ -215,17 +215,32 @@ async function _createOrder(data: {
     priceMap.set(mi.id, mi.base_price);
   }
 
-  // Validate side items against allowed list
-  for (const item of items) {
-    if (item.side_items && item.side_items.length > 0) {
-      const { data: allowedSides } = await supabase
-        .from("menu_item_available_sides")
-        .select("side_item_id")
-        .eq("menu_item_id", item.menu_item_id);
+  // Validate side items against allowed list (batched query)
+  const itemsWithSides = items.filter((i) => i.side_items && i.side_items.length > 0);
+  if (itemsWithSides.length > 0) {
+    const parentMenuIds = [...new Set(itemsWithSides.map((i) => i.menu_item_id))];
+    const { data: allAllowedSides, error: allowedSidesError } = await supabase
+      .from("menu_item_available_sides")
+      .select("menu_item_id, side_item_id")
+      .in("menu_item_id", parentMenuIds);
 
-      const allowedSet = new Set((allowedSides ?? []).map((s: { side_item_id: number }) => s.side_item_id));
-      for (const side of item.side_items) {
-        if (!allowedSet.has(side.menu_item_id)) {
+    if (allowedSidesError) {
+      throw safeDbError(allowedSidesError, "db");
+    }
+
+    const allowedMap = new Map<number, Set<number>>();
+    for (const row of allAllowedSides ?? []) {
+      const r = row as { menu_item_id: number; side_item_id: number };
+      if (!allowedMap.has(r.menu_item_id)) {
+        allowedMap.set(r.menu_item_id, new Set());
+      }
+      allowedMap.get(r.menu_item_id)!.add(r.side_item_id);
+    }
+
+    for (const item of itemsWithSides) {
+      const allowed = allowedMap.get(item.menu_item_id) ?? new Set();
+      for (const side of item.side_items!) {
+        if (!allowed.has(side.menu_item_id)) {
           throw new ActionError(
             `Món kèm ${side.menu_item_id} không được phép cho món ${item.menu_item_id}`,
             "VALIDATION_ERROR"
@@ -623,12 +638,15 @@ async function _addOrderItems(data: {
 
   // Lookup prices — scoped to tenant
   const itemIds = Array.from(allMenuItemIds);
-  const { data: menuItems } = await supabase
+  const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
     .select("id, base_price, is_available")
     .in("id", itemIds)
     .eq("tenant_id", tenantId);
 
+  if (menuError) {
+    throw safeDbError(menuError, "db");
+  }
   if (!menuItems || menuItems.length === 0) {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
@@ -655,17 +673,32 @@ async function _addOrderItems(data: {
     priceMap.set(mi.id, mi.base_price);
   }
 
-  // Validate side items against allowed list
-  for (const item of items) {
-    if (item.side_items && item.side_items.length > 0) {
-      const { data: allowedSides } = await supabase
-        .from("menu_item_available_sides")
-        .select("side_item_id")
-        .eq("menu_item_id", item.menu_item_id);
+  // Validate side items against allowed list (batched query)
+  const itemsWithSides = items.filter((i) => i.side_items && i.side_items.length > 0);
+  if (itemsWithSides.length > 0) {
+    const parentMenuIds = [...new Set(itemsWithSides.map((i) => i.menu_item_id))];
+    const { data: allAllowedSides, error: allowedSidesError } = await supabase
+      .from("menu_item_available_sides")
+      .select("menu_item_id, side_item_id")
+      .in("menu_item_id", parentMenuIds);
 
-      const allowedSet = new Set((allowedSides ?? []).map((s: { side_item_id: number }) => s.side_item_id));
-      for (const side of item.side_items) {
-        if (!allowedSet.has(side.menu_item_id)) {
+    if (allowedSidesError) {
+      throw safeDbError(allowedSidesError, "db");
+    }
+
+    const allowedMap = new Map<number, Set<number>>();
+    for (const row of allAllowedSides ?? []) {
+      const r = row as { menu_item_id: number; side_item_id: number };
+      if (!allowedMap.has(r.menu_item_id)) {
+        allowedMap.set(r.menu_item_id, new Set());
+      }
+      allowedMap.get(r.menu_item_id)!.add(r.side_item_id);
+    }
+
+    for (const item of itemsWithSides) {
+      const allowed = allowedMap.get(item.menu_item_id) ?? new Set();
+      for (const side of item.side_items!) {
+        if (!allowed.has(side.menu_item_id)) {
           throw new ActionError(
             `Món kèm ${side.menu_item_id} không được phép cho món ${item.menu_item_id}`,
             "VALIDATION_ERROR"
