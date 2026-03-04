@@ -20,7 +20,7 @@ export default async function SecurityPage() {
   return (
     <>
       <Header breadcrumbs={[{ label: "Bảo mật" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <Tabs defaultValue="events" className="w-full">
           <TabsList>
             <TabsTrigger value="events">Sự kiện bảo mật</TabsTrigger>

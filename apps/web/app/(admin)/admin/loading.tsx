@@ -9,7 +9,7 @@ export default function AdminDashboardLoading() {
   return (
     <>
       <Header />
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-6 p-4">
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <StatCardSkeleton />
           <StatCardSkeleton />

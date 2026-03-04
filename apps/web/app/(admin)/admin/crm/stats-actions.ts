@@ -4,6 +4,7 @@ import "@/lib/server-bootstrap";
 import {
   getActionContext,
   withServerQuery,
+  safeDbError,
 } from "@comtammatu/shared";
 
 // =====================
@@ -52,6 +53,13 @@ async function _getCrmStats(): Promise<CrmStats> {
       .is("response", null)
       .eq("branches.tenant_id", tenantId),
   ]);
+
+  if (customersResult.error) throw safeDbError(customersResult.error, "db");
+  if (activeCustomersResult.error) throw safeDbError(activeCustomersResult.error, "db");
+  if (vouchersResult.error) throw safeDbError(vouchersResult.error, "db");
+  if (activeVouchersResult.error) throw safeDbError(activeVouchersResult.error, "db");
+  if (feedbackResult.error) throw safeDbError(feedbackResult.error, "db");
+  if (pendingFeedbackResult.error) throw safeDbError(pendingFeedbackResult.error, "db");
 
   const ratings = feedbackResult.data ?? [];
   const avgRating = ratings.length > 0

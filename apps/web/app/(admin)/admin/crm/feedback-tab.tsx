@@ -203,7 +203,7 @@ export function FeedbackTab({ feedback }: { feedback: Feedback[] }) {
               Đánh giá từ{" "}
               {respondingItem?.customers?.full_name ?? "Khách vãng lai"}
               {respondingItem?.orders?.order_number
-                ? ` — Don #${respondingItem.orders.order_number}`
+                ? ` — Đơn #${respondingItem.orders.order_number}`
                 : ""}
             </DialogDescription>
           </DialogHeader>

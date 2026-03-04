@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -343,7 +343,8 @@ function AddItemsMode({
                 return;
             }
 
-            toast.success(`Đã thêm ${cart.length} món vào ${orderNumber}`);
+            const addedQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+            toast.success(`Đã thêm ${addedQty} món vào ${orderNumber}`);
             onClose();
             router.refresh();
         });
@@ -551,6 +552,11 @@ export function TableOrderSheet({
     terminalId: number;
 }) {
     const [internalMode, setInternalMode] = useState<"view" | "create" | "add-items">(initialMode);
+
+    // Sync internalMode when the parent-supplied initialMode changes (e.g. sheet reopened for different table)
+    useEffect(() => {
+        setInternalMode(initialMode);
+    }, [initialMode]);
 
     // Reset internal mode when sheet opens/closes or initial mode changes
     const currentMode = open ? internalMode : initialMode;

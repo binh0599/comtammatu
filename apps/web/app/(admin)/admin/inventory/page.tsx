@@ -41,7 +41,7 @@ export default async function InventoryPage() {
   return (
     <>
       <Header breadcrumbs={[{ label: "Kho hàng" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <Tabs defaultValue="ingredients" className="w-full">
           <TabsList>
             <TabsTrigger value="ingredients">Nguyên liệu</TabsTrigger>

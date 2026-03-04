@@ -46,7 +46,7 @@ export default async function HrPage() {
   return (
     <>
       <Header breadcrumbs={[{ label: "Nhân sự" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <Tabs defaultValue="employees" className="w-full">
           <TabsList>
             <TabsTrigger value="employees">Nhân viên</TabsTrigger>
