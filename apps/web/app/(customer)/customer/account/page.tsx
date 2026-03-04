@@ -1,34 +1,27 @@
 import type { Metadata } from "next";
-import { createSupabaseServer } from "@comtammatu/database";
-import { redirect } from "next/navigation";
-import { getCustomerProfile } from "../actions";
-import { AccountClient } from "./account-client";
+import { User, Smartphone } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
   title: "Tài khoản - Com Tấm Mã Tú",
 };
 
-export default async function AccountPage() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  let profile: Awaited<ReturnType<typeof getCustomerProfile>> | null = null;
-  try {
-    profile = await getCustomerProfile();
-  } catch {
-    // Customer record may not exist
-  }
-
+export default function AccountPage() {
   return (
-    <AccountClient
-      profile={profile}
-      userEmail={user.email ?? null}
-    />
+    <div className="flex flex-col items-center gap-4 py-16">
+      <div className="bg-green-50 flex h-16 w-16 items-center justify-center rounded-full">
+        <User className="h-8 w-8 text-green-500" />
+      </div>
+      <h1 className="text-xl font-bold">Tai khoan</h1>
+      <Card>
+        <CardContent className="flex items-center gap-3 p-4">
+          <Smartphone className="text-muted-foreground h-5 w-5 flex-shrink-0" />
+          <p className="text-muted-foreground text-sm">
+            Dang nhap va quan ly tai khoan tren ung dung di dong. Vui long cho
+            cap nhat!
+          </p>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
