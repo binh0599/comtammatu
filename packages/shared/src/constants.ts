@@ -213,6 +213,21 @@ export const DELETION_REQUEST_STATUSES = [
 export type DeletionRequestStatus =
   (typeof DELETION_REQUEST_STATUSES)[number];
 
+// ===== Menu =====
+
+export const MENU_CATEGORY_TYPES = [
+  "main_dish",
+  "side_dish",
+  "drink",
+] as const;
+export type MenuCategoryType = (typeof MENU_CATEGORY_TYPES)[number];
+
+export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
+  main_dish: "Món chính",
+  side_dish: "Món kèm",
+  drink: "Nước",
+};
+
 // ===== Device Registration =====
 
 export const DEVICE_STATUSES = ["pending", "approved", "rejected"] as const;

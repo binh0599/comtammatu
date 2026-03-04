@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { useState, useTransition, useEffect } from "react";
+import { Plus, Pencil, Trash2, Link2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,12 +37,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  MENU_CATEGORY_TYPES,
+  MENU_CATEGORY_TYPE_LABELS,
+  type MenuCategoryType,
+} from "@comtammatu/shared";
 import {
   createCategory,
   deleteCategory,
   createMenuItem,
   updateMenuItem,
   deleteMenuItem,
+  getAvailableSides,
+  getSideItems,
+  updateAvailableSides,
 } from "../actions";
 
 interface MenuItem {
@@ -65,6 +81,7 @@ interface Category {
   id: number;
   name: string;
   sort_order: number | null;
+  type: MenuCategoryType;
   items: MenuItem[];
 }
 
@@ -78,12 +95,27 @@ interface Menu {
   updated_at: string;
 }
 
+interface SideItem {
+  id: number;
+  name: string;
+  base_price: number;
+}
+
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
     currency: "VND",
   }).format(price);
 }
+
+const categoryTypeBadgeVariant: Record<
+  MenuCategoryType,
+  "default" | "secondary" | "outline"
+> = {
+  main_dish: "default",
+  side_dish: "secondary",
+  drink: "outline",
+};
 
 export function MenuDetail({
   menu,
@@ -100,8 +132,57 @@ export function MenuDetail({
   const [editingItemCategoryId, setEditingItemCategoryId] = useState<
     number | null
   >(null);
+  const [sidesDialogItemId, setSidesDialogItemId] = useState<number | null>(
+    null,
+  );
+  const [allSideItems, setAllSideItems] = useState<SideItem[]>([]);
+  const [selectedSideIds, setSelectedSideIds] = useState<Set<number>>(
+    new Set(),
+  );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Load side items when sides dialog opens
+  useEffect(() => {
+    if (sidesDialogItemId === null) return;
+
+    let cancelled = false;
+
+    async function loadSides() {
+      try {
+        const [sides, available] = await Promise.all([
+          getSideItems(menu.id),
+          getAvailableSides(sidesDialogItemId!),
+        ]);
+
+        if (cancelled) return;
+
+        setAllSideItems(
+          (sides as SideItem[]).map((s) => ({
+            id: s.id,
+            name: s.name,
+            base_price: s.base_price,
+          })),
+        );
+        setSelectedSideIds(
+          new Set(
+            (available as { side_item_id: number }[]).map(
+              (a) => a.side_item_id,
+            ),
+          ),
+        );
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Failed to load side items:", err);
+        setError("Không thể tải danh sách món kèm. Vui lòng thử lại.");
+      }
+    }
+
+    void loadSides();
+    return () => {
+      cancelled = true;
+    };
+  }, [sidesDialogItemId, menu.id]);
 
   function handleCreateCategory(formData: FormData) {
     setError(null);
@@ -145,6 +226,32 @@ export function MenuDetail({
     });
   }
 
+  function handleSaveSides() {
+    if (sidesDialogItemId === null) return;
+    startTransition(async () => {
+      const result = await updateAvailableSides({
+        menu_item_id: sidesDialogItemId!,
+        side_item_ids: Array.from(selectedSideIds),
+      });
+      if (result?.error) setError(result.error);
+      else setSidesDialogItemId(null);
+    });
+  }
+
+  function toggleSide(sideId: number) {
+    setSelectedSideIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(sideId)) next.delete(sideId);
+      else next.add(sideId);
+      return next;
+    });
+  }
+
+  function isCategoryMainDish(categoryId: number): boolean {
+    const cat = categories.find((c) => c.id === categoryId);
+    return cat?.type === "main_dish";
+  }
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -186,6 +293,21 @@ export function MenuDetail({
                   />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="cat-type">Loại danh mục</Label>
+                  <Select name="type" defaultValue="main_dish">
+                    <SelectTrigger id="cat-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MENU_CATEGORY_TYPES.map((t) => (
+                        <SelectItem key={t} value={t}>
+                          {MENU_CATEGORY_TYPE_LABELS[t]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid gap-2">
                   <Label htmlFor="cat-sort">Thứ tự</Label>
                   <Input
                     id="cat-sort"
@@ -219,6 +341,9 @@ export function MenuDetail({
               <div className="flex items-center justify-between border-b px-4 py-3">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold">{category.name}</h3>
+                  <Badge variant={categoryTypeBadgeVariant[category.type]}>
+                    {MENU_CATEGORY_TYPE_LABELS[category.type]}
+                  </Badge>
                   <Badge variant="secondary">
                     {category.items.length} món
                   </Badge>
@@ -375,6 +500,18 @@ export function MenuDetail({
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            {/* Link sides — only for main_dish category items */}
+                            {isCategoryMainDish(category.id) && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => setSidesDialogItemId(item.id)}
+                                title="Quản lý món kèm"
+                              >
+                                <Link2 className="h-4 w-4" />
+                              </Button>
+                            )}
+
                             {/* Edit item */}
                             <Dialog
                               open={editingItem?.id === item.id}
@@ -521,6 +658,55 @@ export function MenuDetail({
           ))}
         </div>
       )}
+
+      {/* Sides management dialog */}
+      <Dialog
+        open={sidesDialogItemId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSidesDialogItemId(null);
+        }}
+      >
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Quản lý món kèm</DialogTitle>
+            <DialogDescription>
+              Chọn các món kèm có thể thêm vào món chính này
+            </DialogDescription>
+          </DialogHeader>
+          {allSideItems.length === 0 ? (
+            <p className="text-muted-foreground py-4 text-center text-sm">
+              Chưa có món kèm nào. Hãy tạo danh mục &quot;Món kèm&quot; và
+              thêm món trước.
+            </p>
+          ) : (
+            <div className="space-y-3 py-2">
+              {allSideItems.map((side) => (
+                <label
+                  key={side.id}
+                  className="hover:bg-accent flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedSideIds.has(side.id)}
+                    onCheckedChange={() => toggleSide(side.id)}
+                  />
+                  <span className="flex-1 font-medium">{side.name}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {formatPrice(side.base_price)}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              onClick={handleSaveSides}
+              disabled={isPending}
+            >
+              {isPending ? "Đang lưu..." : "Lưu"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

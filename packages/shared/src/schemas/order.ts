@@ -1,5 +1,13 @@
 import { z } from "zod";
 
+// ===== Side item (added alongside a main dish) =====
+
+const sideItemInput = z.object({
+  menu_item_id: z.number().int().positive(),
+  quantity: z.number().int().positive().max(99),
+  notes: z.string().max(200).nullish(),
+});
+
 // ===== Order Item (used in create + add items) =====
 
 const orderItemInput = z.object({
@@ -15,6 +23,7 @@ const orderItemInput = z.object({
     )
     .nullish(),
   notes: z.string().max(200).nullish(),
+  side_items: z.array(sideItemInput).nullish(),
 });
 
 // ===== Create Order =====

@@ -45,6 +45,9 @@ export {
   PAPER_WIDTHS,
   PRINTER_TEST_STATUSES,
   PRINTER_ASSIGNED_TYPES,
+  // Menu
+  MENU_CATEGORY_TYPES,
+  MENU_CATEGORY_TYPE_LABELS,
   // Device Registration
   DEVICE_STATUSES,
 } from "./constants";
@@ -85,6 +88,8 @@ export type {
   PaperWidth,
   PrinterTestStatus,
   PrinterAssignedType,
+  // Menu
+  MenuCategoryType,
   // Device Registration
   DeviceStatus,
 } from "./constants";
@@ -105,12 +110,14 @@ export {
   menuSchema,
   menuCategorySchema,
   menuItemSchema,
+  menuItemAvailableSidesSchema,
   entityIdSchema,
 } from "./schemas/menu";
 export type {
   MenuInput,
   MenuCategoryInput,
   MenuItemInput,
+  MenuItemAvailableSidesInput,
 } from "./schemas/menu";
 
 export {
