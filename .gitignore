@@ -61,3 +61,19 @@ coverage/
 packages/database/prisma/*.db
 packages/database/generated/
 .vercel
+
+# Agent-generated skills
+.agent/
+.agents/
+skills-lock.json
+
+# Generated reports
+ARCHITECTURE_REVIEW_REPORT.md
+SECURITY_AUDIT_REPORT.md
+PERFORMANCE_AUDIT_REPORT.md
+DATABASE_OPTIMIZATION_REPORT.md
+DATABASE_OPTIMIZATION_SCRIPTS.sql
+REMEDIATION_GUIDE.md
+TYPESCRIPT_N1_FIXES.md
+REVIEW_REPORT_COMTAMMATU.docx
+plan.md
