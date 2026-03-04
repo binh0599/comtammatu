@@ -172,6 +172,7 @@ export function CustomersTab({
             <div className="relative w-64">
               <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
               <Input
+                aria-label="Tìm theo tên, số điện thoại hoặc email"
                 placeholder="Tìm theo tên, SĐT, email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

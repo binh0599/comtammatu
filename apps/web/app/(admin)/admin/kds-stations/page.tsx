@@ -11,7 +11,7 @@ export default async function KdsStationsPage() {
   return (
     <>
       <Header breadcrumbs={[{ label: "Bếp KDS" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <StationsTable
           stations={stations}
           branches={branches}

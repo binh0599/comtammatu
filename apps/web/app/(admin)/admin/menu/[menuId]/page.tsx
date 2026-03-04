@@ -42,7 +42,7 @@ export default async function MenuDetailPage({ params }: Props) {
           { label: menu.name },
         ]}
       />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <MenuDetail
           menu={menu}
           categories={categoriesWithItems}

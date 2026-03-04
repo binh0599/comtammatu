@@ -8,11 +8,12 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_station    RECORD;
-  v_item       JSONB;
+  v_station      RECORD;
+  v_item         JSONB;
   v_order_status TEXT;
-  v_branch_id  BIGINT;
-  v_ticket_id  BIGINT;
+  v_branch_id    BIGINT;
+  v_ticket_id    BIGINT;
+  v_dispatched   BOOLEAN := FALSE;
 BEGIN
   -- Only fetch the columns we need
   SELECT status, branch_id INTO v_order_status, v_branch_id
@@ -63,14 +64,18 @@ BEGIN
         VALUES (NEW.order_id, v_station.station_id, jsonb_build_array(v_item), 'pending', 0);
       END IF;
 
-      -- Update order_item status
-      UPDATE order_items
-      SET status = 'sent_to_kds',
-          kds_station_id = v_station.station_id,
-          sent_to_kds_at = NOW()
-      WHERE id = NEW.id;
+      v_dispatched := TRUE;
 
     END LOOP;
+
+    -- Update order_item status once after all stations have been notified.
+    -- kds_station_id intentionally omitted: an item may route to multiple stations.
+    IF v_dispatched THEN
+      UPDATE order_items
+      SET status = 'sent_to_kds',
+          sent_to_kds_at = NOW()
+      WHERE id = NEW.id;
+    END IF;
   END IF;
 
   RETURN NEW;
