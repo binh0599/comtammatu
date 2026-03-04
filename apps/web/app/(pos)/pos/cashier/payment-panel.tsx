@@ -51,6 +51,7 @@ export function PaymentPanel({
     status: string;
   } | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
+  const [paidAmount, setPaidAmount] = useState<number>(0);
   const [isMomoPending, startMomoTransition] = useTransition();
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevOrderIdRef = useRef<number | undefined>(undefined);
@@ -147,6 +148,7 @@ export function PaymentPanel({
         toast.success(
           `Thanh toán thành công. Tiền thừa: ${formatPrice(data.change ?? 0)}`,
         );
+        setPaidAmount(Number(amountTendered));
         setAmountTendered("");
         setVoucherCode("");
         setPaymentMethod(null);
@@ -518,9 +520,28 @@ export function PaymentPanel({
         </>
       )}
 
-      {!canPay && (
+      {!canPay && !showReceipt && (
         <div className="rounded-lg bg-yellow-50 p-3 text-center text-sm text-yellow-700">
           Đơn hàng chưa sẵn sàng thanh toán
+        </div>
+      )}
+
+      {/* Auto-print receipt after successful payment */}
+      {showReceipt && order && (
+        <div className="mt-4 flex flex-col items-center gap-3 rounded-lg bg-green-50 p-4">
+          <CheckCircle2 className="h-8 w-8 text-green-600" />
+          <p className="text-sm font-medium text-green-700">Thanh toán thành công!</p>
+          <ReceiptPrinter
+            order={{
+              ...order,
+              payments: paidAmount > 0 ? [{ amount: paidAmount, method: "cash" }] : undefined,
+            }}
+            cashierName={cashierName}
+            printerConfig={printerConfig}
+            preferThermal={!!printerConfig?.auto_print}
+            autoPrint
+            onPrintComplete={handlePrintComplete}
+          />
         </div>
       )}
     </div>

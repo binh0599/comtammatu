@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatDateTime } from "@comtammatu/shared";
 import { toast } from "sonner";
 import { generateReceiptCommands } from "@/lib/printing/receipt-commands";
-import { printViaUsb, printViaNetwork } from "@/lib/printing/escpos";
+import { printViaUsb, printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
 
 interface ReceiptOrder {
@@ -64,7 +64,7 @@ export function ReceiptPrinter({
         },
     });
 
-    const handleThermalPrint = useCallback(async () => {
+    const handleThermalPrint = useCallback(async (silent = false) => {
         if (!printerConfig) return false;
 
         try {
@@ -73,9 +73,13 @@ export function ReceiptPrinter({
 
             let result;
             if (printerConfig.type === "thermal_usb") {
-                result = await printViaUsb(commands, {
+                // Use printViaUsbAuto for silent/auto-print (no user gesture popup).
+                // Use printViaUsb for manual print (handles first-time device pairing).
+                const printFn = silent ? printViaUsbAuto : printViaUsb;
+                result = await printFn(commands, {
                     vendor_id: (connConfig.vendor_id as number) ?? 0,
                     product_id: (connConfig.product_id as number) ?? 0,
+                    device_serial: (connConfig.device_serial as string) || undefined,
                 });
             } else if (printerConfig.type === "thermal_network") {
                 result = await printViaNetwork(commands, {
@@ -101,24 +105,36 @@ export function ReceiptPrinter({
         }
     }, [printerConfig, order, cashierName, onPrintComplete]);
 
-    const handlePrint = useCallback(async () => {
+    const handlePrint = useCallback(async (silent = false) => {
         // If thermal is preferred and available, try it first
         if (preferThermal && printerConfig && printerConfig.type !== "browser") {
-            const thermalSuccess = await handleThermalPrint();
+            const thermalSuccess = await handleThermalPrint(silent);
             if (thermalSuccess) return;
-            // Fallback to browser print
+            // In silent/auto-print mode, don't fall back to browser print
+            // because it always shows the OS print dialog (no way to suppress on Windows).
+            if (silent) {
+                console.warn("Thermal failed in auto-print mode, skipping browser fallback");
+                return;
+            }
             console.info("Thermal failed, falling back to browser print");
         }
 
         handleBrowserPrint();
     }, [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]);
 
-    // Auto-print effect when autoPrint is true
-    if (autoPrint) {
-        setTimeout(() => {
-            handlePrint();
-        }, printerConfig?.print_delay_ms ?? 500);
-    }
+    // Auto-print effect when autoPrint is true (only once per mount).
+    // Passes silent=true to use printViaUsbAuto (no device picker popup)
+    // and skip browser print fallback (no OS print dialog).
+    const hasPrintedRef = useRef(false);
+    useEffect(() => {
+        if (autoPrint && !hasPrintedRef.current) {
+            hasPrintedRef.current = true;
+            const timer = setTimeout(() => {
+                handlePrint(/* silent */ true);
+            }, printerConfig?.print_delay_ms ?? 500);
+            return () => clearTimeout(timer);
+        }
+    }, [autoPrint, handlePrint, printerConfig?.print_delay_ms]);
 
     const paymentAmount =
         order.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
