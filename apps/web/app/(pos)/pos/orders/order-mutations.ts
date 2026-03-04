@@ -84,38 +84,29 @@ async function _createOrder(data: {
   }
 
   // Validate guest_count against table capacity for dine-in orders
-  if (type === "dine_in" && table_id) {
-    const { data: tableData, error: tableError } = await supabase
-      .from("tables")
-      .select("id, capacity")
-      .eq("id", table_id)
-      .eq("branch_id", branchId)
-      .single();
-
-    if (tableError || !tableData) {
-      throw new ActionError("Bàn không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
-    }
-
-    const capacity = tableData.capacity ?? 0;
-
-    // Sum occupied seats from existing active orders on this table
-    const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
-    const { data: existingOrders } = await supabase
-      .from("orders")
-      .select("guest_count")
-      .eq("table_id", table_id)
-      .eq("branch_id", branchId)
-      .in("status", activeStatuses);
-
-    const occupiedSeats = (existingOrders ?? []).reduce(
-      (sum: number, o: { guest_count: number | null }) => sum + (o.guest_count ?? 0),
-      0,
+  // Uses row-level locking (FOR UPDATE) to prevent race conditions
+  if (type === "dine_in" && table_id && guest_count != null) {
+    const { data: capacityCheck, error: capacityError } = await supabase.rpc(
+      "validate_table_capacity",
+      {
+        p_table_id: table_id,
+        p_branch_id: branchId,
+        p_guest_count: guest_count,
+      },
     );
 
-    const remaining = capacity - occupiedSeats;
-    if (guest_count != null && guest_count > remaining) {
+    if (capacityError) {
+      throw safeDbError(capacityError, "db");
+    }
+
+    const result = capacityCheck as { ok: boolean; error?: string; capacity?: number; occupied?: number; remaining?: number };
+
+    if (!result.ok) {
+      if (result.error === "TABLE_NOT_FOUND") {
+        throw new ActionError("Bàn không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
+      }
       throw new ActionError(
-        `Bàn chỉ còn ${remaining} chỗ trống (sức chứa ${capacity}, đã có ${occupiedSeats} khách)`,
+        `Bàn chỉ còn ${result.remaining} chỗ trống (sức chứa ${result.capacity}, đã có ${result.occupied} khách)`,
         "VALIDATION_ERROR",
       );
     }

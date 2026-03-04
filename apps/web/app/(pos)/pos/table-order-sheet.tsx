@@ -97,6 +97,16 @@ function GuestCountSelector({
     const maxGuests = Math.max(0, tableCapacity - existingGuestCount);
     const [count, setCount] = useState(maxGuests > 0 ? 1 : 0);
 
+    // Clamp count when maxGuests changes (e.g., another order was placed concurrently)
+    useEffect(() => {
+        setCount((prev) => {
+            if (maxGuests <= 0) return 0;
+            if (prev > maxGuests) return maxGuests;
+            if (prev <= 0) return 1;
+            return prev;
+        });
+    }, [maxGuests]);
+
     return (
         <div className="flex flex-1 flex-col items-center justify-center p-6">
             <div className="w-full max-w-xs space-y-6">
@@ -218,7 +228,7 @@ function OrderListMode({
 
                 {orders.map((order, index) => {
                     const subLabel = orders.length > 1 && tableNumber
-                        ? `${tableLabel} .${index + 1}`
+                        ? `${tableLabel} .${order.sub_order_index ?? (index + 1)}`
                         : null;
                     return (
                         <button
