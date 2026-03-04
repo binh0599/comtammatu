@@ -167,13 +167,18 @@ async function _bumpTicket(
     };
   }
 
+  const now = new Date().toISOString();
   const updateData: Record<string, unknown> = { status: newStatus };
 
   if (newStatus === "preparing") {
-    updateData.accepted_at = new Date().toISOString();
+    updateData.accepted_at = now;
   }
   if (newStatus === "ready") {
-    updateData.completed_at = new Date().toISOString();
+    updateData.completed_at = now;
+    // When going directly from pending → ready, also set accepted_at
+    if (currentStatus === "pending") {
+      updateData.accepted_at = now;
+    }
   }
 
   const { error } = await supabase
