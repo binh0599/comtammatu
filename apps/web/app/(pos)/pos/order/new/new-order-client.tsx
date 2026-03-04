@@ -43,15 +43,40 @@ function GuestCountStep({
   tableCapacity,
   onConfirm,
 }: {
-  tableCapacity: number;
+  tableCapacity: number | null;
   onConfirm: (count: number) => void;
 }) {
-  const maxGuests = tableCapacity;
   const [count, setCount] = useState(1);
 
   useEffect(() => {
-    if (count > maxGuests) setCount(maxGuests > 0 ? maxGuests : 1);
-  }, [maxGuests, count]);
+    if (tableCapacity != null && count > tableCapacity) {
+      setCount(tableCapacity > 0 ? tableCapacity : 1);
+    }
+  }, [tableCapacity, count]);
+
+  if (tableCapacity == null) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center p-6">
+        <div className="w-full max-w-xs rounded-lg border bg-yellow-50 p-6 text-center">
+          <Users className="mx-auto mb-3 h-10 w-10 text-yellow-600" aria-hidden="true" />
+          <h3 className="text-lg font-semibold text-yellow-800">
+            Không xác định được sức chứa bàn
+          </h3>
+          <p className="text-yellow-700 mt-2 text-sm">
+            Bàn này chưa được thiết lập sức chứa. Liên hệ quản lý để cập nhật.
+          </p>
+          <Link href="/pos">
+            <Button variant="outline" className="mt-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Quay lại sơ đồ bàn
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const maxGuests = tableCapacity;
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-6">
@@ -242,7 +267,7 @@ export function NewOrderClient({
           </div>
         </div>
         <GuestCountStep
-          tableCapacity={tableCapacity ?? 4}
+          tableCapacity={tableCapacity}
           onConfirm={(count) => setGuestCount(count)}
         />
       </div>
