@@ -13,7 +13,11 @@ import {
   withServerAction,
   safeDbError,
 } from "@comtammatu/shared";
-import { isValidTransition, calculateOrderTotals } from "./helpers";
+import {
+  isValidTransition,
+  calculateOrderTotals,
+  maybeReleaseTable,
+} from "./helpers";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getTaxSettings(supabase: any, tenantId: number) {
@@ -343,17 +347,14 @@ async function _updateOrderStatus(data: {
     throw safeDbError(updateError, "db");
   }
 
-  // Free up table when order is completed or cancelled
+  // Free up table when order is completed or cancelled — but only if no
+  // other active orders remain on the same table (multi-order-per-table).
   if (
     (newStatus === "completed" || newStatus === "cancelled") &&
     order.table_id &&
     order.type === "dine_in"
   ) {
-    await supabase
-      .from("tables")
-      .update({ status: "available" })
-      .eq("id", order.table_id)
-      .eq("branch_id", branchId);
+    await maybeReleaseTable(supabase, order.table_id, branchId, order_id);
   }
 
   // Broadcast realtime notification to all POS/KDS clients in this branch

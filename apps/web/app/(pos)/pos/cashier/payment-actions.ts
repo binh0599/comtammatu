@@ -12,6 +12,7 @@ import {
   safeDbErrorResult,
   CASHIER_ROLES,
 } from "@comtammatu/shared";
+import { maybeReleaseTable } from "../orders/helpers";
 
 async function _processPayment(data: {
   order_id: number;
@@ -125,12 +126,9 @@ async function _processPayment(data: {
 
     if (orderUpdateError) return safeDbErrorResult(orderUpdateError, "db");
 
-    // Free up table
+    // Free up table — only if no other active orders remain on this table
     if (order.table_id && order.type === "dine_in") {
-      await supabase
-        .from("tables")
-        .update({ status: "available" })
-        .eq("id", order.table_id);
+      await maybeReleaseTable(supabase, order.table_id, branchId, order.id);
     }
 
     // Increment voucher usage if discount was applied

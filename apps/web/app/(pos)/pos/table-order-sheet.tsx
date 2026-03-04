@@ -83,6 +83,64 @@ const statusVariant: Record<
 };
 
 // ---------------------------------------------------------------------------
+// OrderListMode – shows multiple active orders on same table
+// ---------------------------------------------------------------------------
+
+function OrderListMode({
+    orders,
+    tableLabel,
+    onSelectOrder,
+    onCreateNew,
+}: {
+    orders: ActiveOrder[];
+    tableLabel: string;
+    onSelectOrder: (order: ActiveOrder) => void;
+    onCreateNew: () => void;
+}) {
+    return (
+        <div className="flex flex-1 flex-col">
+            <div className="space-y-2 p-4">
+                <p className="text-muted-foreground text-sm">
+                    {tableLabel} — {orders.length} đơn đang phục vụ
+                </p>
+
+                {orders.map((order) => (
+                    <button
+                        key={order.id}
+                        type="button"
+                        onClick={() => onSelectOrder(order)}
+                        className="w-full rounded-lg border p-4 text-left transition-all hover:bg-accent active:scale-[0.98]"
+                    >
+                        <div className="flex items-center justify-between">
+                            <span className="font-bold">{order.order_number}</span>
+                            <Badge variant={statusVariant[order.status] ?? "secondary"}>
+                                {getOrderStatusLabel(order.status)}
+                            </Badge>
+                        </div>
+                        <div className="text-muted-foreground mt-1 text-sm">
+                            {order.item_count} món
+                        </div>
+                        <div className="mt-1 font-semibold">
+                            {formatPrice(order.total)}
+                        </div>
+                    </button>
+                ))}
+            </div>
+
+            <div className="mt-auto border-t p-4">
+                <Button
+                    onClick={onCreateNew}
+                    className="w-full gap-2"
+                >
+                    <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                    Tạo đơn mới cho bàn này
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+// ---------------------------------------------------------------------------
 // OrderViewMode – shows active order details
 // ---------------------------------------------------------------------------
 
@@ -91,11 +149,15 @@ function OrderViewMode({
     tableLabel,
     onClose,
     onAddItems,
+    onBackToList,
+    showBackToList = false,
 }: {
     order: ActiveOrder;
     tableLabel: string;
     onClose: () => void;
     onAddItems: () => void;
+    onBackToList?: () => void;
+    showBackToList?: boolean;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -240,6 +302,18 @@ function OrderViewMode({
                     Xem chi tiết
                     <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
+
+                {/* Back to order list (multi-order per table) */}
+                {showBackToList && onBackToList && (
+                    <Button
+                        variant="ghost"
+                        className="w-full gap-2"
+                        onClick={onBackToList}
+                    >
+                        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                        Danh sách đơn trên bàn
+                    </Button>
+                )}
             </div>
         </div>
     );
@@ -537,41 +611,68 @@ export function TableOrderSheet({
     tableId,
     tableLabel,
     activeOrder,
+    activeOrders = [],
     menuItems,
     categories,
     terminalId,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    mode: "view" | "create";
+    mode: "view" | "create" | "list";
     tableId: number | null;
     tableLabel: string;
     activeOrder: ActiveOrder | null;
+    activeOrders?: ActiveOrder[];
     menuItems: MenuItem[];
     categories: Category[];
     terminalId: number;
 }) {
-    const [internalMode, setInternalMode] = useState<"view" | "create" | "add-items">(initialMode);
+    const [internalMode, setInternalMode] = useState<"view" | "create" | "add-items" | "list">(initialMode);
+    const [selectedOrderFromList, setSelectedOrderFromList] = useState<ActiveOrder | null>(activeOrder);
 
     // Sync internalMode when the parent-supplied initialMode changes (e.g. sheet reopened for different table)
     useEffect(() => {
         setInternalMode(initialMode);
-    }, [initialMode]);
+        setSelectedOrderFromList(activeOrder);
+    }, [initialMode, activeOrder]);
 
     // Reset internal mode when sheet opens/closes or initial mode changes
     const currentMode = open ? internalMode : initialMode;
 
+    // The order currently being viewed — either from direct prop or picked from list
+    const viewedOrder = currentMode === "view"
+        ? (selectedOrderFromList ?? activeOrder)
+        : null;
+
+    // Whether we came from a multi-order list (to show back button)
+    const hasMultipleOrders = activeOrders.length > 1;
+
     function handleOpenChange(isOpen: boolean) {
-        if (!isOpen) setInternalMode(initialMode);
+        if (!isOpen) {
+            setInternalMode(initialMode);
+            setSelectedOrderFromList(activeOrder);
+        }
         onOpenChange(isOpen);
     }
 
+    function handleSelectOrderFromList(order: ActiveOrder) {
+        setSelectedOrderFromList(order);
+        setInternalMode("view");
+    }
+
+    function handleBackToList() {
+        setSelectedOrderFromList(null);
+        setInternalMode("list");
+    }
+
     const sheetTitle =
-        currentMode === "view"
+        currentMode === "list"
             ? `Đơn hàng — ${tableLabel}`
-            : currentMode === "add-items"
-                ? `Thêm món — ${tableLabel}`
-                : `Tạo đơn — ${tableLabel}`;
+            : currentMode === "view"
+                ? `Đơn hàng — ${tableLabel}`
+                : currentMode === "add-items"
+                    ? `Thêm món — ${tableLabel}`
+                    : `Tạo đơn — ${tableLabel}`;
 
     return (
         <Sheet open={open} onOpenChange={handleOpenChange}>
@@ -583,25 +684,36 @@ export function TableOrderSheet({
                 <SheetHeader>
                     <SheetTitle>{sheetTitle}</SheetTitle>
                     <SheetDescription className="sr-only">
-                        {currentMode === "view"
-                            ? "Chi tiết đơn hàng của bàn"
-                            : currentMode === "add-items"
-                                ? "Thêm món vào đơn hàng hiện tại"
-                                : "Chọn món để tạo đơn hàng mới"}
+                        {currentMode === "list"
+                            ? "Danh sách đơn hàng trên bàn"
+                            : currentMode === "view"
+                                ? "Chi tiết đơn hàng của bàn"
+                                : currentMode === "add-items"
+                                    ? "Thêm món vào đơn hàng hiện tại"
+                                    : "Chọn món để tạo đơn hàng mới"}
                     </SheetDescription>
                 </SheetHeader>
 
-                {currentMode === "view" && activeOrder ? (
+                {currentMode === "list" ? (
+                    <OrderListMode
+                        orders={activeOrders}
+                        tableLabel={tableLabel}
+                        onSelectOrder={handleSelectOrderFromList}
+                        onCreateNew={() => setInternalMode("create")}
+                    />
+                ) : currentMode === "view" && viewedOrder ? (
                     <OrderViewMode
-                        order={activeOrder}
+                        order={viewedOrder}
                         tableLabel={tableLabel}
                         onClose={() => handleOpenChange(false)}
                         onAddItems={() => setInternalMode("add-items")}
+                        showBackToList={hasMultipleOrders}
+                        onBackToList={handleBackToList}
                     />
-                ) : currentMode === "add-items" && activeOrder ? (
+                ) : currentMode === "add-items" && (selectedOrderFromList ?? activeOrder) ? (
                     <AddItemsMode
-                        orderId={activeOrder.id}
-                        orderNumber={activeOrder.order_number}
+                        orderId={(selectedOrderFromList ?? activeOrder)!.id}
+                        orderNumber={(selectedOrderFromList ?? activeOrder)!.order_number}
                         tableLabel={tableLabel}
                         menuItems={menuItems}
                         categories={categories}
