@@ -151,7 +151,7 @@ export function TicketCard({
         aria-label={`Đã ra món ${orderNumber}`}
         className="mt-4 min-h-[64px] w-full bg-green-600 text-lg font-bold hover:bg-green-700"
       >
-        {isPending ? "..." : "ĐÃ RA MÓN"}
+        {isPending ? "ĐANG CẬP NHẬT..." : "ĐÃ RA MÓN"}
       </Button>
     </article>
   );

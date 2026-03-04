@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { KdsTicket } from "./types";
@@ -9,6 +9,50 @@ export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "er
 
 const MAX_RECONNECT_DELAY = 30_000;
 const FULL_REFRESH_INTERVAL = 60_000;
+
+function makeHandleTicketChange(
+  stationId: number,
+  setTickets: React.Dispatch<React.SetStateAction<KdsTicket[]>>,
+) {
+  return (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+    const eventType = payload.eventType;
+
+    if (eventType === "INSERT") {
+      const newTicket = payload.new as unknown as KdsTicket;
+      if (
+        newTicket.station_id === stationId &&
+        (newTicket.status === "pending" || newTicket.status === "preparing")
+      ) {
+        setTickets((prev) => {
+          if (prev.some((t) => t.id === newTicket.id)) return prev;
+          return [...prev, newTicket];
+        });
+      }
+    }
+
+    if (eventType === "UPDATE") {
+      const updated = payload.new as unknown as KdsTicket;
+      if (updated.status === "ready" || updated.status === "cancelled") {
+        setTickets((prev) => prev.filter((t) => t.id !== updated.id));
+      } else {
+        setTickets((prev) =>
+          prev.map((t) =>
+            t.id === updated.id
+              ? { ...t, ...updated, orders: updated.orders ?? t.orders }
+              : t
+          )
+        );
+      }
+    }
+
+    if (eventType === "DELETE") {
+      const old = payload.old as { id?: number };
+      if (old.id) {
+        setTickets((prev) => prev.filter((t) => t.id !== old.id));
+      }
+    }
+  };
+}
 
 export function useKdsRealtime(
   stationId: number,
@@ -22,90 +66,11 @@ export function useKdsRealtime(
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
   // Use a ref for the change handler so the subscription effect doesn't re-run
-  const handleTicketChangeRef = useRef(
-    (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-      const eventType = payload.eventType;
-
-      if (eventType === "INSERT") {
-        const newTicket = payload.new as unknown as KdsTicket;
-        if (
-          newTicket.station_id === stationId &&
-          (newTicket.status === "pending" || newTicket.status === "preparing")
-        ) {
-          setTickets((prev) => {
-            if (prev.some((t) => t.id === newTicket.id)) return prev;
-            return [...prev, newTicket];
-          });
-        }
-      }
-
-      if (eventType === "UPDATE") {
-        const updated = payload.new as unknown as KdsTicket;
-
-        if (updated.status === "ready" || updated.status === "cancelled") {
-          setTickets((prev) => prev.filter((t) => t.id !== updated.id));
-        } else {
-          setTickets((prev) =>
-            prev.map((t) =>
-              t.id === updated.id
-                ? { ...t, ...updated, orders: updated.orders ?? t.orders }
-                : t
-            )
-          );
-        }
-      }
-
-      if (eventType === "DELETE") {
-        const old = payload.old as { id?: number };
-        if (old.id) {
-          setTickets((prev) => prev.filter((t) => t.id !== old.id));
-        }
-      }
-    }
-  );
+  const handleTicketChangeRef = useRef(makeHandleTicketChange(stationId, setTickets));
 
   // Keep the ref up to date with stationId
   useEffect(() => {
-    handleTicketChangeRef.current = (
-      payload: RealtimePostgresChangesPayload<Record<string, unknown>>
-    ) => {
-      const eventType = payload.eventType;
-
-      if (eventType === "INSERT") {
-        const newTicket = payload.new as unknown as KdsTicket;
-        if (
-          newTicket.station_id === stationId &&
-          (newTicket.status === "pending" || newTicket.status === "preparing")
-        ) {
-          setTickets((prev) => {
-            if (prev.some((t) => t.id === newTicket.id)) return prev;
-            return [...prev, newTicket];
-          });
-        }
-      }
-
-      if (eventType === "UPDATE") {
-        const updated = payload.new as unknown as KdsTicket;
-        if (updated.status === "ready" || updated.status === "cancelled") {
-          setTickets((prev) => prev.filter((t) => t.id !== updated.id));
-        } else {
-          setTickets((prev) =>
-            prev.map((t) =>
-              t.id === updated.id
-                ? { ...t, ...updated, orders: updated.orders ?? t.orders }
-                : t
-            )
-          );
-        }
-      }
-
-      if (eventType === "DELETE") {
-        const old = payload.old as { id?: number };
-        if (old.id) {
-          setTickets((prev) => prev.filter((t) => t.id !== old.id));
-        }
-      }
-    };
+    handleTicketChangeRef.current = makeHandleTicketChange(stationId, setTickets);
   }, [stationId]);
 
   // Subscribe once per stationId — no dependency on handleTicketChange
