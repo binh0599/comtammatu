@@ -85,7 +85,9 @@ async function _createTerminal(formData: FormData) {
     branch_id: parsed.data.branch_id,
     device_fingerprint: parsed.data.device_fingerprint,
     registered_by: userId,
-    is_active: false,
+    is_active: true,
+    approved_by: userId,
+    approved_at: new Date().toISOString(),
   });
 
   if (error) {
