@@ -50,6 +50,7 @@ export {
   MENU_CATEGORY_TYPE_LABELS,
   // Device Registration
   DEVICE_STATUSES,
+  DEVICE_CHECK_ROLES,
 } from "./constants";
 
 export type {

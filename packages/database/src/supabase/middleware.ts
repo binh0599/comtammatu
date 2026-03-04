@@ -61,11 +61,31 @@ export async function updateSession(request: NextRequest) {
     // Already authenticated — redirect based on role
     const { data } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, tenant_id")
       .eq("id", user.id)
       .single();
 
     const role = data?.role ?? "customer";
+
+    // Staff roles (cashier/waiter/chef) require device approval before redirect.
+    // Without this check, refreshing /login after signIn bypasses device registration.
+    const deviceCheckRoles = ["cashier", "waiter", "chef"];
+    if (deviceCheckRoles.includes(role) && data?.tenant_id) {
+      const { data: approvedDevice } = await supabase
+        .from("registered_devices")
+        .select("id")
+        .eq("registered_by", user.id)
+        .eq("tenant_id", data.tenant_id)
+        .eq("status", "approved")
+        .limit(1)
+        .maybeSingle();
+
+      if (!approvedDevice) {
+        // No approved device — stay on login page for device registration flow
+        return supabaseResponse;
+      }
+    }
+
     const url = request.nextUrl.clone();
 
     switch (role) {

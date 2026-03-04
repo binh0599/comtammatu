@@ -264,30 +264,27 @@ The Modular Monolith architecture is designed for easy module extraction — eac
 
 ## 8. Current Progress
 
-**Phase: Week 3-4 COMPLETE — Ready for Week 5-6 Operations**
+**Phase: Post-MVP Sprint 3 COMPLETE (Menu & Devices)**
 
 ### Completed
 
 - [x] Architecture specification (v2.2) — complete
 - [x] Project Operating System — complete
 - [x] AI boot file (CLAUDE.md) — complete
-- [x] Git repository (6 commits on `main`)
 - [x] Monorepo scaffolding (Turborepo + pnpm)
 - [x] CI/CD pipeline (GitHub Actions + Prisma generate step)
-- [x] Next.js app — 18 routes, 114 source files
-- [x] Database — 5 migrations, v2.2 schema + POS/KDS triggers, RLS on all tables
-- [x] Auth — login, middleware, role-based routing, RBAC
-- [x] Admin — menu CRUD, terminal CRUD, KDS station CRUD
-- [x] POS — waiter mobile order, cashier cash payment, session management
-- [x] KDS — realtime board with bump system and timing
-- [x] Realtime — 4 hooks (orders, tables, KDS tickets, broadcast)
-- [x] Shared package — Zod schemas, constants, Vietnamese formatters
-- [x] Deployed to Vercel (`comtammatu.vercel.app`)
+- [x] Database — v2.2 schema + POS/KDS triggers, RLS on all tables
+- [x] Auth & Admin — RBAC, men CRUD, terminal CRUD, KDS station CRUD
+- [x] POS & KDS — split flows, cashier vs waiter, realtime bump system
+- [x] Week 5-6 Operations — Inventory, suppliers, HR basic, dashboard
+- [x] Week 7-8 CRM — Customer PWA, Loyalty, Vouchers, GDPR Privacy
+- [x] Post-MVP Sprint 1 & 2 — Payment hardening, Redis rate limiting, Resiliency
+- [x] Post-MVP Sprint 3 — Menu system restructure and precise device management
 
 ### Next Steps
 
-- [ ] **Week 5-6:** Inventory management, suppliers, HR basic, admin dashboard, security monitoring
-- [ ] **Week 7-8:** CRM + loyalty, vouchers, customer PWA, GDPR, testing, documentation
+- [ ] Further enhancements in Priority 1-4 Post-MVP Backlog
+- [ ] Offline POS support, E2E Testing, Advanced analytics
 
 ---
 

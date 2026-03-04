@@ -61,6 +61,16 @@
 **Rule:** Define system_settings keys as constants in `@comtammatu/shared/constants.ts` and import them everywhere. Never hardcode key strings in action files.
 **Prevention:** Grep for `system_settings` key strings after adding any new settings consumer. Better yet, create a shared `getTaxSettings()` utility function.
 
+## 2026-03-05: UNIQUE constraints on multi-tenant tables must include tenant_id
+**Pattern:** `device_fingerprint TEXT NOT NULL UNIQUE` on `registered_devices` prevented the same physical device from being registered across different tenants. Staff got silent insert failures.
+**Rule:** Multi-tenant tables with UNIQUE constraints must use composite unique indexes: `UNIQUE(field, tenant_id)` instead of `UNIQUE(field)`.
+**Prevention:** When adding UNIQUE constraints, always ask: "Should this be unique globally or per-tenant?" For tenant-scoped tables, the answer is almost always per-tenant.
+
+## 2026-03-05: RLS silent failures on writes by non-admin roles
+**Pattern:** Staff (cashier/waiter/chef) tried to re-register a rejected device via `.update()`, but the only UPDATE RLS policy required owner/manager role. Supabase returned `{ data: null, error: null }` — no error, no update. Staff was stuck forever.
+**Rule:** For every Server Action that writes data, trace which RLS policies allow the operation for the calling user's role. Add role-specific policies with tight `WITH CHECK` constraints when non-admin roles need write access.
+**Prevention:** After writing any Server Action with `.update()/.insert()/.delete()`, verify the RLS policy chain: "Can role X perform this operation?" Test with a non-admin user.
+
 ## 2026-03-02: Server Actions must validate client-provided IDs against auth context
 **Pattern:** `createOrder` accepted a `terminal_id` from the client without verifying it belonged to the user's branch or was the correct type. A waiter could spoof a cashier terminal ID.
 **Rule:** Every Server Action that receives an entity ID from the client must verify ownership (branch, tenant) before using it. Never trust client-provided foreign keys.

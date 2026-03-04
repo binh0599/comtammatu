@@ -202,6 +202,21 @@
 
 ---
 
+## Completed: Post-MVP Sprint 3 — Menu & Devices
+
+### Menu System Restructure
+- [x] Category types, side dishes, and item notes
+- [x] Harden validation, variant handling, and DB constraints
+- [x] Handle menu query errors and batch side validation
+
+### Device & POS Management
+- [x] Device approval flow and fingerprinting for terminal registration
+- [x] Move printer settings to POS/KDS (Peripheral config)
+- [x] Require `table_id` and `guest_count` for dine-in orders
+- [x] KDS connection redesign
+
+---
+
 ## Current Roadmap — Post-MVP
 
 ### Priority 1 — Core Business (Week 11-12)
@@ -223,7 +238,7 @@
 - [ ] Attendance clock-in/clock-out (QR scan)
 - [ ] Branch comparison in dashboard
 - [ ] Offline support — Service Worker + IndexedDB (critical for POS reliability)
-- [ ] Device fingerprinting for terminal registration
+- [x] Device fingerprinting for terminal registration
 ```
 
 ### Priority 3 — Quality & Scale (Week 15-16)
@@ -232,7 +247,7 @@
 - [ ] RLS validation test suite
 - [ ] API documentation (OpenAPI spec)
 - [x] Upstash Redis rate limiting ← Sprint 2
-- [ ] Peripheral config (printers, cash drawers)
+- [x] Peripheral config (printers, cash drawers)
 ```
 
 ### Priority 4 — Growth (Week 17+)

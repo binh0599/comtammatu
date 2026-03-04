@@ -74,6 +74,9 @@ export const CASHIER_ROLES = ["cashier", "manager", "owner"] as const;
 /** Roles allowed to access KDS */
 export const KDS_ROLES = ["chef", "manager", "owner"] as const;
 
+/** Roles that require device approval before accessing POS/KDS */
+export const DEVICE_CHECK_ROLES = ["cashier", "waiter", "chef"] as const;
+
 // ===== Valid Order Status Transitions =====
 
 export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
