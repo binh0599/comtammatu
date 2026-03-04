@@ -33,6 +33,7 @@ export function KitchenTicketPrinter({
   preferThermal = false,
 }: KitchenTicketPrinterProps) {
   const contentRef = useRef<HTMLDivElement>(null);
+  const hasPrintedRef = useRef(false);
   const orderNumber = ticket.orders?.order_number ?? `#${ticket.order_id}`;
   const tableNumber = ticket.orders?.tables?.number;
   const items = parseItems(ticket.items);
@@ -94,14 +95,15 @@ export function KitchenTicketPrinter({
     handleBrowserPrint();
   }, [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]);
 
-  // Auto-print on mount
+  // Auto-print on mount (only once)
   useEffect(() => {
-    if (!autoPrint) return;
+    if (!autoPrint || hasPrintedRef.current) return;
+    hasPrintedRef.current = true;
     const timer = setTimeout(() => {
       handlePrint();
     }, printerConfig?.print_delay_ms ?? 500);
     return () => clearTimeout(timer);
-  }, [autoPrint]); // handlePrint is stable from useCallback with stable deps
+  }, [autoPrint, handlePrint, printerConfig?.print_delay_ms]);
 
   return (
     <>
