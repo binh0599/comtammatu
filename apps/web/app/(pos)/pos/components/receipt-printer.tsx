@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -113,12 +113,17 @@ export function ReceiptPrinter({
         handleBrowserPrint();
     }, [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]);
 
-    // Auto-print effect when autoPrint is true
-    if (autoPrint) {
-        setTimeout(() => {
-            handlePrint();
-        }, printerConfig?.print_delay_ms ?? 500);
-    }
+    // Auto-print effect when autoPrint is true (only once per mount)
+    const hasPrintedRef = useRef(false);
+    useEffect(() => {
+        if (autoPrint && !hasPrintedRef.current) {
+            hasPrintedRef.current = true;
+            const timer = setTimeout(() => {
+                handlePrint();
+            }, printerConfig?.print_delay_ms ?? 500);
+            return () => clearTimeout(timer);
+        }
+    }, [autoPrint, handlePrint, printerConfig?.print_delay_ms]);
 
     const paymentAmount =
         order.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
