@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { WifiOff, Loader2, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/logout-button";
@@ -56,27 +56,12 @@ export function KdsBoard({
 
   const defaultRule = timingRules[0] ?? null;
 
-  // Track known ticket IDs to detect new arrivals for auto-print
-  const knownTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
-  const printTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  // Track ticket IDs that have already been printed or queued for auto-print
+  const printedTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
 
-  useEffect(() => {
-    if (!printerConfig?.auto_print) return;
-    if (printerConfig.type === "browser") return; // Browser auto-print not supported on KDS
-
-    // Find new tickets that weren't in the previous set
-    const newTickets = tickets.filter(
-      (t) => t.status === "pending" && !knownTicketIds.current.has(t.id),
-    );
-
-    // Update known set
-    for (const t of tickets) {
-      knownTicketIds.current.add(t.id);
-    }
-
-    // Auto-print each new ticket
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    for (const ticket of newTickets) {
+  const autoPrintTicket = useCallback(
+    (ticket: KdsTicket) => {
+      if (!printerConfig) return;
       const commands = generateKitchenTicketCommands(ticket, stationName);
       const connConfig = printerConfig.connection_config;
 
@@ -95,7 +80,8 @@ export function KdsBoard({
                 protocol: (connConfig.protocol as string) ?? "raw",
               });
 
-      const timer = setTimeout(() => {
+      // Use setTimeout for print_delay_ms but don't tie it to effect cleanup
+      setTimeout(() => {
         printFn()
           .then((result) => {
             if (!result.success) {
@@ -106,17 +92,26 @@ export function KdsBoard({
             console.warn("KDS auto-print error:", err),
           );
       }, printerConfig.print_delay_ms);
-      timers.push(timer);
-    }
-    printTimersRef.current = timers;
+    },
+    [printerConfig, stationName],
+  );
 
-    return () => {
-      for (const t of printTimersRef.current) {
-        clearTimeout(t);
+  useEffect(() => {
+    if (!printerConfig?.auto_print) return;
+    if (printerConfig.type === "browser") return;
+
+    // Find new tickets that haven't been printed yet
+    for (const ticket of tickets) {
+      if (
+        ticket.status === "pending" &&
+        !printedTicketIds.current.has(ticket.id) &&
+        ticket.orders // Wait for complete data with joined orders/tables
+      ) {
+        printedTicketIds.current.add(ticket.id);
+        autoPrintTicket(ticket);
       }
-      printTimersRef.current = [];
-    };
-  }, [tickets, printerConfig, stationName]);
+    }
+  }, [tickets, printerConfig, autoPrintTicket]);
 
   return (
     <div className="flex h-screen flex-col">

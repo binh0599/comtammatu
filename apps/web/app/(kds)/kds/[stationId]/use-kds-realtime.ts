@@ -32,10 +32,17 @@ export function useKdsRealtime(
           newTicket.station_id === stationId &&
           (newTicket.status === "pending" || newTicket.status === "preparing")
         ) {
-          setTickets((prev) => {
-            if (prev.some((t) => t.id === newTicket.id)) return prev;
-            return [...prev, newTicket];
-          });
+          // Realtime payload lacks joined data (orders/tables).
+          // Refetch all tickets to get complete data for auto-print.
+          refetchTickets(stationId)
+            .then((fresh) => setTickets(fresh))
+            .catch(() => {
+              // Fallback: add raw ticket so it at least shows on the board
+              setTickets((prev) => {
+                if (prev.some((t) => t.id === newTicket.id)) return prev;
+                return [...prev, newTicket];
+              });
+            });
         }
       }
 
