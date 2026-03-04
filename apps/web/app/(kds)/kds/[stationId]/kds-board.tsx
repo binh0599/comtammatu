@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { WifiOff, Loader2, Printer } from "lucide-react";
+import { WifiOff, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/logout-button";
 import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
@@ -13,10 +13,10 @@ import { printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { KdsTicket, TimingRule } from "./types";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
-  if (status === "connected") return null;
+  // Only show banner for actual connection problems, not initial connecting
+  if (status === "connected" || status === "connecting") return null;
 
-  const messages: Record<Exclude<ConnectionStatus, "connected">, string> = {
-    connecting: "Đang kết nối...",
+  const messages: Record<"disconnected" | "error", string> = {
     disconnected: "Mất kết nối — Đang kết nối lại...",
     error: "Lỗi kết nối — Đang thử lại...",
   };
@@ -26,11 +26,7 @@ function ConnectionBanner({ status }: { status: ConnectionStatus }) {
       className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-1.5 text-sm font-medium text-yellow-800"
       role="alert"
     >
-      {status === "connecting" ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <WifiOff className="h-4 w-4" />
-      )}
+      <WifiOff className="h-4 w-4" />
       {messages[status]}
     </div>
   );
