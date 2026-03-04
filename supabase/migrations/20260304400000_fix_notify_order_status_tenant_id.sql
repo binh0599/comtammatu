@@ -1,8 +1,5 @@
--- ============================================
--- Order Status Notifications
--- Auto-creates in-app notifications when order status changes.
--- Uses pg_notify for Supabase Realtime broadcast.
--- ============================================
+-- Fix: notify_order_status_change() referenced o.tenant_id on the orders table,
+-- but orders does not have a tenant_id column. Join through branches instead.
 
 CREATE OR REPLACE FUNCTION notify_order_status_change()
 RETURNS TRIGGER
@@ -79,8 +76,3 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
-CREATE TRIGGER trg_notify_order_status
-  AFTER INSERT ON order_status_history
-  FOR EACH ROW
-  EXECUTE FUNCTION notify_order_status_change();
