@@ -7,11 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getPrinterConfigs } from "./printer-actions";
+import { getPrinterConfigs, getBranches } from "./printer-actions";
 import { PrinterConfigTab } from "./printer-config-tab";
 
 export default async function SettingsPage() {
-  const printers = await getPrinterConfigs();
+  const [printers, branches] = await Promise.all([
+    getPrinterConfigs(),
+    getBranches(),
+  ]);
 
   return (
     <>
@@ -46,7 +49,7 @@ export default async function SettingsPage() {
           </TabsContent>
 
           <TabsContent value="printers">
-            <PrinterConfigTab initialPrinters={printers ?? []} />
+            <PrinterConfigTab initialPrinters={printers ?? []} branches={branches ?? []} />
           </TabsContent>
         </Tabs>
       </div>

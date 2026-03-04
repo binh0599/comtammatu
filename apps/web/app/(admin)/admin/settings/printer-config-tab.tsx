@@ -63,13 +63,20 @@ interface PrinterConfigRow {
   is_active: boolean;
   test_status: string | null;
   created_at: string;
+  branches?: { name: string } | null;
+}
+
+interface Branch {
+  id: number;
+  name: string;
 }
 
 interface PrinterConfigTabProps {
   initialPrinters: PrinterConfigRow[];
+  branches: Branch[];
 }
 
-export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
+export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTabProps) {
   const [printers, setPrinters] = useState(initialPrinters);
   const [showAdd, setShowAdd] = useState(false);
   const [newPrinterType, setNewPrinterType] = useState<PrinterType>("browser");
@@ -168,12 +175,17 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
           <Printer className="size-5" />
           Quản lý máy in
         </CardTitle>
-        <Button onClick={() => setShowAdd(true)} className="gap-2">
+        <Button onClick={() => setShowAdd(true)} className="gap-2" disabled={branches.length === 0}>
           <Plus className="size-4" />
           Thêm máy in
         </Button>
       </CardHeader>
       <CardContent>
+        {branches.length === 0 && (
+          <div role="alert" className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
+            Chưa có chi nhánh nào. Vui lòng tạo chi nhánh trước khi thêm máy in.
+          </div>
+        )}
         {error && (
           <div role="alert" className="mb-4 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
             {error}
@@ -189,6 +201,7 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
             <TableHeader>
               <TableRow>
                 <TableHead>Tên</TableHead>
+                <TableHead>Chi nhánh</TableHead>
                 <TableHead>Loại</TableHead>
                 <TableHead>Gán cho</TableHead>
                 <TableHead>Khổ giấy</TableHead>
@@ -201,6 +214,7 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
               {printers.map((printer) => (
                 <TableRow key={printer.id}>
                   <TableCell className="font-medium">{printer.name}</TableCell>
+                  <TableCell>{printer.branches?.name ?? "—"}</TableCell>
                   <TableCell>{getPrinterTypeLabel(printer.type)}</TableCell>
                   <TableCell>
                     {printer.assigned_to_type ? (
@@ -255,6 +269,22 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
           </DialogHeader>
           <form onSubmit={handleCreate}>
             <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="branch_id">Chi nhánh</Label>
+                <Select name="branch_id" defaultValue={branches[0]?.id?.toString()}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Chọn chi nhánh" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {branches.map((branch) => (
+                      <SelectItem key={branch.id} value={String(branch.id)}>
+                        {branch.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="name">Tên máy in</Label>
                 <Input

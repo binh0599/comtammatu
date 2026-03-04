@@ -5,10 +5,12 @@ import { revalidatePath } from "next/cache";
 import {
   ADMIN_ROLES,
   getAdminContext,
+  getBranchesForTenant,
   auditLog,
   createPrinterConfigSchema,
   updatePrinterConfigSchema,
   assignPrinterSchema,
+  entityIdSchema,
   safeDbError,
   withServerAction,
   withServerQuery,
@@ -35,15 +37,21 @@ function parseJsonField(
 
 // ===== Queries =====
 
-async function _getPrinterConfigs() {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES) as any;
-  if (!branchId) return [];
+async function _getBranches() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  return getBranchesForTenant(supabase, tenantId);
+}
 
+export const getBranches = withServerQuery(_getBranches);
+
+async function _getPrinterConfigs() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data, error } = await (supabase as any)
     .from("printer_configs")
-    .select("*")
-    .eq("branch_id", branchId)
+    .select("*, branches!inner(tenant_id, name)")
+    .eq("branches.tenant_id", tenantId)
     .order("created_at", { ascending: false });
 
   if (error) throw safeDbError(error, "db");
@@ -53,13 +61,13 @@ async function _getPrinterConfigs() {
 export const getPrinterConfigs = withServerQuery(_getPrinterConfigs);
 
 async function _getPrinterForTerminal(terminalId: number) {
-  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES) as any;
-  if (!branchId) return null;
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data, error } = await (supabase as any)
     .from("printer_configs")
-    .select("*")
-    .eq("branch_id", branchId)
+    .select("*, branches!inner(tenant_id)")
+    .eq("branches.tenant_id", tenantId)
     .eq("assigned_to_type", "pos_terminal")
     .eq("assigned_to_id", terminalId)
     .eq("is_active", true)
@@ -72,13 +80,13 @@ async function _getPrinterForTerminal(terminalId: number) {
 export const getPrinterForTerminal = withServerQuery(_getPrinterForTerminal);
 
 async function _getPrinterForStation(stationId: number) {
-  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES) as any;
-  if (!branchId) return null;
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data, error } = await (supabase as any)
     .from("printer_configs")
-    .select("*")
-    .eq("branch_id", branchId)
+    .select("*, branches!inner(tenant_id)")
+    .eq("branches.tenant_id", tenantId)
     .eq("assigned_to_type", "kds_station")
     .eq("assigned_to_id", stationId)
     .eq("is_active", true)
@@ -99,6 +107,7 @@ async function _createPrinterConfig(formData: FormData) {
   }
 
   const parsed = createPrinterConfigSchema.safeParse({
+    branch_id: formData.get("branch_id"),
     name: formData.get("name"),
     type: formData.get("type"),
     paper_width_mm: formData.get("paper_width_mm"),
@@ -114,8 +123,19 @@ async function _createPrinterConfig(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, branchId, userId } = await getAdminContext(ADMIN_ROLES);
-  if (!branchId) return { error: "Không tìm thấy chi nhánh" };
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
+
+  // VALIDATE_CLIENT_IDS: verify branch belongs to caller's tenant
+  const { data: branch } = await supabase
+    .from("branches")
+    .select("id")
+    .eq("id", parsed.data.branch_id)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (!branch) return { error: "Chi nhánh không tồn tại hoặc không thuộc đơn vị của bạn" };
+
+  const branchId = parsed.data.branch_id;
 
   // VALIDATE_CLIENT_IDS: verify assigned_to_id belongs to this branch before writing
   if (parsed.data.assigned_to_id && parsed.data.assigned_to_type) {
@@ -138,7 +158,7 @@ async function _createPrinterConfig(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data: created, error } = await (supabase as any)
     .from("printer_configs")
-    .insert({ branch_id: branchId, ...parsed.data })
+    .insert({ ...parsed.data })
     .select("id");
 
   if (error) {
@@ -162,8 +182,7 @@ async function _createPrinterConfig(formData: FormData) {
 export const createPrinterConfig = withServerAction(_createPrinterConfig);
 
 async function _updatePrinterConfig(formData: FormData) {
-  const id = Number(formData.get("id"));
-  if (!id || isNaN(id)) return { error: "ID không hợp lệ" };
+  const id = entityIdSchema.parse(Number(formData.get("id")));
 
   const connectionConfigResult = parseJsonField(formData.get("connection_config"), undefined);
   if (!connectionConfigResult.ok) {
@@ -185,15 +204,25 @@ async function _updatePrinterConfig(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, branchId, userId } = await getAdminContext(ADMIN_ROLES);
-  if (!branchId) return { error: "Không tìm thấy chi nhánh" };
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
+
+  // Scope update to tenant via branch join — works for all admin roles
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
+  const { data: existing } = await (supabase as any)
+    .from("printer_configs")
+    .select("id, branch_id, branches!inner(tenant_id)")
+    .eq("id", id)
+    .eq("branches.tenant_id", tenantId)
+    .maybeSingle();
+
+  if (!existing) return { error: "Không tìm thấy cấu hình máy in" };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data: updated, error } = await (supabase as any)
     .from("printer_configs")
     .update(parsed.data)
     .eq("id", id)
-    .eq("branch_id", branchId)
+    .eq("branch_id", existing.branch_id)
     .select("id");
 
   if (error) return { error: "Lỗi cập nhật cấu hình máy in" };
@@ -215,18 +244,27 @@ async function _updatePrinterConfig(formData: FormData) {
 export const updatePrinterConfig = withServerAction(_updatePrinterConfig);
 
 async function _deletePrinterConfig(formData: FormData) {
-  const id = Number(formData.get("id"));
-  if (!id || isNaN(id)) return { error: "ID không hợp lệ" };
+  const id = entityIdSchema.parse(Number(formData.get("id")));
 
-  const { supabase, tenantId, branchId, userId } = await getAdminContext(ADMIN_ROLES);
-  if (!branchId) return { error: "Không tìm thấy chi nhánh" };
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
+
+  // Verify printer belongs to caller's tenant via branch join
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
+  const { data: existing } = await (supabase as any)
+    .from("printer_configs")
+    .select("id, branch_id, branches!inner(tenant_id)")
+    .eq("id", id)
+    .eq("branches.tenant_id", tenantId)
+    .maybeSingle();
+
+  if (!existing) return { error: "Không tìm thấy cấu hình máy in" };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data: deleted, error } = await (supabase as any)
     .from("printer_configs")
     .delete()
     .eq("id", id)
-    .eq("branch_id", branchId)
+    .eq("branch_id", existing.branch_id)
     .select("id");
 
   if (error) return { error: "Lỗi xóa cấu hình máy in" };
@@ -257,10 +295,20 @@ async function _assignPrinter(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, branchId, userId } = await getAdminContext(ADMIN_ROLES);
-  if (!branchId) return { error: "Không tìm thấy chi nhánh" };
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
-  // VALIDATE_CLIENT_IDS: verify the target terminal/station belongs to this branch
+  // Verify the printer belongs to caller's tenant and get its branch_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
+  const { data: printer } = await (supabase as any)
+    .from("printer_configs")
+    .select("id, branch_id, branches!inner(tenant_id)")
+    .eq("id", parsed.data.printer_config_id)
+    .eq("branches.tenant_id", tenantId)
+    .maybeSingle();
+
+  if (!printer) return { error: "Không tìm thấy cấu hình máy in" };
+
+  // VALIDATE_CLIENT_IDS: verify the target terminal/station belongs to the printer's branch
   if (parsed.data.assigned_to_id && parsed.data.assigned_to_type) {
     const targetTable =
       parsed.data.assigned_to_type === "pos_terminal" ? "pos_terminals" : "kds_stations";
@@ -270,7 +318,7 @@ async function _assignPrinter(formData: FormData) {
       .from(targetTable)
       .select("id")
       .eq("id", parsed.data.assigned_to_id)
-      .eq("branch_id", branchId)
+      .eq("branch_id", printer.branch_id)
       .maybeSingle();
 
     if (targetError || !targetRow) {
@@ -286,7 +334,7 @@ async function _assignPrinter(formData: FormData) {
       assigned_to_id: parsed.data.assigned_to_id,
     })
     .eq("id", parsed.data.printer_config_id)
-    .eq("branch_id", branchId)
+    .eq("branch_id", printer.branch_id)
     .select("id");
 
   if (error) {
