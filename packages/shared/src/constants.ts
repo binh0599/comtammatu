@@ -228,6 +228,11 @@ export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
   drink: "Nước",
 };
 
+// ===== Device Registration =====
+
+export const DEVICE_STATUSES = ["pending", "approved", "rejected"] as const;
+export type DeviceStatus = (typeof DEVICE_STATUSES)[number];
+
 // ===== Printing =====
 
 export const PRINTER_TYPES = [

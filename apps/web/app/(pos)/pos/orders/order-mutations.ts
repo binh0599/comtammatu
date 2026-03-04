@@ -88,6 +88,14 @@ async function _createOrder(data: {
     );
   }
 
+  // Dine-in orders must have a table
+  if (type === "dine_in" && !table_id) {
+    throw new ActionError(
+      "Đơn tại bàn phải chọn bàn",
+      "VALIDATION_ERROR"
+    );
+  }
+
   // Validate guest_count against table capacity for dine-in orders
   // Uses row-level locking (FOR UPDATE) to prevent race conditions
   if (type === "dine_in" && table_id && guest_count != null) {
