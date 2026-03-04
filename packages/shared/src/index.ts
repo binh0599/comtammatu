@@ -88,6 +88,18 @@ export type {
 } from "./schemas/order";
 
 export {
+  menuSchema,
+  menuCategorySchema,
+  menuItemSchema,
+  entityIdSchema,
+} from "./schemas/menu";
+export type {
+  MenuInput,
+  MenuCategoryInput,
+  MenuItemInput,
+} from "./schemas/menu";
+
+export {
   registerTerminalSchema,
   openSessionSchema,
   closeSessionSchema,
@@ -261,7 +273,17 @@ export {
 export { auditLog, logSecurityEvent } from "./server/audit-helpers";
 export type { AuditLogEntry, SecurityEventEntry } from "./server/audit-helpers";
 
-export { getActionContext, configureActionContext, requireBranch } from "./server/action-context";
-export type { ActionContext } from "./server/action-context";
+export {
+  getActionContext,
+  getAdminContext,
+  getKdsBranchContext,
+  getCustomerContext,
+  getBranchesForTenant,
+  getBranchIdsForTenant,
+  verifyEntityOwnership,
+  configureActionContext,
+  requireBranch,
+} from "./server/action-context";
+export type { ActionContext, KdsContext, CustomerContext } from "./server/action-context";
 
 export { withServerAction, withServerQuery } from "./server/with-server-action";

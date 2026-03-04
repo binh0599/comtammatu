@@ -9,6 +9,7 @@
  */
 
 import { ActionError } from "../utils/errors";
+import type { StaffRole } from "../constants";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClient = any;
@@ -105,4 +106,177 @@ export function requireBranch(ctx: ActionContext): number {
         );
     }
     return ctx.branchId;
+}
+
+/**
+ * Get action context with role enforcement for admin pages.
+ * Replaces the duplicated `getAdminContext()` / `getAdminProfile()` helpers
+ * found in orders, payments, terminals, and kds-stations action files.
+ *
+ * @param requiredRoles - Array of allowed roles (e.g., ADMIN_ROLES, KDS_ROLES)
+ * @throws ActionError("UNAUTHORIZED") if user's role is not in the required list
+ */
+export async function getAdminContext(
+    requiredRoles: readonly StaffRole[],
+): Promise<ActionContext> {
+    const ctx = await getActionContext();
+    if (!requiredRoles.includes(ctx.userRole as StaffRole)) {
+        throw new ActionError(
+            "Bạn không có quyền truy cập chức năng này",
+            "UNAUTHORIZED",
+            403,
+        );
+    }
+    return ctx;
+}
+
+/**
+ * Fetch all branches for a tenant. Replaces the duplicated `getBranches()`
+ * pattern found in 5+ admin action files.
+ */
+export async function getBranchesForTenant(
+    supabase: SupabaseClient,
+    tenantId: number,
+): Promise<Array<{ id: number; name: string }>> {
+    const { data, error } = await supabase
+        .from("branches")
+        .select("id, name")
+        .eq("tenant_id", tenantId)
+        .order("name");
+
+    if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+    return data ?? [];
+}
+
+/**
+ * Fetch all branch IDs for a tenant. Useful for queries that need
+ * to scope by branch_id IN (...).
+ */
+export async function getBranchIdsForTenant(
+    supabase: SupabaseClient,
+    tenantId: number,
+): Promise<number[]> {
+    const { data, error } = await supabase
+        .from("branches")
+        .select("id")
+        .eq("tenant_id", tenantId);
+
+    if (error) throw new ActionError(error.message, "SERVER_ERROR", 500);
+    if (!data || data.length === 0) return [];
+    return data.map((b: { id: number }) => b.id);
+}
+
+/**
+ * Context for KDS actions — authenticated user with branch and KDS role.
+ */
+export interface KdsContext {
+    supabase: SupabaseClient;
+    userId: string;
+    profile: { tenant_id: number; branch_id: number; role: string };
+}
+
+/**
+ * Get KDS action context. Validates that the user has a KDS-compatible role
+ * and a branch assignment. Replaces the duplicated `getKdsProfile()` helper.
+ *
+ * @param requiredRoles - Array of allowed roles (e.g., KDS_ROLES)
+ */
+export async function getKdsBranchContext(
+    requiredRoles: readonly StaffRole[],
+): Promise<KdsContext> {
+    const ctx = await getActionContext();
+    if (!requiredRoles.includes(ctx.userRole as StaffRole)) {
+        throw new ActionError(
+            "Bạn không có quyền truy cập KDS",
+            "UNAUTHORIZED",
+            403,
+        );
+    }
+    if (ctx.branchId == null) {
+        throw new ActionError(
+            "Chưa được gán chi nhánh",
+            "UNAUTHORIZED",
+            403,
+        );
+    }
+    return {
+        supabase: ctx.supabase,
+        userId: ctx.userId,
+        profile: {
+            tenant_id: ctx.tenantId,
+            branch_id: ctx.branchId,
+            role: ctx.userRole,
+        },
+    };
+}
+
+/**
+ * Context for customer-facing actions — authenticated user + customer record.
+ */
+export interface CustomerContext {
+    supabase: SupabaseClient;
+    user: { id: string; email: string };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    customer: any;
+}
+
+/**
+ * Get customer action context. Validates the user is authenticated and
+ * has a matching customer record. Replaces the duplicated `getCustomerAuth()` helper.
+ */
+export async function getCustomerContext(): Promise<CustomerContext> {
+    if (!_createSupabaseServer) {
+        throw new Error(
+            "getCustomerContext: must call configureActionContext(createSupabaseServer) first",
+        );
+    }
+
+    const supabase = await _createSupabaseServer();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
+    }
+
+    const { data: customer } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("email", user.email ?? "")
+        .single();
+
+    if (!customer) {
+        throw new ActionError("Khách hàng không tồn tại", "NOT_FOUND", 404);
+    }
+
+    return { supabase, user: { id: user.id, email: user.email ?? "" }, customer };
+}
+
+/**
+ * Verify that an entity (accessed via a join through branches) belongs to the caller's tenant.
+ * Works for tables like `pos_terminals` and `kds_stations` that have a `branch_id` FK
+ * with the branch itself having `tenant_id`.
+ *
+ * @returns The entity data on success, or `{ error: string }` on failure
+ */
+export async function verifyEntityOwnership<T extends Record<string, unknown>>(
+    supabase: SupabaseClient,
+    table: string,
+    entityId: number,
+    tenantId: number,
+    select: string = "id, is_active, branches!inner(tenant_id)",
+): Promise<{ data: T; error: null } | { data: null; error: string }> {
+    const { data, error } = await supabase
+        .from(table)
+        .select(select)
+        .eq("id", entityId)
+        .eq("branches.tenant_id", tenantId)
+        .single();
+
+    if (error || !data) {
+        return { data: null, error: "Dữ liệu không tồn tại hoặc không thuộc đơn vị của bạn" };
+    }
+
+    return { data: data as T, error: null };
 }

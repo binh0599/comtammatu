@@ -3,6 +3,7 @@
 import "@/lib/server-bootstrap";
 import {
     getActionContext,
+    entityIdSchema,
     withServerAction,
     withServerQuery,
     safeDbError,
@@ -48,6 +49,7 @@ export const getUnreadCount = withServerQuery(_getUnreadCount);
 // ===== markNotificationRead =====
 
 async function _markNotificationRead(notificationId: number) {
+    entityIdSchema.parse(notificationId);
     const ctx = await getActionContext();
     const { supabase, userId } = ctx;
 

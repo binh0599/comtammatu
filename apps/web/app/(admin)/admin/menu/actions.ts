@@ -8,31 +8,12 @@ import {
   withServerQuery,
   safeDbError,
   safeDbErrorResult,
+  menuSchema,
+  menuCategorySchema,
+  menuItemSchema,
+  entityIdSchema,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-
-// --- Schemas ---
-
-const menuSchema = z.object({
-  name: z.string().min(1, "Tên thực đơn không được để trống"),
-  type: z.enum(["dine_in", "takeaway", "delivery"]),
-  is_active: z.boolean().default(true),
-});
-
-const categorySchema = z.object({
-  menu_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Tên danh mục không được để trống"),
-  sort_order: z.coerce.number().int().min(0).default(0),
-});
-
-const menuItemSchema = z.object({
-  category_id: z.coerce.number().positive(),
-  name: z.string().min(1, "Tên món không được để trống"),
-  description: z.string().optional(),
-  base_price: z.coerce.number().positive("Giá phải lớn hơn 0"),
-  is_available: z.boolean().default(true),
-});
 
 // --- Menu CRUD ---
 
@@ -80,6 +61,7 @@ async function _createMenu(formData: FormData) {
 export const createMenu = withServerAction(_createMenu);
 
 async function _updateMenu(id: number, formData: FormData) {
+  entityIdSchema.parse(id);
   const parsed = menuSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
@@ -111,6 +93,7 @@ async function _updateMenu(id: number, formData: FormData) {
 export const updateMenu = withServerAction(_updateMenu);
 
 async function _deleteMenu(id: number) {
+  entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase
@@ -130,12 +113,14 @@ export const deleteMenu = withServerAction(_deleteMenu);
 // --- Category CRUD ---
 
 async function _getCategories(menuId: number) {
-  const { supabase } = await getActionContext();
+  entityIdSchema.parse(menuId);
+  const { supabase, tenantId } = await getActionContext();
 
   const { data, error } = await supabase
     .from("menu_categories")
-    .select("*")
+    .select("*, menus!inner(tenant_id)")
     .eq("menu_id", menuId)
+    .eq("menus.tenant_id", tenantId)
     .order("sort_order", { ascending: true });
 
   if (error) throw safeDbError(error, "db");
@@ -145,7 +130,7 @@ async function _getCategories(menuId: number) {
 export const getCategories = withServerQuery(_getCategories);
 
 async function _createCategory(formData: FormData) {
-  const parsed = categorySchema.safeParse({
+  const parsed = menuCategorySchema.safeParse({
     menu_id: formData.get("menu_id"),
     name: formData.get("name"),
     sort_order: formData.get("sort_order"),
@@ -155,7 +140,19 @@ async function _createCategory(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase } = await getActionContext();
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify menu belongs to this tenant
+  const { data: menu } = await supabase
+    .from("menus")
+    .select("id")
+    .eq("id", parsed.data.menu_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!menu) {
+    return { error: "Menu không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
 
   const { error } = await supabase.from("menu_categories").insert({
     menu_id: parsed.data.menu_id,
@@ -172,7 +169,20 @@ async function _createCategory(formData: FormData) {
 export const createCategory = withServerAction(_createCategory);
 
 async function _deleteCategory(id: number) {
-  const { supabase } = await getActionContext();
+  entityIdSchema.parse(id);
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify category belongs to this tenant via menu
+  const { data: category } = await supabase
+    .from("menu_categories")
+    .select("id, menus!inner(tenant_id)")
+    .eq("id", id)
+    .eq("menus.tenant_id", tenantId)
+    .single();
+
+  if (!category) {
+    return { error: "Danh mục không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
 
   const { error } = await supabase.from("menu_categories").delete().eq("id", id);
 
@@ -187,6 +197,7 @@ export const deleteCategory = withServerAction(_deleteCategory);
 // --- Menu Item CRUD ---
 
 async function _getMenuItems(categoryId: number) {
+  entityIdSchema.parse(categoryId);
   const { supabase } = await getActionContext();
 
   const { data, error } = await supabase
@@ -234,6 +245,7 @@ async function _createMenuItem(formData: FormData) {
 export const createMenuItem = withServerAction(_createMenuItem);
 
 async function _updateMenuItem(id: number, formData: FormData) {
+  entityIdSchema.parse(id);
   const parsed = menuItemSchema.safeParse({
     category_id: formData.get("category_id"),
     name: formData.get("name"),
@@ -268,6 +280,7 @@ async function _updateMenuItem(id: number, formData: FormData) {
 export const updateMenuItem = withServerAction(_updateMenuItem);
 
 async function _deleteMenuItem(id: number) {
+  entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
   const { error } = await supabase

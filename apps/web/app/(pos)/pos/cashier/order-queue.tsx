@@ -10,42 +10,8 @@ import {
   getOrderStatusLabel,
 } from "@comtammatu/shared";
 import { cn } from "@/lib/utils";
-
-interface QueueOrder {
-  id: number;
-  order_number: string;
-  status: string;
-  type: string;
-  subtotal: number;
-  discount_total: number;
-  tax: number;
-  total: number;
-  created_at: string;
-  table_id: number | null;
-  tables: { number: number } | null;
-  order_items: {
-    id: number;
-    quantity: number;
-    unit_price: number;
-    item_total: number;
-    menu_items: { name: string } | null;
-    menu_item_variants: { name: string } | null;
-  }[];
-  order_discounts: {
-    id: number;
-    type: string;
-    value: number;
-    voucher_id: number | null;
-    vouchers: { code: string } | null;
-  }[];
-}
-
-const statusVariant: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  confirmed: "outline",
-  preparing: "outline",
-  ready: "default",
-  served: "default",
-};
+import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
+import type { QueueOrder } from "./types";
 
 const filterTabs = [
   { value: "all", label: "Tất cả" },
@@ -114,7 +80,7 @@ export function OrderQueue({
                 <div className="flex items-center justify-between">
                   <span className="font-bold">{order.order_number}</span>
                   <Badge
-                    variant={statusVariant[order.status] ?? "secondary"}
+                    variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}
                   >
                     {getOrderStatusLabel(order.status)}
                   </Badge>

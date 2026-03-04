@@ -1,67 +1,34 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
-import { ADMIN_ROLES } from "@comtammatu/shared";
-
-// --- Helper: Get tenant_id + role from authenticated user ---
-
-async function getAdminContext() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, role")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  const role = profile?.role;
-  if (!tenantId) throw new Error("No tenant assigned");
-  if (!role || !ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number])) {
-    throw new Error("Insufficient permissions");
-  }
-
-  return { supabase, tenantId, userId: user.id, role };
-}
+import "@/lib/server-bootstrap";
+import {
+  ADMIN_ROLES,
+  getAdminContext,
+  getBranchesForTenant,
+  getBranchIdsForTenant,
+  withServerQuery,
+} from "@comtammatu/shared";
 
 // =====================
 // Branches
 // =====================
 
-export async function getBranches() {
-  const { supabase, tenantId } = await getAdminContext();
-
-  const { data, error } = await supabase
-    .from("branches")
-    .select("id, name")
-    .eq("tenant_id", tenantId)
-    .order("name");
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
+async function _getBranches() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  return getBranchesForTenant(supabase, tenantId);
 }
+
+export const getBranches = withServerQuery(_getBranches);
 
 // =====================
 // Admin Orders (all branches, tenant-scoped)
 // =====================
 
-export async function getAdminOrders() {
-  const { supabase, tenantId } = await getAdminContext();
+async function _getAdminOrders() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  // Get all branch IDs for this tenant
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError) throw new Error(branchError.message);
-  if (!branches || branches.length === 0) return [];
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return [];
 
   // Get orders with related data
   const { data, error } = await supabase
@@ -96,3 +63,5 @@ export async function getAdminOrders() {
   if (error) throw new Error(error.message);
   return data ?? [];
 }
+
+export const getAdminOrders = withServerQuery(_getAdminOrders);

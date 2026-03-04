@@ -22,13 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -41,80 +34,10 @@ import {
   getOrderStatusLabel,
   getOrderTypeLabel,
   getPaymentMethodLabel,
-  getPaymentStatusLabel,
 } from "@comtammatu/shared/src/utils/format";
 import { ORDER_STATUSES, ORDER_TYPES } from "@comtammatu/shared/src/constants";
-
-// --- Types ---
-
-interface OrderItem {
-  id: number;
-  menu_item_id: number;
-  quantity: number;
-  unit_price: number;
-  item_total: number;
-  status: string;
-  notes: string | null;
-  menu_items: { name: string } | null;
-}
-
-interface Payment {
-  id: number;
-  method: string;
-  status: string;
-  amount: number;
-  paid_at: string | null;
-}
-
-interface Order {
-  id: number;
-  order_number: string;
-  branch_id: number;
-  type: string;
-  status: string;
-  subtotal: number;
-  tax: number;
-  service_charge: number;
-  discount_total: number;
-  total: number;
-  notes: string | null;
-  customer_id: number | null;
-  table_id: number | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string | null;
-  branches: { id: number; name: string } | null;
-  order_items: OrderItem[];
-  payments: Payment[];
-}
-
-interface Branch {
-  id: number;
-  name: string;
-}
-
-interface OrdersHistoryProps {
-  orders: Order[];
-  branches: Branch[];
-}
-
-// --- Badge styles ---
-
-const STATUS_BADGE: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-800 hover:bg-gray-100",
-  confirmed: "bg-blue-100 text-blue-800 hover:bg-blue-100",
-  preparing: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
-  ready: "bg-purple-100 text-purple-800 hover:bg-purple-100",
-  served: "bg-indigo-100 text-indigo-800 hover:bg-indigo-100",
-  completed: "bg-green-100 text-green-800 hover:bg-green-100",
-  cancelled: "bg-red-100 text-red-800 hover:bg-red-100",
-};
-
-const TYPE_BADGE: Record<string, string> = {
-  dine_in: "bg-sky-100 text-sky-800 hover:bg-sky-100",
-  takeaway: "bg-orange-100 text-orange-800 hover:bg-orange-100",
-  delivery: "bg-teal-100 text-teal-800 hover:bg-teal-100",
-};
+import type { Order, Payment, Branch } from "./orders-types";
+import { OrderDetailDialog, STATUS_BADGE, TYPE_BADGE } from "./order-detail-dialog";
 
 // --- Date preset helpers ---
 
@@ -161,7 +84,7 @@ const PRESET_LABELS: Record<DatePreset, string> = {
 
 // --- Component ---
 
-export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
+export function OrdersHistory({ orders, branches }: { orders: Order[]; branches: Branch[] }) {
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
   // Filters
@@ -177,7 +100,6 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
-      // Date filter
       if (dateRange?.from) {
         const orderDate = new Date(o.created_at);
         if (orderDate < dateRange.from) return false;
@@ -187,35 +109,21 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
           if (orderDate > endOfDay) return false;
         }
       }
-
-      // Branch filter
       if (branchFilter !== "all" && o.branch_id !== Number(branchFilter))
         return false;
-
-      // Status filter
       if (statusFilter !== "all" && o.status !== statusFilter) return false;
-
-      // Type filter
       if (typeFilter !== "all" && o.type !== typeFilter) return false;
-
-      // Search
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         if (!o.order_number.toLowerCase().includes(q)) return false;
       }
-
       return true;
     });
   }, [orders, dateRange, branchFilter, statusFilter, typeFilter, searchQuery]);
 
-  // Summary stats
   const totalRevenue = filtered.reduce((sum, o) => sum + Number(o.total), 0);
-  const completedCount = filtered.filter(
-    (o) => o.status === "completed"
-  ).length;
-  const cancelledCount = filtered.filter(
-    (o) => o.status === "cancelled"
-  ).length;
+  const completedCount = filtered.filter((o) => o.status === "completed").length;
+  const cancelledCount = filtered.filter((o) => o.status === "cancelled").length;
 
   function getPaymentSummary(payments: Payment[]): string {
     const completed = payments.filter((p) => p.status === "completed");
@@ -226,21 +134,14 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Lịch sử đơn hàng
-        </h2>
-        <p className="text-muted-foreground">
-          Xem lịch sử đơn hàng tất cả chi nhánh
-        </p>
+        <h2 className="text-2xl font-bold tracking-tight">Lịch sử đơn hàng</h2>
+        <p className="text-muted-foreground">Xem lịch sử đơn hàng tất cả chi nhánh</p>
       </div>
 
       {/* Date presets */}
       <div className="flex flex-wrap items-center gap-2">
-        {(
-          Object.entries(PRESET_LABELS) as [DatePreset, string][]
-        ).map(([key, label]) =>
+        {(Object.entries(PRESET_LABELS) as [DatePreset, string][]).map(([key, label]) =>
           key !== "custom" ? (
             <Button
               key={key}
@@ -252,7 +153,6 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
             </Button>
           ) : null
         )}
-
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -337,25 +237,14 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
           </SelectContent>
         </Select>
 
-        {/* Summary */}
         <div className="text-muted-foreground ml-auto text-sm">
           {filtered.length} đơn &middot;{" "}
-          <span className="font-medium text-green-700">
-            {completedCount} hoàn tất
-          </span>
+          <span className="font-medium text-green-700">{completedCount} hoàn tất</span>
           {cancelledCount > 0 && (
-            <>
-              {" "}
-              &middot;{" "}
-              <span className="font-medium text-red-600">
-                {cancelledCount} đã huỷ
-              </span>
-            </>
+            <> &middot; <span className="font-medium text-red-600">{cancelledCount} đã huỷ</span></>
           )}
           {" "}&middot; Doanh thu:{" "}
-          <span className="font-medium text-black">
-            {formatPrice(totalRevenue)}
-          </span>
+          <span className="font-medium text-black">{formatPrice(totalRevenue)}</span>
         </div>
       </div>
 
@@ -378,49 +267,27 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={9} className="text-muted-foreground h-24 text-center">
                   Không tìm thấy đơn hàng nào
                 </TableCell>
               </TableRow>
             ) : (
               filtered.map((o) => (
                 <TableRow key={o.id}>
-                  <TableCell className="font-mono text-sm">
-                    {o.order_number}
-                  </TableCell>
+                  <TableCell className="font-mono text-sm">{o.order_number}</TableCell>
                   <TableCell>{o.branches?.name ?? "—"}</TableCell>
                   <TableCell>
-                    <Badge className={TYPE_BADGE[o.type] ?? ""}>
-                      {getOrderTypeLabel(o.type)}
-                    </Badge>
+                    <Badge className={TYPE_BADGE[o.type] ?? ""}>{getOrderTypeLabel(o.type)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={STATUS_BADGE[o.status] ?? ""}>
-                      {getOrderStatusLabel(o.status)}
-                    </Badge>
+                    <Badge className={STATUS_BADGE[o.status] ?? ""}>{getOrderStatusLabel(o.status)}</Badge>
                   </TableCell>
-                  <TableCell className="text-center">
-                    {o.order_items.length}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    {formatPrice(Number(o.total))}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {getPaymentSummary(o.payments)}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDateTime(o.created_at)}
-                  </TableCell>
+                  <TableCell className="text-center">{o.order_items.length}</TableCell>
+                  <TableCell className="text-right font-medium">{formatPrice(Number(o.total))}</TableCell>
+                  <TableCell className="text-sm">{getPaymentSummary(o.payments)}</TableCell>
+                  <TableCell className="text-sm">{formatDateTime(o.created_at)}</TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      title="Chi tiết"
-                      onClick={() => setDetailOrder(o)}
-                    >
+                    <Button variant="ghost" size="icon" title="Chi tiết" onClick={() => setDetailOrder(o)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -431,188 +298,13 @@ export function OrdersHistory({ orders, branches }: OrdersHistoryProps) {
         </Table>
       </div>
 
-      {/* Detail Dialog */}
-      <Dialog
+      <OrderDetailDialog
+        order={detailOrder}
         open={detailOrder !== null}
         onOpenChange={(open) => {
           if (!open) setDetailOrder(null);
         }}
-      >
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Chi tiết đơn hàng {detailOrder?.order_number}
-            </DialogTitle>
-            <DialogDescription>
-              Thông tin chi tiết đơn hàng
-            </DialogDescription>
-          </DialogHeader>
-          {detailOrder && (
-            <div className="space-y-6 py-4">
-              {/* Order info grid */}
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Chi nhánh:</span>{" "}
-                  <span className="font-medium">
-                    {detailOrder.branches?.name ?? "—"}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Loại:</span>{" "}
-                  <Badge className={TYPE_BADGE[detailOrder.type] ?? ""}>
-                    {getOrderTypeLabel(detailOrder.type)}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Trạng thái:</span>{" "}
-                  <Badge className={STATUS_BADGE[detailOrder.status] ?? ""}>
-                    {getOrderStatusLabel(detailOrder.status)}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Thời gian tạo:</span>{" "}
-                  <span>{formatDateTime(detailOrder.created_at)}</span>
-                </div>
-                {detailOrder.table_id && (
-                  <div>
-                    <span className="text-muted-foreground">Bàn:</span>{" "}
-                    <span>#{detailOrder.table_id}</span>
-                  </div>
-                )}
-                {detailOrder.notes && (
-                  <div className="col-span-2">
-                    <span className="text-muted-foreground">Ghi chú:</span>{" "}
-                    <span>{detailOrder.notes}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Order items */}
-              <div>
-                <h4 className="mb-2 text-sm font-semibold">
-                  Danh sách món ({detailOrder.order_items.length})
-                </h4>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Món</TableHead>
-                        <TableHead className="text-center">SL</TableHead>
-                        <TableHead className="text-right">Đơn giá</TableHead>
-                        <TableHead className="text-right">
-                          Thành tiền
-                        </TableHead>
-                        <TableHead>Trạng thái</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {detailOrder.order_items.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>
-                            {item.menu_items?.name ?? `#${item.menu_item_id}`}
-                            {item.notes && (
-                              <span className="text-muted-foreground block text-xs">
-                                {item.notes}
-                              </span>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            {item.quantity}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatPrice(Number(item.unit_price))}
-                          </TableCell>
-                          <TableCell className="text-right font-medium">
-                            {formatPrice(Number(item.item_total))}
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={STATUS_BADGE[item.status] ?? ""}
-                            >
-                              {getOrderStatusLabel(item.status)}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-
-              {/* Totals */}
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Tạm tính:</span>
-                  <span>{formatPrice(Number(detailOrder.subtotal))}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Thuế:</span>
-                  <span>{formatPrice(Number(detailOrder.tax))}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Phí dịch vụ:</span>
-                  <span>
-                    {formatPrice(Number(detailOrder.service_charge))}
-                  </span>
-                </div>
-                {Number(detailOrder.discount_total) > 0 && (
-                  <div className="flex justify-between text-red-600">
-                    <span>Giảm giá:</span>
-                    <span>
-                      -{formatPrice(Number(detailOrder.discount_total))}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between border-t pt-1 font-semibold">
-                  <span>Tổng cộng:</span>
-                  <span>{formatPrice(Number(detailOrder.total))}</span>
-                </div>
-              </div>
-
-              {/* Payments */}
-              {detailOrder.payments.length > 0 && (
-                <div>
-                  <h4 className="mb-2 text-sm font-semibold">Thanh toán</h4>
-                  <div className="space-y-2 text-sm">
-                    {detailOrder.payments.map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex items-center justify-between rounded-md border px-3 py-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span>{getPaymentMethodLabel(p.method)}</span>
-                          <Badge
-                            className={
-                              p.status === "completed"
-                                ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                : p.status === "failed"
-                                  ? "bg-red-100 text-red-800 hover:bg-red-100"
-                                  : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                            }
-                          >
-                            {getPaymentStatusLabel(p.status)}
-                          </Badge>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-medium">
-                            {formatPrice(Number(p.amount))}
-                          </span>
-                          {p.paid_at && (
-                            <span className="text-muted-foreground ml-2 text-xs">
-                              {formatDateTime(p.paid_at)}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      />
     </div>
   );
 }

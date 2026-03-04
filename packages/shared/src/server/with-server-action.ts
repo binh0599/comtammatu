@@ -14,7 +14,7 @@
  * ```
  */
 
-import { handleServerActionError } from "../utils/errors";
+import { handleServerActionError, type ActionErrorCode } from "../utils/errors";
 
 /**
  * Wraps a Server Action implementation with error handling.
@@ -22,7 +22,7 @@ import { handleServerActionError } from "../utils/errors";
  */
 export function withServerAction<TArgs extends unknown[], TResult>(
     fn: (...args: TArgs) => Promise<TResult>,
-): (...args: TArgs) => Promise<TResult | { error: string; code: string }> {
+): (...args: TArgs) => Promise<TResult | { error: string; code: ActionErrorCode }> {
     return async (...args: TArgs) => {
         try {
             return await fn(...args);

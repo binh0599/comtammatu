@@ -6,14 +6,7 @@ import { Clock, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@comtammatu/shared";
-
-interface SessionInfo {
-  id: number;
-  opening_amount: number;
-  opened_at: string;
-  cashier_name: string;
-  terminal_name: string;
-}
+import type { SessionInfo } from "./types";
 
 export function SessionBar({ session }: { session: SessionInfo }) {
   const [elapsed, setElapsed] = useState(0);

@@ -1,9 +1,19 @@
 "use server";
 
-import { createSupabaseServer } from "@comtammatu/database";
+import "@/lib/server-bootstrap";
 import { revalidatePath } from "next/cache";
-import { ADMIN_ROLES, safeDbErrorResult } from "@comtammatu/shared";
+import {
+  ADMIN_ROLES,
+  getAdminContext,
+  verifyEntityOwnership,
+  entityIdSchema,
+  safeDbErrorResult,
+  withServerAction,
+  withServerQuery,
+} from "@comtammatu/shared";
 import { z } from "zod";
+
+const validateId = (id: number) => entityIdSchema.parse(id);
 
 const stationSchema = z.object({
   name: z.string().min(1, "Tên bếp không được để trống"),
@@ -11,54 +21,12 @@ const stationSchema = z.object({
   category_ids: z.string().min(1, "Phải chọn ít nhất 1 danh mục"),
 });
 
-async function getAdminProfile() {
-  const supabase = await createSupabaseServer();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
+// =====================
+// Queries
+// =====================
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id, role")
-    .eq("id", user.id)
-    .single();
-
-  const tenantId = profile?.tenant_id;
-  if (!tenantId) throw new Error("No tenant assigned");
-
-  const role = profile.role as (typeof ADMIN_ROLES)[number];
-  if (!ADMIN_ROLES.includes(role)) {
-    throw new Error("Not authorized for KDS station management");
-  }
-
-  return { supabase, tenantId };
-}
-
-/**
- * Verify that a KDS station belongs to the caller's tenant.
- */
-async function verifyStationOwnership(
-  supabase: Awaited<ReturnType<typeof createSupabaseServer>>,
-  stationId: number,
-  tenantId: number
-) {
-  const { data: station, error } = await supabase
-    .from("kds_stations")
-    .select("id, is_active, branches!inner(tenant_id)")
-    .eq("id", stationId)
-    .eq("branches.tenant_id", tenantId)
-    .single();
-
-  if (error || !station) {
-    return { error: "Bếp KDS không tồn tại hoặc không thuộc đơn vị của bạn" };
-  }
-
-  return { station, error: null };
-}
-
-export async function getKdsStations() {
-  const { supabase, tenantId } = await getAdminProfile();
+async function _getKdsStations() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
     .from("kds_stations")
@@ -72,8 +40,10 @@ export async function getKdsStations() {
   return data ?? [];
 }
 
-export async function getBranchesAndCategories() {
-  const { supabase, tenantId } = await getAdminProfile();
+export const getKdsStations = withServerQuery(_getKdsStations);
+
+async function _getBranchesAndCategories() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const [branchesResult, categoriesResult] = await Promise.all([
     supabase
@@ -93,7 +63,7 @@ export async function getBranchesAndCategories() {
 
   return {
     branches: branchesResult.data ?? [],
-    categories: (categoriesResult.data ?? []).map(({ id, name, menu_id }) => ({
+    categories: (categoriesResult.data ?? []).map(({ id, name, menu_id }: { id: number; name: string; menu_id: number }) => ({
       id,
       name,
       menu_id,
@@ -101,8 +71,14 @@ export async function getBranchesAndCategories() {
   };
 }
 
-export async function createKdsStation(formData: FormData) {
-  const { supabase, tenantId } = await getAdminProfile();
+export const getBranchesAndCategories = withServerQuery(_getBranchesAndCategories);
+
+// =====================
+// Mutations
+// =====================
+
+async function _createKdsStation(formData: FormData) {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const parsed = stationSchema.safeParse({
     name: formData.get("name"),
@@ -142,6 +118,18 @@ export async function createKdsStation(formData: FormData) {
     .filter((id) => !isNaN(id) && id > 0);
 
   if (categoryIdArray.length > 0) {
+    // Validate all category IDs belong to this tenant
+    const { data: validCats } = await supabase
+      .from("menu_categories")
+      .select("id, menus!inner(tenant_id)")
+      .in("id", categoryIdArray)
+      .eq("menus.tenant_id", tenantId);
+
+    if (!validCats || validCats.length !== categoryIdArray.length) {
+      await supabase.from("kds_stations").delete().eq("id", station.id);
+      return { error: "Một số danh mục không hợp lệ hoặc không thuộc đơn vị của bạn" };
+    }
+
     const junctionRows = categoryIdArray.map((category_id) => ({
       station_id: station.id,
       category_id,
@@ -158,11 +146,13 @@ export async function createKdsStation(formData: FormData) {
   return { error: null, success: true };
 }
 
-export async function updateKdsStation(id: number, formData: FormData) {
-  const { supabase, tenantId } = await getAdminProfile();
+export const createKdsStation = withServerAction(_createKdsStation);
 
-  // Verify station belongs to caller's tenant
-  const ownership = await verifyStationOwnership(supabase, id, tenantId);
+async function _updateKdsStation(id: number, formData: FormData) {
+  validateId(id);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const ownership = await verifyEntityOwnership(supabase, "kds_stations", id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
   const parsed = stationSchema.safeParse({
@@ -197,6 +187,17 @@ export async function updateKdsStation(id: number, formData: FormData) {
     .filter((cid) => !isNaN(cid) && cid > 0);
 
   if (categoryIdArray.length > 0) {
+    // Validate all category IDs belong to this tenant
+    const { data: validCats } = await supabase
+      .from("menu_categories")
+      .select("id, menus!inner(tenant_id)")
+      .in("id", categoryIdArray)
+      .eq("menus.tenant_id", tenantId);
+
+    if (!validCats || validCats.length !== categoryIdArray.length) {
+      return { error: "Một số danh mục không hợp lệ hoặc không thuộc đơn vị của bạn" };
+    }
+
     const junctionRows = categoryIdArray.map((category_id) => ({
       station_id: id,
       category_id,
@@ -213,16 +214,20 @@ export async function updateKdsStation(id: number, formData: FormData) {
   return { error: null, success: true };
 }
 
-export async function toggleKdsStation(id: number) {
-  const { supabase, tenantId } = await getAdminProfile();
+export const updateKdsStation = withServerAction(_updateKdsStation);
 
-  // Verify station belongs to caller's tenant
-  const ownership = await verifyStationOwnership(supabase, id, tenantId);
+async function _toggleKdsStation(id: number) {
+  validateId(id);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const ownership = await verifyEntityOwnership<{ id: number; is_active: boolean }>(
+    supabase, "kds_stations", id, tenantId
+  );
   if (ownership.error) return { error: ownership.error };
 
   const { error: updateError } = await supabase
     .from("kds_stations")
-    .update({ is_active: !ownership.station!.is_active })
+    .update({ is_active: !ownership.data!.is_active })
     .eq("id", id);
 
   if (updateError) return { error: updateError.message };
@@ -231,11 +236,13 @@ export async function toggleKdsStation(id: number) {
   return { error: null, success: true };
 }
 
-export async function deleteKdsStation(id: number) {
-  const { supabase, tenantId } = await getAdminProfile();
+export const toggleKdsStation = withServerAction(_toggleKdsStation);
 
-  // Verify station belongs to caller's tenant
-  const ownership = await verifyStationOwnership(supabase, id, tenantId);
+async function _deleteKdsStation(id: number) {
+  validateId(id);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const ownership = await verifyEntityOwnership(supabase, "kds_stations", id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
   const { error } = await supabase.from("kds_stations").delete().eq("id", id);
@@ -245,3 +252,5 @@ export async function deleteKdsStation(id: number) {
   revalidatePath("/admin/kds-stations");
   return { error: null, success: true };
 }
+
+export const deleteKdsStation = withServerAction(_deleteKdsStation);
