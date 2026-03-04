@@ -8,6 +8,7 @@ import {
   requireBranch,
   requireRole,
   createPrinterConfigSchema,
+  updatePrinterConfigSchema,
   entityIdSchema,
   safeDbErrorResult,
   withServerAction,
@@ -161,15 +162,24 @@ async function _updatePrinter(formData: FormData) {
 
   if (!existing) return { error: "Không tìm thấy máy in" };
 
-  const updates: Record<string, unknown> = {};
+  const rawUpdates: Record<string, unknown> = {};
   if (formData.has("auto_print")) {
-    updates.auto_print = formData.get("auto_print") === "true";
+    rawUpdates.auto_print = formData.get("auto_print") === "true";
+  }
+
+  if (Object.keys(rawUpdates).length === 0) {
+    return { error: "Không có thay đổi" };
+  }
+
+  const parsed = updatePrinterConfigSchema.safeParse(rawUpdates);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (supabase as any)
     .from("printer_configs")
-    .update(updates)
+    .update(parsed.data)
     .eq("id", id)
     .eq("branch_id", branchId);
 

@@ -4,7 +4,11 @@ import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { z } from "zod";
-import { ActionError, handleServerActionError } from "@comtammatu/shared";
+import {
+  ActionError,
+  handleServerActionError,
+  entityIdSchema,
+} from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
 
 const loginSchema = z.object({
@@ -91,19 +95,23 @@ async function _login(formData: FormData) {
     redirect(getRoleRedirectPath(role));
   }
 
-  // Staff roles: check device
+  // Staff roles: require device fingerprint and complete profile
   const fingerprint = parsed.data.device_fingerprint;
   if (!fingerprint || !profile?.tenant_id || !profile?.branch_id) {
-    // No fingerprint provided or profile incomplete — redirect anyway
-    // (client will provide fingerprint on next attempt)
-    redirect(getRoleRedirectPath(role));
+    // Missing fingerprint or incomplete profile — show error instead of bypassing
+    throw new ActionError(
+      "Thiết bị chưa được nhận diện. Vui lòng thử lại.",
+      "VALIDATION_ERROR",
+    );
   }
 
-  // Check if device is already registered
+  // Check if device is already registered — scope by tenant + branch
   const { data: existingDevice } = await supabase
     .from("registered_devices")
     .select("id, status, approval_code")
     .eq("device_fingerprint", fingerprint)
+    .eq("tenant_id", profile.tenant_id)
+    .eq("branch_id", profile.branch_id)
     .maybeSingle();
 
   if (existingDevice) {
@@ -191,8 +199,14 @@ export async function login(formData: FormData) {
 
 /**
  * Check if a device has been approved (called from pending page polling).
+ * Scoped to the requesting user's tenant to prevent cross-tenant queries.
  */
 export async function checkDeviceStatus(deviceId: number) {
+  const parsed = entityIdSchema.safeParse(deviceId);
+  if (!parsed.success) {
+    return { status: "error" as const, error: "ID không hợp lệ" };
+  }
+
   const supabase = await createSupabaseServer();
   const {
     data: { user },
@@ -202,14 +216,32 @@ export async function checkDeviceStatus(deviceId: number) {
     return { status: "error" as const, error: "Chưa đăng nhập" };
   }
 
+  // Get user's tenant for scoping
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("tenant_id")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.tenant_id) {
+    return { status: "error" as const, error: "Không tìm thấy hồ sơ" };
+  }
+
+  // Only allow querying devices within the user's tenant
   const { data: device } = await supabase
     .from("registered_devices")
-    .select("status")
-    .eq("id", deviceId)
+    .select("status, registered_by")
+    .eq("id", parsed.data)
+    .eq("tenant_id", profile.tenant_id)
     .single();
 
   if (!device) {
     return { status: "error" as const, error: "Thiết bị không tồn tại" };
+  }
+
+  // Only the device registrant or an admin can check status
+  if (device.registered_by !== user.id) {
+    return { status: "error" as const, error: "Không có quyền" };
   }
 
   return { status: device.status as "pending" | "approved" | "rejected" };

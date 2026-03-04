@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { Header } from "@/components/admin/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Monitor, Smartphone } from "lucide-react";
@@ -12,10 +13,12 @@ export default async function TerminalsPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) redirect("/login");
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("tenant_id")
-    .eq("id", user!.id)
+    .eq("id", user.id)
     .single();
 
   const [terminals, branches, devices] = await Promise.all([

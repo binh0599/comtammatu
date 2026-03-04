@@ -1,18 +1,29 @@
 const STORAGE_KEY = "ctm_device_fp";
 
+// Fallback when localStorage is unavailable (private browsing, restricted context)
+let memoryFingerprint: string | null = null;
+
 /**
  * Get or create a stable device fingerprint stored in localStorage.
- * Uses a random UUID so it's unique per browser profile per device.
+ * Falls back to in-memory UUID if localStorage is unavailable.
  */
 export function getDeviceFingerprint(): string {
   if (typeof window === "undefined") return "";
 
-  let fp = localStorage.getItem(STORAGE_KEY);
-  if (!fp) {
-    fp = crypto.randomUUID();
-    localStorage.setItem(STORAGE_KEY, fp);
+  try {
+    let fp = localStorage.getItem(STORAGE_KEY);
+    if (!fp) {
+      fp = crypto.randomUUID();
+      localStorage.setItem(STORAGE_KEY, fp);
+    }
+    return fp;
+  } catch {
+    // localStorage blocked (e.g., Safari private mode, iframe sandbox)
+    if (!memoryFingerprint) {
+      memoryFingerprint = crypto.randomUUID();
+    }
+    return memoryFingerprint;
   }
-  return fp;
 }
 
 /**

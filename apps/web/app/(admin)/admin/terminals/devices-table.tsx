@@ -111,6 +111,36 @@ export function DevicesTable({
           handleRealtimeChange();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "registered_devices",
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        (payload) => {
+          const updated = payload.new as RegisteredDevice;
+          setDevices((prev) =>
+            prev.map((d) =>
+              d.id === updated.id ? { ...d, status: updated.status, approved_at: updated.approved_at, rejected_at: updated.rejected_at } : d,
+            ),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "registered_devices",
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        (payload) => {
+          const deleted = payload.old as { id: number };
+          setDevices((prev) => prev.filter((d) => d.id !== deleted.id));
+        },
+      )
       .subscribe();
 
     return () => {

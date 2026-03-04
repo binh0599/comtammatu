@@ -99,6 +99,7 @@ export function PrinterSettings({
   const [printers, setPrinters] = useState(initialPrinters);
   const [showAdd, setShowAdd] = useState(false);
   const [newPrinterType, setNewPrinterType] = useState<PrinterType>("browser");
+  const [assignedToType, setAssignedToType] = useState<string>("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -251,6 +252,7 @@ export function PrinterSettings({
                         size="icon"
                         onClick={() => handleDelete(printer.id)}
                         disabled={isPending}
+                        aria-label={`Xóa máy in ${printer.name}`}
                       >
                         <Trash2 className="size-4 text-destructive" />
                       </Button>
@@ -264,7 +266,7 @@ export function PrinterSettings({
       </Card>
 
       {/* Add Printer Dialog */}
-      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) setNewPrinterType("browser"); }}>
+      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) { setNewPrinterType("browser"); setAssignedToType(""); } }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm máy in mới</DialogTitle>
@@ -346,7 +348,10 @@ export function PrinterSettings({
 
               <div className="grid gap-2">
                 <Label htmlFor="assigned_to_type">Gán cho</Label>
-                <Select name="assigned_to_type">
+                <Select
+                  name="assigned_to_type"
+                  onValueChange={(v) => setAssignedToType(v)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Chọn thiết bị" />
                   </SelectTrigger>
@@ -357,6 +362,7 @@ export function PrinterSettings({
                 </Select>
               </div>
 
+              {assignedToType && (
               <div className="grid gap-2">
                 <Label htmlFor="assigned_to_id">Thiết bị cụ thể</Label>
                 <Select name="assigned_to_id">
@@ -364,19 +370,20 @@ export function PrinterSettings({
                     <SelectValue placeholder="Chọn" />
                   </SelectTrigger>
                   <SelectContent>
-                    {terminals.map((t) => (
+                    {assignedToType === "pos_terminal" && terminals.map((t) => (
                       <SelectItem key={`t-${t.id}`} value={String(t.id)}>
-                        POS: {t.name}
+                        {t.name}
                       </SelectItem>
                     ))}
-                    {stations.map((s) => (
+                    {assignedToType === "kds_station" && stations.map((s) => (
                       <SelectItem key={`s-${s.id}`} value={String(s.id)}>
-                        KDS: {s.name}
+                        {s.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+              )}
 
               <input type="hidden" name="encoding" value="utf-8" />
             </div>

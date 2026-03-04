@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import {
@@ -35,14 +35,23 @@ export function DevicePendingApproval({
   const [status, setStatus] = useState<"pending" | "approved" | "rejected">(
     "pending",
   );
+  // Guard against duplicate redirects from realtime + polling race
+  const handledRef = useRef(false);
 
   const handleApproved = useCallback(() => {
+    if (handledRef.current) return;
+    handledRef.current = true;
     setStatus("approved");
-    // Short delay to show the approved animation then redirect
     setTimeout(() => {
       router.push(getRoleRedirectPath(role));
     }, 1500);
   }, [role, router]);
+
+  const handleRejected = useCallback(() => {
+    if (handledRef.current) return;
+    handledRef.current = true;
+    setStatus("rejected");
+  }, []);
 
   // Subscribe to realtime changes on this device
   useEffect(() => {
@@ -63,7 +72,7 @@ export function DevicePendingApproval({
           if (updated.status === "approved") {
             handleApproved();
           } else if (updated.status === "rejected") {
-            setStatus("rejected");
+            handleRejected();
           }
         },
       )
@@ -71,11 +80,12 @@ export function DevicePendingApproval({
 
     // Fallback polling every 5 seconds in case realtime misses
     const pollInterval = setInterval(async () => {
+      if (handledRef.current) return;
       const result = await checkDeviceStatus(deviceId);
       if (result.status === "approved") {
         handleApproved();
       } else if (result.status === "rejected") {
-        setStatus("rejected");
+        handleRejected();
       }
     }, 5000);
 
@@ -83,7 +93,7 @@ export function DevicePendingApproval({
       supabase.removeChannel(channel);
       clearInterval(pollInterval);
     };
-  }, [deviceId, handleApproved]);
+  }, [deviceId, handleApproved, handleRejected]);
 
   if (status === "approved") {
     return (
@@ -118,7 +128,10 @@ export function DevicePendingApproval({
         <CardContent className="text-center">
           <Button
             variant="outline"
-            onClick={() => window.location.reload()}
+            onClick={() => {
+              handledRef.current = false;
+              window.location.reload();
+            }}
           >
             Thử lại
           </Button>
