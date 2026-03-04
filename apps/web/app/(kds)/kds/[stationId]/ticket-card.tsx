@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { bumpTicket } from "./actions";
+import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
 
 interface TicketItemModifier {
   name: string;
@@ -110,10 +111,15 @@ export function TicketCard({
     >
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <div>
-          <p className="text-lg font-bold text-foreground">{orderNumber}</p>
-          {tableNumber && (
-            <p className="text-sm text-muted-foreground">Bàn {tableNumber}</p>
+        <div className="flex items-center gap-2">
+          <div>
+            <p className="text-lg font-bold text-foreground">{orderNumber}</p>
+            {tableNumber && (
+              <p className="text-sm text-muted-foreground">Bàn {tableNumber}</p>
+            )}
+          </div>
+          {(ticket.status === "pending" || ticket.status === "preparing") && (
+            <KitchenTicketPrinter ticket={ticket} />
           )}
         </div>
         <div className="text-right">

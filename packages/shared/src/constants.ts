@@ -213,6 +213,31 @@ export const DELETION_REQUEST_STATUSES = [
 export type DeletionRequestStatus =
   (typeof DELETION_REQUEST_STATUSES)[number];
 
+// ===== Printing =====
+
+export const PRINTER_TYPES = [
+  "thermal_usb",
+  "thermal_network",
+  "browser",
+] as const;
+export type PrinterType = (typeof PRINTER_TYPES)[number];
+
+export const PAPER_WIDTHS = [58, 80] as const;
+export type PaperWidth = (typeof PAPER_WIDTHS)[number];
+
+export const PRINTER_TEST_STATUSES = [
+  "connected",
+  "error",
+  "untested",
+] as const;
+export type PrinterTestStatus = (typeof PRINTER_TEST_STATUSES)[number];
+
+export const PRINTER_ASSIGNED_TYPES = [
+  "pos_terminal",
+  "kds_station",
+] as const;
+export type PrinterAssignedType = (typeof PRINTER_ASSIGNED_TYPES)[number];
+
 // ===== Module-Specific Role Sets =====
 
 /** Roles allowed to manage inventory */

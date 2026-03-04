@@ -1,5 +1,5 @@
 -- ============================================
--- POS & KDS Functions, Triggers, and Seed Data
+-- POS & KDS Functions and Triggers
 -- Supports: order number generation, KDS ticket routing,
 --           order status history, and auto-status updates
 -- ============================================
@@ -7,11 +7,14 @@
 -- ===== 1. Order Number Generation =====
 -- Format: {branch_code}-{YYYYMMDD}-{sequence_padded_3}
 -- Example: Q1-20260301-001
+-- VOLATILE (not STABLE): must see latest committed rows to avoid duplicate sequences.
 
 CREATE OR REPLACE FUNCTION generate_order_number(p_branch_id BIGINT)
 RETURNS TEXT
 LANGUAGE plpgsql
-STABLE
+VOLATILE
+SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_code TEXT;
@@ -54,7 +57,6 @@ DECLARE
 BEGIN
   -- Only fire when status changes to 'confirmed' from 'draft'
   IF NEW.status = 'confirmed' AND (OLD.status IS NULL OR OLD.status = 'draft') THEN
-    -- For each active KDS station that handles categories in this order
     FOR v_station IN
       SELECT DISTINCT ks.id AS station_id
       FROM kds_stations ks
@@ -65,7 +67,6 @@ BEGIN
         AND ks.is_active = true
         AND oi.status = 'pending'
     LOOP
-      -- Gather items for this station as JSONB array
       SELECT jsonb_agg(jsonb_build_object(
         'order_item_id', oi.id,
         'menu_item_id', mi.id,
@@ -85,11 +86,9 @@ BEGIN
         AND oi.status = 'pending';
 
       IF v_items IS NOT NULL THEN
-        -- Create KDS ticket
         INSERT INTO kds_tickets (order_id, station_id, items, status, priority)
         VALUES (NEW.id, v_station.station_id, v_items, 'pending', 0);
 
-        -- Update order items: mark as sent to KDS
         UPDATE order_items
         SET status = 'sent_to_kds',
             kds_station_id = v_station.station_id,
@@ -117,7 +116,9 @@ CREATE TRIGGER trg_create_kds_tickets
 
 
 -- ===== 3. Order Auto-Update from KDS Trigger =====
--- When ALL kds_tickets for an order are 'ready', auto-set order status to 'ready'.
+-- Handles two transitions:
+--   pending   → preparing: when chef starts first ticket (order stays 'confirmed' → 'preparing')
+--   preparing → ready:     when ALL tickets are 'ready' (order → 'ready')
 
 CREATE OR REPLACE FUNCTION update_order_from_kds()
 RETURNS TRIGGER
@@ -126,8 +127,17 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  -- When a ticket starts preparing: sync order to 'preparing'
+  IF NEW.status = 'preparing' AND OLD.status = 'pending' THEN
+    UPDATE orders
+    SET status = 'preparing',
+        updated_at = NOW()
+    WHERE id = NEW.order_id
+      AND status = 'confirmed';
+  END IF;
+
+  -- When a ticket becomes ready: check if ALL tickets are ready
   IF NEW.status = 'ready' AND OLD.status != 'ready' THEN
-    -- Check if ALL tickets for this order are now 'ready'
     IF NOT EXISTS (
       SELECT 1
       FROM kds_tickets
@@ -138,9 +148,10 @@ BEGIN
       SET status = 'ready',
           updated_at = NOW()
       WHERE id = NEW.order_id
-        AND status != 'ready';
+        AND status IN ('confirmed', 'preparing');
     END IF;
   END IF;
+
   RETURN NEW;
 END;
 $$;
@@ -173,7 +184,3 @@ CREATE TRIGGER trg_order_status_history
   AFTER UPDATE ON orders
   FOR EACH ROW
   EXECUTE FUNCTION record_order_status_change();
-
-
--- NOTE: Seed data for POS terminals, KDS stations, and timing rules
--- is in supabase/seed.sql (run via `supabase db reset`)

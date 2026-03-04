@@ -1,14 +1,18 @@
 -- ============================================================
--- Com Tam Ma Tu F&B CRM — Initial Schema (v2.1 baseline)
+-- Com Tam Ma Tu F&B CRM — Initial Schema (consolidated)
 -- Migration: 20260228000000_initial_schema.sql
 -- Architecture: docs/F&B_CRM_Lightweight_Architecture_v2.1.md
--- NOTE: v2.2 changes (junction tables, index policy) applied in
---       20260228000002_schema_v2_2.sql
+-- NOTE: Incorporates v2.2 changes (junction tables, index policy)
+--       and security hardening (SECURITY DEFINER, RLS fixes).
+--       Replaces separate fix migrations:
+--         20260228000001_fix_security_advisors.sql
+--         20260228000002_schema_v2_2.sql
+--         20260228000003_composite_indexes.sql
 -- ============================================================
 
 -- Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm" WITH SCHEMA extensions;
 
 -- ============================================================
 -- HELPER FUNCTIONS
@@ -16,12 +20,12 @@ CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 
 -- Auto-update updated_at trigger
 CREATE OR REPLACE FUNCTION update_timestamp()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Auth context helpers (SECURITY DEFINER to avoid RLS recursion)
 -- Uses plpgsql for deferred name resolution (profiles table created later)
@@ -69,7 +73,6 @@ CREATE TABLE tenants (
   updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_tenants_slug ON tenants(slug);
 CREATE INDEX idx_tenants_is_active ON tenants(is_active) WHERE is_active = true;
 
 CREATE TRIGGER trg_tenants_updated_at
@@ -96,7 +99,6 @@ CREATE TABLE loyalty_tiers (
     REFERENCES tenants(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_loyalty_tiers_tenant_id ON loyalty_tiers(tenant_id);
 
 -- ----
 
@@ -119,7 +121,6 @@ CREATE TABLE branches (
 );
 
 CREATE INDEX idx_branches_tenant_id ON branches(tenant_id);
-CREATE INDEX idx_branches_tenant_active ON branches(tenant_id, is_active);
 
 CREATE TRIGGER trg_branches_updated_at
   BEFORE UPDATE ON branches
@@ -133,7 +134,6 @@ CREATE TABLE menus (
   name       TEXT NOT NULL,
   type       TEXT NOT NULL CHECK (type IN ('dine_in', 'takeaway', 'delivery')),
   is_active  BOOLEAN NOT NULL DEFAULT true,
-  branches   BIGINT[],
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -143,11 +143,17 @@ CREATE TABLE menus (
 
 CREATE INDEX idx_menus_tenant_id ON menus(tenant_id);
 CREATE INDEX idx_menus_active ON menus(tenant_id, is_active);
-CREATE INDEX idx_menus_branches ON menus USING GIN(branches);
 
 CREATE TRIGGER trg_menus_updated_at
   BEFORE UPDATE ON menus
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- menu_branches (replaces menus.branches[])
+CREATE TABLE menu_branches (
+  menu_id   BIGINT NOT NULL REFERENCES menus(id)    ON DELETE CASCADE,
+  branch_id BIGINT NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
+  PRIMARY KEY (menu_id, branch_id)
+);
 
 -- ----
 
@@ -240,7 +246,6 @@ CREATE TABLE vouchers (
   valid_to     TIMESTAMPTZ NOT NULL,
   max_uses     INT,
   used_count   INT NOT NULL DEFAULT 0,
-  branches     BIGINT[],
   is_active    BOOLEAN NOT NULL DEFAULT true,
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -255,11 +260,17 @@ CREATE TABLE vouchers (
 CREATE INDEX idx_vouchers_tenant_id ON vouchers(tenant_id);
 CREATE INDEX idx_vouchers_code ON vouchers(tenant_id, code);
 CREATE INDEX idx_vouchers_active ON vouchers(tenant_id, is_active) WHERE is_active = true;
-CREATE INDEX idx_vouchers_branches ON vouchers USING GIN(branches);
 
 CREATE TRIGGER trg_vouchers_updated_at
   BEFORE UPDATE ON vouchers
   FOR EACH ROW EXECUTE FUNCTION update_timestamp();
+
+-- voucher_branches (replaces vouchers.branches[])
+CREATE TABLE voucher_branches (
+  voucher_id BIGINT NOT NULL REFERENCES vouchers(id)  ON DELETE CASCADE,
+  branch_id  BIGINT NOT NULL REFERENCES branches(id)  ON DELETE CASCADE,
+  PRIMARY KEY (voucher_id, branch_id)
+);
 
 -- ============================================================
 -- TIER 3: profiles, branch_zones, menu_categories, customers
@@ -323,7 +334,6 @@ CREATE TABLE menu_categories (
 );
 
 CREATE INDEX idx_menu_categories_menu_id ON menu_categories(menu_id);
-CREATE INDEX idx_menu_categories_sort ON menu_categories(menu_id, sort_order);
 
 -- ----
 
@@ -454,7 +464,6 @@ CREATE TABLE pos_terminals (
 );
 
 CREATE INDEX idx_pos_terminals_branch_id ON pos_terminals(branch_id);
-CREATE INDEX idx_pos_terminals_device_fingerprint ON pos_terminals(device_fingerprint);
 CREATE INDEX idx_pos_terminals_active ON pos_terminals(branch_id, is_active);
 CREATE INDEX idx_pos_terminals_type ON pos_terminals(branch_id, type);
 
@@ -469,7 +478,6 @@ CREATE TABLE kds_stations (
   branch_id      BIGINT NOT NULL,
   name           TEXT NOT NULL,
   display_config JSONB,
-  categories     BIGINT[],
   is_active      BOOLEAN NOT NULL DEFAULT true,
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
@@ -478,7 +486,13 @@ CREATE TABLE kds_stations (
 );
 
 CREATE INDEX idx_kds_stations_branch_id ON kds_stations(branch_id);
-CREATE INDEX idx_kds_stations_categories ON kds_stations USING GIN(categories);
+
+-- kds_station_categories (replaces kds_stations.categories[])
+CREATE TABLE kds_station_categories (
+  station_id  BIGINT NOT NULL REFERENCES kds_stations(id)    ON DELETE CASCADE,
+  category_id BIGINT NOT NULL REFERENCES menu_categories(id) ON DELETE CASCADE,
+  PRIMARY KEY (station_id, category_id)
+);
 
 -- ----
 
@@ -661,7 +675,7 @@ CREATE INDEX idx_stock_levels_version ON stock_levels(ingredient_id, branch_id, 
 
 -- Enforce cashier_station for pos_sessions
 CREATE OR REPLACE FUNCTION check_cashier_station_session()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pos_terminals
@@ -671,7 +685,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TABLE pos_sessions (
   id              BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -729,7 +743,6 @@ CREATE TABLE shifts (
   CONSTRAINT chk_shift_times CHECK (start_time < end_time)
 );
 
-CREATE INDEX idx_shifts_branch_id ON shifts(branch_id);
 
 -- ----
 
@@ -828,7 +841,6 @@ CREATE INDEX idx_orders_customer_id ON orders(customer_id);
 CREATE INDEX idx_orders_terminal_id ON orders(terminal_id);
 CREATE INDEX idx_orders_session_id ON orders(pos_session_id);
 CREATE INDEX idx_orders_created_by ON orders(created_by);
-CREATE INDEX idx_orders_idempotency ON orders(idempotency_key);
 CREATE INDEX idx_orders_branch_status_date ON orders(branch_id, status, created_at DESC);
 CREATE INDEX idx_orders_unpaid ON orders(pos_session_id) WHERE pos_session_id IS NULL;
 CREATE INDEX idx_orders_customer_date ON orders(customer_id, created_at DESC);
@@ -949,9 +961,6 @@ CREATE TABLE kds_timing_rules (
   CONSTRAINT uniq_station_category UNIQUE (station_id, category_id)
 );
 
-CREATE INDEX idx_kds_timing_station_id ON kds_timing_rules(station_id);
-CREATE INDEX idx_kds_timing_category_id ON kds_timing_rules(category_id);
-
 -- ----
 
 CREATE TABLE shift_assignments (
@@ -1044,7 +1053,7 @@ CREATE INDEX idx_leave_requests_dates ON leave_requests(start_date, end_date);
 
 -- Enforce cashier_station for payments
 CREATE OR REPLACE FUNCTION check_cashier_station_payment()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pos_terminals
@@ -1054,7 +1063,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 CREATE TABLE order_items (
   id             BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -1166,7 +1175,6 @@ CREATE TABLE payments (
 CREATE INDEX idx_payments_order_id ON payments(order_id);
 CREATE INDEX idx_payments_session_id ON payments(pos_session_id);
 CREATE INDEX idx_payments_terminal_id ON payments(terminal_id);
-CREATE INDEX idx_payments_idempotency ON payments(idempotency_key);
 CREATE INDEX idx_payments_paid_at ON payments(paid_at DESC);
 CREATE INDEX idx_payments_method ON payments(method, created_at DESC);
 
@@ -1281,7 +1289,6 @@ CREATE TABLE security_events (
 
 CREATE INDEX idx_security_events_type ON security_events(event_type, created_at DESC);
 CREATE INDEX idx_security_events_severity ON security_events(severity, created_at DESC);
-CREATE INDEX idx_security_events_tenant ON security_events(tenant_id, created_at DESC);
 
 -- APPEND ONLY
 REVOKE UPDATE, DELETE ON security_events FROM PUBLIC;
@@ -1349,8 +1356,6 @@ CREATE TABLE system_settings (
   CONSTRAINT uniq_setting_key UNIQUE (tenant_id, key)
 );
 
-CREATE INDEX idx_system_settings_tenant_id ON system_settings(tenant_id);
-
 -- ============================================================
 -- ROW LEVEL SECURITY
 -- ============================================================
@@ -1402,6 +1407,9 @@ ALTER TABLE security_events      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE deletion_requests    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE system_settings      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE menu_branches          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kds_station_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE voucher_branches       ENABLE ROW LEVEL SECURITY;
 
 -- ---- tenants ----
 CREATE POLICY "tenants_select_own" ON tenants FOR SELECT
@@ -1664,6 +1672,43 @@ CREATE POLICY "vouchers_select_tenant" ON vouchers FOR SELECT
 CREATE POLICY "vouchers_all_manager" ON vouchers FOR ALL
   USING (tenant_id = auth_tenant_id() AND auth_role() IN ('owner', 'manager'));
 
+-- ---- menu_branches ----
+CREATE POLICY "menu_branches_select_tenant" ON menu_branches
+  FOR SELECT
+  USING (menu_id IN (SELECT id FROM menus WHERE tenant_id = auth_tenant_id()));
+CREATE POLICY "menu_branches_all_manager" ON menu_branches
+  FOR ALL
+  USING (
+    menu_id IN (SELECT id FROM menus WHERE tenant_id = auth_tenant_id())
+    AND auth_role() IN ('owner', 'manager')
+  );
+
+-- ---- kds_station_categories ----
+CREATE POLICY "kds_station_cat_select_branch" ON kds_station_categories
+  FOR SELECT
+  USING (station_id IN (SELECT id FROM kds_stations WHERE branch_id = auth_branch_id()));
+CREATE POLICY "kds_station_cat_all_manager" ON kds_station_categories
+  FOR ALL
+  USING (
+    station_id IN (
+      SELECT s.id FROM kds_stations s
+      JOIN branches b ON s.branch_id = b.id
+      WHERE b.tenant_id = auth_tenant_id()
+    )
+    AND auth_role() IN ('owner', 'manager')
+  );
+
+-- ---- voucher_branches ----
+CREATE POLICY "voucher_branches_select_tenant" ON voucher_branches
+  FOR SELECT
+  USING (voucher_id IN (SELECT id FROM vouchers WHERE tenant_id = auth_tenant_id()));
+CREATE POLICY "voucher_branches_all_manager" ON voucher_branches
+  FOR ALL
+  USING (
+    voucher_id IN (SELECT id FROM vouchers WHERE tenant_id = auth_tenant_id())
+    AND auth_role() IN ('owner', 'manager')
+  );
+
 -- ---- campaigns ----
 CREATE POLICY "campaigns_select_tenant" ON campaigns FOR SELECT
   USING (tenant_id = auth_tenant_id());
@@ -1746,7 +1791,8 @@ CREATE POLICY "audit_insert_authenticated" ON audit_logs FOR INSERT WITH CHECK (
 -- ---- security_events ----
 CREATE POLICY "security_events_select_owner" ON security_events FOR SELECT
   USING (tenant_id = auth_tenant_id() AND auth_role() IN ('owner', 'manager'));
-CREATE POLICY "security_events_insert_any" ON security_events FOR INSERT WITH CHECK (true);
+CREATE POLICY "security_events_insert_authenticated" ON security_events FOR INSERT
+  WITH CHECK (auth.uid() IS NOT NULL);
 
 -- ---- deletion_requests ----
 CREATE POLICY "deletion_requests_select_manager" ON deletion_requests FOR SELECT
@@ -1771,6 +1817,18 @@ CREATE POLICY "settings_select_tenant" ON system_settings FOR SELECT
   USING (tenant_id = auth_tenant_id());
 CREATE POLICY "settings_all_owner" ON system_settings FOR ALL
   USING (tenant_id = auth_tenant_id() AND auth_role() = 'owner');
+
+-- ============================================================
+-- HOT-PATH COMPOSITE INDEXES
+-- ============================================================
+
+-- order_discounts: queried by (order_id, type) in voucher apply/remove/check
+CREATE INDEX idx_order_discounts_order_type
+  ON order_discounts (order_id, type);
+
+-- payments: queried by (pos_session_id, method, status) in close-session cash total
+CREATE INDEX idx_payments_session_method_status
+  ON payments (pos_session_id, method, status);
 
 -- ============================================================
 -- SUPABASE REALTIME PUBLICATION

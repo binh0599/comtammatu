@@ -47,6 +47,7 @@ export default async function CashierPage() {
         terminal_name:
           (session.pos_terminals as { name: string } | null)?.name ??
           `Máy #${session.terminal_id}`,
+        terminal_id: session.terminal_id,
       }}
       orders={orders}
       branchId={profile.branch_id!}
