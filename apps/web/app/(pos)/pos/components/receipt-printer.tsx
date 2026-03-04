@@ -1,10 +1,14 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useCallback } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatDateTime } from "@comtammatu/shared";
+import { toast } from "sonner";
+import { generateReceiptCommands } from "@/lib/printing/receipt-commands";
+import { printViaUsb, printViaNetwork } from "@/lib/printing/escpos";
+import type { PrinterConfig } from "@/hooks/use-printer-config";
 
 interface ReceiptOrder {
     order_number: string;
@@ -35,6 +39,10 @@ interface ReceiptPrinterProps {
     trigger?: React.ReactNode;
     onPrintComplete?: () => void;
     autoPrint?: boolean;
+    /** Thermal printer config. If provided, thermal printing is available. */
+    printerConfig?: PrinterConfig | null;
+    /** If true + printerConfig exists, use thermal as primary (fallback to browser). */
+    preferThermal?: boolean;
 }
 
 export function ReceiptPrinter({
@@ -43,10 +51,12 @@ export function ReceiptPrinter({
     trigger,
     onPrintComplete,
     autoPrint = false,
+    printerConfig,
+    preferThermal = false,
 }: ReceiptPrinterProps) {
     const contentRef = useRef<HTMLDivElement>(null);
 
-    const handlePrint = useReactToPrint({
+    const handleBrowserPrint = useReactToPrint({
         contentRef,
         documentTitle: `Receipt_${order.order_number}`,
         onAfterPrint: () => {
@@ -54,12 +64,60 @@ export function ReceiptPrinter({
         },
     });
 
+    const handleThermalPrint = useCallback(async () => {
+        if (!printerConfig) return false;
+
+        try {
+            const commands = generateReceiptCommands(order, cashierName);
+            const connConfig = printerConfig.connection_config;
+
+            let result;
+            if (printerConfig.type === "thermal_usb") {
+                result = await printViaUsb(commands, {
+                    vendor_id: (connConfig.vendor_id as number) ?? 0,
+                    product_id: (connConfig.product_id as number) ?? 0,
+                });
+            } else if (printerConfig.type === "thermal_network") {
+                result = await printViaNetwork(commands, {
+                    host: (connConfig.host as string) ?? "",
+                    port: (connConfig.port as number) ?? 9100,
+                    protocol: (connConfig.protocol as string) ?? "raw",
+                });
+            } else {
+                return false;
+            }
+
+            if (result.success) {
+                if (onPrintComplete) onPrintComplete();
+                return true;
+            } else {
+                console.warn("Thermal print failed:", result.error);
+                toast.error(`Lỗi in nhiệt: ${result.error}`);
+                return false;
+            }
+        } catch (err) {
+            console.warn("Thermal print error:", err);
+            return false;
+        }
+    }, [printerConfig, order, cashierName, onPrintComplete]);
+
+    const handlePrint = useCallback(async () => {
+        // If thermal is preferred and available, try it first
+        if (preferThermal && printerConfig && printerConfig.type !== "browser") {
+            const thermalSuccess = await handleThermalPrint();
+            if (thermalSuccess) return;
+            // Fallback to browser print
+            console.info("Thermal failed, falling back to browser print");
+        }
+
+        handleBrowserPrint();
+    }, [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]);
+
     // Auto-print effect when autoPrint is true
-    // We use a small timeout to ensure DOM is ready
     if (autoPrint) {
         setTimeout(() => {
             handlePrint();
-        }, 500);
+        }, printerConfig?.print_delay_ms ?? 500);
     }
 
     const paymentAmount =

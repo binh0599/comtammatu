@@ -34,4 +34,5 @@ export interface SessionInfo {
   opened_at: string;
   cashier_name: string;
   terminal_name: string;
+  terminal_id: number;
 }

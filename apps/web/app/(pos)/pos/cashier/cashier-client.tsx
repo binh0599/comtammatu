@@ -6,6 +6,7 @@ import { SessionBar } from "./session-bar";
 import { OrderQueue } from "./order-queue";
 import { PaymentPanel } from "./payment-panel";
 import { useCashierRealtime } from "./use-cashier-realtime";
+import { usePrinterForTerminal } from "@/hooks/use-printer-config";
 import type { QueueOrder, SessionInfo } from "./types";
 
 export function CashierClient({
@@ -18,6 +19,7 @@ export function CashierClient({
   branchId: number;
 }) {
   const router = useRouter();
+  const { config: printerConfig } = usePrinterForTerminal(session.terminal_id);
   const [selectedOrder, setSelectedOrder] = useState<QueueOrder | null>(null);
   const { orders } = useCashierRealtime(initialOrders, branchId);
 
@@ -47,6 +49,8 @@ export function CashierClient({
           <PaymentPanel
             order={selectedOrder}
             onPaymentComplete={handlePaymentComplete}
+            cashierName={session.cashier_name}
+            printerConfig={printerConfig}
           />
         </div>
       </div>

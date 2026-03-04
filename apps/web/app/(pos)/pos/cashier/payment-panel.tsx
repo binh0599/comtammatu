@@ -18,6 +18,7 @@ import {
   getOrderStatusLabel,
 } from "@comtammatu/shared";
 import { ReceiptPrinter } from "../components/receipt-printer";
+import type { PrinterConfig } from "@/hooks/use-printer-config";
 import {
   processPayment,
   applyVoucherToOrder,
@@ -30,9 +31,13 @@ import type { QueueOrder } from "./types";
 export function PaymentPanel({
   order,
   onPaymentComplete,
+  cashierName,
+  printerConfig,
 }: {
   order: QueueOrder | null;
   onPaymentComplete: () => void;
+  cashierName?: string;
+  printerConfig?: PrinterConfig | null;
 }) {
   const [amountTendered, setAmountTendered] = useState("");
   const [voucherCode, setVoucherCode] = useState("");
@@ -230,7 +235,12 @@ export function PaymentPanel({
         </div>
         <div className="flex gap-2 items-center">
           {order.status === "completed" && (
-            <ReceiptPrinter order={order} />
+            <ReceiptPrinter
+              order={order}
+              cashierName={cashierName}
+              printerConfig={printerConfig}
+              preferThermal={!!printerConfig?.auto_print}
+            />
           )}
           <Badge>{getOrderStatusLabel(order.status)}</Badge>
         </div>

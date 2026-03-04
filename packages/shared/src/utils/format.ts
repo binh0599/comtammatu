@@ -233,3 +233,22 @@ export const getDiscountTypeLabel = createLabelMapper({
   fixed: "Giảm cố định",
   voucher: "Voucher",
 });
+
+// ===== Printing =====
+
+export const getPrinterTypeLabel = createLabelMapper({
+  thermal_usb: "Máy in USB",
+  thermal_network: "Máy in mạng",
+  browser: "In qua trình duyệt",
+});
+
+export const getPrinterTestStatusLabel = createLabelMapper({
+  connected: "Đã kết nối",
+  error: "Lỗi kết nối",
+  untested: "Chưa kiểm tra",
+});
+
+export const getPrinterAssignedTypeLabel = createLabelMapper({
+  pos_terminal: "Máy thu ngân",
+  kds_station: "Trạm bếp",
+});

@@ -40,6 +40,11 @@ export {
   CRM_ROLES,
   // Post-MVP
   DISCOUNT_TYPES,
+  // Printing
+  PRINTER_TYPES,
+  PAPER_WIDTHS,
+  PRINTER_TEST_STATUSES,
+  PRINTER_ASSIGNED_TYPES,
 } from "./constants";
 
 export type {
@@ -73,6 +78,11 @@ export type {
   DeletionRequestStatus,
   // Post-MVP
   DiscountType,
+  // Printing
+  PrinterType,
+  PaperWidth,
+  PrinterTestStatus,
+  PrinterAssignedType,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -216,6 +226,22 @@ export type {
 export { deletionRequestSchema } from "./schemas/privacy";
 export type { DeletionRequestInput } from "./schemas/privacy";
 
+// Printing
+export {
+  createPrinterConfigSchema,
+  updatePrinterConfigSchema,
+  assignPrinterSchema,
+  usbConnectionConfigSchema,
+  networkConnectionConfigSchema,
+} from "./schemas/printer";
+export type {
+  CreatePrinterConfigInput,
+  UpdatePrinterConfigInput,
+  AssignPrinterInput,
+  UsbConnectionConfig,
+  NetworkConnectionConfig,
+} from "./schemas/printer";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -251,6 +277,10 @@ export {
   // Post-MVP
   getDiscountTypeLabel,
   formatDiscount,
+  // Printing
+  getPrinterTypeLabel,
+  getPrinterTestStatusLabel,
+  getPrinterAssignedTypeLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====
