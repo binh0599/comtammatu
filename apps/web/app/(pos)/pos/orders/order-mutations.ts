@@ -83,6 +83,44 @@ async function _createOrder(data: {
     );
   }
 
+  // Validate guest_count against table capacity for dine-in orders
+  if (type === "dine_in" && table_id) {
+    const { data: tableData, error: tableError } = await supabase
+      .from("tables")
+      .select("id, capacity")
+      .eq("id", table_id)
+      .eq("branch_id", branchId)
+      .single();
+
+    if (tableError || !tableData) {
+      throw new ActionError("Bàn không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
+    }
+
+    const capacity = tableData.capacity ?? 0;
+
+    // Sum occupied seats from existing active orders on this table
+    const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
+    const { data: existingOrders } = await supabase
+      .from("orders")
+      .select("guest_count")
+      .eq("table_id", table_id)
+      .eq("branch_id", branchId)
+      .in("status", activeStatuses);
+
+    const occupiedSeats = (existingOrders ?? []).reduce(
+      (sum: number, o: { guest_count: number | null }) => sum + (o.guest_count ?? 0),
+      0,
+    );
+
+    const remaining = capacity - occupiedSeats;
+    if (guest_count != null && guest_count > remaining) {
+      throw new ActionError(
+        `Bàn chỉ còn ${remaining} chỗ trống (sức chứa ${capacity}, đã có ${occupiedSeats} khách)`,
+        "VALIDATION_ERROR",
+      );
+    }
+  }
+
   // Validate terminal belongs to user's branch and is the correct type
   const { data: terminal, error: terminalError } = await supabase
     .from("pos_terminals")

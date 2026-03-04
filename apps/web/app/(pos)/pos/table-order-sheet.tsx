@@ -94,8 +94,8 @@ function GuestCountSelector({
     onConfirm: (guestCount: number) => void;
     onCancel: () => void;
 }) {
-    const maxGuests = Math.max(1, tableCapacity - existingGuestCount);
-    const [count, setCount] = useState(1);
+    const maxGuests = Math.max(0, tableCapacity - existingGuestCount);
+    const [count, setCount] = useState(maxGuests > 0 ? 1 : 0);
 
     return (
         <div className="flex flex-1 flex-col items-center justify-center p-6">
@@ -163,9 +163,9 @@ function GuestCountSelector({
 
                 {/* Actions */}
                 <div className="space-y-2">
-                    <Button onClick={() => onConfirm(count)} className="w-full gap-2">
+                    <Button onClick={() => onConfirm(count)} className="w-full gap-2" disabled={maxGuests === 0 || count <= 0}>
                         <Users className="h-4 w-4" aria-hidden="true" />
-                        Xác nhận {count} khách — Chọn món
+                        {maxGuests === 0 ? "Bàn đã đầy" : `Xác nhận ${count} khách — Chọn món`}
                     </Button>
                     <Button variant="ghost" onClick={onCancel} className="w-full">
                         Hủy

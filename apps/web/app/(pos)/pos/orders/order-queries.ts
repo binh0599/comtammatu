@@ -127,7 +127,9 @@ async function _getTablesWithActiveOrders() {
     )
     .eq("branch_id", branchId)
     .in("status", activeStatuses)
-    .not("table_id", "is", null);
+    .not("table_id", "is", null)
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
 
   if (ordersError) throw safeDbError(ordersError, "db");
 
