@@ -58,6 +58,7 @@ export function KdsBoard({
 
   // Track known ticket IDs to detect new arrivals for auto-print
   const knownTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
+  const printTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     if (!printerConfig?.auto_print) return;
@@ -74,6 +75,7 @@ export function KdsBoard({
     }
 
     // Auto-print each new ticket
+    const timers: ReturnType<typeof setTimeout>[] = [];
     for (const ticket of newTickets) {
       const commands = generateKitchenTicketCommands(ticket, stationName);
       const connConfig = printerConfig.connection_config;
@@ -84,6 +86,7 @@ export function KdsBoard({
               printViaUsbAuto(commands, {
                 vendor_id: (connConfig.vendor_id as number) ?? 0,
                 product_id: (connConfig.product_id as number) ?? 0,
+                device_serial: (connConfig.device_serial as string) || undefined,
               })
           : () =>
               printViaNetwork(commands, {
@@ -92,13 +95,27 @@ export function KdsBoard({
                 protocol: (connConfig.protocol as string) ?? "raw",
               });
 
-      // Fire and forget — don't block KDS
-      setTimeout(() => {
-        printFn().catch((err) =>
-          console.warn("KDS auto-print failed:", err),
-        );
+      const timer = setTimeout(() => {
+        printFn()
+          .then((result) => {
+            if (!result.success) {
+              console.warn(`KDS auto-print failed for ticket ${ticket.id}:`, result.error);
+            }
+          })
+          .catch((err) =>
+            console.warn("KDS auto-print error:", err),
+          );
       }, printerConfig.print_delay_ms);
+      timers.push(timer);
     }
+    printTimersRef.current = timers;
+
+    return () => {
+      for (const t of printTimersRef.current) {
+        clearTimeout(t);
+      }
+      printTimersRef.current = [];
+    };
   }, [tickets, printerConfig, stationName]);
 
   return (
