@@ -63,6 +63,8 @@ export function PaymentPanel({
     if (paymentMethod !== null) setPaymentMethod(null);
     if (momoState !== null) setMomoState(null);
     if (amountTendered !== "") setAmountTendered("");
+    if (showReceipt) setShowReceipt(false);
+    if (paidAmount !== 0) setPaidAmount(0);
   }
 
   // Poll Momo payment status
