@@ -175,12 +175,17 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
           <Printer className="size-5" />
           Quản lý máy in
         </CardTitle>
-        <Button onClick={() => setShowAdd(true)} className="gap-2">
+        <Button onClick={() => setShowAdd(true)} className="gap-2" disabled={branches.length === 0}>
           <Plus className="size-4" />
           Thêm máy in
         </Button>
       </CardHeader>
       <CardContent>
+        {branches.length === 0 && (
+          <div role="alert" className="mb-4 rounded-md bg-yellow-50 p-3 text-sm text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
+            Chưa có chi nhánh nào. Vui lòng tạo chi nhánh trước khi thêm máy in.
+          </div>
+        )}
         {error && (
           <div role="alert" className="mb-4 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
             {error}

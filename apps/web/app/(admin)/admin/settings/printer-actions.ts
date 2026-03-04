@@ -10,6 +10,7 @@ import {
   createPrinterConfigSchema,
   updatePrinterConfigSchema,
   assignPrinterSchema,
+  entityIdSchema,
   safeDbError,
   withServerAction,
   withServerQuery,
@@ -181,8 +182,7 @@ async function _createPrinterConfig(formData: FormData) {
 export const createPrinterConfig = withServerAction(_createPrinterConfig);
 
 async function _updatePrinterConfig(formData: FormData) {
-  const id = Number(formData.get("id"));
-  if (!id || isNaN(id)) return { error: "ID không hợp lệ" };
+  const id = entityIdSchema.parse(Number(formData.get("id")));
 
   const connectionConfigResult = parseJsonField(formData.get("connection_config"), undefined);
   if (!connectionConfigResult.ok) {
@@ -210,7 +210,7 @@ async function _updatePrinterConfig(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
   const { data: existing } = await (supabase as any)
     .from("printer_configs")
-    .select("id, branches!inner(tenant_id)")
+    .select("id, branch_id, branches!inner(tenant_id)")
     .eq("id", id)
     .eq("branches.tenant_id", tenantId)
     .maybeSingle();
@@ -222,6 +222,7 @@ async function _updatePrinterConfig(formData: FormData) {
     .from("printer_configs")
     .update(parsed.data)
     .eq("id", id)
+    .eq("branch_id", existing.branch_id)
     .select("id");
 
   if (error) return { error: "Lỗi cập nhật cấu hình máy in" };
@@ -243,8 +244,7 @@ async function _updatePrinterConfig(formData: FormData) {
 export const updatePrinterConfig = withServerAction(_updatePrinterConfig);
 
 async function _deletePrinterConfig(formData: FormData) {
-  const id = Number(formData.get("id"));
-  if (!id || isNaN(id)) return { error: "ID không hợp lệ" };
+  const id = entityIdSchema.parse(Number(formData.get("id")));
 
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
@@ -264,6 +264,7 @@ async function _deletePrinterConfig(formData: FormData) {
     .from("printer_configs")
     .delete()
     .eq("id", id)
+    .eq("branch_id", existing.branch_id)
     .select("id");
 
   if (error) return { error: "Lỗi xóa cấu hình máy in" };
@@ -333,6 +334,7 @@ async function _assignPrinter(formData: FormData) {
       assigned_to_id: parsed.data.assigned_to_id,
     })
     .eq("id", parsed.data.printer_config_id)
+    .eq("branch_id", printer.branch_id)
     .select("id");
 
   if (error) {
