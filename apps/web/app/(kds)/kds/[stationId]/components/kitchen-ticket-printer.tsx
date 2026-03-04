@@ -1,10 +1,14 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@comtammatu/shared";
+import { toast } from "sonner";
+import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
+import { printViaUsb, printViaNetwork } from "@/lib/printing/escpos";
+import type { PrinterConfig } from "@/hooks/use-printer-config";
 import { parseItems, type KdsTicket } from "../types";
 
 // ===== Component =====
@@ -14,6 +18,10 @@ interface KitchenTicketPrinterProps {
   stationName?: string;
   onPrintComplete?: () => void;
   autoPrint?: boolean;
+  /** Thermal printer config. If provided, thermal printing is available. */
+  printerConfig?: PrinterConfig | null;
+  /** If true + printerConfig exists, use thermal as primary (fallback to browser). */
+  preferThermal?: boolean;
 }
 
 export function KitchenTicketPrinter({
@@ -21,13 +29,15 @@ export function KitchenTicketPrinter({
   stationName,
   onPrintComplete,
   autoPrint = false,
+  printerConfig,
+  preferThermal = false,
 }: KitchenTicketPrinterProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const orderNumber = ticket.orders?.order_number ?? `#${ticket.order_id}`;
   const tableNumber = ticket.orders?.tables?.number;
   const items = parseItems(ticket.items);
 
-  const handlePrint = useReactToPrint({
+  const handleBrowserPrint = useReactToPrint({
     contentRef,
     documentTitle: `KitchenTicket_${orderNumber}`,
     onAfterPrint: () => {
@@ -35,14 +45,63 @@ export function KitchenTicketPrinter({
     },
   });
 
-  // Auto-print on mount (U1 fix: moved from render body to useEffect)
+  const handleThermalPrint = useCallback(async () => {
+    if (!printerConfig) return false;
+
+    try {
+      const commands = generateKitchenTicketCommands(ticket, stationName);
+      const connConfig = printerConfig.connection_config;
+
+      let result;
+      if (printerConfig.type === "thermal_usb") {
+        result = await printViaUsb(commands, {
+          vendor_id: (connConfig.vendor_id as number) ?? 0,
+          product_id: (connConfig.product_id as number) ?? 0,
+        });
+      } else if (printerConfig.type === "thermal_network") {
+        result = await printViaNetwork(commands, {
+          host: (connConfig.host as string) ?? "",
+          port: (connConfig.port as number) ?? 9100,
+          protocol: (connConfig.protocol as string) ?? "raw",
+        });
+      } else {
+        return false;
+      }
+
+      if (result.success) {
+        if (onPrintComplete) onPrintComplete();
+        return true;
+      } else {
+        console.warn("Thermal print failed:", result.error);
+        toast.error(`Lỗi in nhiệt: ${result.error}`);
+        return false;
+      }
+    } catch (err) {
+      console.warn("Thermal print error:", err);
+      return false;
+    }
+  }, [printerConfig, ticket, stationName, onPrintComplete]);
+
+  const handlePrint = useCallback(async () => {
+    // If thermal is preferred and available, try it first
+    if (preferThermal && printerConfig && printerConfig.type !== "browser") {
+      const thermalSuccess = await handleThermalPrint();
+      if (thermalSuccess) return;
+      // Fallback to browser print
+      console.info("Thermal failed, falling back to browser print");
+    }
+
+    handleBrowserPrint();
+  }, [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]);
+
+  // Auto-print on mount
   useEffect(() => {
     if (!autoPrint) return;
     const timer = setTimeout(() => {
       handlePrint();
-    }, 500);
+    }, printerConfig?.print_delay_ms ?? 500);
     return () => clearTimeout(timer);
-  }, [autoPrint]); // handlePrint is stable from useReactToPrint
+  }, [autoPrint]); // handlePrint is stable from useCallback with stable deps
 
   return (
     <>

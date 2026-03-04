@@ -9,7 +9,7 @@ import { TicketCard } from "./ticket-card";
 import { getStationTickets } from "./actions";
 import { usePrinterForStation } from "@/hooks/use-printer-config";
 import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
-import { printViaUsb, printViaNetwork } from "@/lib/printing/escpos";
+import { printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { KdsTicket, TimingRule } from "./types";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
@@ -81,7 +81,7 @@ export function KdsBoard({
       const printFn =
         printerConfig.type === "thermal_usb"
           ? () =>
-              printViaUsb(commands, {
+              printViaUsbAuto(commands, {
                 vendor_id: (connConfig.vendor_id as number) ?? 0,
                 product_id: (connConfig.product_id as number) ?? 0,
               })
@@ -156,6 +156,8 @@ export function KdsBoard({
                 key={ticket.id}
                 ticket={ticket}
                 timingRule={defaultRule}
+                printerConfig={printerConfig}
+                stationName={stationName}
               />
             ))}
           </div>

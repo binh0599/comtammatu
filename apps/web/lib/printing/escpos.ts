@@ -43,6 +43,7 @@ declare global {
     ): Promise<unknown>;
   }
   interface USB {
+    getDevices(): Promise<USBDevice[]>;
     requestDevice(options: USBDeviceRequestOptions): Promise<USBDevice>;
   }
   interface Navigator {
@@ -270,6 +271,67 @@ export async function printViaUsb(
     return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Lỗi kết nối USB";
+    return { success: false, error: message };
+  }
+}
+
+/**
+ * Send ESC/POS commands to a previously paired USB printer.
+ * Uses navigator.usb.getDevices() which does NOT require a user gesture,
+ * making it suitable for auto-print scenarios (e.g., KDS auto-print on new order).
+ *
+ * The device must have been paired at least once via printViaUsb() (which uses requestDevice).
+ */
+export async function printViaUsbAuto(
+  commands: Uint8Array,
+  config: { vendor_id: number; product_id: number },
+): Promise<PrintResult> {
+  try {
+    if (!navigator.usb) {
+      return { success: false, error: "WebUSB không được hỗ trợ trên trình duyệt này" };
+    }
+
+    // getDevices() returns previously paired devices — no user gesture needed
+    const devices = await navigator.usb.getDevices();
+    const device = devices.find(
+      (d) =>
+        (d as unknown as { vendorId: number }).vendorId === config.vendor_id &&
+        (d as unknown as { productId: number }).productId === config.product_id,
+    );
+
+    if (!device) {
+      return {
+        success: false,
+        error: "Máy in USB chưa được ghép nối. Hãy in thử một lần bằng nút in để ghép nối.",
+      };
+    }
+
+    await device.open();
+
+    if (device.configuration === null) {
+      await device.selectConfiguration(1);
+    }
+
+    const iface = device.configuration?.interfaces[0];
+    if (!iface) {
+      return { success: false, error: "Không tìm thấy interface máy in" };
+    }
+
+    await device.claimInterface(iface.interfaceNumber);
+
+    const endpoint = iface.alternate.endpoints.find(
+      (e) => e.direction === "out",
+    );
+    if (!endpoint) {
+      return { success: false, error: "Không tìm thấy endpoint máy in" };
+    }
+
+    await device.transferOut(endpoint.endpointNumber, commands.buffer as ArrayBuffer);
+    await device.close();
+
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Lỗi kết nối USB tự động";
     return { success: false, error: message };
   }
 }
