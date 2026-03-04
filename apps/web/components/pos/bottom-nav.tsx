@@ -6,6 +6,7 @@ import {
   LayoutGrid,
   ClipboardList,
   User,
+  Printer,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/pos", icon: LayoutGrid, label: "Bàn" },
   { href: "/pos/orders", icon: ClipboardList, label: "Đơn hàng" },
   { href: "/pos/session", icon: User, label: "Ca làm" },
+  { href: "/pos/printer", icon: Printer, label: "Máy in" },
 ];
 
 export function BottomNav() {

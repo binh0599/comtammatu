@@ -45,6 +45,8 @@ export {
   PAPER_WIDTHS,
   PRINTER_TEST_STATUSES,
   PRINTER_ASSIGNED_TYPES,
+  // Device Registration
+  DEVICE_STATUSES,
 } from "./constants";
 
 export type {
@@ -83,6 +85,8 @@ export type {
   PaperWidth,
   PrinterTestStatus,
   PrinterAssignedType,
+  // Device Registration
+  DeviceStatus,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -226,6 +230,18 @@ export type {
 export { deletionRequestSchema } from "./schemas/privacy";
 export type { DeletionRequestInput } from "./schemas/privacy";
 
+// Device Registration
+export {
+  registerDeviceSchema,
+  approveDeviceSchema,
+  rejectDeviceSchema,
+} from "./schemas/device";
+export type {
+  RegisterDeviceInput,
+  ApproveDeviceInput,
+  RejectDeviceInput,
+} from "./schemas/device";
+
 // Printing
 export {
   createPrinterConfigSchema,
@@ -281,6 +297,8 @@ export {
   getPrinterTypeLabel,
   getPrinterTestStatusLabel,
   getPrinterAssignedTypeLabel,
+  // Device Registration
+  getDeviceStatusLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====

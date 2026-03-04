@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { WifiOff, Loader2, Printer } from "lucide-react";
+import Link from "next/link";
+import { WifiOff, Loader2, Printer, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
 import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
@@ -145,6 +147,12 @@ export function KdsBoard({
               Trễ
             </span>
           </div>
+          <Button variant="outline" size="sm" asChild className="gap-1">
+            <Link href="/kds/printer">
+              <Settings className="size-3.5" />
+              Máy in
+            </Link>
+          </Button>
           <LogoutButton className="rounded-lg border border-border px-3 py-1.5 text-sm" />
         </div>
       </div>

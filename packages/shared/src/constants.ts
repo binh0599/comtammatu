@@ -213,6 +213,11 @@ export const DELETION_REQUEST_STATUSES = [
 export type DeletionRequestStatus =
   (typeof DELETION_REQUEST_STATUSES)[number];
 
+// ===== Device Registration =====
+
+export const DEVICE_STATUSES = ["pending", "approved", "rejected"] as const;
+export type DeviceStatus = (typeof DEVICE_STATUSES)[number];
+
 // ===== Printing =====
 
 export const PRINTER_TYPES = [

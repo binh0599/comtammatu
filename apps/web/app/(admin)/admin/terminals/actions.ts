@@ -49,6 +49,21 @@ async function _getBranches() {
 
 export const getBranches = withServerQuery(_getBranches);
 
+async function _getPendingDevices() {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const { data, error } = await supabase
+    .from("registered_devices")
+    .select("*, branches(name), profiles!registered_devices_registered_by_fkey(full_name, role)")
+    .eq("tenant_id", tenantId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export const getPendingDevices = withServerQuery(_getPendingDevices);
+
 // =====================
 // Mutations
 // =====================
@@ -184,3 +199,103 @@ async function _deleteTerminal(id: number) {
 }
 
 export const deleteTerminal = withServerAction(_deleteTerminal);
+
+// =====================
+// Device Approval
+// =====================
+
+async function _approveDevice(id: number) {
+  validateId(id);
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
+
+  // Verify device belongs to caller's tenant
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("id, status, tenant_id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!device) {
+    return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  if (device.status === "approved") {
+    return { error: "Thiết bị đã được duyệt trước đó" };
+  }
+
+  const { error } = await supabase
+    .from("registered_devices")
+    .update({
+      status: "approved",
+      approved_by: userId,
+      approved_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) return safeDbErrorResult(error, "db");
+
+  revalidatePath("/admin/terminals");
+  return { error: null };
+}
+
+export const approveDevice = withServerAction(_approveDevice);
+
+async function _rejectDevice(id: number) {
+  validateId(id);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("id, status, tenant_id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!device) {
+    return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  const { error } = await supabase
+    .from("registered_devices")
+    .update({
+      status: "rejected",
+      rejected_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+  if (error) return safeDbErrorResult(error, "db");
+
+  revalidatePath("/admin/terminals");
+  return { error: null };
+}
+
+export const rejectDevice = withServerAction(_rejectDevice);
+
+async function _deleteDevice(id: number) {
+  validateId(id);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("id, tenant_id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!device) {
+    return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  const { error } = await supabase
+    .from("registered_devices")
+    .delete()
+    .eq("id", id);
+
+  if (error) return safeDbErrorResult(error, "db");
+
+  revalidatePath("/admin/terminals");
+  return { error: null };
+}
+
+export const deleteDevice = withServerAction(_deleteDevice);
