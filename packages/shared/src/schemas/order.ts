@@ -19,14 +19,34 @@ const orderItemInput = z.object({
 
 // ===== Create Order =====
 
-export const createOrderSchema = z.object({
-  table_id: z.number().int().positive().nullish(),
-  type: z.enum(["dine_in", "takeaway", "delivery"]),
-  notes: z.string().max(500).nullish(),
-  items: z
-    .array(orderItemInput)
-    .min(1, "Đơn hàng phải có ít nhất 1 món"),
-});
+export const createOrderSchema = z
+  .object({
+    table_id: z.number().int().positive().nullish(),
+    type: z.enum(["dine_in", "takeaway", "delivery"]),
+    notes: z.string().max(500).nullish(),
+    guest_count: z.number().int().positive().max(20).nullish(),
+    items: z
+      .array(orderItemInput)
+      .min(1, "Đơn hàng phải có ít nhất 1 món"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.type === "dine_in") {
+      if (data.table_id == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["table_id"],
+          message: "Đơn tại bàn phải chọn bàn",
+        });
+      }
+      if (data.guest_count == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["guest_count"],
+          message: "Đơn tại bàn phải có số khách",
+        });
+      }
+    }
+  });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 

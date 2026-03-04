@@ -92,7 +92,7 @@ export const VALID_KDS_TRANSITIONS: Record<
   KdsTicketStatus,
   KdsTicketStatus[]
 > = {
-  pending: ["preparing"],
+  pending: ["preparing", "ready"],
   preparing: ["ready"],
   ready: [],
 };

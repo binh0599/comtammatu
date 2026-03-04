@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 import type { KdsTicket } from "./types";
@@ -9,6 +9,58 @@ export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "er
 
 const MAX_RECONNECT_DELAY = 30_000;
 const FULL_REFRESH_INTERVAL = 60_000;
+
+function makeHandleTicketChange(
+  stationId: number,
+  setTickets: React.Dispatch<React.SetStateAction<KdsTicket[]>>,
+  refetchTickets: (stationId: number) => Promise<KdsTicket[]>,
+) {
+  return (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+    const eventType = payload.eventType;
+
+    if (eventType === "INSERT") {
+      const newTicket = payload.new as unknown as KdsTicket;
+      if (
+        newTicket.station_id === stationId &&
+        (newTicket.status === "pending" || newTicket.status === "preparing")
+      ) {
+        // Realtime payload lacks joined data (orders/tables).
+        // Refetch all tickets to get complete data for auto-print.
+        refetchTickets(stationId)
+          .then((fresh) => setTickets(fresh))
+          .catch(() => {
+            // Fallback: add raw ticket so it at least shows on the board
+            setTickets((prev) => {
+              if (prev.some((t) => t.id === newTicket.id)) return prev;
+              return [...prev, newTicket];
+            });
+          });
+      }
+    }
+
+    if (eventType === "UPDATE") {
+      const updated = payload.new as unknown as KdsTicket;
+      if (updated.status === "ready" || updated.status === "cancelled") {
+        setTickets((prev) => prev.filter((t) => t.id !== updated.id));
+      } else {
+        setTickets((prev) =>
+          prev.map((t) =>
+            t.id === updated.id
+              ? { ...t, ...updated, orders: updated.orders ?? t.orders }
+              : t
+          )
+        );
+      }
+    }
+
+    if (eventType === "DELETE") {
+      const old = payload.old as { id?: number };
+      if (old.id) {
+        setTickets((prev) => prev.filter((t) => t.id !== old.id));
+      }
+    }
+  };
+}
 
 export function useKdsRealtime(
   stationId: number,
@@ -19,62 +71,20 @@ export function useKdsRealtime(
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
   const reconnectAttemptRef = useRef(0);
   const channelRef = useRef<ReturnType<ReturnType<typeof createClient>["channel"]> | null>(null);
+  const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
-  const handleTicketChange = useCallback(
-    (
-      payload: RealtimePostgresChangesPayload<Record<string, unknown>>
-    ) => {
-      const eventType = payload.eventType;
+  // Use a ref for the change handler so the subscription effect doesn't re-run
+  const handleTicketChangeRef = useRef(makeHandleTicketChange(stationId, setTickets, refetchTickets));
 
-      if (eventType === "INSERT") {
-        const newTicket = payload.new as unknown as KdsTicket;
-        if (
-          newTicket.station_id === stationId &&
-          (newTicket.status === "pending" || newTicket.status === "preparing")
-        ) {
-          // Realtime payload lacks joined data (orders/tables).
-          // Refetch all tickets to get complete data for auto-print.
-          refetchTickets(stationId)
-            .then((fresh) => setTickets(fresh))
-            .catch(() => {
-              // Fallback: add raw ticket so it at least shows on the board
-              setTickets((prev) => {
-                if (prev.some((t) => t.id === newTicket.id)) return prev;
-                return [...prev, newTicket];
-              });
-            });
-        }
-      }
+  // Keep the ref up to date with stationId
+  useEffect(() => {
+    handleTicketChangeRef.current = makeHandleTicketChange(stationId, setTickets, refetchTickets);
+  }, [stationId, refetchTickets]);
 
-      if (eventType === "UPDATE") {
-        const updated = payload.new as unknown as KdsTicket;
-
-        if (updated.status === "ready" || updated.status === "cancelled") {
-          setTickets((prev) => prev.filter((t) => t.id !== updated.id));
-        } else {
-          setTickets((prev) =>
-            prev.map((t) =>
-              t.id === updated.id
-                ? { ...t, ...updated, orders: updated.orders ?? t.orders }
-                : t
-            )
-          );
-        }
-      }
-
-      if (eventType === "DELETE") {
-        const old = payload.old as { id?: number };
-        if (old.id) {
-          setTickets((prev) => prev.filter((t) => t.id !== old.id));
-        }
-      }
-    },
-    [stationId]
-  );
-
-  // Subscribe with connection tracking + exponential backoff
+  // Subscribe once per stationId — no dependency on handleTicketChange
   useEffect(() => {
     const supabase = createClient();
+    supabaseRef.current = supabase;
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let isUnmounted = false;
 
@@ -84,7 +94,7 @@ export function useKdsRealtime(
       setConnectionStatus("connecting");
 
       const channel = supabase
-        .channel(`kds-station-${stationId}`)
+        .channel(`kds-station-${stationId}-${Date.now()}`)
         .on(
           "postgres_changes",
           {
@@ -93,7 +103,7 @@ export function useKdsRealtime(
             table: "kds_tickets",
             filter: `station_id=eq.${stationId}`,
           },
-          handleTicketChange
+          (payload) => handleTicketChangeRef.current(payload)
         )
         .subscribe((status) => {
           if (isUnmounted) return;
@@ -145,7 +155,7 @@ export function useKdsRealtime(
         channelRef.current = null;
       }
     };
-  }, [stationId, handleTicketChange]);
+  }, [stationId]);
 
   // Periodic full-refresh to catch missed events
   useEffect(() => {

@@ -52,6 +52,7 @@ async function _createOrder(data: {
   table_id?: number | null;
   type: string;
   notes?: string;
+  guest_count?: number | null;
   terminal_id: number;
   items: {
     menu_item_id: number;
@@ -73,13 +74,57 @@ async function _createOrder(data: {
     );
   }
 
-  const { table_id, type, notes, items } = parsed.data;
+  const { table_id, type, notes, guest_count, items } = parsed.data;
 
   if (items.length === 0) {
     throw new ActionError(
       "Đơn hàng phải có ít nhất 1 món",
       "VALIDATION_ERROR"
     );
+  }
+
+  // Dine-in orders must have a table
+  if (type === "dine_in" && !table_id) {
+    throw new ActionError(
+      "Đơn tại bàn phải chọn bàn",
+      "VALIDATION_ERROR"
+    );
+  }
+
+  // Validate guest_count against table capacity for dine-in orders
+  // Uses row-level locking (FOR UPDATE) to prevent race conditions
+  if (type === "dine_in" && table_id && guest_count != null) {
+    const { data: capacityCheck, error: capacityError } = await supabase.rpc(
+      "validate_table_capacity",
+      {
+        p_table_id: table_id,
+        p_branch_id: branchId,
+        p_guest_count: guest_count,
+      },
+    );
+
+    if (capacityError) {
+      throw safeDbError(capacityError, "db");
+    }
+
+    // capacityCheck is typed as Json from generated Supabase types
+    const result = capacityCheck as {
+      ok: boolean;
+      error?: string;
+      capacity?: number;
+      occupied?: number;
+      remaining?: number;
+    } | null;
+
+    if (!result || !result.ok) {
+      if (result?.error === "TABLE_NOT_FOUND") {
+        throw new ActionError("Bàn không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
+      }
+      throw new ActionError(
+        `Bàn chỉ còn ${result?.remaining ?? 0} chỗ trống (sức chứa ${result?.capacity ?? 0}, đã có ${result?.occupied ?? 0} khách)`,
+        "VALIDATION_ERROR",
+      );
+    }
   }
 
   // Validate terminal belongs to user's branch and is the correct type
@@ -230,6 +275,7 @@ async function _createOrder(data: {
       discount_total: 0,
       total: totals.total,
       notes: notes ?? null,
+      guest_count: guest_count ?? null,
     })
     .select("id, order_number")
     .single();
