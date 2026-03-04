@@ -98,10 +98,10 @@ export function CreatePoForm({
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="po-supplier">Nha cung cap *</Label>
+            <Label htmlFor="po-supplier">Nhà cung cấp *</Label>
             <Select value={supplierId} onValueChange={setSupplierId}>
               <SelectTrigger id="po-supplier">
-                <SelectValue placeholder="Chon nha cung cap" />
+                <SelectValue placeholder="Chọn nhà cung cấp" />
               </SelectTrigger>
               <SelectContent>
                 {suppliers.map((s) => (
@@ -113,10 +113,10 @@ export function CreatePoForm({
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="po-branch">Chi nhanh *</Label>
+            <Label htmlFor="po-branch">Chi nhánh *</Label>
             <Select value={branchId} onValueChange={setBranchId}>
               <SelectTrigger id="po-branch">
-                <SelectValue placeholder="Chon chi nhanh" />
+                <SelectValue placeholder="Chọn chi nhánh" />
               </SelectTrigger>
               <SelectContent>
                 {branches.map((b) => (
@@ -130,7 +130,7 @@ export function CreatePoForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="expected_at">Ngay giao du kien</Label>
+            <Label htmlFor="expected_at">Ngày giao dự kiến</Label>
             <Input
               id="expected_at"
               type="date"
@@ -139,12 +139,12 @@ export function CreatePoForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="notes">Ghi chu</Label>
+            <Label htmlFor="notes">Ghi chú</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Ghi chu cho don mua hang"
+              placeholder="Ghi chú cho đơn mua hàng"
               rows={2}
             />
           </div>
@@ -152,16 +152,16 @@ export function CreatePoForm({
 
         {/* Item rows */}
         <div className="space-y-2">
-          <Label>Danh sach nguyen lieu *</Label>
+          <Label>Danh sách nguyên liệu *</Label>
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead scope="col">Nguyen lieu</TableHead>
-                  <TableHead scope="col" className="w-[120px]">So luong</TableHead>
-                  <TableHead scope="col" className="w-[140px]">Don gia</TableHead>
+                  <TableHead scope="col">Nguyên liệu</TableHead>
+                  <TableHead scope="col" className="w-[120px]">Số lượng</TableHead>
+                  <TableHead scope="col" className="w-[140px]">Đơn giá</TableHead>
                   <TableHead scope="col" className="w-[120px] text-right">
-                    Thanh tien
+                    Thành tiền
                   </TableHead>
                   <TableHead scope="col" className="w-[50px]" />
                 </TableRow>
@@ -177,7 +177,7 @@ export function CreatePoForm({
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Chon" />
+                          <SelectValue placeholder="Chọn" />
                         </SelectTrigger>
                         <SelectContent>
                           {ingredients.map((ing) => (
@@ -235,17 +235,17 @@ export function CreatePoForm({
           <div className="flex items-center justify-between">
             <Button type="button" variant="outline" size="sm" onClick={addRow}>
               <Plus className="mr-1 h-4 w-4" />
-              Them dong
+              Thêm dòng
             </Button>
             <div className="text-lg font-semibold">
-              Tong: {formatPrice(grandTotal)}
+              Tổng: {formatPrice(grandTotal)}
             </div>
           </div>
         </div>
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Dang tao..." : "Tao don mua"}
+          {isPending ? "Đang tạo..." : "Tạo đơn mua"}
         </Button>
       </DialogFooter>
     </form>

@@ -61,7 +61,7 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Thuc don</h1>
+      <h1 className="text-xl font-bold">Thực đơn</h1>
 
       {/* Search bar */}
       <div className="relative">
@@ -71,7 +71,7 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
         />
         <Input
           aria-label="Tìm món ăn"
-          placeholder="Tim mon an..."
+          placeholder="Tìm món ăn..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
           className="pl-10"
@@ -91,7 +91,7 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
                 : "bg-background hover:bg-accent border-border"
             )}
           >
-            Tat ca
+            Tất cả
           </button>
           {categories.map((cat) => (
             <button
@@ -117,7 +117,7 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
         <div className="flex flex-col items-center gap-3 py-12">
           <UtensilsCrossed className="text-muted-foreground h-12 w-12" />
           <p className="text-muted-foreground text-sm">
-            Khong tim thay mon an nao
+            Không tìm thấy món ăn nào
           </p>
         </div>
       ) : (

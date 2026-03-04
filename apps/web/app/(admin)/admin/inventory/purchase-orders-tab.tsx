@@ -109,9 +109,9 @@ export function PurchaseOrdersTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Don mua hang</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Đơn mua hàng</h2>
           <p className="text-muted-foreground">
-            Quan ly don mua hang tu nha cung cap
+            Quản lý đơn mua hàng từ nhà cung cấp
           </p>
         </div>
         <Dialog
@@ -124,14 +124,14 @@ export function PurchaseOrdersTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Tao don mua
+              Tạo đơn mua
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Tao don mua hang</DialogTitle>
+              <DialogTitle>Tạo đơn mua hàng</DialogTitle>
               <DialogDescription>
-                Tao don mua nguyen lieu tu nha cung cap
+                Tạo đơn mua nguyên liệu từ nhà cung cấp
               </DialogDescription>
             </DialogHeader>
             <CreatePoForm
@@ -164,9 +164,9 @@ export function PurchaseOrdersTab({
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Nhan hang - Don #{receivingPo?.id}</DialogTitle>
+            <DialogTitle>Nhận hàng - Đơn #{receivingPo?.id}</DialogTitle>
             <DialogDescription>
-              Nhap so luong thuc te nhan duoc cho tung nguyen lieu
+              Nhập số lượng thực tế nhận được cho từng nguyên liệu
             </DialogDescription>
           </DialogHeader>
           {receivingPo && (
@@ -184,13 +184,13 @@ export function PurchaseOrdersTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ma</TableHead>
-              <TableHead scope="col">Nha cung cap</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col" className="text-right">Tong tien</TableHead>
-              <TableHead scope="col">Ngay tao</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Mã</TableHead>
+              <TableHead scope="col">Nhà cung cấp</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Tổng tiền</TableHead>
+              <TableHead scope="col">Ngày tạo</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -200,7 +200,7 @@ export function PurchaseOrdersTab({
                   colSpan={7}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co don mua hang nao
+                  Chưa có đơn mua hàng nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -231,38 +231,38 @@ export function PurchaseOrdersTab({
                             size="sm"
                             onClick={() => handleSend(po.id)}
                             disabled={isPending}
-                            title="Gui don"
+                            title="Gửi đơn"
                           >
                             <Send className="mr-1 h-3 w-3" />
-                            Gui
+                            Gửi
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                title="Huy don"
+                                title="Hủy đơn"
                               >
                                 <X className="mr-1 h-3 w-3" />
-                                Huy
+                                Hủy
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Huy don mua hang
+                                  Hủy đơn mua hàng
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Ban co chac muon huy don #{po.id}? Hanh dong
-                                  nay khong the hoan tac.
+                                  Bạn có chắc muốn hủy đơn #{po.id}? Hành động
+                                  này không thể hoàn tác.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Dong</AlertDialogCancel>
+                                <AlertDialogCancel>Đóng</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleCancel(po.id)}
                                 >
-                                  Huy don
+                                  Hủy đơn
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
@@ -279,38 +279,38 @@ export function PurchaseOrdersTab({
                               setReceivingPo(po);
                             }}
                             disabled={isPending}
-                            title="Nhan hang"
+                            title="Nhận hàng"
                           >
                             <PackageCheck className="mr-1 h-3 w-3" />
-                            Nhan hang
+                            Nhận hàng
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                title="Huy don"
+                                title="Hủy đơn"
                               >
                                 <X className="mr-1 h-3 w-3" />
-                                Huy
+                                Hủy
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>
-                                  Huy don mua hang
+                                  Hủy đơn mua hàng
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Ban co chac muon huy don #{po.id}? Hanh dong
-                                  nay khong the hoan tac.
+                                  Bạn có chắc muốn hủy đơn #{po.id}? Hành động
+                                  này không thể hoàn tác.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel>Dong</AlertDialogCancel>
+                                <AlertDialogCancel>Đóng</AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handleCancel(po.id)}
                                 >
-                                  Huy don
+                                  Hủy đơn
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

@@ -146,9 +146,9 @@ export function ScheduleTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Lich phan ca</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Lịch phân ca</h2>
           <p className="text-muted-foreground">
-            Phan ca lam viec cho nhan vien (2 tuan gan nhat)
+            Phân ca làm việc cho nhân viên (2 tuần gần nhất)
           </p>
         </div>
         <Dialog
@@ -161,15 +161,15 @@ export function ScheduleTab({
           <DialogTrigger asChild>
             <Button disabled={employees.length === 0 || shifts.length === 0}>
               <CalendarPlus className="mr-2 h-4 w-4" />
-              Phan ca
+              Phân ca
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form action={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Phan ca lam viec</DialogTitle>
+                <DialogTitle>Phân ca làm việc</DialogTitle>
                 <DialogDescription>
-                  Chon nhan vien, ca lam va ngay lam viec
+                  Chọn nhân viên, ca làm và ngày làm việc
                 </DialogDescription>
               </DialogHeader>
               {error && (
@@ -179,10 +179,10 @@ export function ScheduleTab({
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="employee_id">Nhan vien</Label>
+                  <Label htmlFor="employee_id">Nhân viên</Label>
                   <Select name="employee_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon nhan vien" />
+                      <SelectValue placeholder="Chọn nhân viên" />
                     </SelectTrigger>
                     <SelectContent>
                       {employees.map((emp) => (
@@ -194,10 +194,10 @@ export function ScheduleTab({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="shift_id">Ca lam</Label>
+                  <Label htmlFor="shift_id">Ca làm</Label>
                   <Select name="shift_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon ca lam" />
+                      <SelectValue placeholder="Chọn ca làm" />
                     </SelectTrigger>
                     <SelectContent>
                       {shifts.map((shift) => (
@@ -210,15 +210,15 @@ export function ScheduleTab({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="date">Ngay</Label>
+                  <Label htmlFor="date">Ngày</Label>
                   <Input id="date" name="date" type="date" required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="notes">Ghi chu</Label>
+                  <Label htmlFor="notes">Ghi chú</Label>
                   <Textarea
                     id="notes"
                     name="notes"
-                    placeholder="Ghi chu them (khong bat buoc)"
+                    placeholder="Ghi chú thêm (không bắt buộc)"
                     rows={2}
                   />
                 </div>
@@ -229,10 +229,10 @@ export function ScheduleTab({
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
                 >
-                  Huy
+                  Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Dang luu..." : "Phan ca"}
+                  {isPending ? "Đang lưu..." : "Phân ca"}
                 </Button>
               </DialogFooter>
             </form>
@@ -248,7 +248,7 @@ export function ScheduleTab({
 
       {sortedDates.length === 0 ? (
         <div className="text-muted-foreground flex h-24 items-center justify-center rounded-md border">
-          Chua co lich phan ca trong khoang thoi gian nay
+          Chưa có lịch phân ca trong khoảng thời gian này
         </div>
       ) : (
         <div className="space-y-6">
@@ -259,12 +259,12 @@ export function ScheduleTab({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead scope="col">Ca lam</TableHead>
-                      <TableHead scope="col">Gio</TableHead>
-                      <TableHead scope="col">Chi nhanh</TableHead>
-                      <TableHead scope="col">Nhan vien</TableHead>
-                      <TableHead scope="col">Trang thai</TableHead>
-                      <TableHead scope="col">Ghi chu</TableHead>
+                      <TableHead scope="col">Ca làm</TableHead>
+                      <TableHead scope="col">Giờ</TableHead>
+                      <TableHead scope="col">Chi nhánh</TableHead>
+                      <TableHead scope="col">Nhân viên</TableHead>
+                      <TableHead scope="col">Trạng thái</TableHead>
+                      <TableHead scope="col">Ghi chú</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

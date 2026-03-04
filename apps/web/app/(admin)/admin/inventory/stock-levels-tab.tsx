@@ -82,7 +82,7 @@ export function StockLevelsTab({
     const quantity = Number(formData.get("quantity"));
 
     if (!ingredientId || !branchId) {
-      setError("Vui long chon nguyen lieu va chi nhanh");
+      setError("Vui lòng chọn nguyên liệu và chi nhánh");
       return;
     }
 
@@ -105,9 +105,9 @@ export function StockLevelsTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Ton kho</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Tồn kho</h2>
           <p className="text-muted-foreground">
-            Theo doi so luong nguyen lieu tai tung chi nhanh
+            Theo dõi số lượng nguyên liệu tại từng chi nhánh
           </p>
         </div>
         <Dialog
@@ -120,15 +120,15 @@ export function StockLevelsTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Khoi tao ton kho
+              Khởi tạo tồn kho
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form action={handleInit}>
               <DialogHeader>
-                <DialogTitle>Khoi tao ton kho</DialogTitle>
+                <DialogTitle>Khởi tạo tồn kho</DialogTitle>
                 <DialogDescription>
-                  Tao ban ghi ton kho cho nguyen lieu tai chi nhanh
+                  Tạo bản ghi tồn kho cho nguyên liệu tại chi nhánh
                 </DialogDescription>
               </DialogHeader>
               {error && (
@@ -138,10 +138,10 @@ export function StockLevelsTab({
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="ingredient_id">Nguyen lieu</Label>
+                  <Label htmlFor="ingredient_id">Nguyên liệu</Label>
                   <Select name="ingredient_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon nguyen lieu" />
+                      <SelectValue placeholder="Chọn nguyên liệu" />
                     </SelectTrigger>
                     <SelectContent>
                       {ingredients.map((ing) => (
@@ -153,10 +153,10 @@ export function StockLevelsTab({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="branch_id">Chi nhanh</Label>
+                  <Label htmlFor="branch_id">Chi nhánh</Label>
                   <Select name="branch_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon chi nhanh" />
+                      <SelectValue placeholder="Chọn chi nhánh" />
                     </SelectTrigger>
                     <SelectContent>
                       {branches.map((branch) => (
@@ -168,7 +168,7 @@ export function StockLevelsTab({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="quantity">So luong ban dau</Label>
+                  <Label htmlFor="quantity">Số lượng ban đầu</Label>
                   <Input
                     id="quantity"
                     name="quantity"
@@ -185,10 +185,10 @@ export function StockLevelsTab({
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
                 >
-                  Huy
+                  Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Dang tao..." : "Khoi tao"}
+                  {isPending ? "Đang tạo..." : "Khởi tạo"}
                 </Button>
               </DialogFooter>
             </form>
@@ -206,13 +206,13 @@ export function StockLevelsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Nguyen lieu</TableHead>
-              <TableHead scope="col">Don vi</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col" className="text-right">So luong</TableHead>
-              <TableHead scope="col" className="text-right">Toi thieu</TableHead>
-              <TableHead scope="col" className="text-right">Toi da</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col">Nguyên liệu</TableHead>
+              <TableHead scope="col">Đơn vị</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col" className="text-right">Số lượng</TableHead>
+              <TableHead scope="col" className="text-right">Tối thiểu</TableHead>
+              <TableHead scope="col" className="text-right">Tối đa</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -222,7 +222,7 @@ export function StockLevelsTab({
                   colSpan={7}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co du lieu ton kho
+                  Chưa có dữ liệu tồn kho
                 </TableCell>
               </TableRow>
             ) : (
@@ -246,13 +246,13 @@ export function StockLevelsTab({
                     </TableCell>
                     <TableCell>
                       {isLow ? (
-                        <Badge variant="destructive">Sap het</Badge>
+                        <Badge variant="destructive">Sắp hết</Badge>
                       ) : (
                         <Badge
                           variant="default"
                           className="bg-green-600 hover:bg-green-700"
                         >
-                          Du hang
+                          Đủ hàng
                         </Badge>
                       )}
                     </TableCell>

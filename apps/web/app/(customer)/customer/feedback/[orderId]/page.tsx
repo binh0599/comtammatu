@@ -28,7 +28,7 @@ export default async function FeedbackPage({
   if (isNaN(orderIdNum)) {
     return (
       <div className="flex flex-col items-center gap-3 py-16">
-        <p className="text-muted-foreground text-sm">Don hang khong hop le</p>
+        <p className="text-muted-foreground text-sm">Đơn hàng không hợp lệ</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export default async function FeedbackPage({
     return (
       <div className="flex flex-col items-center gap-3 py-16">
         <p className="text-muted-foreground text-sm">
-          Khong the tai thong tin don hang
+          Không thể tải thông tin đơn hàng
         </p>
       </div>
     );
@@ -57,7 +57,7 @@ export default async function FeedbackPage({
   if (!("order" in result) || !result.order) {
     return (
       <div className="flex flex-col items-center gap-3 py-16">
-        <p className="text-muted-foreground text-sm">Don hang khong ton tai</p>
+        <p className="text-muted-foreground text-sm">Đơn hàng không tồn tại</p>
       </div>
     );
   }

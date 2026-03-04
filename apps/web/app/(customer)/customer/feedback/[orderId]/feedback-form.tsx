@@ -44,7 +44,7 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
 
   function handleSubmit() {
     if (rating === 0) {
-      toast.error("Vui long chon so sao");
+      toast.error("Vui lòng chọn số sao");
       return;
     }
 
@@ -60,7 +60,7 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
         toast.error(result.error);
       } else {
         setSubmitted(true);
-        toast.success("Cam on ban da danh gia!");
+        toast.success("Cảm ơn bạn đã đánh giá!");
       }
     });
   }
@@ -69,9 +69,9 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
     return (
       <div className="flex flex-col items-center gap-4 py-16">
         <CheckCircle2 className="h-16 w-16 text-green-500" />
-        <h2 className="text-xl font-bold">Cam on ban da danh gia!</h2>
+        <h2 className="text-xl font-bold">Cảm ơn bạn đã đánh giá!</h2>
         <p className="text-muted-foreground text-center text-sm">
-          Phan hoi cua ban giup chung toi cai thien chat luong phuc vu.
+          Phản hồi của bạn giúp chúng tôi cải thiện chất lượng phục vụ.
         </p>
       </div>
     );
@@ -79,7 +79,7 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Danh gia don hang</h1>
+      <h1 className="text-xl font-bold">Đánh giá đơn hàng</h1>
 
       {/* Order summary */}
       <Card>
@@ -103,7 +103,7 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
                 className="flex items-center justify-between text-sm"
               >
                 <span>
-                  {item.menu_items?.name ?? "Mon an"} x{item.quantity}
+                  {item.menu_items?.name ?? "Món ăn"} x{item.quantity}
                 </span>
                 <span className="text-muted-foreground">
                   {formatPrice(item.item_total)}
@@ -116,7 +116,7 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
 
       {/* Star rating */}
       <div className="space-y-3">
-        <Label className="text-base font-medium">Chat luong dich vu</Label>
+        <Label className="text-base font-medium">Chất lượng dịch vụ</Label>
         <div
           role="group"
           aria-label="Đánh giá sao"
@@ -150,21 +150,21 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
         </div>
         {rating > 0 && (
           <p className="text-muted-foreground text-center text-sm">
-            {rating === 1 && "Rat te"}
-            {rating === 2 && "Chua hai long"}
-            {rating === 3 && "Binh thuong"}
-            {rating === 4 && "Hai long"}
-            {rating === 5 && "Tuyet voi!"}
+            {rating === 1 && "Rất tệ"}
+            {rating === 2 && "Chưa hài lòng"}
+            {rating === 3 && "Bình thường"}
+            {rating === 4 && "Hài lòng"}
+            {rating === 5 && "Tuyệt vời!"}
           </p>
         )}
       </div>
 
       {/* Comment */}
       <div className="space-y-2">
-        <Label htmlFor="comment">Nhan xet (khong bat buoc)</Label>
+        <Label htmlFor="comment">Nhận xét (không bắt buộc)</Label>
         <Textarea
           id="comment"
-          placeholder="Chia se trai nghiem cua ban..."
+          placeholder="Chia sẻ trải nghiệm của bạn..."
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={4}
@@ -182,7 +182,7 @@ export function FeedbackForm({ order, alreadyReviewed }: FeedbackFormProps) {
         className="w-full"
         size="lg"
       >
-        {isPending ? "Dang gui..." : "Gui danh gia"}
+        {isPending ? "Đang gửi..." : "Gửi đánh giá"}
       </Button>
     </div>
   );

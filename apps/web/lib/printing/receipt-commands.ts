@@ -45,9 +45,9 @@ function fmtDateTime(date: string): string {
 }
 
 const METHOD_LABELS: Record<string, string> = {
-  cash: "TIEN MAT",
-  card: "THE",
-  ewallet: "VI DIEN TU",
+  cash: "TIỀN MẶT",
+  card: "THẺ",
+  ewallet: "VÍ ĐIỆN TỬ",
   qr: "QR CODE",
 };
 
@@ -68,13 +68,13 @@ export function generateReceiptCommands(
   b.textLn("COM TAM MA TU");
   b.size(false, false);
   b.bold(false);
-  b.textLn("123 Duong So 1, Quan 1, TP. HCM");
+  b.textLn("123 Đường Số 1, Quận 1, TP. HCM");
   b.textLn("Hotline: 0909 123 456");
   b.lf();
 
   b.bold(true);
   b.size(true, false);
-  b.textLn("PHIEU THANH TOAN");
+  b.textLn("PHIẾU THANH TOÁN");
   b.size(false, false);
   b.bold(false);
 
@@ -82,12 +82,12 @@ export function generateReceiptCommands(
   b.separator();
 
   // ===== Order Info =====
-  b.columns("Ma HD:", order.order_number, lineWidth);
-  b.columns("Ngay:", fmtDateTime(order.created_at), lineWidth);
-  b.columns("Thu ngan:", cashierName, lineWidth);
+  b.columns("Mã HĐ:", order.order_number, lineWidth);
+  b.columns("Ngày:", fmtDateTime(order.created_at), lineWidth);
+  b.columns("Thu ngân:", cashierName, lineWidth);
   b.columns(
-    "Vi tri:",
-    order.tables ? `Ban ${order.tables.number}` : "Mang di",
+    "Vị trí:",
+    order.tables ? `Bàn ${order.tables.number}` : "Mang đi",
     lineWidth,
   );
 
@@ -110,20 +110,20 @@ export function generateReceiptCommands(
   b.separator();
 
   // ===== Totals =====
-  b.columns("Tam tinh", fmtPrice(order.subtotal), lineWidth);
+  b.columns("Tạm tính", fmtPrice(order.subtotal), lineWidth);
 
   if (order.discount_total > 0) {
-    b.columns("Giam gia", `-${fmtPrice(order.discount_total)}`, lineWidth);
+    b.columns("Giảm giá", `-${fmtPrice(order.discount_total)}`, lineWidth);
   }
 
   if (order.tax > 0) {
-    b.columns("Thue VAT", fmtPrice(order.tax), lineWidth);
+    b.columns("Thuế VAT", fmtPrice(order.tax), lineWidth);
   }
 
   b.separator("=");
   b.bold(true);
   b.size(true, false);
-  b.columns("TONG CONG", `${fmtPrice(order.total)}d`, lineWidth);
+  b.columns("TỔNG CỘNG", `${fmtPrice(order.total)}d`, lineWidth);
   b.size(false, false);
   b.bold(false);
 
@@ -134,14 +134,14 @@ export function generateReceiptCommands(
     b.separator();
     const method = order.payments?.[0]?.method ?? "cash";
     b.columns(
-      `Khach dua (${METHOD_LABELS[method] ?? method})`,
+      `Khách đưa (${METHOD_LABELS[method] ?? method})`,
       fmtPrice(paymentAmount),
       lineWidth,
     );
 
     const change = paymentAmount > order.total ? paymentAmount - order.total : 0;
     b.bold(true);
-    b.columns("Tien thua", fmtPrice(change), lineWidth);
+    b.columns("Tiền thừa", fmtPrice(change), lineWidth);
     b.bold(false);
   }
 
@@ -151,7 +151,7 @@ export function generateReceiptCommands(
   b.align("center");
   b.lf();
   b.bold(true);
-  b.textLn("Cam on va hen gap lai!");
+  b.textLn("Cảm ơn và hẹn gặp lại!");
   b.bold(false);
   b.textLn("Pass WiFi: comtammatu");
   b.lf();

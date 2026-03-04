@@ -105,7 +105,7 @@ export function StockMovementsTab({
     const notes = (formData.get("notes") as string) || undefined;
 
     if (!ingredientId || !branchId || !type) {
-      setError("Vui long dien day du thong tin");
+      setError("Vui lòng điền đầy đủ thông tin");
       return;
     }
 
@@ -130,9 +130,9 @@ export function StockMovementsTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Nhap / Xuat kho</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Nhập / Xuất kho</h2>
           <p className="text-muted-foreground">
-            Lich su nhap, xuat, dieu chinh ton kho
+            Lịch sử nhập, xuất, điều chỉnh tồn kho
           </p>
         </div>
         <Dialog
@@ -145,15 +145,15 @@ export function StockMovementsTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Tao phieu
+              Tạo phiếu
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form action={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Tao phieu nhap/xuat</DialogTitle>
+                <DialogTitle>Tạo phiếu nhập/xuất</DialogTitle>
                 <DialogDescription>
-                  Ghi nhan bien dong ton kho
+                  Ghi nhận biến động tồn kho
                 </DialogDescription>
               </DialogHeader>
               {error && (
@@ -163,10 +163,10 @@ export function StockMovementsTab({
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="ingredient_id">Nguyen lieu</Label>
+                  <Label htmlFor="ingredient_id">Nguyên liệu</Label>
                   <Select name="ingredient_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon nguyen lieu" />
+                      <SelectValue placeholder="Chọn nguyên liệu" />
                     </SelectTrigger>
                     <SelectContent>
                       {ingredients.map((ing) => (
@@ -178,10 +178,10 @@ export function StockMovementsTab({
                   </Select>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="branch_id">Chi nhanh</Label>
+                  <Label htmlFor="branch_id">Chi nhánh</Label>
                   <Select name="branch_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon chi nhanh" />
+                      <SelectValue placeholder="Chọn chi nhánh" />
                     </SelectTrigger>
                     <SelectContent>
                       {branches.map((branch) => (
@@ -194,10 +194,10 @@ export function StockMovementsTab({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="type">Loai phieu</Label>
+                    <Label htmlFor="type">Loại phiếu</Label>
                     <Select name="type" required>
                       <SelectTrigger>
-                        <SelectValue placeholder="Chon loai" />
+                        <SelectValue placeholder="Chọn loại" />
                       </SelectTrigger>
                       <SelectContent>
                         {STOCK_MOVEMENT_TYPES.map((t) => (
@@ -209,7 +209,7 @@ export function StockMovementsTab({
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="quantity">So luong</Label>
+                    <Label htmlFor="quantity">Số lượng</Label>
                     <Input
                       id="quantity"
                       name="quantity"
@@ -222,11 +222,11 @@ export function StockMovementsTab({
                   </div>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="notes">Ghi chu</Label>
+                  <Label htmlFor="notes">Ghi chú</Label>
                   <Textarea
                     id="notes"
                     name="notes"
-                    placeholder="VD: Nhap hang tu nha cung cap ABC"
+                    placeholder="VD: Nhập hàng từ nhà cung cấp ABC"
                     rows={3}
                   />
                 </div>
@@ -237,10 +237,10 @@ export function StockMovementsTab({
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
                 >
-                  Huy
+                  Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Dang tao..." : "Tao phieu"}
+                  {isPending ? "Đang tạo..." : "Tạo phiếu"}
                 </Button>
               </DialogFooter>
             </form>
@@ -258,13 +258,13 @@ export function StockMovementsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Loai</TableHead>
-              <TableHead scope="col">Nguyen lieu</TableHead>
-              <TableHead scope="col" className="text-right">So luong</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col">Ghi chu</TableHead>
-              <TableHead scope="col">Nguoi tao</TableHead>
-              <TableHead scope="col">Thoi gian</TableHead>
+              <TableHead scope="col">Loại</TableHead>
+              <TableHead scope="col">Nguyên liệu</TableHead>
+              <TableHead scope="col" className="text-right">Số lượng</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Ghi chú</TableHead>
+              <TableHead scope="col">Người tạo</TableHead>
+              <TableHead scope="col">Thời gian</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -274,7 +274,7 @@ export function StockMovementsTab({
                   colSpan={7}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co lich su nhap/xuat
+                  Chưa có lịch sử nhập/xuất
                 </TableCell>
               </TableRow>
             ) : (

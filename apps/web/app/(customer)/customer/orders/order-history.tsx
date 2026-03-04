@@ -91,7 +91,7 @@ function OrderCard({ order }: { order: Order }) {
           ) : (
             <ChevronDown aria-hidden="true" className="h-4 w-4" />
           )}
-          {order.order_items.length} mon
+          {order.order_items.length} món
         </button>
 
         {expanded && (
@@ -103,7 +103,7 @@ function OrderCard({ order }: { order: Order }) {
                 className="flex items-center justify-between text-sm"
               >
                 <span>
-                  {item.menu_items?.name ?? "Mon an"} x{item.quantity}
+                  {item.menu_items?.name ?? "Món ăn"} x{item.quantity}
                 </span>
                 <span className="text-muted-foreground">
                   {formatPrice(item.item_total)}
@@ -119,7 +119,7 @@ function OrderCard({ order }: { order: Order }) {
             <Link href={`/customer/feedback/${order.id}`}>
               <Button variant="outline" size="sm" className="w-full gap-2">
                 <Star className="h-4 w-4" />
-                Danh gia
+                Đánh giá
               </Button>
             </Link>
           </div>
@@ -134,10 +134,10 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
     return (
       <div className="flex flex-col items-center gap-3 py-16">
         <ClipboardList className="text-muted-foreground h-12 w-12" />
-        <p className="text-muted-foreground text-sm">Chua co don hang nao</p>
+        <p className="text-muted-foreground text-sm">Chưa có đơn hàng nào</p>
         <Link href="/customer/menu">
           <Button variant="outline" size="sm">
-            Xem thuc don
+            Xem thực đơn
           </Button>
         </Link>
       </div>
@@ -146,7 +146,7 @@ export function OrderHistory({ orders }: OrderHistoryProps) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Don hang cua ban</h1>
+      <h1 className="text-xl font-bold">Đơn hàng của bạn</h1>
       <div className="grid gap-3">
         {orders.map((order) => (
           <OrderCard key={order.id} order={order} />
