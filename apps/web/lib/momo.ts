@@ -132,7 +132,7 @@ export async function createMomoPaymentRequest({
 
   const body = {
     partnerCode,
-    partnerName: "Com Tam Ma Tu",
+    partnerName: "Cơm tấm Má Tư",
     storeId: partnerCode,
     requestId,
     amount,

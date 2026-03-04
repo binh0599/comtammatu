@@ -1,4 +1,4 @@
-# CLAUDE.md — Com Tấm Mã Tú F&B CRM
+# CLAUDE.md — Cơm tấm Má Tư F&B CRM
 
 > Read this first. Details live in `docs/REFERENCE.md`. Task templates in `docs/TASK_TEMPLATES.md`. Session rules in `docs/SESSION_PROTOCOL.md`.
 

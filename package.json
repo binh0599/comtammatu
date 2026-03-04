@@ -2,7 +2,7 @@
   "name": "comtammatu-new",
   "version": "0.0.1",
   "private": true,
-  "description": "Com Tam Ma Tu restaurant chain",
+  "description": "Cơm tấm Má Tư restaurant chain",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",

@@ -55,7 +55,7 @@ export function CustomerHome({
         <h1 className="text-2xl font-bold">
           {isLoggedIn && customerName
             ? `Xin chao, ${customerName}!`
-            : "Chao mung den Com Tam Ma Tu!"}
+            : "Chào mừng đến Cơm tấm Má Tư!"}
         </h1>
         <p className="text-muted-foreground text-sm">
           {isLoggedIn

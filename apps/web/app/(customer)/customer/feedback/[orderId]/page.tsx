@@ -5,7 +5,7 @@ import { getOrderForFeedback } from "../../actions";
 import { FeedbackForm } from "./feedback-form";
 
 export const metadata: Metadata = {
-  title: "Đánh giá - Com Tấm Mã Tú",
+  title: "Đánh giá - Cơm tấm Má Tư",
 };
 
 export default async function FeedbackPage({

@@ -33,7 +33,7 @@ export function LoginForm() {
         <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <ChefHat className="size-6" />
         </div>
-        <CardTitle className="text-xl font-bold">Com Tấm Mã Tú</CardTitle>
+        <CardTitle className="text-xl font-bold">Cơm tấm Má Tư</CardTitle>
         <CardDescription>Đăng nhập vào hệ thống quản lý</CardDescription>
       </CardHeader>
       <CardContent>

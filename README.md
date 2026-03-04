@@ -1,6 +1,6 @@
-# Com Tấm Mã Tú — F&B CRM Platform
+# Cơm tấm Má Tư — F&B CRM Platform
 
-A multi-tenant, multi-branch restaurant management platform built for the **Com Tấm Mã Tú** chain. Covers the full service lifecycle: order management, kitchen display, cashier & payment, inventory, loyalty, HR, and admin reporting — all in one codebase.
+A multi-tenant, multi-branch restaurant management platform built for the **Cơm tấm Má Tư** chain. Covers the full service lifecycle: order management, kitchen display, cashier & payment, inventory, loyalty, HR, and admin reporting — all in one codebase.
 
 **Live:** [comtammatu.vercel.app](https://comtammatu.vercel.app)
 
@@ -296,4 +296,4 @@ Payment credentials are stored in **Supabase Vault** — never in environment va
 
 ## License
 
-Private — all rights reserved. © Com Tấm Mã Tú.
+Private — all rights reserved. © Cơm tấm Má Tư.

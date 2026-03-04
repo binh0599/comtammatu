@@ -3,7 +3,7 @@ import { getPublicMenu } from "../actions";
 import { MenuBrowser } from "./menu-browser";
 
 export const metadata: Metadata = {
-  title: "Thực đơn - Com Tấm Mã Tú",
+  title: "Thực đơn - Cơm tấm Má Tư",
 };
 
 export default async function MenuPage() {

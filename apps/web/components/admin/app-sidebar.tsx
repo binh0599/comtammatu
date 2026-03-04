@@ -146,7 +146,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                   <ChefHat className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Com Tam Ma Tu</span>
+                  <span className="truncate font-semibold">Cơm tấm Má Tư</span>
                   <span className="text-muted-foreground truncate text-xs">
                     Hệ thống quản lý
                   </span>

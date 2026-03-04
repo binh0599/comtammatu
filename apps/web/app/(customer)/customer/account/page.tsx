@@ -5,7 +5,7 @@ import { getCustomerProfile } from "../actions";
 import { AccountClient } from "./account-client";
 
 export const metadata: Metadata = {
-  title: "Tài khoản - Com Tấm Mã Tú",
+  title: "Tài khoản - Cơm tấm Má Tư",
 };
 
 export default async function AccountPage() {
