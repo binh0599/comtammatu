@@ -14,6 +14,25 @@ import {
   withServerQuery,
 } from "@comtammatu/shared";
 
+// ===== Helpers =====
+
+/** Safely parse a JSON FormData field. Returns parsed object or validation error. */
+function parseJsonField(
+  value: FormDataEntryValue | null,
+  fallback: Record<string, unknown> | undefined,
+): { ok: true; data: Record<string, unknown> | undefined } | { ok: false; error: string } {
+  if (!value || String(value).trim() === "") return { ok: true, data: fallback };
+  try {
+    const parsed = JSON.parse(String(value));
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return { ok: false, error: "Cấu hình kết nối không hợp lệ" };
+    }
+    return { ok: true, data: parsed as Record<string, unknown> };
+  } catch {
+    return { ok: false, error: "Cấu hình kết nối không hợp lệ (JSON lỗi)" };
+  }
+}
+
 // ===== Queries =====
 
 async function _getPrinterConfigs() {
@@ -74,6 +93,11 @@ export const getPrinterForStation = withServerQuery(_getPrinterForStation);
 // ===== Mutations =====
 
 async function _createPrinterConfig(formData: FormData) {
+  const connectionConfigResult = parseJsonField(formData.get("connection_config"), {});
+  if (!connectionConfigResult.ok) {
+    return { error: connectionConfigResult.error };
+  }
+
   const parsed = createPrinterConfigSchema.safeParse({
     name: formData.get("name"),
     type: formData.get("type"),
@@ -81,9 +105,7 @@ async function _createPrinterConfig(formData: FormData) {
     encoding: formData.get("encoding") ?? "utf-8",
     auto_print: formData.get("auto_print") === "true",
     print_delay_ms: formData.get("print_delay_ms") ?? 500,
-    connection_config: formData.get("connection_config")
-      ? JSON.parse(formData.get("connection_config") as string)
-      : {},
+    connection_config: connectionConfigResult.data,
   });
 
   if (!parsed.success) {
@@ -123,6 +145,11 @@ async function _updatePrinterConfig(formData: FormData) {
   const id = Number(formData.get("id"));
   if (!id || isNaN(id)) return { error: "ID không hợp lệ" };
 
+  const connectionConfigResult = parseJsonField(formData.get("connection_config"), undefined);
+  if (!connectionConfigResult.ok) {
+    return { error: connectionConfigResult.error };
+  }
+
   const parsed = updatePrinterConfigSchema.safeParse({
     name: formData.get("name") || undefined,
     type: formData.get("type") || undefined,
@@ -131,9 +158,7 @@ async function _updatePrinterConfig(formData: FormData) {
       ? formData.get("auto_print") === "true"
       : undefined,
     print_delay_ms: formData.get("print_delay_ms") || undefined,
-    connection_config: formData.get("connection_config")
-      ? JSON.parse(formData.get("connection_config") as string)
-      : undefined,
+    connection_config: connectionConfigResult.data,
   });
 
   if (!parsed.success) {
@@ -144,13 +169,15 @@ async function _updatePrinterConfig(formData: FormData) {
   if (!branchId) return { error: "Không tìm thấy chi nhánh" };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { error } = await (supabase as any)
+  const { data: updated, error } = await (supabase as any)
     .from("printer_configs")
     .update(parsed.data)
     .eq("id", id)
-    .eq("branch_id", branchId);
+    .eq("branch_id", branchId)
+    .select("id");
 
   if (error) return { error: "Lỗi cập nhật cấu hình máy in" };
+  if (!updated?.length) return { error: "Không tìm thấy cấu hình máy in" };
 
   await auditLog(supabase, {
     tenant_id: tenantId,
@@ -175,13 +202,15 @@ async function _deletePrinterConfig(formData: FormData) {
   if (!branchId) return { error: "Không tìm thấy chi nhánh" };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { error } = await (supabase as any)
+  const { data: deleted, error } = await (supabase as any)
     .from("printer_configs")
     .delete()
     .eq("id", id)
-    .eq("branch_id", branchId);
+    .eq("branch_id", branchId)
+    .select("id");
 
   if (error) return { error: "Lỗi xóa cấu hình máy in" };
+  if (!deleted?.length) return { error: "Không tìm thấy cấu hình máy in" };
 
   await auditLog(supabase, {
     tenant_id: tenantId,
@@ -211,15 +240,34 @@ async function _assignPrinter(formData: FormData) {
   const { supabase, tenantId, branchId, userId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return { error: "Không tìm thấy chi nhánh" };
 
+  // VALIDATE_CLIENT_IDS: verify the target terminal/station belongs to this branch
+  if (parsed.data.assigned_to_id && parsed.data.assigned_to_type) {
+    const targetTable =
+      parsed.data.assigned_to_type === "pos_terminal" ? "pos_terminals" : "kds_stations";
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: targetRow, error: targetError } = await (supabase as any)
+      .from(targetTable)
+      .select("id")
+      .eq("id", parsed.data.assigned_to_id)
+      .eq("branch_id", branchId)
+      .maybeSingle();
+
+    if (targetError || !targetRow) {
+      return { error: "Trạm/máy không thuộc chi nhánh hiện tại hoặc không tồn tại" };
+    }
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { error } = await (supabase as any)
+  const { data: updated, error } = await (supabase as any)
     .from("printer_configs")
     .update({
       assigned_to_type: parsed.data.assigned_to_type,
       assigned_to_id: parsed.data.assigned_to_id,
     })
     .eq("id", parsed.data.printer_config_id)
-    .eq("branch_id", branchId);
+    .eq("branch_id", branchId)
+    .select("id");
 
   if (error) {
     if (error.code === "23505") {
@@ -227,6 +275,7 @@ async function _assignPrinter(formData: FormData) {
     }
     return { error: "Lỗi gán máy in" };
   }
+  if (!updated?.length) return { error: "Không tìm thấy cấu hình máy in" };
 
   await auditLog(supabase, {
     tenant_id: tenantId,

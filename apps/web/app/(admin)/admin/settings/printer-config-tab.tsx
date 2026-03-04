@@ -47,6 +47,8 @@ import {
   updatePrinterConfig,
 } from "./printer-actions";
 
+type PrinterType = "browser" | "thermal_usb" | "thermal_network";
+
 interface PrinterConfigRow {
   id: number;
   name: string;
@@ -70,13 +72,42 @@ interface PrinterConfigTabProps {
 export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
   const [printers, setPrinters] = useState(initialPrinters);
   const [showAdd, setShowAdd] = useState(false);
+  const [newPrinterType, setNewPrinterType] = useState<PrinterType>("browser");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  function handleDialogOpenChange(open: boolean) {
+    setShowAdd(open);
+    if (!open) setNewPrinterType("browser");
+  }
 
   function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     setError(null);
+
+    // Build connection_config from type-specific fields
+    const type = formData.get("type") as PrinterType;
+    let connectionConfig: Record<string, unknown> = {};
+    if (type === "thermal_usb") {
+      const vendorId = Number(formData.get("vendor_id"));
+      const productId = Number(formData.get("product_id"));
+      if (!vendorId || !productId) {
+        setError("Vui lòng nhập Vendor ID và Product ID cho máy in USB.");
+        return;
+      }
+      connectionConfig = { vendor_id: vendorId, product_id: productId };
+    } else if (type === "thermal_network") {
+      const host = (formData.get("host") as string | null)?.trim();
+      const port = Number(formData.get("port")) || 9100;
+      const protocol = (formData.get("protocol") as string) || "http";
+      if (!host) {
+        setError("Vui lòng nhập địa chỉ IP máy in.");
+        return;
+      }
+      connectionConfig = { host, port, protocol };
+    }
+    formData.set("connection_config", JSON.stringify(connectionConfig));
 
     startTransition(async () => {
       const result = await createPrinterConfig(formData);
@@ -212,7 +243,7 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
       </CardContent>
 
       {/* Add Printer Dialog */}
-      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+      <Dialog open={showAdd} onOpenChange={handleDialogOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm máy in mới</DialogTitle>
@@ -234,7 +265,11 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
 
               <div className="grid gap-2">
                 <Label htmlFor="type">Loại kết nối</Label>
-                <Select name="type" defaultValue="browser">
+                <Select
+                  name="type"
+                  defaultValue="browser"
+                  onValueChange={(v) => setNewPrinterType(v as PrinterType)}
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -245,6 +280,69 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* USB-specific connection fields */}
+              {newPrinterType === "thermal_usb" && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="vendor_id">Vendor ID (số thập phân)</Label>
+                    <Input
+                      id="vendor_id"
+                      name="vendor_id"
+                      type="number"
+                      placeholder="vd: 1208 (0x04b8 — Epson)"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="product_id">Product ID (số thập phân)</Label>
+                    <Input
+                      id="product_id"
+                      name="product_id"
+                      type="number"
+                      placeholder="vd: 514 (0x0202)"
+                      required
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Network-specific connection fields */}
+              {newPrinterType === "thermal_network" && (
+                <>
+                  <div className="grid gap-2">
+                    <Label htmlFor="host">Địa chỉ IP máy in</Label>
+                    <Input
+                      id="host"
+                      name="host"
+                      placeholder="vd: 192.168.1.100"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="port">Cổng</Label>
+                    <Input
+                      id="port"
+                      name="port"
+                      type="number"
+                      defaultValue="9100"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="protocol">Giao thức</Label>
+                    <Select name="protocol" defaultValue="http">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="http">HTTP</SelectItem>
+                        <SelectItem value="tcp">TCP (raw)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
 
               <div className="grid gap-2">
                 <Label htmlFor="paper_width_mm">Khổ giấy</Label>
@@ -284,7 +382,6 @@ export function PrinterConfigTab({ initialPrinters }: PrinterConfigTabProps) {
 
               {/* Hidden defaults */}
               <input type="hidden" name="encoding" value="utf-8" />
-              <input type="hidden" name="connection_config" value="{}" />
             </div>
 
             <DialogFooter>
