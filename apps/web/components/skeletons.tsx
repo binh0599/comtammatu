@@ -97,18 +97,18 @@ export function OrderCardSkeleton() {
 
 export function KdsTicketSkeleton() {
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-xl border-2 bg-card p-4">
       <div className="flex items-center justify-between mb-3">
         <Skeleton className="h-5 w-16" />
-        <Skeleton className="h-5 w-12" />
+        <Skeleton className="h-8 w-12" />
       </div>
       <div className="space-y-2">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
       </div>
-      <div className="mt-3">
-        <Skeleton className="h-8 w-full rounded" />
+      <div className="mt-4">
+        <Skeleton className="min-h-[64px] w-full rounded-md" />
       </div>
     </div>
   );

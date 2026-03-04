@@ -3,26 +3,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import type { KdsTicket } from "./types";
 
 export type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
-
-interface KdsTicket {
-  id: number;
-  order_id: number;
-  station_id: number;
-  status: string;
-  items: unknown;
-  priority: number | null;
-  color_code: string | null;
-  accepted_at: string | null;
-  completed_at: string | null;
-  created_at: string;
-  orders: {
-    order_number: string;
-    table_id: number | null;
-    tables: { number: number } | null;
-  } | null;
-}
 
 const MAX_RECONNECT_DELAY = 30_000;
 const FULL_REFRESH_INTERVAL = 60_000;

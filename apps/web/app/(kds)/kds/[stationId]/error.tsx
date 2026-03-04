@@ -14,7 +14,7 @@ export default function KdsStationError({
       error={error}
       reset={reset}
       title="KDS gặp lỗi"
-      variant="inline"
+      variant="minimal"
     />
   );
 }
