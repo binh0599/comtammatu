@@ -1378,6 +1378,7 @@ export type Database = {
           created_by: string
           customer_id: number | null
           discount_total: number
+          guest_count: number | null
           id: number
           idempotency_key: string
           notes: string | null
@@ -1399,6 +1400,7 @@ export type Database = {
           created_by: string
           customer_id?: number | null
           discount_total?: number
+          guest_count?: number | null
           id?: never
           idempotency_key: string
           notes?: string | null
@@ -1420,6 +1422,7 @@ export type Database = {
           created_by?: string
           customer_id?: number | null
           discount_total?: number
+          guest_count?: number | null
           id?: never
           idempotency_key?: string
           notes?: string | null
@@ -1806,6 +1809,71 @@ export type Database = {
             columns: ["registered_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      printer_configs: {
+        Row: {
+          assigned_to_id: number | null
+          assigned_to_type: string | null
+          auto_print: boolean
+          branch_id: number
+          connection_config: Json
+          created_at: string
+          encoding: string
+          id: number
+          is_active: boolean
+          last_tested_at: string | null
+          name: string
+          paper_width_mm: number
+          print_delay_ms: number
+          test_status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to_id?: number | null
+          assigned_to_type?: string | null
+          auto_print?: boolean
+          branch_id: number
+          connection_config?: Json
+          created_at?: string
+          encoding?: string
+          id?: never
+          is_active?: boolean
+          last_tested_at?: string | null
+          name: string
+          paper_width_mm?: number
+          print_delay_ms?: number
+          test_status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to_id?: number | null
+          assigned_to_type?: string | null
+          auto_print?: boolean
+          branch_id?: number
+          connection_config?: Json
+          created_at?: string
+          encoding?: string
+          id?: never
+          is_active?: boolean
+          last_tested_at?: string | null
+          name?: string
+          paper_width_mm?: number
+          print_delay_ms?: number
+          test_status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "printer_configs_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
             referencedColumns: ["id"]
           },
         ]
@@ -2642,9 +2710,17 @@ export type Database = {
       auth_role: { Args: never; Returns: string }
       auth_tenant_id: { Args: never; Returns: number }
       generate_order_number: { Args: { p_branch_id: number }; Returns: string }
+      handle_momo_payment_success: {
+        Args: { p_request_id: string; p_trans_id: string }
+        Returns: Json
+      }
       increment_voucher_usage: {
         Args: { p_voucher_id: number }
         Returns: undefined
+      }
+      validate_table_capacity: {
+        Args: { p_branch_id: number; p_guest_count: number; p_table_id: number }
+        Returns: Json
       }
     }
     Enums: {
@@ -2778,3 +2854,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

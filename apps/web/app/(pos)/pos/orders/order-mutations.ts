@@ -99,14 +99,21 @@ async function _createOrder(data: {
       throw safeDbError(capacityError, "db");
     }
 
-    const result = capacityCheck as { ok: boolean; error?: string; capacity?: number; occupied?: number; remaining?: number };
+    // capacityCheck is typed as Json from generated Supabase types
+    const result = capacityCheck as {
+      ok: boolean;
+      error?: string;
+      capacity?: number;
+      occupied?: number;
+      remaining?: number;
+    } | null;
 
-    if (!result.ok) {
-      if (result.error === "TABLE_NOT_FOUND") {
+    if (!result || !result.ok) {
+      if (result?.error === "TABLE_NOT_FOUND") {
         throw new ActionError("Bàn không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
       }
       throw new ActionError(
-        `Bàn chỉ còn ${result.remaining} chỗ trống (sức chứa ${result.capacity}, đã có ${result.occupied} khách)`,
+        `Bàn chỉ còn ${result?.remaining ?? 0} chỗ trống (sức chứa ${result?.capacity ?? 0}, đã có ${result?.occupied ?? 0} khách)`,
         "VALIDATION_ERROR",
       );
     }
