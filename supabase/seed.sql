@@ -1,5 +1,5 @@
 -- ============================================
--- Seed data for F&B CRM (Com Tam Ma Tu)
+-- Seed data for F&B CRM (Cơm tấm Má Tư)
 -- v2 — Dynamic IDs, no hardcoded PKs
 --
 -- Auth users are NOT seeded here.
@@ -40,7 +40,7 @@ BEGIN
 -- ============================================================
 INSERT INTO tenants (name, slug, subscription_plan, settings, is_active)
 VALUES (
-  'Com Tam Ma Tu',
+  'Cơm tấm Má Tư',
   'comtammatu',
   'pro',
   '{"currency": "VND", "timezone": "Asia/Ho_Chi_Minh", "language": "vi"}'::jsonb,

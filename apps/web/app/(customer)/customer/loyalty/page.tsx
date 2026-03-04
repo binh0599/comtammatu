@@ -5,7 +5,7 @@ import { getCustomerLoyalty } from "../actions";
 import { LoyaltyDashboard } from "./loyalty-dashboard";
 
 export const metadata: Metadata = {
-  title: "Tích điểm - Com Tấm Mã Tú",
+  title: "Tích điểm - Cơm tấm Má Tư",
 };
 
 export default async function LoyaltyPage() {

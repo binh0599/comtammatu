@@ -5,7 +5,7 @@ import { getCustomerOrders } from "../actions";
 import { OrderHistory } from "./order-history";
 
 export const metadata: Metadata = {
-  title: "Đơn hàng - Com Tấm Mã Tú",
+  title: "Đơn hàng - Cơm tấm Má Tư",
 };
 
 export default async function OrdersPage() {

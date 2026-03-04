@@ -1,5 +1,5 @@
 -- ============================================================
--- Com Tam Ma Tu F&B CRM — Initial Schema (consolidated)
+-- Cơm tấm Má Tư F&B CRM — Initial Schema (consolidated)
 -- Migration: 20260228000000_initial_schema.sql
 -- Architecture: docs/F&B_CRM_Lightweight_Architecture_v2.1.md
 -- NOTE: Incorporates v2.2 changes (junction tables, index policy)

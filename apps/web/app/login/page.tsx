@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập - Com Tấm Mã Tú",
+  title: "Đăng nhập - Cơm tấm Má Tư",
 };
 
 export default async function LoginPage() {

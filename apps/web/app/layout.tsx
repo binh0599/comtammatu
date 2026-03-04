@@ -3,8 +3,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Com Tam Ma Tu - CRM",
-  description: "Restaurant management system for Com Tam Ma Tu chain",
+  title: "Cơm tấm Má Tư - CRM",
+  description: "Restaurant management system for Cơm tấm Má Tư chain",
 };
 
 export default function RootLayout({

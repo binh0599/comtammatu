@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { LogoutButton } from "@/components/logout-button";
 
 export const metadata: Metadata = {
-  title: "Chọn Bếp KDS - Com Tấm Mã Tú",
+  title: "Chọn Bếp KDS - Cơm tấm Má Tư",
   description: "Chọn bếp để bắt đầu",
 };
 

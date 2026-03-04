@@ -4,7 +4,7 @@ import { getStationInfo, getStationTickets, getTimingRules } from "./actions";
 import { KdsBoard } from "./kds-board";
 
 export const metadata: Metadata = {
-  title: "KDS - Com Tấm Mã Tú",
+  title: "KDS - Cơm tấm Má Tư",
   description: "Kitchen Display System",
 };
 
