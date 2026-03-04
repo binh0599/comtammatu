@@ -65,11 +65,10 @@ function RatingDisplay({ rating }: { rating: number | null }) {
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${
-            i < rating
+          className={`h-4 w-4 ${i < rating
               ? "fill-yellow-400 text-yellow-400"
               : "text-muted-foreground/30"
-          }`}
+            }`}
         />
       ))}
     </div>
@@ -104,27 +103,27 @@ function SupplierForm({
       )}
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">Ten nha cung cap *</Label>
+          <Label htmlFor="name">Tên nhà cung cấp *</Label>
           <Input
             id="name"
             name="name"
             defaultValue={defaultValues?.name}
-            placeholder="VD: Cong ty TNHH Thuc pham ABC"
+            placeholder="VD: Công ty TNHH Thực phẩm ABC"
             required
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="contact_name">Nguoi lien he</Label>
+            <Label htmlFor="contact_name">Người liên hệ</Label>
             <Input
               id="contact_name"
               name="contact_name"
               defaultValue={defaultValues?.contact_name ?? ""}
-              placeholder="Ten nguoi lien he"
+              placeholder="Tên người liên hệ"
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="phone">So dien thoai</Label>
+            <Label htmlFor="phone">Số điện thoại</Label>
             <Input
               id="phone"
               name="phone"
@@ -145,7 +144,7 @@ function SupplierForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="payment_terms">Dieu khoan thanh toan</Label>
+            <Label htmlFor="payment_terms">Điều khoản thanh toán</Label>
             <Input
               id="payment_terms"
               name="payment_terms"
@@ -155,22 +154,22 @@ function SupplierForm({
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="address">Dia chi</Label>
+          <Label htmlFor="address">Địa chỉ</Label>
           <Input
             id="address"
             name="address"
             defaultValue={defaultValues?.address ?? ""}
-            placeholder="Dia chi nha cung cap"
+            placeholder="Địa chỉ nhà cung cấp"
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="rating">Danh gia</Label>
+          <Label htmlFor="rating">Đánh giá</Label>
           <Select
             value={rating}
             onValueChange={setRating}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Chon danh gia" />
+              <SelectValue placeholder="Chọn đánh giá" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="1">1 sao</SelectItem>
@@ -237,9 +236,9 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Nha cung cap</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Nhà cung cấp</h2>
           <p className="text-muted-foreground">
-            Quan ly danh sach nha cung cap nguyen lieu
+            Quản lý danh sách nhà cung cấp nguyên liệu
           </p>
         </div>
         <Dialog
@@ -252,22 +251,22 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Them NCC
+              Thêm NCC
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Them nha cung cap</DialogTitle>
+              <DialogTitle>Thêm nhà cung cấp</DialogTitle>
               <DialogDescription>
-                Tao nha cung cap moi cho nha hang
+                Tạo nhà cung cấp mới cho nhà hàng
               </DialogDescription>
             </DialogHeader>
             <SupplierForm
               onSubmit={handleCreate}
               isPending={isPending}
               error={error}
-              submitLabel="Tao"
-              pendingLabel="Dang tao..."
+              submitLabel="Tạo"
+              pendingLabel="Đang tạo..."
             />
           </DialogContent>
         </Dialog>
@@ -283,14 +282,14 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ten</TableHead>
-              <TableHead scope="col">Lien he</TableHead>
-              <TableHead scope="col">SDT</TableHead>
+              <TableHead scope="col">Tên</TableHead>
+              <TableHead scope="col">Liên hệ</TableHead>
+              <TableHead scope="col">SĐT</TableHead>
               <TableHead scope="col">Email</TableHead>
-              <TableHead scope="col">Dieu khoan TT</TableHead>
-              <TableHead scope="col">Danh gia</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Điều khoản TT</TableHead>
+              <TableHead scope="col">Đánh giá</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -300,7 +299,7 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                   colSpan={8}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co nha cung cap nao
+                  Chưa có nhà cung cấp nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -316,7 +315,7 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                   </TableCell>
                   <TableCell>
                     <Badge variant={item.is_active ? "default" : "secondary"}>
-                      {item.is_active ? "Hoat dong" : "Tam dung"}
+                      {item.is_active ? "Hoạt động" : "Tạm dừng"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -339,16 +338,16 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                               setError(null);
                               setEditingItem(item);
                             }}
-                            title="Sua"
+                            title="Sửa"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Sua nha cung cap</DialogTitle>
+                            <DialogTitle>Sửa nhà cung cấp</DialogTitle>
                             <DialogDescription>
-                              Cap nhat thong tin &quot;{item.name}&quot;
+                              Cập nhật thông tin &quot;{item.name}&quot;
                             </DialogDescription>
                           </DialogHeader>
                           <SupplierForm
@@ -358,8 +357,8 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                             }
                             isPending={isPending}
                             error={error}
-                            submitLabel="Luu"
-                            pendingLabel="Dang luu..."
+                            submitLabel="Lưu"
+                            pendingLabel="Đang lưu..."
                           />
                         </DialogContent>
                       </Dialog>
@@ -367,26 +366,26 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Xoa">
+                          <Button variant="ghost" size="icon" title="Xóa">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
                             <AlertDialogTitle>
-                              Xoa nha cung cap
+                              Xóa nhà cung cấp
                             </AlertDialogTitle>
                             <AlertDialogDescription>
-                              Ban co chac muon xoa &quot;{item.name}&quot;?
-                              Hanh dong nay khong the hoan tac.
+                              Bạn có chắc muốn xóa &quot;{item.name}&quot;?
+                              Hành động này không thể hoàn tác.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Huy</AlertDialogCancel>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(item.id)}
                             >
-                              Xoa
+                              Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

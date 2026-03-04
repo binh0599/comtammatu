@@ -103,9 +103,9 @@ export function LeaveTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Nghi phep</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Nghỉ phép</h2>
           <p className="text-muted-foreground">
-            Quan ly yeu cau nghi phep cua nhan vien
+            Quản lý yêu cầu nghỉ phép của nhân viên
           </p>
         </div>
       </div>
@@ -117,18 +117,18 @@ export function LeaveTab({
       >
         <TabsList>
           <TabsTrigger value="all">
-            Tat ca ({leaveRequests.length})
+            Tất cả ({leaveRequests.length})
           </TabsTrigger>
           <TabsTrigger value="pending">
-            Cho duyet (
+            Chờ duyệt (
             {leaveRequests.filter((r) => r.status === "pending").length})
           </TabsTrigger>
           <TabsTrigger value="approved">
-            Da duyet (
+            Đã duyệt (
             {leaveRequests.filter((r) => r.status === "approved").length})
           </TabsTrigger>
           <TabsTrigger value="rejected">
-            Tu choi (
+            Từ chối (
             {leaveRequests.filter((r) => r.status === "rejected").length})
           </TabsTrigger>
         </TabsList>
@@ -144,14 +144,14 @@ export function LeaveTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Nhan vien</TableHead>
-              <TableHead scope="col">Loai</TableHead>
-              <TableHead scope="col">Tu ngay</TableHead>
-              <TableHead scope="col">Den ngay</TableHead>
-              <TableHead scope="col">So ngay</TableHead>
-              <TableHead scope="col">Ly do</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Nhân viên</TableHead>
+              <TableHead scope="col">Loại</TableHead>
+              <TableHead scope="col">Từ ngày</TableHead>
+              <TableHead scope="col">Đến ngày</TableHead>
+              <TableHead scope="col">Số ngày</TableHead>
+              <TableHead scope="col">Lý do</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -161,7 +161,7 @@ export function LeaveTab({
                   colSpan={8}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Khong co yeu cau nghi phep nao
+                  Không có yêu cầu nghỉ phép nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -196,7 +196,7 @@ export function LeaveTab({
                           size="icon"
                           onClick={() => handleApprove(request.id, "approved")}
                           disabled={isPending}
-                          title="Duyet"
+                          title="Duyệt"
                           className="text-green-600 hover:text-green-700"
                         >
                           <Check className="h-4 w-4" />
@@ -206,7 +206,7 @@ export function LeaveTab({
                           size="icon"
                           onClick={() => handleApprove(request.id, "rejected")}
                           disabled={isPending}
-                          title="Tu choi"
+                          title="Từ chối"
                           className="text-red-600 hover:text-red-700"
                         >
                           <X className="h-4 w-4" />
@@ -215,7 +215,7 @@ export function LeaveTab({
                     ) : (
                       <span className="text-muted-foreground text-sm">
                         {request.approver
-                          ? `Boi: ${request.approver.full_name}`
+                          ? `Bởi: ${request.approver.full_name}`
                           : "-"}
                       </span>
                     )}

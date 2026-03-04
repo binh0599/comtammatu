@@ -65,9 +65,9 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        toast.success("Du lieu da duoc tai xuong");
+        toast.success("Dữ liệu đã được tải xuống");
       } catch {
-        toast.error("Khong the xuat du lieu. Vui long thu lai.");
+        toast.error("Không thể xuất dữ liệu. Vui lòng thử lại.");
       }
     });
   }
@@ -79,20 +79,20 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
         toast.error(result.error);
       } else {
         setDeletionScheduled(true);
-        toast.success("Yeu cau xoa tai khoan da duoc ghi nhan");
+        toast.success("Yêu cầu xóa tài khoản đã được ghi nhận");
       }
     });
   }
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Tai khoan</h1>
+      <h1 className="text-xl font-bold">Tài khoản</h1>
 
       {/* Profile info */}
       {profile ? (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Thong tin ca nhan</CardTitle>
+            <CardTitle className="text-base">Thông tin cá nhân</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 px-4 pb-4">
             <div className="flex items-center gap-3">
@@ -114,18 +114,18 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
             <div className="flex items-center gap-3">
               <Calendar className="text-muted-foreground h-4 w-4 flex-shrink-0" />
               <span className="text-muted-foreground text-sm">
-                Thanh vien tu {formatDateTime(profile.createdAt)}
+                Thành viên từ {formatDateTime(profile.createdAt)}
               </span>
             </div>
             <Separator />
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Tong chi tieu</span>
+              <span className="text-muted-foreground">Tổng chi tiêu</span>
               <span className="font-medium">
                 {formatPrice(profile.totalSpent)}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">So lan ghe tham</span>
+              <span className="text-muted-foreground">Số lần ghé thăm</span>
               <span className="font-medium">{profile.totalVisits}</span>
             </div>
           </CardContent>
@@ -134,7 +134,7 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
         <Card>
           <CardContent className="p-4">
             <p className="text-muted-foreground text-sm">
-              Chua co thong tin khach hang. Vui long lien he nha hang.
+              Chưa có thông tin khách hàng. Vui lòng liên hệ nhà hàng.
             </p>
             {userEmail && (
               <p className="text-muted-foreground mt-2 text-sm">
@@ -156,7 +156,7 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
             size="lg"
           >
             <LogOut className="h-4 w-4" />
-            Dang xuat
+            Đăng xuất
           </Button>
         </form>
 
@@ -165,7 +165,7 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
           <>
             <Separator />
             <p className="text-muted-foreground text-xs">
-              Quyen rieng tu & du lieu
+              Quyền riêng tư & dữ liệu
             </p>
 
             <Button
@@ -176,7 +176,7 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
               disabled={isExporting}
             >
               <Download className="h-4 w-4" />
-              {isExporting ? "Dang xuat du lieu..." : "Xuat du lieu cua toi"}
+              {isExporting ? "Đang xuất dữ liệu..." : "Xuất dữ liệu của tôi"}
             </Button>
 
             {/* Deletion request */}
@@ -186,11 +186,11 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
                   <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-600" />
                   <div>
                     <p className="text-sm font-medium">
-                      Yeu cau xoa da duoc ghi nhan
+                      Yêu cầu xóa đã được ghi nhận
                     </p>
                     <p className="text-muted-foreground mt-1 text-xs">
-                      Tai khoan cua ban se bi xoa sau 30 ngay. Lien he nha hang
-                      de huy yeu cau.
+                      Tài khoản của bạn sẽ bị xóa sau 30 ngày. Liên hệ nhà hàng
+                      để hủy yêu cầu.
                     </p>
                   </div>
                 </CardContent>
@@ -204,27 +204,27 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
                     size="lg"
                   >
                     <Trash2 className="h-4 w-4" />
-                    Yeu cau xoa tai khoan
+                    Yêu cầu xóa tài khoản
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Xoa tai khoan</AlertDialogTitle>
+                    <AlertDialogTitle>Xóa tài khoản</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Tai khoan cua ban se duoc xoa sau 30 ngay. Trong thoi gian
-                      nay, ban co the lien he nha hang de huy yeu cau. Sau khi
-                      xoa, toan bo du lieu (don hang, diem thuong, danh gia) se
-                      bi xoa vinh vien va khong the khoi phuc.
+                      Tài khoản của bạn sẽ được xóa sau 30 ngày. Trong thời gian
+                      này, bạn có thể liên hệ nhà hàng để hủy yêu cầu. Sau khi
+                      xóa, toàn bộ dữ liệu (đơn hàng, điểm thưởng, đánh giá) sẽ
+                      bị xóa vĩnh viễn và không thể khôi phục.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Huy</AlertDialogCancel>
+                    <AlertDialogCancel>Hủy</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={handleDeletion}
                       disabled={isDeleting}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      {isDeleting ? "Dang xu ly..." : "Xac nhan xoa"}
+                      {isDeleting ? "Đang xử lý..." : "Xác nhận xóa"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

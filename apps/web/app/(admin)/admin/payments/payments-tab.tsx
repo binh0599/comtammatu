@@ -147,10 +147,10 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
       {/* Header */}
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Lich su thanh toan
+          Lịch sử thanh toán
         </h2>
         <p className="text-muted-foreground">
-          Xem va quan ly cac giao dich thanh toan
+          Xem và quản lý các giao dịch thanh toán
         </p>
       </div>
 
@@ -165,7 +165,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
         <div className="relative">
           <Search className="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
           <Input
-            placeholder="Tim theo ma don, ma tham chieu..."
+            placeholder="Tìm theo mã đơn, mã tham chiếu..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-64 pl-8"
@@ -174,10 +174,10 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Trang thai" />
+            <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca trang thai</SelectItem>
+            <SelectItem value="all">Tất cả trạng thái</SelectItem>
             {PAYMENT_STATUSES.map((s) => (
               <SelectItem key={s} value={s}>
                 {getPaymentStatusLabel(s)}
@@ -188,10 +188,10 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
 
         <Select value={methodFilter} onValueChange={setMethodFilter}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Phuong thuc" />
+            <SelectValue placeholder="Phương thức" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca phuong thuc</SelectItem>
+            <SelectItem value="all">Tất cả phương thức</SelectItem>
             {PAYMENT_METHODS.map((m) => (
               <SelectItem key={m} value={m}>
                 {getPaymentMethodLabel(m)}
@@ -203,10 +203,10 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
         {branches.length > 1 && (
           <Select value={branchFilter} onValueChange={setBranchFilter}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="Chi nhanh" />
+              <SelectValue placeholder="Chi nhánh" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tat ca chi nhanh</SelectItem>
+              <SelectItem value="all">Tất cả chi nhánh</SelectItem>
               {branches.map((b) => (
                 <SelectItem key={b.id} value={String(b.id)}>
                   {b.name}
@@ -217,7 +217,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
         )}
 
         <div className="text-muted-foreground ml-auto text-sm">
-          {filtered.length} giao dich &middot; Tong:{" "}
+          {filtered.length} giao dịch &middot; Tổng:{" "}
           <span className="font-medium text-black">
             {formatPrice(totalAmount)}
           </span>
@@ -238,15 +238,15 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Ma don</TableHead>
-              <TableHead>Chi nhanh</TableHead>
-              <TableHead>Phuong thuc</TableHead>
-              <TableHead className="text-right">So tien</TableHead>
+              <TableHead>Mã đơn</TableHead>
+              <TableHead>Chi nhánh</TableHead>
+              <TableHead>Phương thức</TableHead>
+              <TableHead className="text-right">Số tiền</TableHead>
               <TableHead className="text-right">Tip</TableHead>
-              <TableHead>Trang thai</TableHead>
-              <TableHead>Thoi gian</TableHead>
-              <TableHead>Ma tham chieu</TableHead>
-              <TableHead className="text-right">Thao tac</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Thời gian</TableHead>
+              <TableHead>Mã tham chiếu</TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,7 +256,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                   colSpan={9}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co giao dich thanh toan nao
+                  Chưa có giao dịch thanh toán nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -295,7 +295,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                       <Button
                         variant="ghost"
                         size="icon"
-                        title="Chi tiet"
+                        title="Chi tiết"
                         onClick={() => {
                           setError(null);
                           setDetailPayment(p);
@@ -310,7 +310,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              title="Hoan tien"
+                              title="Hoàn tiền"
                             >
                               <RotateCcw className="h-4 w-4" />
                             </Button>
@@ -318,22 +318,22 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                Hoan tien giao dich
+                                Hoàn tiền giao dịch
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Ban co chac muon hoan tien{" "}
-                                {formatPrice(Number(p.amount))} cho don{" "}
+                                Bạn có chắc muốn hoàn tiền{" "}
+                                {formatPrice(Number(p.amount))} cho đơn{" "}
                                 {p.orders?.order_number ?? `#${p.order_id}`}?
-                                Hanh dong nay khong the hoan tac.
+                                Hành động này không thể hoàn tác.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Huy</AlertDialogCancel>
+                              <AlertDialogCancel>Hủy</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleRefund(p.id)}
                                 disabled={isPending}
                               >
-                                {isPending ? "Dang xu ly..." : "Hoan tien"}
+                                {isPending ? "Đang xử lý..." : "Hoàn tiền"}
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -360,42 +360,42 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
       >
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Chi tiet thanh toan</DialogTitle>
+            <DialogTitle>Chi tiết thanh toán</DialogTitle>
             <DialogDescription>
-              Thong tin giao dich #{detailPayment?.id}
+              Thông tin giao dịch #{detailPayment?.id}
             </DialogDescription>
           </DialogHeader>
           {detailPayment && (
             <div className="grid gap-3 py-4 text-sm">
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Ma don hang:</span>
+                <span className="text-muted-foreground">Mã đơn hàng:</span>
                 <span className="font-medium">
                   {detailPayment.orders?.order_number ??
                     `#${detailPayment.order_id}`}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Chi nhanh:</span>
+                <span className="text-muted-foreground">Chi nhánh:</span>
                 <span>
                   {detailPayment.pos_terminals?.branches?.name ?? "—"}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Thiet bi:</span>
+                <span className="text-muted-foreground">Thiết bị:</span>
                 <span>{detailPayment.pos_terminals?.name ?? "—"}</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Phuong thuc:</span>
+                <span className="text-muted-foreground">Phương thức:</span>
                 <span>{getPaymentMethodLabel(detailPayment.method)}</span>
               </div>
               {detailPayment.provider && (
                 <div className="grid grid-cols-2 gap-2">
-                  <span className="text-muted-foreground">Nha cung cap:</span>
+                  <span className="text-muted-foreground">Nhà cung cấp:</span>
                   <span>{detailPayment.provider}</span>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">So tien:</span>
+                <span className="text-muted-foreground">Số tiền:</span>
                 <span className="font-medium">
                   {formatPrice(Number(detailPayment.amount))}
                 </span>
@@ -407,7 +407,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Tong don hang:</span>
+                <span className="text-muted-foreground">Tổng đơn hàng:</span>
                 <span>
                   {detailPayment.orders
                     ? formatPrice(Number(detailPayment.orders.total))
@@ -415,7 +415,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Trang thai:</span>
+                <span className="text-muted-foreground">Trạng thái:</span>
                 <Badge
                   className={STATUS_BADGE[detailPayment.status] ?? ""}
                 >
@@ -425,7 +425,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
               {detailPayment.reference_no && (
                 <div className="grid grid-cols-2 gap-2">
                   <span className="text-muted-foreground">
-                    Ma tham chieu:
+                    Mã tham chiếu:
                   </span>
                   <span className="font-mono">
                     {detailPayment.reference_no}
@@ -433,7 +433,7 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
                 </div>
               )}
               <div className="grid grid-cols-2 gap-2">
-                <span className="text-muted-foreground">Thoi gian:</span>
+                <span className="text-muted-foreground">Thời gian:</span>
                 <span>
                   {detailPayment.paid_at
                     ? formatDateTime(detailPayment.paid_at)
@@ -442,13 +442,13 @@ export function PaymentsTab({ payments, branches }: PaymentsTabProps) {
               </div>
               {detailPayment.orders?.type && (
                 <div className="grid grid-cols-2 gap-2">
-                  <span className="text-muted-foreground">Loai don:</span>
+                  <span className="text-muted-foreground">Loại đơn:</span>
                   <span>
                     {detailPayment.orders.type === "dine_in"
-                      ? "Tai cho"
+                      ? "Tại chỗ"
                       : detailPayment.orders.type === "takeaway"
-                        ? "Mang di"
-                        : "Giao hang"}
+                        ? "Mang đi"
+                        : "Giao hàng"}
                   </span>
                 </div>
               )}

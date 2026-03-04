@@ -95,9 +95,9 @@ export function ShiftsTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Ca lam</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Ca làm</h2>
           <p className="text-muted-foreground">
-            Quan ly cac ca lam viec cua nha hang
+            Quản lý các ca làm việc của nhà hàng
           </p>
         </div>
         <Dialog
@@ -110,15 +110,15 @@ export function ShiftsTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Them ca lam
+              Thêm ca làm
             </Button>
           </DialogTrigger>
           <DialogContent>
             <form action={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Them ca lam</DialogTitle>
+                <DialogTitle>Thêm ca làm</DialogTitle>
                 <DialogDescription>
-                  Tao ca lam moi cho chi nhanh
+                  Tạo ca làm mới cho chi nhánh
                 </DialogDescription>
               </DialogHeader>
               {error && (
@@ -128,19 +128,19 @@ export function ShiftsTab({
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Ten ca</Label>
+                  <Label htmlFor="name">Tên ca</Label>
                   <Input
                     id="name"
                     name="name"
-                    placeholder="VD: Ca sang"
+                    placeholder="VD: Ca sáng"
                     required
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="branch_id">Chi nhanh</Label>
+                  <Label htmlFor="branch_id">Chi nhánh</Label>
                   <Select name="branch_id" required>
                     <SelectTrigger>
-                      <SelectValue placeholder="Chon chi nhanh" />
+                      <SelectValue placeholder="Chọn chi nhánh" />
                     </SelectTrigger>
                     <SelectContent>
                       {branches.map((branch) => (
@@ -153,7 +153,7 @@ export function ShiftsTab({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="start_time">Gio bat dau</Label>
+                    <Label htmlFor="start_time">Giờ bắt đầu</Label>
                     <Input
                       id="start_time"
                       name="start_time"
@@ -162,7 +162,7 @@ export function ShiftsTab({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="end_time">Gio ket thuc</Label>
+                    <Label htmlFor="end_time">Giờ kết thúc</Label>
                     <Input
                       id="end_time"
                       name="end_time"
@@ -173,7 +173,7 @@ export function ShiftsTab({
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="break_min">Nghi giua ca (phut)</Label>
+                    <Label htmlFor="break_min">Nghỉ giữa ca (phút)</Label>
                     <Input
                       id="break_min"
                       name="break_min"
@@ -183,7 +183,7 @@ export function ShiftsTab({
                     />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="max_employees">So NV toi da</Label>
+                    <Label htmlFor="max_employees">Số NV tối đa</Label>
                     <Input
                       id="max_employees"
                       name="max_employees"
@@ -200,10 +200,10 @@ export function ShiftsTab({
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
                 >
-                  Huy
+                  Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Dang tao..." : "Tao ca"}
+                  {isPending ? "Đang tạo..." : "Tạo ca"}
                 </Button>
               </DialogFooter>
             </form>
@@ -221,13 +221,13 @@ export function ShiftsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ten ca</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col">Gio bat dau</TableHead>
-              <TableHead scope="col">Gio ket thuc</TableHead>
-              <TableHead scope="col">Nghi giua ca (phut)</TableHead>
-              <TableHead scope="col">So NV toi da</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Tên ca</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Giờ bắt đầu</TableHead>
+              <TableHead scope="col">Giờ kết thúc</TableHead>
+              <TableHead scope="col">Nghỉ giữa ca (phút)</TableHead>
+              <TableHead scope="col">Số NV tối đa</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -237,7 +237,7 @@ export function ShiftsTab({
                   colSpan={7}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co ca lam nao
+                  Chưa có ca làm nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -252,24 +252,24 @@ export function ShiftsTab({
                   <TableCell className="text-right">
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="ghost" size="icon" title="Xoa ca">
+                        <Button variant="ghost" size="icon" title="Xóa ca">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Xoa ca lam</AlertDialogTitle>
+                          <AlertDialogTitle>Xóa ca làm</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Ban co chac muon xoa ca &quot;{shift.name}&quot;?
-                            Hanh dong nay khong the hoan tac.
+                            Bạn có chắc muốn xóa ca &quot;{shift.name}&quot;?
+                            Hành động này không thể hoàn tác.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Huy</AlertDialogCancel>
+                          <AlertDialogCancel>Hủy</AlertDialogCancel>
                           <AlertDialogAction
                             onClick={() => handleDelete(shift.id)}
                           >
-                            Xoa
+                            Xóa
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

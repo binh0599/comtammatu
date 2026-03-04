@@ -17,16 +17,16 @@ const actionCards = [
   {
     href: "/customer/menu",
     icon: BookOpen,
-    label: "Thuc don",
-    description: "Xem thuc don nha hang",
+    label: "Thực đơn",
+    description: "Xem thực đơn nhà hàng",
     color: "text-orange-500",
     bg: "bg-orange-50",
   },
   {
     href: "/customer/orders",
     icon: ClipboardList,
-    label: "Don hang",
-    description: "Lich su don hang cua ban",
+    label: "Đơn hàng",
+    description: "Lịch sử đơn hàng của bạn",
     color: "text-blue-500",
     bg: "bg-blue-50",
     authRequired: true,
@@ -34,8 +34,8 @@ const actionCards = [
   {
     href: "/customer/loyalty",
     icon: Gift,
-    label: "Diem thuong",
-    description: "Tich diem va uu dai",
+    label: "Điểm thưởng",
+    description: "Tích điểm và ưu đãi",
     color: "text-purple-500",
     bg: "bg-purple-50",
     authRequired: true,
@@ -54,13 +54,13 @@ export function CustomerHome({
       <div className="space-y-1">
         <h1 className="text-2xl font-bold">
           {isLoggedIn && customerName
-            ? `Xin chao, ${customerName}!`
+            ? `Xin chào, ${customerName}!`
             : "Chào mừng đến Cơm tấm Má Tư!"}
         </h1>
         <p className="text-muted-foreground text-sm">
           {isLoggedIn
-            ? "Chuc ban ngon mieng!"
-            : "Dang nhap de xem don hang va tich diem."}
+            ? "Chúc bạn ngon miệng!"
+            : "Đăng nhập để xem đơn hàng và tích điểm."}
         </p>
       </div>
 
@@ -79,7 +79,7 @@ export function CustomerHome({
                 </Badge>
               </div>
               <p className="text-muted-foreground text-sm">
-                Hang thanh vien hien tai
+                Hạng thành viên hiện tại
               </p>
             </div>
           </CardContent>
@@ -104,7 +104,7 @@ export function CustomerHome({
                     <div className="flex-1">
                       <span className="font-medium">{card.label}</span>
                       <p className="text-muted-foreground text-sm">
-                        Dang nhap de xem
+                        Đăng nhập để xem
                       </p>
                     </div>
                   </CardContent>
@@ -142,7 +142,7 @@ export function CustomerHome({
             href="/login"
             className="text-primary text-sm font-medium underline-offset-4 hover:underline"
           >
-            Dang nhap / Dang ky
+            Đăng nhập / Đăng ký
           </Link>
         </div>
       )}

@@ -159,7 +159,7 @@ export function RecipesTab({
     setError(null);
 
     if (!menuItemId) {
-      setError("Vui long chon mon an");
+      setError("Vui lòng chọn món ăn");
       return;
     }
 
@@ -167,7 +167,7 @@ export function RecipesTab({
       (r) => r.ingredient_id && r.quantity && r.unit
     );
     if (validRows.length === 0) {
-      setError("Cong thuc phai co it nhat 1 nguyen lieu");
+      setError("Công thức phải có ít nhất 1 nguyên liệu");
       return;
     }
 
@@ -205,9 +205,9 @@ export function RecipesTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Cong thuc</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Công thức</h2>
           <p className="text-muted-foreground">
-            Quan ly cong thuc che bien cua tung mon an
+            Quản lý công thức chế biến của từng món ăn
           </p>
         </div>
         <Dialog
@@ -220,14 +220,14 @@ export function RecipesTab({
           <DialogTrigger asChild>
             <Button disabled={availableMenuItems.length === 0}>
               <Plus className="mr-2 h-4 w-4" />
-              Tao cong thuc
+              Tạo công thức
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Tao cong thuc</DialogTitle>
+              <DialogTitle>Tạo công thức</DialogTitle>
               <DialogDescription>
-                Dinh nghia nguyen lieu can dung cho mot mon an
+                Định nghĩa nguyên liệu cần dùng cho một món ăn
               </DialogDescription>
             </DialogHeader>
             {error && (
@@ -237,10 +237,10 @@ export function RecipesTab({
             )}
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Mon an</Label>
+                <Label>Món ăn</Label>
                 <Select value={menuItemId} onValueChange={setMenuItemId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chon mon an" />
+                    <SelectValue placeholder="Chọn món ăn" />
                   </SelectTrigger>
                   <SelectContent>
                     {availableMenuItems.map((item) => (
@@ -253,7 +253,7 @@ export function RecipesTab({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label>San luong</Label>
+                  <Label>Sản lượng</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -264,18 +264,18 @@ export function RecipesTab({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Don vi san luong</Label>
+                  <Label>Đơn vị sản lượng</Label>
                   <Input
                     value={yieldUnit}
                     onChange={(e) => setYieldUnit(e.target.value)}
-                    placeholder="VD: phan, to"
+                    placeholder="VD: phần, tô"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Nguyen lieu</Label>
+                  <Label>Nguyên liệu</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -283,7 +283,7 @@ export function RecipesTab({
                     onClick={addRow}
                   >
                     <Plus className="mr-1 h-3 w-3" />
-                    Them dong
+                    Thêm dòng
                   </Button>
                 </div>
                 <div className="space-y-2">
@@ -299,7 +299,7 @@ export function RecipesTab({
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Nguyen lieu" />
+                          <SelectValue placeholder="Nguyên liệu" />
                         </SelectTrigger>
                         <SelectContent>
                           {ingredients.map((ing) => (
@@ -357,10 +357,10 @@ export function RecipesTab({
                 variant="outline"
                 onClick={() => setIsCreateOpen(false)}
               >
-                Huy
+                Hủy
               </Button>
               <Button onClick={handleCreate} disabled={isPending}>
-                {isPending ? "Dang tao..." : "Tao cong thuc"}
+                {isPending ? "Đang tạo..." : "Tạo công thức"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -375,7 +375,7 @@ export function RecipesTab({
 
       {recipes.length === 0 ? (
         <div className="text-muted-foreground rounded-md border p-8 text-center">
-          Chua co cong thuc nao
+          Chưa có công thức nào
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
@@ -389,36 +389,36 @@ export function RecipesTab({
                     </CardTitle>
                     <CardDescription>
                       {recipe.yield_qty && recipe.yield_unit
-                        ? `San luong: ${recipe.yield_qty} ${recipe.yield_unit}`
-                        : "Chua co san luong"}
+                        ? `Sản lượng: ${recipe.yield_qty} ${recipe.yield_unit}`
+                        : "Chưa có sản lượng"}
                       {recipe.total_cost != null && (
                         <span className="ml-2">
-                          | Gia von: {formatPrice(recipe.total_cost)}
+                          | Giá vốn: {formatPrice(recipe.total_cost)}
                         </span>
                       )}
                     </CardDescription>
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" title="Xoa cong thuc">
+                      <Button variant="ghost" size="icon" title="Xóa công thức">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Xoa cong thuc</AlertDialogTitle>
+                        <AlertDialogTitle>Xóa công thức</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Ban co chac muon xoa cong thuc cua &quot;
-                          {recipe.menu_items.name}&quot;? Hanh dong nay khong
-                          the hoan tac.
+                          Bạn có chắc muốn xóa công thức của &quot;
+                          {recipe.menu_items.name}&quot;? Hành động này không
+                          thể hoàn tác.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Huy</AlertDialogCancel>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
                         <AlertDialogAction
                           onClick={() => handleDelete(recipe.id)}
                         >
-                          Xoa
+                          Xóa
                         </AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
@@ -429,10 +429,10 @@ export function RecipesTab({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead scope="col">Nguyen lieu</TableHead>
-                      <TableHead scope="col" className="text-right">So luong</TableHead>
-                      <TableHead scope="col">Don vi</TableHead>
-                      <TableHead scope="col" className="text-right">Hao hut %</TableHead>
+                      <TableHead scope="col">Nguyên liệu</TableHead>
+                      <TableHead scope="col" className="text-right">Số lượng</TableHead>
+                      <TableHead scope="col">Đơn vị</TableHead>
+                      <TableHead scope="col" className="text-right">Hao hụt %</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>

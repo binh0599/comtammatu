@@ -58,9 +58,9 @@ export function ReceiveDialog({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead scope="col">Nguyen lieu</TableHead>
-                <TableHead scope="col" className="text-right">Dat hang</TableHead>
-                <TableHead scope="col" className="w-[140px]">Thuc nhan</TableHead>
+                <TableHead scope="col">Nguyên liệu</TableHead>
+                <TableHead scope="col" className="text-right">Đặt hàng</TableHead>
+                <TableHead scope="col" className="w-[140px]">Thực nhận</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,7 +94,7 @@ export function ReceiveDialog({
       </div>
       <DialogFooter>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Dang xu ly..." : "Xac nhan nhan hang"}
+          {isPending ? "Đang xử lý..." : "Xác nhận nhận hàng"}
         </Button>
       </DialogFooter>
     </form>

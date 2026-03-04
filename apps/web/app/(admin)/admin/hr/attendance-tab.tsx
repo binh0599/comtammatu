@@ -31,9 +31,9 @@ interface AttendanceRecord {
 
 const SOURCE_LABELS: Record<string, string> = {
   qr: "QR Code",
-  manual: "Thu cong",
+  manual: "Thủ công",
   pos_session: "Ca POS",
-  terminal_login: "Dang nhap",
+  terminal_login: "Đăng nhập",
 };
 
 function getAttendanceBadgeVariant(
@@ -68,9 +68,9 @@ export function AttendanceTab({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Cham cong</h2>
+        <h2 className="text-2xl font-bold tracking-tight">Chấm công</h2>
         <p className="text-muted-foreground">
-          Du lieu cham cong ngay {today}
+          Dữ liệu chấm công ngày {today}
         </p>
       </div>
 
@@ -78,14 +78,14 @@ export function AttendanceTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Nhan vien</TableHead>
-              <TableHead scope="col">Chi nhanh</TableHead>
-              <TableHead scope="col">Vao ca</TableHead>
+              <TableHead scope="col">Nhân viên</TableHead>
+              <TableHead scope="col">Chi nhánh</TableHead>
+              <TableHead scope="col">Vào ca</TableHead>
               <TableHead scope="col">Ra ca</TableHead>
-              <TableHead scope="col">So gio</TableHead>
-              <TableHead scope="col">Tang ca</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col">Nguon</TableHead>
+              <TableHead scope="col">Số giờ</TableHead>
+              <TableHead scope="col">Tăng ca</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col">Nguồn</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -95,7 +95,7 @@ export function AttendanceTab({
                   colSpan={8}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co du lieu cham cong cho ngay nay
+                  Chưa có dữ liệu chấm công cho ngày này
                 </TableCell>
               </TableRow>
             ) : (

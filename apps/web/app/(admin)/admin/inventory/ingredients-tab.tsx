@@ -77,12 +77,12 @@ function IngredientForm({
       )}
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
-          <Label htmlFor="name">Ten nguyen lieu</Label>
+          <Label htmlFor="name">Tên nguyên liệu</Label>
           <Input
             id="name"
             name="name"
             defaultValue={defaultValues?.name}
-            placeholder="VD: Thit suon"
+            placeholder="VD: Thịt sườn"
             required
           />
         </div>
@@ -97,28 +97,28 @@ function IngredientForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="unit">Don vi</Label>
+            <Label htmlFor="unit">Đơn vị</Label>
             <Input
               id="unit"
               name="unit"
               defaultValue={defaultValues?.unit}
-              placeholder="VD: kg, lit, cai"
+              placeholder="VD: kg, lít, cái"
               required
             />
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="category">Danh muc</Label>
+            <Label htmlFor="category">Danh mục</Label>
             <Input
               id="category"
               name="category"
               defaultValue={defaultValues?.category ?? ""}
-              placeholder="VD: Thit, Rau, Gia vi"
+              placeholder="VD: Thịt, Rau, Gia vị"
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="cost_price">Gia nhap</Label>
+            <Label htmlFor="cost_price">Giá nhập</Label>
             <Input
               id="cost_price"
               name="cost_price"
@@ -132,7 +132,7 @@ function IngredientForm({
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="min_stock">Ton kho toi thieu</Label>
+            <Label htmlFor="min_stock">Tồn kho tối thiểu</Label>
             <Input
               id="min_stock"
               name="min_stock"
@@ -144,7 +144,7 @@ function IngredientForm({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="max_stock">Ton kho toi da</Label>
+            <Label htmlFor="max_stock">Tồn kho tối đa</Label>
             <Input
               id="max_stock"
               name="max_stock"
@@ -163,7 +163,7 @@ function IngredientForm({
             onCheckedChange={setIsActive}
           />
           <input type="hidden" name="is_active" value={String(isActive)} />
-          <Label htmlFor="is_active">Dang hoat dong</Label>
+          <Label htmlFor="is_active">Đang hoạt động</Label>
         </div>
       </div>
       <DialogFooter>
@@ -224,9 +224,9 @@ export function IngredientsTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Nguyen lieu</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Nguyên liệu</h2>
           <p className="text-muted-foreground">
-            Quan ly danh sach nguyen lieu cua nha hang
+            Quản lý danh sách nguyên liệu của nhà hàng
           </p>
         </div>
         <Dialog
@@ -239,22 +239,22 @@ export function IngredientsTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Them nguyen lieu
+              Thêm nguyên liệu
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Them nguyen lieu</DialogTitle>
+              <DialogTitle>Thêm nguyên liệu</DialogTitle>
               <DialogDescription>
-                Tao nguyen lieu moi cho nha hang
+                Tạo nguyên liệu mới cho nhà hàng
               </DialogDescription>
             </DialogHeader>
             <IngredientForm
               onSubmit={handleCreate}
               isPending={isPending}
               error={error}
-              submitLabel="Tao"
-              pendingLabel="Dang tao..."
+              submitLabel="Tạo"
+              pendingLabel="Đang tạo..."
             />
           </DialogContent>
         </Dialog>
@@ -270,15 +270,15 @@ export function IngredientsTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ten</TableHead>
+              <TableHead scope="col">Tên</TableHead>
               <TableHead scope="col">SKU</TableHead>
-              <TableHead scope="col">Don vi</TableHead>
-              <TableHead scope="col">Danh muc</TableHead>
-              <TableHead scope="col" className="text-right">Gia nhap</TableHead>
-              <TableHead scope="col" className="text-right">Toi thieu</TableHead>
-              <TableHead scope="col" className="text-right">Toi da</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col" className="text-right">Thao tac</TableHead>
+              <TableHead scope="col">Đơn vị</TableHead>
+              <TableHead scope="col">Danh mục</TableHead>
+              <TableHead scope="col" className="text-right">Giá nhập</TableHead>
+              <TableHead scope="col" className="text-right">Tối thiểu</TableHead>
+              <TableHead scope="col" className="text-right">Tối đa</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col" className="text-right">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -288,7 +288,7 @@ export function IngredientsTab({
                   colSpan={9}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co nguyen lieu nao
+                  Chưa có nguyên liệu nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -311,7 +311,7 @@ export function IngredientsTab({
                   </TableCell>
                   <TableCell>
                     <Badge variant={item.is_active ? "default" : "secondary"}>
-                      {item.is_active ? "Hoat dong" : "Ngung"}
+                      {item.is_active ? "Hoạt động" : "Ngưng"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -334,16 +334,16 @@ export function IngredientsTab({
                               setError(null);
                               setEditingItem(item);
                             }}
-                            title="Sua"
+                            title="Sửa"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
                           <DialogHeader>
-                            <DialogTitle>Sua nguyen lieu</DialogTitle>
+                            <DialogTitle>Sửa nguyên liệu</DialogTitle>
                             <DialogDescription>
-                              Cap nhat thong tin &quot;{item.name}&quot;
+                              Cập nhật thông tin &quot;{item.name}&quot;
                             </DialogDescription>
                           </DialogHeader>
                           <IngredientForm
@@ -353,8 +353,8 @@ export function IngredientsTab({
                             }
                             isPending={isPending}
                             error={error}
-                            submitLabel="Luu"
-                            pendingLabel="Dang luu..."
+                            submitLabel="Lưu"
+                            pendingLabel="Đang lưu..."
                           />
                         </DialogContent>
                       </Dialog>
@@ -362,24 +362,24 @@ export function IngredientsTab({
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" title="Xoa">
+                          <Button variant="ghost" size="icon" title="Xóa">
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Xoa nguyen lieu</AlertDialogTitle>
+                            <AlertDialogTitle>Xóa nguyên liệu</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Ban co chac muon xoa &quot;{item.name}&quot;?
-                              Hanh dong nay khong the hoan tac.
+                              Bạn có chắc muốn xóa &quot;{item.name}&quot;?
+                              Hành động này không thể hoàn tác.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Huy</AlertDialogCancel>
+                            <AlertDialogCancel>Hủy</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(item.id)}
                             >
-                              Xoa
+                              Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
