@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { bumpTicket } from "./actions";
 import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
+import type { PrinterConfig } from "@/hooks/use-printer-config";
 import { parseItems, type KdsTicket, type TimingRule } from "./types";
 
 function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
@@ -22,9 +23,13 @@ function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
 export function TicketCard({
   ticket,
   timingRule,
+  printerConfig,
+  stationName,
 }: {
   ticket: KdsTicket;
   timingRule: TimingRule | null;
+  printerConfig?: PrinterConfig | null;
+  stationName?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const [elapsed, setElapsed] = useState(0);
@@ -76,7 +81,12 @@ export function TicketCard({
             )}
           </div>
           {(ticket.status === "pending" || ticket.status === "preparing") && (
-            <KitchenTicketPrinter ticket={ticket} />
+            <KitchenTicketPrinter
+              ticket={ticket}
+              stationName={stationName}
+              printerConfig={printerConfig}
+              preferThermal={!!printerConfig && printerConfig.type !== "browser"}
+            />
           )}
         </div>
         <div className="text-right">
