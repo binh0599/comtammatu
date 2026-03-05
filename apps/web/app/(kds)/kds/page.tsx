@@ -30,13 +30,24 @@ export default async function KdsPage() {
     .from("registered_devices")
     .select("linked_station_id")
     .eq("registered_by", user.id)
+    .eq("branch_id", profile.branch_id)
     .eq("status", "approved")
     .not("linked_station_id", "is", null)
     .limit(1)
     .maybeSingle();
 
   if (device?.linked_station_id) {
-    redirect(`/kds/${device.linked_station_id}`);
+    // Verify the linked station is still active
+    const { data: station } = await supabase
+      .from("kds_stations")
+      .select("id")
+      .eq("id", device.linked_station_id)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (station) {
+      redirect(`/kds/${device.linked_station_id}`);
+    }
   }
 
   // Fallback: list all stations for this branch

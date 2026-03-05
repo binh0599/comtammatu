@@ -91,7 +91,7 @@ export function OpenSessionForm({
               {error}
             </div>
           )}
-          {terminals.length === 0 ? (
+          {!linkedTerminalId && terminals.length === 0 ? (
             <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-700">
               Chưa có thiết bị thu ngân nào được kích hoạt. Liên hệ quản lý để
               thiết lập.
@@ -136,7 +136,7 @@ export function OpenSessionForm({
             </>
           )}
         </CardContent>
-        {terminals.length > 0 && (
+        {(linkedTerminalId || terminals.length > 0) && (
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "Đang mở ca..." : "Mở ca"}

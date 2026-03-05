@@ -18,6 +18,8 @@ export default async function TerminalsPage() {
     .eq("id", user.id)
     .single();
 
+  if (!profile?.tenant_id) redirect("/login");
+
   const devices = await getPendingDevices();
 
   return (
@@ -26,7 +28,7 @@ export default async function TerminalsPage() {
       <div className="flex flex-1 flex-col gap-4 p-4">
         <DevicesTable
           initialDevices={devices ?? []}
-          tenantId={profile?.tenant_id ?? 0}
+          tenantId={profile.tenant_id}
         />
       </div>
     </>

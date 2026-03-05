@@ -9,6 +9,7 @@ import {
   handleServerActionError,
   entityIdSchema,
   DEVICE_CHECK_ROLES,
+  type DeviceTerminalType,
 } from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
 
@@ -38,11 +39,14 @@ function getRoleRedirectPath(role: string): string {
   return "/customer";
 }
 
-function getTerminalTypeForRole(role: string): string | null {
-  if (role === "waiter") return "mobile_order";
-  if (role === "cashier") return "cashier_station";
-  if (role === "chef") return "kds_station";
-  return null;
+const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {
+  waiter: "mobile_order",
+  cashier: "cashier_station",
+  chef: "kds_station",
+};
+
+function getTerminalTypeForRole(role: string): DeviceTerminalType | null {
+  return ROLE_TO_TERMINAL[role] ?? null;
 }
 
 async function _login(formData: FormData) {

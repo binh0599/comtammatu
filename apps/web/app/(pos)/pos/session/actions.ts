@@ -39,7 +39,7 @@ export const getActiveSession = withServerQuery(_getActiveSession);
 
 async function _getUserLinkedTerminal() {
   const ctx = await getActionContext();
-  requireBranch(ctx);
+  const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
   const { supabase, userId } = ctx;
 
@@ -55,12 +55,15 @@ async function _getUserLinkedTerminal() {
 
   if (!device?.linked_terminal_id) return null;
 
+  // Validate terminal belongs to caller's branch, is cashier_station, and active
   const { data: terminal } = await supabase
     .from("pos_terminals")
     .select("id, name, type")
     .eq("id", device.linked_terminal_id)
+    .eq("branch_id", branchId)
+    .eq("type", "cashier_station")
     .eq("is_active", true)
-    .single();
+    .maybeSingle();
 
   return terminal ?? null;
 }

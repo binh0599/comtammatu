@@ -13,7 +13,15 @@ ALTER TABLE registered_devices
 -- 2. Add linked FKs — set when device is approved
 ALTER TABLE registered_devices
   ADD COLUMN linked_terminal_id BIGINT REFERENCES pos_terminals(id) ON DELETE SET NULL,
-  ADD COLUMN linked_station_id  BIGINT REFERENCES kds_stations(id)  ON DELETE SET NULL;
+  ADD COLUMN linked_station_id  BIGINT REFERENCES kds_stations(id)  ON DELETE SET NULL,
+  ADD CONSTRAINT chk_registered_devices_one_link_target
+    CHECK (NOT (linked_terminal_id IS NOT NULL AND linked_station_id IS NOT NULL)),
+  ADD CONSTRAINT chk_registered_devices_terminal_type_match
+    CHECK (
+      (linked_terminal_id IS NOT NULL AND terminal_type IN ('mobile_order', 'cashier_station'))
+      OR (linked_station_id IS NOT NULL AND terminal_type = 'kds_station')
+      OR (linked_terminal_id IS NULL AND linked_station_id IS NULL)
+    );
 
 -- 3. Index for lookups by user + tenant
 CREATE INDEX idx_registered_devices_user_tenant

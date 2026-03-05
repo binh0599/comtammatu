@@ -245,14 +245,23 @@ async function _approveDevice(id: number) {
       .single();
 
     if (termError) {
-      // If fingerprint already exists in pos_terminals, find it
       if (termError.code === "23505") {
+        // Fingerprint already exists — validate branch + type before linking
         const { data: existing } = await supabase
           .from("pos_terminals")
-          .select("id")
+          .select("id, branch_id, type, is_active")
           .eq("device_fingerprint", device.device_fingerprint)
           .single();
-        if (existing) linkedTerminalId = existing.id;
+        if (
+          existing &&
+          existing.branch_id === device.branch_id &&
+          existing.type === device.terminal_type &&
+          existing.is_active
+        ) {
+          linkedTerminalId = existing.id;
+        } else {
+          return { error: "Thiết bị đã gắn với terminal không tương thích. Liên hệ quản lý." };
+        }
       } else {
         return safeDbErrorResult(termError, "db");
       }
@@ -260,17 +269,19 @@ async function _approveDevice(id: number) {
       linkedTerminalId = terminal.id;
     }
   } else if (device.terminal_type === "kds_station") {
-    // Check if there's already a KDS station for this branch; if only one, link to it
+    // Check if there's already a KDS station for this branch; if so, link to the first one
     const { data: existingStations } = await supabase
       .from("kds_stations")
       .select("id")
       .eq("branch_id", device.branch_id)
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .order("id", { ascending: true })
+      .limit(1);
 
-    if (existingStations && existingStations.length === 1 && existingStations[0]) {
+    if (existingStations && existingStations.length >= 1 && existingStations[0]) {
       linkedStationId = existingStations[0].id;
     } else {
-      // Create a new KDS station for this device
+      // No active station — create one
       const { data: station, error: stationError } = await supabase
         .from("kds_stations")
         .insert({
@@ -284,6 +295,13 @@ async function _approveDevice(id: number) {
       if (stationError) return safeDbErrorResult(stationError, "db");
       if (station) linkedStationId = station.id;
     }
+  }
+
+  // Only approve if the required link was successfully established
+  const needsTerminal = device.terminal_type === "mobile_order" || device.terminal_type === "cashier_station";
+  const needsStation = device.terminal_type === "kds_station";
+  if ((needsTerminal && !linkedTerminalId) || (needsStation && !linkedStationId)) {
+    return { error: "Không thể tạo liên kết terminal/station. Vui lòng thử lại." };
   }
 
   const { error } = await supabase
@@ -352,18 +370,24 @@ async function _deleteDevice(id: number) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
   }
 
-  // Deactivate linked terminal/station
+  // Deactivate linked terminal/station — abort delete if either fails
   if (device.linked_terminal_id) {
-    await supabase
+    const { error: termDeactivateError } = await supabase
       .from("pos_terminals")
       .update({ is_active: false })
       .eq("id", device.linked_terminal_id);
+    if (termDeactivateError) {
+      return safeDbErrorResult(termDeactivateError, "db");
+    }
   }
   if (device.linked_station_id) {
-    await supabase
+    const { error: stationDeactivateError } = await supabase
       .from("kds_stations")
       .update({ is_active: false })
       .eq("id", device.linked_station_id);
+    if (stationDeactivateError) {
+      return safeDbErrorResult(stationDeactivateError, "db");
+    }
   }
 
   const { error } = await supabase

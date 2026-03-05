@@ -33,7 +33,21 @@ export default async function PosPage() {
     .limit(1)
     .maybeSingle();
 
-  let terminalId = device?.linked_terminal_id ?? null;
+  let terminalId: number | null = null;
+
+  // Validate the linked terminal is still valid for this branch
+  if (device?.linked_terminal_id) {
+    const { data: linkedTerminal } = await supabase
+      .from("pos_terminals")
+      .select("id")
+      .eq("id", device.linked_terminal_id)
+      .eq("branch_id", profile.branch_id)
+      .eq("type", "mobile_order")
+      .eq("is_active", true)
+      .not("approved_at", "is", null)
+      .maybeSingle();
+    terminalId = linkedTerminal?.id ?? null;
+  }
 
   // Fallback: find any active mobile_order terminal in the branch
   if (!terminalId) {
