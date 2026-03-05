@@ -155,9 +155,9 @@ async function _createOrder(data: {
       "VALIDATION_ERROR"
     );
   }
-  if (terminal.type !== "mobile_order") {
+  if (terminal.type !== "mobile_order" && terminal.type !== "cashier_station") {
     throw new ActionError(
-      "Chỉ thiết bị đặt món (mobile) mới có thể tạo đơn hàng",
+      "Chỉ thiết bị POS (gọi món hoặc thu ngân) mới có thể tạo đơn hàng",
       "VALIDATION_ERROR"
     );
   }
