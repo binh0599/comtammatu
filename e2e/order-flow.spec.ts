@@ -40,13 +40,16 @@ test.describe("Order Flow", () => {
     // Should redirect away from new order page
     await expect(page).not.toHaveURL(/\/pos\/order\/new/, { timeout: 15_000 });
 
-    // Capture order number
+    // Capture order number — fail fast if not found
     const orderNumberEl = page.locator(
       "[data-order-number], .order-number, [data-testid='order-number']"
     );
-    if (await orderNumberEl.isVisible({ timeout: 3000 }).catch(() => false)) {
-      orderNumber = (await orderNumberEl.textContent()) ?? "";
+    await expect(orderNumberEl).toBeVisible({ timeout: 5_000 });
+    const text = await orderNumberEl.textContent();
+    if (!text) {
+      throw new Error("Order number element is visible but has no text content");
     }
+    orderNumber = text;
   });
 
   test("KDS receives the order", async ({ page, loginAs }) => {
@@ -55,10 +58,11 @@ test.describe("Order Flow", () => {
     await loginAs("chef");
     await expect(page).toHaveURL(/\/kds/);
 
-    // KDS should show at least one ticket — scope by order if possible
-    const ticket = orderNumber
-      ? page.locator(`[data-kds-ticket]`).filter({ hasText: orderNumber }).first()
-      : page.locator("[data-kds-ticket], .kds-ticket").first();
+    // KDS should show the ticket for the created order
+    const ticket = page
+      .locator("[data-kds-ticket]")
+      .filter({ hasText: orderNumber })
+      .first();
     await expect(ticket).toBeVisible({ timeout: 15_000 });
   });
 
@@ -68,10 +72,17 @@ test.describe("Order Flow", () => {
     await loginAs("chef");
     await expect(page).toHaveURL(/\/kds/);
 
-    const bumpButton = page
-      .getByRole("button", { name: /sẵn sàng|ready|bump/i })
+    // Scope to the ticket for this order
+    const ticket = page
+      .locator("[data-kds-ticket]")
+      .filter({ hasText: orderNumber })
       .first();
-    await expect(bumpButton).toBeVisible({ timeout: 10_000 });
+    await expect(ticket).toBeVisible({ timeout: 10_000 });
+
+    const bumpButton = ticket.getByRole("button", {
+      name: /sẵn sàng|ready|bump/i,
+    });
+    await expect(bumpButton).toBeVisible({ timeout: 5_000 });
     await bumpButton.click();
 
     // Verify the ticket moved or status changed
@@ -86,10 +97,17 @@ test.describe("Order Flow", () => {
 
     await page.goto("/pos/cashier");
 
-    const payButton = page
-      .getByRole("button", { name: /thanh toán|pay/i })
+    // Scope to the row/card for this order
+    const orderRow = page
+      .locator("[data-order-row], [data-order-id], tr, [data-testid='order-card']")
+      .filter({ hasText: orderNumber })
       .first();
-    await expect(payButton).toBeVisible({ timeout: 10_000 });
+    await expect(orderRow).toBeVisible({ timeout: 10_000 });
+
+    const payButton = orderRow.getByRole("button", {
+      name: /thanh toán|pay/i,
+    });
+    await expect(payButton).toBeVisible({ timeout: 5_000 });
     await payButton.click();
 
     // Select payment method (cash)

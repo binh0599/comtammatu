@@ -419,6 +419,14 @@ async function _getBranchComparison(
     );
   }
 
+  if (parsed.data.startDate > parsed.data.endDate) {
+    throw new ActionError(
+      "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc",
+      "VALIDATION_ERROR",
+      400,
+    );
+  }
+
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase

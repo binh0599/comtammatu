@@ -208,13 +208,20 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
     setIsLoadingEntries(true);
     setEditingEntry(null);
     startTransition(async () => {
-      const result = await getPayrollEntries(period.id);
-      if ("error" in result && result.error) {
-        toast.error(result.error as string);
+      try {
+        const result = await getPayrollEntries(period.id);
+        if ("error" in result && result.error) {
+          toast.error(result.error as string);
+          setEntries([]);
+        } else {
+          setEntries(result as unknown as PayrollEntry[]);
+        }
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Không thể tải bản ghi lương"
+        );
         setEntries([]);
-        setIsLoadingEntries(false);
-      } else {
-        setEntries(result as unknown as PayrollEntry[]);
+      } finally {
         setIsLoadingEntries(false);
       }
     });
@@ -247,9 +254,13 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
         toast.success("Đã cập nhật bản ghi lương");
         // Refresh entries
         if (detailPeriod) {
-          const refreshed = await getPayrollEntries(detailPeriod.id);
-          if (!("error" in refreshed)) {
-            setEntries(refreshed as unknown as PayrollEntry[]);
+          try {
+            const refreshed = await getPayrollEntries(detailPeriod.id);
+            if (!("error" in refreshed)) {
+              setEntries(refreshed as unknown as PayrollEntry[]);
+            }
+          } catch {
+            // Entry update succeeded; refresh failure is non-critical
           }
         }
         router.refresh();

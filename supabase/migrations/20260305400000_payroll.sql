@@ -127,3 +127,6 @@ CREATE POLICY "payroll_entries_update_staff" ON payroll_entries FOR UPDATE
     tenant_id = auth_tenant_id()
     AND auth_role() IN ('owner', 'manager', 'hr')
   );
+
+-- NOTE: No DELETE policy on payroll_entries is intentional.
+-- Entries are removed only via ON DELETE CASCADE from payroll_periods.

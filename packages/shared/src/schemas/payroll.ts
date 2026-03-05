@@ -2,6 +2,18 @@ import { z } from "zod";
 
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Verify that a YYYY-MM-DD string is a real calendar date (rejects e.g. 2023-02-30). */
+function isRealDate(d: string): boolean {
+  const [y, m, day] = d.split("-").map(Number);
+  if (y === undefined || m === undefined || day === undefined) return false;
+  const dt = new Date(Date.UTC(y, m - 1, day));
+  return (
+    dt.getUTCFullYear() === y &&
+    dt.getUTCMonth() === m - 1 &&
+    dt.getUTCDate() === day
+  );
+}
+
 export const createPayrollPeriodSchema = z
   .object({
     branch_id: z.coerce.number().int().positive("Chọn chi nhánh"),
@@ -9,11 +21,11 @@ export const createPayrollPeriodSchema = z
     start_date: z
       .string()
       .regex(isoDateRegex, "Ngày bắt đầu không hợp lệ (YYYY-MM-DD)")
-      .refine((d) => !isNaN(Date.parse(d)), "Ngày bắt đầu không hợp lệ"),
+      .refine(isRealDate, "Ngày bắt đầu không hợp lệ"),
     end_date: z
       .string()
       .regex(isoDateRegex, "Ngày kết thúc không hợp lệ (YYYY-MM-DD)")
-      .refine((d) => !isNaN(Date.parse(d)), "Ngày kết thúc không hợp lệ"),
+      .refine(isRealDate, "Ngày kết thúc không hợp lệ"),
     notes: z.string().max(500).optional().or(z.literal("")),
   })
   .refine((data) => data.end_date >= data.start_date, {
