@@ -19,15 +19,16 @@ import {
 
 async function _getCurrentTerminal() {
   const ctx = await getActionContext();
-  requireBranch(ctx);
+  const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, POS_ROLES, "xem cấu hình máy in");
   const { supabase, userId } = ctx;
 
-  // Try to find terminal from active POS session
+  // Try to find terminal from active POS session scoped to current branch
   const { data: session } = await supabase
     .from("pos_sessions")
     .select("terminal_id, pos_terminals(id, name, type)")
     .eq("cashier_id", userId)
+    .eq("branch_id", branchId)
     .eq("status", "open")
     .maybeSingle();
 
@@ -42,6 +43,7 @@ async function _getCurrentTerminal() {
 export const getCurrentTerminal = withServerQuery(_getCurrentTerminal);
 
 async function _getPrintersForTerminal(terminalId: number) {
+  const parsedId = entityIdSchema.parse(terminalId);
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, POS_ROLES, "xem cấu hình máy in");
@@ -53,7 +55,7 @@ async function _getPrintersForTerminal(terminalId: number) {
     .select("*")
     .eq("branch_id", branchId)
     .eq("assigned_to_type", "pos_terminal")
-    .eq("assigned_to_id", terminalId)
+    .eq("assigned_to_id", parsedId)
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 

@@ -18,6 +18,7 @@ import {
 // ===== Queries =====
 
 async function _getPrintersForStation(stationId: number) {
+  const parsedId = entityIdSchema.parse(stationId);
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, KDS_ROLES, "xem cấu hình máy in");
@@ -29,7 +30,7 @@ async function _getPrintersForStation(stationId: number) {
     .select("*")
     .eq("branch_id", branchId)
     .eq("assigned_to_type", "kds_station")
-    .eq("assigned_to_id", stationId)
+    .eq("assigned_to_id", parsedId)
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 

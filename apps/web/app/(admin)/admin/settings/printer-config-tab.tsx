@@ -301,6 +301,7 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
                         size="icon"
                         onClick={() => handleDelete(printer.id)}
                         disabled={isPending}
+                        aria-label={`Xóa máy in ${printer.name}`}
                       >
                         <Trash2 className="size-4 text-destructive" />
                       </Button>
