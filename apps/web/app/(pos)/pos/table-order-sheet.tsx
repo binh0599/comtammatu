@@ -308,7 +308,9 @@ function OrderViewMode({
     onClose,
     onAddItems,
     onBackToList,
+    onCreateNew,
     showBackToList = false,
+    remainingSeats = 0,
 }: {
     order: ActiveOrder;
     tableLabel: string;
@@ -318,7 +320,9 @@ function OrderViewMode({
     onClose: () => void;
     onAddItems: () => void;
     onBackToList?: () => void;
+    onCreateNew?: () => void;
     showBackToList?: boolean;
+    remainingSeats?: number;
 }) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
@@ -468,6 +472,18 @@ function OrderViewMode({
                     >
                         <XCircle className="h-4 w-4" aria-hidden="true" />
                         Hủy đơn
+                    </Button>
+                )}
+
+                {/* Create new order on same table (if seats remain) */}
+                {remainingSeats > 0 && onCreateNew && (
+                    <Button
+                        variant="outline"
+                        onClick={onCreateNew}
+                        className="w-full gap-2"
+                    >
+                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        Thêm đơn mới ({remainingSeats} chỗ trống)
                     </Button>
                 )}
 
@@ -988,6 +1004,8 @@ export function TableOrderSheet({
                         onAddItems={() => setInternalMode("add-items")}
                         showBackToList={hasMultipleOrders}
                         onBackToList={handleBackToList}
+                        remainingSeats={tableId !== null ? Math.max(0, tableCapacity - existingGuestCount) : 0}
+                        onCreateNew={handleCreateNewFromList}
                     />
                 ) : currentMode === "add-items" && (selectedOrderFromList ?? activeOrder) ? (
                     <AddItemsMode
