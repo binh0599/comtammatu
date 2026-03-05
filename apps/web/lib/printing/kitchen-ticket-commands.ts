@@ -65,7 +65,7 @@ export function generateKitchenTicketCommands(
   b.align("center");
   b.size(true, true);
   b.bold(true);
-  b.textLn("DON BEP");
+  b.textLn("ĐƠN BẾP");
   b.size(false, false);
   b.bold(false);
   if (stationName) {
@@ -76,20 +76,20 @@ export function generateKitchenTicketCommands(
 
   // ===== Order Info =====
   b.align("left");
-  b.columns("Ma don:", orderNumber, lineWidth);
+  b.columns("Mã đơn:", orderNumber, lineWidth);
 
   if (tableNumber != null) {
     // Table number printed large for visibility
     b.bold(true);
     b.size(true, true);
     b.align("center");
-    b.textLn(`BAN ${tableNumber}`);
+    b.textLn(`BÀN ${tableNumber}`);
     b.size(false, false);
     b.bold(false);
     b.align("left");
   }
 
-  b.columns("Luc:", fmtDateTime(ticket.created_at), lineWidth);
+  b.columns("Lúc:", fmtDateTime(ticket.created_at), lineWidth);
 
   b.separator();
 
@@ -124,7 +124,7 @@ export function generateKitchenTicketCommands(
   // ===== Footer =====
   b.align("center");
   const totalQty = items.reduce((sum, i) => sum + i.quantity, 0);
-  b.textLn(`Tong: ${totalQty} mon`);
+  b.textLn(`Tổng: ${totalQty} món`);
   b.lf();
 
   b.cut();

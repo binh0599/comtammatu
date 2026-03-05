@@ -65,18 +65,18 @@ export function generateReceiptCommands(
   b.align("center");
   b.size(true, true);
   b.bold(true);
-  b.textLn("COM TAM MA TU");
-  b.size(false, false);
+  b.textLn("CƠM TẤM MÁ TƯ");
   b.bold(false);
+  b.size(false, false);
   b.textLn("123 Đường Số 1, Quận 1, TP. HCM");
   b.textLn("Hotline: 0909 123 456");
   b.lf();
 
-  b.bold(true);
   b.size(true, false);
+  b.bold(true);
   b.textLn("PHIẾU THANH TOÁN");
-  b.size(false, false);
   b.bold(false);
+  b.size(false, false);
 
   b.align("left");
   b.separator();
@@ -121,11 +121,11 @@ export function generateReceiptCommands(
   }
 
   b.separator("=");
-  b.bold(true);
   b.size(true, false);
+  b.bold(true);
   b.columns("TỔNG CỘNG", `${fmtPrice(order.total)}d`, lineWidth);
-  b.size(false, false);
   b.bold(false);
+  b.size(false, false);
 
   // ===== Payment =====
   const paymentAmount =

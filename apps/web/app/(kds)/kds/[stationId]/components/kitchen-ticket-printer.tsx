@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@comtammatu/shared";
 import { toast } from "sonner";
 import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
-import { printViaUsb, printViaNetwork } from "@/lib/printing/escpos";
+import { printViaUsb, printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
 import { parseItems, type KdsTicket } from "../types";
 
@@ -46,18 +46,22 @@ export function KitchenTicketPrinter({
     },
   });
 
-  const handleThermalPrint = useCallback(async () => {
+  const handleThermalPrint = useCallback(async (silent = false) => {
     if (!printerConfig) return false;
 
     try {
-      const commands = generateKitchenTicketCommands(ticket, stationName);
+      const paperWidth = printerConfig.paper_width_mm ?? 80;
+      const lineWidth = paperWidth === 58 ? 32 : 42;
+      const commands = generateKitchenTicketCommands(ticket, stationName, lineWidth);
       const connConfig = printerConfig.connection_config;
 
       let result;
       if (printerConfig.type === "thermal_usb") {
-        result = await printViaUsb(commands, {
+        const printFn = silent ? printViaUsbAuto : printViaUsb;
+        result = await printFn(commands, {
           vendor_id: (connConfig.vendor_id as number) ?? 0,
           product_id: (connConfig.product_id as number) ?? 0,
+          device_serial: (connConfig.device_serial as string) || undefined,
         });
       } else if (printerConfig.type === "thermal_network") {
         result = await printViaNetwork(commands, {
@@ -83,12 +87,15 @@ export function KitchenTicketPrinter({
     }
   }, [printerConfig, ticket, stationName, onPrintComplete]);
 
-  const handlePrint = useCallback(async () => {
+  const handlePrint = useCallback(async (silent = false) => {
     // If thermal is preferred and available, try it first
     if (preferThermal && printerConfig && printerConfig.type !== "browser") {
-      const thermalSuccess = await handleThermalPrint();
+      const thermalSuccess = await handleThermalPrint(silent);
       if (thermalSuccess) return;
-      // Fallback to browser print
+      if (silent) {
+        console.warn("Thermal failed in auto-print mode, skipping browser fallback");
+        return;
+      }
       console.info("Thermal failed, falling back to browser print");
     }
 
@@ -100,7 +107,7 @@ export function KitchenTicketPrinter({
     if (!autoPrint || hasPrintedRef.current) return;
     hasPrintedRef.current = true;
     const timer = setTimeout(() => {
-      handlePrint();
+      handlePrint(/* silent */ true);
     }, printerConfig?.print_delay_ms ?? 500);
     return () => clearTimeout(timer);
   }, [autoPrint, handlePrint, printerConfig?.print_delay_ms]);

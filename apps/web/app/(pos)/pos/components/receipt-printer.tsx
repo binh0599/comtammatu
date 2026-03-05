@@ -33,6 +33,13 @@ interface ReceiptOrder {
     }[];
 }
 
+const METHOD_LABELS: Record<string, string> = {
+    cash: "TIỀN MẶT",
+    card: "THẺ",
+    ewallet: "VÍ ĐIỆN TỬ",
+    qr: "QR CODE",
+};
+
 interface ReceiptPrinterProps {
     order: ReceiptOrder;
     cashierName?: string;
@@ -68,7 +75,9 @@ export function ReceiptPrinter({
         if (!printerConfig) return false;
 
         try {
-            const commands = generateReceiptCommands(order, cashierName);
+            const paperWidth = printerConfig.paper_width_mm ?? 80;
+            const lineWidth = paperWidth === 58 ? 32 : 42;
+            const commands = generateReceiptCommands(order, cashierName, lineWidth);
             const connConfig = printerConfig.connection_config;
 
             let result;
@@ -248,7 +257,7 @@ export function ReceiptPrinter({
                     {paymentAmount > 0 && (
                         <div className="space-y-1 mb-4">
                             <div className="flex justify-between">
-                                <span>Khách đưa ({order.payments?.[0]?.method.toUpperCase()})</span>
+                                <span>Khách đưa ({METHOD_LABELS[order.payments?.[0]?.method ?? "cash"] ?? order.payments?.[0]?.method.toUpperCase()})</span>
                                 <span>{formatPrice(paymentAmount).replace("đ", "")}</span>
                             </div>
                             <div className="flex justify-between font-bold">
