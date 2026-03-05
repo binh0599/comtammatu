@@ -121,28 +121,26 @@ async function _login(formData: FormData) {
   // Check if device is already registered — scope by tenant (unique per tenant)
   const { data: existingDevice } = await supabase
     .from("registered_devices")
-    .select("id, status, approval_code, branch_id")
+    .select("id, status, approval_code, branch_id, registered_by")
     .eq("device_fingerprint", fingerprint)
     .eq("tenant_id", profile.tenant_id)
     .maybeSingle();
 
   if (existingDevice) {
-    if (existingDevice.status === "approved") {
-      if (existingDevice.branch_id !== profile.branch_id) {
-        // Device approved at a different branch — staff must contact manager
-        // Manager can delete the old registration from admin panel,
-        // then staff logs in again to create a new registration
-        throw new ActionError(
-          "Thiết bị đã được duyệt ở chi nhánh khác. Liên hệ quản lý để chuyển.",
-          "VALIDATION_ERROR",
-        );
-      }
-      // Device approved at same branch — go straight through
+    // Device approved for THIS user at same branch — go straight through
+    if (
+      existingDevice.status === "approved" &&
+      existingDevice.registered_by === authData.user.id &&
+      existingDevice.branch_id === profile.branch_id
+    ) {
       redirect(getRoleRedirectPath(role));
     }
 
-    if (existingDevice.status === "pending") {
-      // Device pending — redirect to pending page
+    // Device pending for THIS user — show pending page
+    if (
+      existingDevice.status === "pending" &&
+      existingDevice.registered_by === authData.user.id
+    ) {
       return {
         pendingApproval: true,
         approvalCode: existingDevice.approval_code,
@@ -151,9 +149,8 @@ async function _login(formData: FormData) {
       };
     }
 
-    // Device rejected — re-register with new approval code
-    // RLS policy "registered_devices_reregister_own" allows staff to UPDATE
-    // their own rejected device back to pending
+    // All other cases: device belongs to another user, different branch,
+    // or was rejected — re-register for the current user with new approval code
     const reregTerminalType = getTerminalTypeForRole(role);
     const { error: reregError } = await supabase
       .from("registered_devices")
@@ -162,6 +159,7 @@ async function _login(formData: FormData) {
         approval_code: generateApprovalCode(),
         registered_by: authData.user.id,
         branch_id: profile.branch_id,
+        device_name: parsed.data.device_name ?? "",
         ip_address: ip,
         user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
         approved_by: null,
