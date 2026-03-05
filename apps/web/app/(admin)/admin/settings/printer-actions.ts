@@ -193,6 +193,7 @@ async function _updatePrinterConfig(formData: FormData) {
     name: formData.get("name") || undefined,
     type: formData.get("type") || undefined,
     paper_width_mm: formData.get("paper_width_mm") || undefined,
+    encoding: formData.get("encoding") || undefined,
     auto_print: formData.has("auto_print")
       ? formData.get("auto_print") === "true"
       : undefined,

@@ -58,17 +58,14 @@ interface PrinterConfigRow {
   test_status: string | null;
 }
 
-interface Station {
-  id: number;
-  name: string;
-}
-
 export function KdsPrinterSettings({
   initialPrinters,
-  stations,
+  stationId,
+  stationName,
 }: {
   initialPrinters: PrinterConfigRow[];
-  stations: Station[];
+  stationId: number;
+  stationName: string;
 }) {
   const [printers, setPrinters] = useState(initialPrinters);
   const [showAdd, setShowAdd] = useState(false);
@@ -102,6 +99,7 @@ export function KdsPrinterSettings({
       connectionConfig = { host, port, protocol };
     }
     formData.set("connection_config", JSON.stringify(connectionConfig));
+    formData.set("assigned_to_id", String(stationId));
 
     startTransition(async () => {
       const result = await createPrinter(formData);
@@ -146,12 +144,6 @@ export function KdsPrinterSettings({
     });
   }
 
-  function getStationName(assignedId: number | null): string {
-    if (!assignedId) return "Chưa gán";
-    const s = stations.find((s) => s.id === assignedId);
-    return s ? s.name : `Trạm #${assignedId}`;
-  }
-
   function getTestStatusVariant(
     status: string | null,
   ): "default" | "destructive" | "secondary" {
@@ -190,7 +182,6 @@ export function KdsPrinterSettings({
                 <TableRow>
                   <TableHead>Tên</TableHead>
                   <TableHead>Loại</TableHead>
-                  <TableHead>Trạm bếp</TableHead>
                   <TableHead>Khổ giấy</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Tự động in</TableHead>
@@ -202,7 +193,6 @@ export function KdsPrinterSettings({
                   <TableRow key={printer.id}>
                     <TableCell className="font-medium">{printer.name}</TableCell>
                     <TableCell>{getPrinterTypeLabel(printer.type)}</TableCell>
-                    <TableCell>{getStationName(printer.assigned_to_id)}</TableCell>
                     <TableCell>{printer.paper_width_mm}mm</TableCell>
                     <TableCell>
                       <Badge variant={getTestStatusVariant(printer.test_status)}>
@@ -242,7 +232,7 @@ export function KdsPrinterSettings({
           <DialogHeader>
             <DialogTitle>Thêm máy in KDS</DialogTitle>
             <DialogDescription>
-              Cấu hình máy in nhiệt cho trạm bếp.
+              Thêm máy in kết nối với trạm {stationName}.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate}>
@@ -311,22 +301,6 @@ export function KdsPrinterSettings({
                   <SelectContent>
                     <SelectItem value="80">80mm</SelectItem>
                     <SelectItem value="58">58mm</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="assigned_to_id">Gán cho trạm bếp</Label>
-                <Select name="assigned_to_id">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn trạm bếp" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {stations.map((s) => (
-                      <SelectItem key={s.id} value={String(s.id)}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
                   </SelectContent>
                 </Select>
               </div>

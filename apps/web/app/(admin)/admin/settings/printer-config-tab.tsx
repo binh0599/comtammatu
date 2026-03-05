@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Printer, Trash2 } from "lucide-react";
+import { Pencil, Plus, Printer, Trash2 } from "lucide-react";
 import {
   getPrinterTypeLabel,
   getPrinterTestStatusLabel,
@@ -79,7 +79,9 @@ interface PrinterConfigTabProps {
 export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTabProps) {
   const [printers, setPrinters] = useState(initialPrinters);
   const [showAdd, setShowAdd] = useState(false);
+  const [editPrinter, setEditPrinter] = useState<PrinterConfigRow | null>(null);
   const [newPrinterType, setNewPrinterType] = useState<PrinterType>("browser");
+  const [editPrinterType, setEditPrinterType] = useState<PrinterType>("browser");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -88,41 +90,83 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
     if (!open) setNewPrinterType("browser");
   }
 
-  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  function handleEditOpen(printer: PrinterConfigRow) {
+    setEditPrinter(printer);
+    setEditPrinterType(printer.type as PrinterType);
     setError(null);
+  }
 
-    // Build connection_config from type-specific fields
-    const type = formData.get("type") as PrinterType;
-    let connectionConfig: Record<string, unknown> = {};
+  function handleEditClose() {
+    setEditPrinter(null);
+    setEditPrinterType("browser");
+  }
+
+  function buildConnectionConfig(formData: FormData, type: PrinterType): { ok: true; config: Record<string, unknown> } | { ok: false; error: string } {
+    let config: Record<string, unknown> = {};
     if (type === "thermal_usb") {
       const vendorId = Number(formData.get("vendor_id"));
       const productId = Number(formData.get("product_id"));
       if (!vendorId || !productId) {
-        setError("Vui lòng nhập Vendor ID và Product ID cho máy in USB.");
-        return;
+        return { ok: false, error: "Vui lòng nhập Vendor ID và Product ID cho máy in USB." };
       }
-      connectionConfig = { vendor_id: vendorId, product_id: productId };
+      config = { vendor_id: vendorId, product_id: productId };
     } else if (type === "thermal_network") {
       const host = (formData.get("host") as string | null)?.trim();
       const port = Number(formData.get("port")) || 9100;
       const protocol = (formData.get("protocol") as string) || "http";
       if (!host) {
-        setError("Vui lòng nhập địa chỉ IP máy in.");
-        return;
+        return { ok: false, error: "Vui lòng nhập địa chỉ IP máy in." };
       }
-      connectionConfig = { host, port, protocol };
+      config = { host, port, protocol };
     }
-    formData.set("connection_config", JSON.stringify(connectionConfig));
+    return { ok: true, config };
+  }
+
+  function handleCreate(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    setError(null);
+
+    const type = formData.get("type") as PrinterType;
+    const result = buildConnectionConfig(formData, type);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    formData.set("connection_config", JSON.stringify(result.config));
 
     startTransition(async () => {
-      const result = await createPrinterConfig(formData);
-      if (result?.error) {
-        setError(result.error);
+      const res = await createPrinterConfig(formData);
+      if (res?.error) {
+        setError(res.error);
       } else {
         setShowAdd(false);
-        // Page will revalidate and refresh
+        window.location.reload();
+      }
+    });
+  }
+
+  function handleEdit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editPrinter) return;
+    const formData = new FormData(e.currentTarget);
+    setError(null);
+
+    const type = formData.get("type") as PrinterType;
+    const result = buildConnectionConfig(formData, type);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    formData.set("connection_config", JSON.stringify(result.config));
+    formData.set("id", String(editPrinter.id));
+
+    startTransition(async () => {
+      const res = await updatePrinterConfig(formData);
+      if (res?.error) {
+        setError(res.error);
+      } else {
+        handleEditClose();
         window.location.reload();
       }
     });
@@ -207,7 +251,7 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
                 <TableHead>Khổ giấy</TableHead>
                 <TableHead>Trạng thái</TableHead>
                 <TableHead>Tự động in</TableHead>
-                <TableHead className="w-20" />
+                <TableHead className="w-24" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -242,14 +286,25 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
                     />
                   </TableCell>
                   <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(printer.id)}
-                      disabled={isPending}
-                    >
-                      <Trash2 className="size-4 text-destructive" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEditOpen(printer)}
+                        disabled={isPending}
+                        aria-label={`Sửa máy in ${printer.name}`}
+                      >
+                        <Pencil className="size-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(printer.id)}
+                        disabled={isPending}
+                      >
+                        <Trash2 className="size-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -313,60 +368,33 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
                 </Select>
               </div>
 
-              {/* USB-specific connection fields */}
               {newPrinterType === "thermal_usb" && (
                 <>
                   <div className="grid gap-2">
                     <Label htmlFor="vendor_id">Vendor ID (số thập phân)</Label>
-                    <Input
-                      id="vendor_id"
-                      name="vendor_id"
-                      type="number"
-                      placeholder="vd: 1208 (0x04b8 — Epson)"
-                      required
-                    />
+                    <Input id="vendor_id" name="vendor_id" type="number" placeholder="vd: 1208 (0x04b8 — Epson)" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="product_id">Product ID (số thập phân)</Label>
-                    <Input
-                      id="product_id"
-                      name="product_id"
-                      type="number"
-                      placeholder="vd: 514 (0x0202)"
-                      required
-                    />
+                    <Input id="product_id" name="product_id" type="number" placeholder="vd: 514 (0x0202)" required />
                   </div>
                 </>
               )}
 
-              {/* Network-specific connection fields */}
               {newPrinterType === "thermal_network" && (
                 <>
                   <div className="grid gap-2">
                     <Label htmlFor="host">Địa chỉ IP máy in</Label>
-                    <Input
-                      id="host"
-                      name="host"
-                      placeholder="vd: 192.168.1.100"
-                      required
-                    />
+                    <Input id="host" name="host" placeholder="vd: 192.168.1.100" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="port">Cổng</Label>
-                    <Input
-                      id="port"
-                      name="port"
-                      type="number"
-                      defaultValue="9100"
-                      required
-                    />
+                    <Input id="port" name="port" type="number" defaultValue="9100" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="protocol">Giao thức</Label>
                     <Select name="protocol" defaultValue="http">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="http">HTTP</SelectItem>
                         <SelectItem value="tcp">TCP (raw)</SelectItem>
@@ -379,9 +407,7 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
               <div className="grid gap-2">
                 <Label htmlFor="paper_width_mm">Khổ giấy</Label>
                 <Select name="paper_width_mm" defaultValue="80">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="80">80mm (phổ biến)</SelectItem>
                     <SelectItem value="58">58mm</SelectItem>
@@ -390,29 +416,10 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="assigned_to_type">Gán cho</Label>
-                <Select name="assigned_to_type">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại trạm" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pos_terminal">Máy thu ngân (POS)</SelectItem>
-                    <SelectItem value="kds_station">Trạm bếp (KDS)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="print_delay_ms">Độ trễ in (ms)</Label>
+                <Input id="print_delay_ms" name="print_delay_ms" type="number" defaultValue="500" min={0} max={5000} />
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="assigned_to_id">ID trạm/máy</Label>
-                <Input
-                  id="assigned_to_id"
-                  name="assigned_to_id"
-                  type="number"
-                  placeholder="ID của terminal hoặc KDS station"
-                />
-              </div>
-
-              {/* Hidden defaults */}
               <input type="hidden" name="encoding" value="utf-8" />
             </div>
 
@@ -425,6 +432,115 @@ export function PrinterConfigTab({ initialPrinters, branches }: PrinterConfigTab
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Printer Dialog */}
+      <Dialog open={!!editPrinter} onOpenChange={(open) => { if (!open) handleEditClose(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chỉnh sửa máy in</DialogTitle>
+            <DialogDescription>
+              Thay đổi cấu hình kết nối và format in.
+            </DialogDescription>
+          </DialogHeader>
+          {editPrinter && (
+            <form onSubmit={handleEdit} key={editPrinter.id}>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-name">Tên máy in</Label>
+                  <Input id="edit-name" name="name" defaultValue={editPrinter.name} required />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-type">Loại kết nối</Label>
+                  <Select name="type" defaultValue={editPrinter.type} onValueChange={(v) => setEditPrinterType(v as PrinterType)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="browser">In qua trình duyệt</SelectItem>
+                      <SelectItem value="thermal_usb">Máy in USB (WebUSB)</SelectItem>
+                      <SelectItem value="thermal_network">Máy in mạng (IP)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {editPrinterType === "thermal_usb" && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-vendor">Vendor ID</Label>
+                      <Input id="edit-vendor" name="vendor_id" type="number" defaultValue={editPrinter.connection_config.vendor_id != null ? String(editPrinter.connection_config.vendor_id) : ""} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-product">Product ID</Label>
+                      <Input id="edit-product" name="product_id" type="number" defaultValue={editPrinter.connection_config.product_id != null ? String(editPrinter.connection_config.product_id) : ""} required />
+                    </div>
+                  </>
+                )}
+
+                {editPrinterType === "thermal_network" && (
+                  <>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-host">Địa chỉ IP</Label>
+                      <Input id="edit-host" name="host" defaultValue={(editPrinter.connection_config.host as string) ?? ""} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-port">Cổng</Label>
+                      <Input id="edit-port" name="port" type="number" defaultValue={editPrinter.connection_config.port != null ? String(editPrinter.connection_config.port) : "9100"} required />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="edit-protocol">Giao thức</Label>
+                      <Select name="protocol" defaultValue={(editPrinter.connection_config.protocol as string) ?? "http"}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="http">HTTP</SelectItem>
+                          <SelectItem value="tcp">TCP (raw)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-paper">Khổ giấy</Label>
+                  <Select name="paper_width_mm" defaultValue={String(editPrinter.paper_width_mm)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="80">80mm (phổ biến)</SelectItem>
+                      <SelectItem value="58">58mm</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-encoding">Encoding</Label>
+                  <Input id="edit-encoding" name="encoding" defaultValue={editPrinter.encoding} />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-delay">Độ trễ in (ms)</Label>
+                  <Input id="edit-delay" name="print_delay_ms" type="number" defaultValue={editPrinter.print_delay_ms} min={0} max={5000} />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Switch id="edit-auto-print" name="auto_print_toggle" defaultChecked={editPrinter.auto_print} onCheckedChange={(val) => {
+                    const hidden = document.getElementById("edit-auto-print-hidden") as HTMLInputElement;
+                    if (hidden) hidden.value = String(val);
+                  }} />
+                  <Label htmlFor="edit-auto-print">Tự động in</Label>
+                  <input type="hidden" id="edit-auto-print-hidden" name="auto_print" defaultValue={String(editPrinter.auto_print)} />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={handleEditClose}>
+                  Hủy
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending ? "Đang lưu..." : "Lưu thay đổi"}
+                </Button>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </Card>

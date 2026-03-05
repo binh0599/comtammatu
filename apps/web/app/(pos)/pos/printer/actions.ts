@@ -17,6 +17,52 @@ import {
 
 // ===== Queries =====
 
+async function _getCurrentTerminal() {
+  const ctx = await getActionContext();
+  requireBranch(ctx);
+  requireRole(ctx.userRole, POS_ROLES, "xem cấu hình máy in");
+  const { supabase, userId } = ctx;
+
+  // Try to find terminal from active POS session
+  const { data: session } = await supabase
+    .from("pos_sessions")
+    .select("terminal_id, pos_terminals(id, name, type)")
+    .eq("cashier_id", userId)
+    .eq("status", "open")
+    .maybeSingle();
+
+  if (session?.terminal_id) {
+    const terminal = session.pos_terminals as { id: number; name: string; type: string } | null;
+    return { id: session.terminal_id, name: terminal?.name ?? `Máy #${session.terminal_id}`, type: terminal?.type ?? "cashier_station" };
+  }
+
+  return null;
+}
+
+export const getCurrentTerminal = withServerQuery(_getCurrentTerminal);
+
+async function _getPrintersForTerminal(terminalId: number) {
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, POS_ROLES, "xem cấu hình máy in");
+  const { supabase } = ctx;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
+  const { data, error } = await (supabase as any)
+    .from("printer_configs")
+    .select("*")
+    .eq("branch_id", branchId)
+    .eq("assigned_to_type", "pos_terminal")
+    .eq("assigned_to_id", terminalId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export const getPrintersForTerminal = withServerQuery(_getPrintersForTerminal);
+
 async function _getPrintersForBranch() {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);

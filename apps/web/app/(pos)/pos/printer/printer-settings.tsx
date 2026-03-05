@@ -58,48 +58,18 @@ interface PrinterConfigRow {
   test_status: string | null;
 }
 
-interface Terminal {
-  id: number;
-  name: string;
-  type: string;
-}
-
-interface Station {
-  id: number;
-  name: string;
-}
-
-function getAssignmentLabel(
-  type: string | null,
-  id: number | null,
-  terminals: Terminal[],
-  stations: Station[],
-): string {
-  if (!type || !id) return "Chưa gán";
-  if (type === "pos_terminal") {
-    const t = terminals.find((t) => t.id === id);
-    return t ? `POS: ${t.name}` : `POS #${id}`;
-  }
-  if (type === "kds_station") {
-    const s = stations.find((s) => s.id === id);
-    return s ? `KDS: ${s.name}` : `KDS #${id}`;
-  }
-  return "—";
-}
-
 export function PrinterSettings({
   initialPrinters,
-  terminals,
-  stations,
+  terminalId,
+  terminalName,
 }: {
   initialPrinters: PrinterConfigRow[];
-  terminals: Terminal[];
-  stations: Station[];
+  terminalId: number;
+  terminalName: string;
 }) {
   const [printers, setPrinters] = useState(initialPrinters);
   const [showAdd, setShowAdd] = useState(false);
   const [newPrinterType, setNewPrinterType] = useState<PrinterType>("browser");
-  const [assignedToType, setAssignedToType] = useState<string>("");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -129,6 +99,8 @@ export function PrinterSettings({
       connectionConfig = { host, port, protocol };
     }
     formData.set("connection_config", JSON.stringify(connectionConfig));
+    formData.set("assigned_to_type", "pos_terminal");
+    formData.set("assigned_to_id", String(terminalId));
 
     startTransition(async () => {
       const result = await createPrinter(formData);
@@ -211,7 +183,6 @@ export function PrinterSettings({
                 <TableRow>
                   <TableHead>Tên</TableHead>
                   <TableHead>Loại</TableHead>
-                  <TableHead>Gán cho</TableHead>
                   <TableHead>Khổ giấy</TableHead>
                   <TableHead>Trạng thái</TableHead>
                   <TableHead>Tự động in</TableHead>
@@ -223,14 +194,6 @@ export function PrinterSettings({
                   <TableRow key={printer.id}>
                     <TableCell className="font-medium">{printer.name}</TableCell>
                     <TableCell>{getPrinterTypeLabel(printer.type)}</TableCell>
-                    <TableCell>
-                      {getAssignmentLabel(
-                        printer.assigned_to_type,
-                        printer.assigned_to_id,
-                        terminals,
-                        stations,
-                      )}
-                    </TableCell>
                     <TableCell>{printer.paper_width_mm}mm</TableCell>
                     <TableCell>
                       <Badge variant={getTestStatusVariant(printer.test_status)}>
@@ -266,12 +229,12 @@ export function PrinterSettings({
       </Card>
 
       {/* Add Printer Dialog */}
-      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) { setNewPrinterType("browser"); setAssignedToType(""); } }}>
+      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) setNewPrinterType("browser"); }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm máy in mới</DialogTitle>
             <DialogDescription>
-              Cấu hình kết nối máy in cho chi nhánh.
+              Thêm máy in kết nối với thiết bị {terminalName}.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate}>
@@ -345,45 +308,6 @@ export function PrinterSettings({
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="assigned_to_type">Gán cho</Label>
-                <Select
-                  name="assigned_to_type"
-                  onValueChange={(v) => setAssignedToType(v)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn thiết bị" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pos_terminal">Máy POS</SelectItem>
-                    <SelectItem value="kds_station">Trạm bếp KDS</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {assignedToType && (
-              <div className="grid gap-2">
-                <Label htmlFor="assigned_to_id">Thiết bị cụ thể</Label>
-                <Select name="assigned_to_id">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {assignedToType === "pos_terminal" && terminals.map((t) => (
-                      <SelectItem key={`t-${t.id}`} value={String(t.id)}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                    {assignedToType === "kds_station" && stations.map((s) => (
-                      <SelectItem key={`s-${s.id}`} value={String(s.id)}>
-                        {s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              )}
 
               <input type="hidden" name="encoding" value="utf-8" />
             </div>
