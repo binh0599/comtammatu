@@ -209,12 +209,19 @@ async function _approveDevice(id: number) {
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   // Verify device belongs to caller's tenant
-  const { data: device } = await supabase
+  const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
     .select("id, status, tenant_id, branch_id, device_fingerprint, device_name, terminal_type, registered_by")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
+
+  if (deviceError) {
+    if (deviceError.code === "PGRST116") {
+      return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+    }
+    return safeDbErrorResult(deviceError, "db");
+  }
 
   if (!device) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
@@ -334,12 +341,19 @@ async function _rejectDevice(id: number) {
   validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const { data: device } = await supabase
+  const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
     .select("id, status, tenant_id")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
+
+  if (deviceError) {
+    if (deviceError.code === "PGRST116") {
+      return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+    }
+    return safeDbErrorResult(deviceError, "db");
+  }
 
   if (!device) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
@@ -365,12 +379,19 @@ async function _deleteDevice(id: number) {
   validateId(id);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const { data: device } = await supabase
+  const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
     .select("id, tenant_id, linked_terminal_id, linked_station_id")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
+
+  if (deviceError) {
+    if (deviceError.code === "PGRST116") {
+      return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+    }
+    return safeDbErrorResult(deviceError, "db");
+  }
 
   if (!device) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
