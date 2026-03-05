@@ -97,12 +97,26 @@ async function _deleteMenu(id: number) {
   entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
+  // Verify menu belongs to this tenant before any dependent queries
+  const { data: menu } = await supabase
+    .from("menus")
+    .select("id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!menu) {
+    return { error: "Thực đơn không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
   // Check if any menu items under this menu have been used in orders
-  const { data: itemIds } = await supabase
+  const { data: itemIds, error: itemsError } = await supabase
     .from("menu_items")
     .select("id, menu_categories!inner(menu_id)")
     .eq("menu_categories.menu_id", id)
     .eq("tenant_id", tenantId);
+
+  if (itemsError) return safeDbErrorResult(itemsError, "db");
 
   if (itemIds && itemIds.length > 0) {
     const { count, error: orderCheckError } = await supabase
