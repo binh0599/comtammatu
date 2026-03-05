@@ -31,6 +31,7 @@ export {
   INVENTORY_ROLES,
   HR_ROLES,
   ADMIN_ROLES,
+  EMPLOYEE_PORTAL_ROLES,
   // Week 7-8: CRM
   CUSTOMER_GENDERS,
   CUSTOMER_SOURCES,
@@ -185,6 +186,12 @@ export {
   createShiftAssignmentSchema,
   createLeaveRequestSchema,
   approveLeaveRequestSchema,
+  // Employee self-service
+  updateMyProfileSchema,
+  changePasswordSchema,
+  createMyLeaveRequestSchema,
+  // Shared validation
+  dateRangeSchema,
 } from "./schemas/hr";
 export type {
   CreateStaffAccountInput,
@@ -194,6 +201,10 @@ export type {
   CreateShiftAssignmentInput,
   CreateLeaveRequestInput,
   ApproveLeaveRequestInput,
+  // Employee self-service
+  UpdateMyProfileInput,
+  ChangePasswordInput,
+  CreateMyLeaveRequestInput,
 } from "./schemas/hr";
 
 // Week 7-8: CRM
