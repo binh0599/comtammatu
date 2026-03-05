@@ -49,10 +49,7 @@ export function BottomNav() {
           );
         })}
         {/* Notification Bell */}
-        <div className="flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1">
-          <NotificationBell />
-          <span className="text-xs text-muted-foreground">Thông báo</span>
-        </div>
+        <NotificationBell />
         <form action={logout} className="flex-1">
           <button
             type="submit"
