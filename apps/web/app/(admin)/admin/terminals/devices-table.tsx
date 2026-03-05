@@ -37,6 +37,7 @@ interface RegisteredDevice {
   ip_address: string | null;
   user_agent: string | null;
   status: string;
+  terminal_type: string | null;
   registered_by: string;
   approved_by: string | null;
   approved_at: string | null;
@@ -44,6 +45,19 @@ interface RegisteredDevice {
   created_at: string;
   branches: { name: string } | null;
   profiles: { full_name: string | null; role: string } | null;
+}
+
+function getTerminalTypeLabel(type: string | null) {
+  switch (type) {
+    case "mobile_order":
+      return <Badge variant="outline">POS - Gọi món</Badge>;
+    case "cashier_station":
+      return <Badge variant="outline">POS - Thu ngân</Badge>;
+    case "kds_station":
+      return <Badge variant="outline">KDS - Bếp</Badge>;
+    default:
+      return <Badge variant="secondary">—</Badge>;
+  }
 }
 
 function getStatusBadge(status: string) {
@@ -217,6 +231,7 @@ export function DevicesTable({
                   <TableHead scope="col">Mã duyệt</TableHead>
                   <TableHead scope="col">Nhân viên</TableHead>
                   <TableHead scope="col">Thiết bị</TableHead>
+                  <TableHead scope="col">Loại</TableHead>
                   <TableHead scope="col">Chi nhánh</TableHead>
                   <TableHead scope="col">IP</TableHead>
                   <TableHead scope="col">Thời gian</TableHead>
@@ -247,6 +262,7 @@ export function DevicesTable({
                         {device.device_fingerprint.slice(0, 8)}...
                       </p>
                     </TableCell>
+                    <TableCell>{getTerminalTypeLabel(device.terminal_type)}</TableCell>
                     <TableCell>{device.branches?.name ?? "—"}</TableCell>
                     <TableCell>
                       <span className="font-mono text-sm">
@@ -303,6 +319,7 @@ export function DevicesTable({
               <TableRow>
                 <TableHead scope="col">Thiết bị</TableHead>
                 <TableHead scope="col">Nhân viên</TableHead>
+                <TableHead scope="col">Loại</TableHead>
                 <TableHead scope="col">Chi nhánh</TableHead>
                 <TableHead scope="col">IP</TableHead>
                 <TableHead scope="col">Trạng thái</TableHead>
@@ -314,7 +331,7 @@ export function DevicesTable({
               {otherDevices.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="h-24 text-center text-muted-foreground"
                   >
                     Chưa có thiết bị đã xử lý
@@ -334,6 +351,7 @@ export function DevicesTable({
                     <TableCell>
                       {device.profiles?.full_name ?? "—"}
                     </TableCell>
+                    <TableCell>{getTerminalTypeLabel(device.terminal_type)}</TableCell>
                     <TableCell>{device.branches?.name ?? "—"}</TableCell>
                     <TableCell>
                       <span className="font-mono text-sm">

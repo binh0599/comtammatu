@@ -35,7 +35,43 @@ async function _getActiveSession() {
 
 export const getActiveSession = withServerQuery(_getActiveSession);
 
-// ===== Terminals for Session =====
+// ===== User's Linked Terminal =====
+
+async function _getUserLinkedTerminal() {
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
+  const { supabase, userId } = ctx;
+
+  // Find terminal linked to user's approved device
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("linked_terminal_id")
+    .eq("registered_by", userId)
+    .eq("status", "approved")
+    .not("linked_terminal_id", "is", null)
+    .limit(1)
+    .maybeSingle();
+
+  if (!device?.linked_terminal_id) return null;
+
+  // Validate terminal belongs to caller's branch, is approved cashier_station, and active
+  const { data: terminal } = await supabase
+    .from("pos_terminals")
+    .select("id, name, type")
+    .eq("id", device.linked_terminal_id)
+    .eq("branch_id", branchId)
+    .eq("type", "cashier_station")
+    .eq("is_active", true)
+    .not("approved_at", "is", null)
+    .maybeSingle();
+
+  return terminal ?? null;
+}
+
+export const getUserLinkedTerminal = withServerQuery(_getUserLinkedTerminal);
+
+// ===== Terminals for Session (fallback) =====
 
 async function _getTerminalsForSession() {
   const ctx = await getActionContext();

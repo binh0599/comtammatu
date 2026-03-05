@@ -23,18 +23,45 @@ export default async function PosPage() {
 
   if (!profile?.branch_id) redirect("/login");
 
-  // Get a terminal for this user
-  const { data: terminal } = await supabase
-    .from("pos_terminals")
-    .select("id")
-    .eq("branch_id", profile.branch_id)
-    .eq("type", "mobile_order")
-    .eq("is_active", true)
-    .not("approved_at", "is", null)
+  // Find this user's registered device and its linked terminal
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("linked_terminal_id")
+    .eq("registered_by", user.id)
+    .eq("status", "approved")
+    .not("linked_terminal_id", "is", null)
     .limit(1)
     .maybeSingle();
 
-  const terminalId = terminal?.id;
+  let terminalId: number | null = null;
+
+  // Validate the linked terminal is still valid for this branch
+  if (device?.linked_terminal_id) {
+    const { data: linkedTerminal } = await supabase
+      .from("pos_terminals")
+      .select("id")
+      .eq("id", device.linked_terminal_id)
+      .eq("branch_id", profile.branch_id)
+      .eq("type", "mobile_order")
+      .eq("is_active", true)
+      .not("approved_at", "is", null)
+      .maybeSingle();
+    terminalId = linkedTerminal?.id ?? null;
+  }
+
+  // Fallback: find any active mobile_order terminal in the branch
+  if (!terminalId) {
+    const { data: terminal } = await supabase
+      .from("pos_terminals")
+      .select("id")
+      .eq("branch_id", profile.branch_id)
+      .eq("type", "mobile_order")
+      .eq("is_active", true)
+      .not("approved_at", "is", null)
+      .limit(1)
+      .maybeSingle();
+    terminalId = terminal?.id ?? null;
+  }
 
   if (!terminalId) {
     return (

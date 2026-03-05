@@ -9,6 +9,7 @@ import {
   handleServerActionError,
   entityIdSchema,
   DEVICE_CHECK_ROLES,
+  type DeviceTerminalType,
 } from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
 
@@ -36,6 +37,16 @@ function getRoleRedirectPath(role: string): string {
   if (role === "chef") return "/kds";
   if (role === "hr") return "/admin/hr";
   return "/customer";
+}
+
+const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {
+  waiter: "mobile_order",
+  cashier: "cashier_station",
+  chef: "kds_station",
+};
+
+function getTerminalTypeForRole(role: string): DeviceTerminalType | null {
+  return ROLE_TO_TERMINAL[role] ?? null;
 }
 
 async function _login(formData: FormData) {
@@ -143,17 +154,22 @@ async function _login(formData: FormData) {
     // Device rejected — re-register with new approval code
     // RLS policy "registered_devices_reregister_own" allows staff to UPDATE
     // their own rejected device back to pending
+    const reregTerminalType = getTerminalTypeForRole(role);
     const { error: reregError } = await supabase
       .from("registered_devices")
       .update({
         status: "pending",
         approval_code: generateApprovalCode(),
         registered_by: authData.user.id,
+        branch_id: profile.branch_id,
         ip_address: ip,
         user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
         approved_by: null,
         approved_at: null,
         rejected_at: null,
+        linked_terminal_id: null,
+        linked_station_id: null,
+        terminal_type: reregTerminalType,
       })
       .eq("id", existingDevice.id);
 
@@ -180,6 +196,7 @@ async function _login(formData: FormData) {
 
   // New device — register it
   const approvalCode = generateApprovalCode();
+  const terminalType = getTerminalTypeForRole(role);
   const { data: newDevice, error: insertError } = await supabase
     .from("registered_devices")
     .insert({
@@ -192,6 +209,7 @@ async function _login(formData: FormData) {
       user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
       registered_by: authData.user.id,
       status: "pending",
+      terminal_type: terminalType,
     })
     .select("id")
     .single();

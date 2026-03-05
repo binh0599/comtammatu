@@ -38,6 +38,10 @@ export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export const TERMINAL_TYPES = ["mobile_order", "cashier_station"] as const;
 export type TerminalType = (typeof TERMINAL_TYPES)[number];
 
+/** All device terminal types (derived from TERMINAL_TYPES + kds_station) */
+export const DEVICE_TERMINAL_TYPES = [...TERMINAL_TYPES, "kds_station"] as const;
+export type DeviceTerminalType = (typeof DEVICE_TERMINAL_TYPES)[number];
+
 export const SESSION_STATUSES = ["open", "closed", "suspended"] as const;
 export type SessionStatus = (typeof SESSION_STATUSES)[number];
 

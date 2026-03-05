@@ -58,8 +58,10 @@ interface SessionSummary {
 
 export function OpenSessionForm({
   terminals,
+  linkedTerminalId,
 }: {
   terminals: Terminal[];
+  linkedTerminalId?: number;
 }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +79,9 @@ export function OpenSessionForm({
       <CardHeader>
         <CardTitle>Mở ca làm việc</CardTitle>
         <CardDescription>
-          Chọn thiết bị thu ngân và nhập số tiền đầu ca
+          {linkedTerminalId
+            ? "Nhập số tiền đầu ca để bắt đầu"
+            : "Chọn thiết bị thu ngân và nhập số tiền đầu ca"}
         </CardDescription>
       </CardHeader>
       <form action={handleSubmit}>
@@ -87,28 +91,32 @@ export function OpenSessionForm({
               {error}
             </div>
           )}
-          {terminals.length === 0 ? (
+          {!linkedTerminalId && terminals.length === 0 ? (
             <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-700">
               Chưa có thiết bị thu ngân nào được kích hoạt. Liên hệ quản lý để
               thiết lập.
             </div>
           ) : (
             <>
-              <div className="grid gap-2">
-                <Label htmlFor="terminal_id">Thiết bị thu ngân</Label>
-                <Select name="terminal_id" required aria-describedby={error ? "error-opening-session" : undefined}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Chọn máy thu ngân" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {terminals.map((t) => (
-                      <SelectItem key={t.id} value={String(t.id)}>
-                        {t.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {linkedTerminalId ? (
+                <input type="hidden" name="terminal_id" value={linkedTerminalId} />
+              ) : (
+                <div className="grid gap-2">
+                  <Label htmlFor="terminal_id">Thiết bị thu ngân</Label>
+                  <Select name="terminal_id" required aria-describedby={error ? "error-opening-session" : undefined}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn máy thu ngân" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {terminals.map((t) => (
+                        <SelectItem key={t.id} value={String(t.id)}>
+                          {t.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="opening_amount">Số tiền đầu ca (VNĐ)</Label>
                 <Input
@@ -128,7 +136,7 @@ export function OpenSessionForm({
             </>
           )}
         </CardContent>
-        {terminals.length > 0 && (
+        {(linkedTerminalId || terminals.length > 0) && (
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "Đang mở ca..." : "Mở ca"}

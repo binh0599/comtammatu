@@ -31,8 +31,12 @@ export default async function CashierPage() {
     .eq("status", "open")
     .maybeSingle();
 
-  if (!session) {
+  if (!session || !session.terminal_id) {
     redirect("/pos/session");
+  }
+
+  if (!profile.branch_id) {
+    redirect("/login");
   }
 
   const orders = await getCashierOrders();
@@ -50,7 +54,7 @@ export default async function CashierPage() {
         terminal_id: session.terminal_id,
       }}
       orders={orders}
-      branchId={profile.branch_id!}
+      branchId={profile.branch_id}
     />
   );
 }

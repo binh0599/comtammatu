@@ -1,5 +1,6 @@
 import {
   getActiveSession,
+  getUserLinkedTerminal,
   getTerminalsForSession,
   getSessionSummary,
 } from "./actions";
@@ -18,11 +19,15 @@ export default async function SessionPage() {
     );
   }
 
-  const terminals = await getTerminalsForSession();
+  // Try to find user's linked terminal first, then fallback to all terminals
+  const linkedTerminal = await getUserLinkedTerminal();
+  const terminals = linkedTerminal
+    ? [linkedTerminal]
+    : await getTerminalsForSession();
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <OpenSessionForm terminals={terminals} />
+      <OpenSessionForm terminals={terminals} linkedTerminalId={linkedTerminal?.id} />
     </div>
   );
 }

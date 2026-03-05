@@ -51,6 +51,7 @@ export {
   // Device Registration
   DEVICE_STATUSES,
   DEVICE_CHECK_ROLES,
+  DEVICE_TERMINAL_TYPES,
 } from "./constants";
 
 export type {
@@ -93,6 +94,7 @@ export type {
   MenuCategoryType,
   // Device Registration
   DeviceStatus,
+  DeviceTerminalType,
 } from "./constants";
 
 // ===== Zod Schemas =====
