@@ -219,7 +219,7 @@
 
 ## Current Roadmap — Post-MVP
 
-### Priority 1 — Core Business (Week 11-12)
+### Priority 1 — Core Business (Week 11-12) -- COMPLETE
 ```
 - [x] Retention cron jobs (scheduled deletion after 30-day GDPR grace period) — fixed 5 bugs in existing route
 - [x] Auto-tier upgrade triggers (auto-promote customer when points reach tier) — fixed trigger audit log bug
@@ -232,13 +232,13 @@
 - [—] VNPay payment integration — Momo QR is sufficient for MVP
 ```
 
-### Priority 2 — Operations (Week 13-14)
+### Priority 2 — Operations (Week 13-14) -- PARTIALLY COMPLETE
 ```
+- [x] Attendance clock-in/clock-out — Employee Portal PWA with timesheet (commit a86dfc0)
+- [x] Device fingerprinting for terminal registration
 - [ ] Payroll calculations (HR module)
-- [ ] Attendance clock-in/clock-out (QR scan)
 - [ ] Branch comparison in dashboard
 - [ ] Offline support — Service Worker + IndexedDB (critical for POS reliability)
-- [x] Device fingerprinting for terminal registration
 ```
 
 ### Priority 3 — Quality & Scale (Week 15-16)
@@ -257,4 +257,47 @@
 - [ ] Multi-branch reporting & analytics
 - [ ] Inventory forecasting (based on order history)
 - [ ] Staff performance metrics
+```
+
+---
+
+## Next Sprint: Post-MVP Sprint 4 — Payroll, Analytics & Quality
+
+> **Goal:** Complete Priority 2 remaining items + start Priority 3 testing.
+> **Target:** Week 13-14 equivalent
+
+### Phase 1: Payroll Module (HR)
+```
+- [ ] DB migration — payroll_periods, payroll_entries tables (NUMERIC(14,2) for amounts)
+- [ ] Zod schemas — payroll period (create/close), payroll entry (calculate, approve)
+- [ ] Constants — payroll statuses (draft, calculated, approved, paid), pay components
+- [ ] Server Actions — createPayrollPeriod, calculatePayroll (hours × rate), approvePayroll
+- [ ] Admin UI — /admin/hr payroll tab: period list, calculate button, entry table, approve flow
+- [ ] Employee Portal — /employee/payroll: view pay stubs, download summary
+```
+
+### Phase 2: Branch Comparison Dashboard
+```
+- [ ] Server Actions — getBranchComparison (revenue, orders, avg ticket by branch + date range)
+- [ ] Admin UI — /admin/dashboard branch comparison tab: bar charts, date range picker
+- [ ] Recharts lazy-loaded components for branch comparison charts
+```
+
+### Phase 3: E2E Testing Foundation
+```
+- [ ] Playwright setup — config, fixtures, auth helpers (login as different roles)
+- [ ] Critical flow tests:
+  - [ ] Auth flow — login, role-based redirect, logout
+  - [ ] Order flow — waiter creates order → KDS receives → chef bumps → cashier pays
+  - [ ] Menu CRUD — admin creates/edits/deletes menu items
+  - [ ] Employee clock-in/clock-out
+- [ ] CI integration — Playwright in GitHub Actions (headless)
+```
+
+### Phase 4: Verification
+```
+- [ ] Typecheck passes (all packages)
+- [ ] Lint passes
+- [ ] Build passes
+- [ ] E2E tests pass
 ```
