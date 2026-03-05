@@ -279,6 +279,23 @@ async function _changeMyPassword(data: ChangePasswordInput) {
   }
 
   const supabase = await createSupabaseServer();
+
+  // Verify current password by re-authenticating
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user?.email) {
+    return { error: "Không thể xác thực người dùng" };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: parsed.data.current_password,
+  });
+
+  if (signInError) {
+    return { error: "Mật khẩu hiện tại không đúng" };
+  }
+
+  // Now update password
   const { error } = await supabase.auth.updateUser({
     password: parsed.data.new_password,
   });

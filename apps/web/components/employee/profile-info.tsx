@@ -44,6 +44,7 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
   const [ecRelationship, setEcRelationship] = useState(employee?.emergency_contact?.relationship ?? "");
 
   // Password form state
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -72,6 +73,7 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
     e.preventDefault();
     startTransition(async () => {
       const result = await changeMyPassword({
+        current_password: currentPassword,
         new_password: newPassword,
         confirm_password: confirmPassword,
       });
@@ -81,6 +83,7 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
       } else {
         toast.success("Đã đổi mật khẩu thành công");
         setIsEditingPassword(false);
+        setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       }
@@ -226,6 +229,17 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
           {isEditingPassword ? (
             <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
               <div>
+                <Label htmlFor="current_password">Mật khẩu hiện tại</Label>
+                <Input
+                  id="current_password"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                />
+              </div>
+              <div>
                 <Label htmlFor="new_password">Mật khẩu mới</Label>
                 <Input
                   id="new_password"
@@ -257,6 +271,7 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
                   size="sm"
                   onClick={() => {
                     setIsEditingPassword(false);
+                    setCurrentPassword("");
                     setNewPassword("");
                     setConfirmPassword("");
                   }}

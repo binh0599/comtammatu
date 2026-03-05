@@ -63,6 +63,12 @@ export function LeaveOverview({ leaveRequests, leaveSummary }: LeaveOverviewProp
     const startDate = formData.get("start_date") as string;
     const endDate = formData.get("end_date") as string;
 
+    // Validate end_date >= start_date
+    if (endDate < startDate) {
+      toast.error("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu");
+      return;
+    }
+
     // Calculate days
     const start = new Date(startDate);
     const end = new Date(endDate);

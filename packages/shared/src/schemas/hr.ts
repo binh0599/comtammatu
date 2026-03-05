@@ -114,6 +114,7 @@ export type UpdateMyProfileInput = z.infer<typeof updateMyProfileSchema>;
 
 export const changePasswordSchema = z
   .object({
+    current_password: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
     new_password: z.string().min(8, "Mật khẩu mới tối thiểu 8 ký tự"),
     confirm_password: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
   })
@@ -123,15 +124,20 @@ export const changePasswordSchema = z
   });
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 
-export const createMyLeaveRequestSchema = z.object({
-  type: z.enum(["annual", "sick", "unpaid", "maternity"], {
-    error: "Chọn loại nghỉ",
-  }),
-  start_date: z.string().min(1, "Ngày bắt đầu không được để trống"),
-  end_date: z.string().min(1, "Ngày kết thúc không được để trống"),
-  days: z.coerce.number().int().positive("Số ngày phải lớn hơn 0"),
-  reason: z.string().max(500).optional().or(z.literal("")),
-});
+export const createMyLeaveRequestSchema = z
+  .object({
+    type: z.enum(["annual", "sick", "unpaid", "maternity"], {
+      error: "Chọn loại nghỉ",
+    }),
+    start_date: z.string().min(1, "Ngày bắt đầu không được để trống"),
+    end_date: z.string().min(1, "Ngày kết thúc không được để trống"),
+    days: z.coerce.number().int().positive("Số ngày phải lớn hơn 0"),
+    reason: z.string().max(500).optional().or(z.literal("")),
+  })
+  .refine((data) => data.end_date >= data.start_date, {
+    message: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu",
+    path: ["end_date"],
+  });
 export type CreateMyLeaveRequestInput = z.infer<
   typeof createMyLeaveRequestSchema
 >;
