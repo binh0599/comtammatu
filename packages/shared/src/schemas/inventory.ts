@@ -68,3 +68,27 @@ export const quickWasteLogSchema = z.object({
   notes: z.string().max(500).optional().or(z.literal("")),
 });
 export type QuickWasteLogInput = z.infer<typeof quickWasteLogSchema>;
+
+// ===== Stock Count (End-of-Day) =====
+
+export const createStockCountSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        ingredient_id: z.coerce.number().int().positive(),
+        actual_qty: z.coerce.number().min(0, "Số lượng thực tế phải >= 0"),
+        notes: z.string().max(200).optional().or(z.literal("")),
+      })
+    )
+    .min(1, "Phải kiểm đếm ít nhất 1 nguyên liệu"),
+  notes: z.string().max(500).optional().or(z.literal("")),
+});
+export type CreateStockCountInput = z.infer<typeof createStockCountSchema>;
+
+// ===== Food Cost Report =====
+
+export const foodCostQuerySchema = z.object({
+  date_from: z.string().min(1, "Chọn ngày bắt đầu"),
+  date_to: z.string().min(1, "Chọn ngày kết thúc"),
+});
+export type FoodCostQueryInput = z.infer<typeof foodCostQuerySchema>;

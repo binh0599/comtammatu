@@ -20,6 +20,9 @@ export interface PoItem {
   quantity: number;
   unit_price: number;
   received_qty: number;
+  reject_qty: number;
+  reject_reason: string | null;
+  quality_status: string;
   ingredients: { name: string; unit: string } | null;
 }
 
@@ -56,7 +59,14 @@ export interface CreatePoData {
 
 export interface ReceivePoData {
   po_id: number;
-  items: { po_item_id: number; received_qty: number }[];
+  items: {
+    po_item_id: number;
+    received_qty: number;
+    reject_qty: number;
+    reject_reason: string;
+    quality_status: "accepted" | "partial" | "rejected";
+    expiry_date: string;
+  }[];
 }
 
 export function getStatusBadgeVariant(
@@ -66,6 +76,8 @@ export function getStatusBadgeVariant(
     case "draft":
       return "secondary";
     case "sent":
+      return "outline";
+    case "partially_received":
       return "outline";
     case "received":
       return "default";

@@ -253,3 +253,82 @@ export async function logWaste(
     return handleServerActionError(error);
   }
 }
+
+// ===== Prep List (KDS) =====
+
+export interface PrepListItem {
+  ingredient_id: number;
+  ingredient_name: string;
+  unit: string;
+  total_needed: number;
+  current_stock: number;
+  to_prep: number;
+  menu_items_using: { id: number; name: string }[];
+}
+
+async function _getPrepList(targetPortions?: number): Promise<PrepListItem[]> {
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
+
+  const { data, error } = await supabase.rpc("calculate_prep_list", {
+    p_branch_id: profile.branch_id,
+    p_target_portions: targetPortions ?? 0,
+  });
+
+  if (error) throw safeDbError(error, "db");
+  return (data ?? []) as PrepListItem[];
+}
+
+export async function getPrepList(
+  targetPortions?: number,
+): Promise<PrepListItem[]> {
+  try {
+    return await _getPrepList(targetPortions);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error, { cause: error });
+  }
+}
+
+// ===== Expiry Alerts (KDS) =====
+
+export interface ExpiringBatch {
+  id: number;
+  ingredient_id: number;
+  quantity: number;
+  expiry_date: string;
+  ingredients: { name: string; unit: string } | null;
+}
+
+async function _getExpiringBatches(
+  daysAhead: number = 3,
+): Promise<ExpiringBatch[]> {
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
+
+  const futureDate = new Date();
+  futureDate.setDate(futureDate.getDate() + daysAhead);
+
+  const { data, error } = await supabase
+    .from("stock_batches")
+    .select("id, ingredient_id, quantity, expiry_date, ingredients(name, unit)")
+    .eq("branch_id", profile.branch_id)
+    .gt("quantity", 0)
+    .not("expiry_date", "is", null)
+    .lte("expiry_date", futureDate.toISOString().split("T")[0])
+    .order("expiry_date", { ascending: true });
+
+  if (error) throw safeDbError(error, "db");
+  return (data ?? []) as ExpiringBatch[];
+}
+
+export async function getExpiringBatches(
+  daysAhead?: number,
+): Promise<ExpiringBatch[]> {
+  try {
+    return await _getExpiringBatches(daysAhead);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error, { cause: error });
+  }
+}

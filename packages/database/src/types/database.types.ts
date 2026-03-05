@@ -2124,8 +2124,11 @@ export type Database = {
           id: number
           ingredient_id: number
           po_id: number
+          quality_status: string
           quantity: number
           received_qty: number
+          reject_qty: number
+          reject_reason: string | null
           unit_price: number
         }
         Insert: {
@@ -2133,8 +2136,11 @@ export type Database = {
           id?: never
           ingredient_id: number
           po_id: number
+          quality_status?: string
           quantity: number
           received_qty?: number
+          reject_qty?: number
+          reject_reason?: string | null
           unit_price: number
         }
         Update: {
@@ -2142,8 +2148,11 @@ export type Database = {
           id?: never
           ingredient_id?: number
           po_id?: number
+          quality_status?: string
           quantity?: number
           received_qty?: number
+          reject_qty?: number
+          reject_reason?: string | null
           unit_price?: number
         }
         Relationships: [
@@ -2563,6 +2572,167 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_batches: {
+        Row: {
+          batch_ref: string | null
+          branch_id: number
+          created_at: string
+          expiry_date: string | null
+          id: number
+          ingredient_id: number
+          po_id: number | null
+          quantity: number
+          received_at: string
+        }
+        Insert: {
+          batch_ref?: string | null
+          branch_id: number
+          created_at?: string
+          expiry_date?: string | null
+          id?: never
+          ingredient_id: number
+          po_id?: number | null
+          quantity: number
+          received_at?: string
+        }
+        Update: {
+          batch_ref?: string | null
+          branch_id?: number
+          created_at?: string
+          expiry_date?: string | null
+          id?: never
+          ingredient_id?: number
+          po_id?: number | null
+          quantity?: number
+          received_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_sb_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sb_ingredient"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sb_po"
+            columns: ["po_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_count_items: {
+        Row: {
+          actual_qty: number
+          id: number
+          ingredient_id: number
+          notes: string | null
+          stock_count_id: number
+          system_qty: number
+          variance: number | null
+        }
+        Insert: {
+          actual_qty: number
+          id?: never
+          ingredient_id: number
+          notes?: string | null
+          stock_count_id: number
+          system_qty: number
+          variance?: number | null
+        }
+        Update: {
+          actual_qty?: number
+          id?: never
+          ingredient_id?: number
+          notes?: string | null
+          stock_count_id?: number
+          system_qty?: number
+          variance?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_sci_count"
+            columns: ["stock_count_id"]
+            isOneToOne: false
+            referencedRelation: "stock_counts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_sci_ingredient"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_counts: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: number
+          counted_at: string
+          counted_by: string
+          created_at: string
+          id: number
+          notes: string | null
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id: number
+          counted_at?: string
+          counted_by: string
+          created_at?: string
+          id?: never
+          notes?: string | null
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: number
+          counted_at?: string
+          counted_by?: string
+          created_at?: string
+          id?: never
+          notes?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_stock_counts_approver"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_stock_counts_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_stock_counts_user"
+            columns: ["counted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3004,6 +3174,16 @@ export type Database = {
       auth_branch_id: { Args: never; Returns: number }
       auth_role: { Args: never; Returns: string }
       auth_tenant_id: { Args: never; Returns: number }
+      calculate_food_cost: {
+        Args: { p_branch_id: number; p_date_from: string; p_date_to: string }
+        Returns: {
+          food_cost_pct: number
+          item_count: number
+          top_cost_items: Json
+          total_ingredient_cost: number
+          total_revenue: number
+        }[]
+      }
       calculate_menu_portions: {
         Args: { p_branch_id: number }
         Returns: {
@@ -3015,6 +3195,18 @@ export type Database = {
           menu_item_id: number
           menu_item_name: string
           portions_remaining: number
+        }[]
+      }
+      calculate_prep_list: {
+        Args: { p_branch_id: number; p_target_portions?: number }
+        Returns: {
+          current_stock: number
+          ingredient_id: number
+          ingredient_name: string
+          menu_items_using: Json
+          to_prep: number
+          total_needed: number
+          unit: string
         }[]
       }
       generate_order_number: { Args: { p_branch_id: number }; Returns: string }

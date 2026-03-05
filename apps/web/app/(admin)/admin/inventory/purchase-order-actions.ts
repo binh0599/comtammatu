@@ -123,7 +123,14 @@ export const sendPurchaseOrder = withServerAction(_sendPurchaseOrder);
 
 async function _receivePurchaseOrder(input: {
   po_id: number;
-  items: { po_item_id: number; received_qty: number }[];
+  items: {
+    po_item_id: number;
+    received_qty: number;
+    reject_qty?: number;
+    reject_reason?: string;
+    quality_status?: string;
+    expiry_date?: string;
+  }[];
 }) {
   const parsed = receivePurchaseOrderSchema.safeParse(input);
 
@@ -143,29 +150,58 @@ async function _receivePurchaseOrder(input: {
   if (fetchError) return { error: fetchError.message };
   if (!po) return { error: "Đơn mua hàng không tồn tại" };
 
-  const validNextStatuses = VALID_PO_TRANSITIONS[po.status as PoStatus];
-  if (!validNextStatuses || !validNextStatuses.includes("received")) {
+  const currentStatus = po.status as PoStatus;
+  const validNextStatuses = VALID_PO_TRANSITIONS[currentStatus];
+  if (
+    !validNextStatuses ||
+    (!validNextStatuses.includes("received") &&
+      !validNextStatuses.includes("partially_received" as PoStatus))
+  ) {
     return { error: `Không thể nhận hàng ở trạng thái "${po.status}"` };
   }
 
+  // Determine if this is a full or partial receive
+  let hasRejected = false;
+  let hasAccepted = false;
   for (const item of parsed.data.items) {
+    if (item.received_qty > 0) hasAccepted = true;
+    if ((item.reject_qty ?? 0) > 0 || item.quality_status === "rejected") hasRejected = true;
+  }
+  const newPoStatus = hasRejected && hasAccepted ? "partially_received" : "received";
+
+  // Update each PO item with quality check data
+  for (const item of parsed.data.items) {
+    const updateData: Record<string, unknown> = {
+      received_qty: item.received_qty,
+      reject_qty: item.reject_qty ?? 0,
+      quality_status: item.quality_status ?? "accepted",
+    };
+    if (item.reject_reason) {
+      updateData.reject_reason = item.reject_reason;
+    }
+
     const { error: itemError } = await supabase
       .from("purchase_order_items")
-      .update({ received_qty: item.received_qty })
+      .update(updateData)
       .eq("id", item.po_item_id)
       .eq("po_id", parsed.data.po_id);
 
     if (itemError) return { error: itemError.message };
   }
 
+  // Update PO status
   const { error: poError } = await supabase
     .from("purchase_orders")
-    .update({ status: "received", received_at: new Date().toISOString() })
+    .update({
+      status: newPoStatus,
+      received_at: new Date().toISOString(),
+    })
     .eq("id", parsed.data.po_id)
     .eq("tenant_id", tenantId);
 
   if (poError) return { error: poError.message };
 
+  // Fetch ingredient IDs for stock updates
   const poItemIds = parsed.data.items.map((i) => i.po_item_id);
   const { data: poItems, error: poItemsError } = await supabase
     .from("purchase_order_items")
@@ -185,15 +221,32 @@ async function _receivePurchaseOrder(input: {
     const ingredientId = ingredientMap.get(item.po_item_id);
     if (!ingredientId) continue;
 
+    // Create stock movement
     await supabase.from("stock_movements").insert({
       ingredient_id: ingredientId,
       branch_id: po.branch_id,
       type: "in",
       quantity: item.received_qty,
-      notes: `Nhận hàng từ đơn mua #${parsed.data.po_id}`,
+      notes: `Nhận hàng từ đơn mua #${parsed.data.po_id}${
+        (item.reject_qty ?? 0) > 0
+          ? ` (từ chối ${item.reject_qty}: ${item.reject_reason || "không đạt"})`
+          : ""
+      }`,
       created_by: userId,
     });
 
+    // Create stock batch for expiry tracking
+    if (item.expiry_date) {
+      await supabase.from("stock_batches").insert({
+        ingredient_id: ingredientId,
+        branch_id: po.branch_id,
+        quantity: item.received_qty,
+        expiry_date: item.expiry_date,
+        po_id: parsed.data.po_id,
+      });
+    }
+
+    // Update stock levels
     const { data: existing } = await supabase
       .from("stock_levels")
       .select("id, quantity, version")

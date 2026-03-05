@@ -44,6 +44,14 @@ export const receivePurchaseOrderSchema = z.object({
       z.object({
         po_item_id: z.coerce.number().int().positive(),
         received_qty: z.coerce.number().min(0, "Số lượng nhận phải >= 0"),
+        reject_qty: z.coerce.number().min(0).default(0),
+        reject_reason: z.string().max(200).optional().or(z.literal("")),
+        quality_status: z
+          .enum(["accepted", "partial", "rejected"], {
+            error: "Chọn trạng thái kiểm tra",
+          })
+          .default("accepted"),
+        expiry_date: z.string().optional().or(z.literal("")),
       })
     )
     .min(1, "Phải có ít nhất 1 mục"),

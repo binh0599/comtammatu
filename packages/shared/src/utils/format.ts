@@ -134,8 +134,22 @@ export const getWasteReasonLabel = createLabelMapper({
 export const getPoStatusLabel = createLabelMapper({
   draft: "Nháp",
   sent: "Đã gửi",
+  partially_received: "Nhận 1 phần",
   received: "Đã nhận",
   cancelled: "Đã hủy",
+});
+
+export const getPoQualityStatusLabel = createLabelMapper({
+  pending: "Chờ kiểm tra",
+  accepted: "Đạt",
+  partial: "Đạt 1 phần",
+  rejected: "Không đạt",
+});
+
+export const getStockCountStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  submitted: "Đã nộp",
+  approved: "Đã duyệt",
 });
 
 export const getEmploymentTypeLabel = createLabelMapper({

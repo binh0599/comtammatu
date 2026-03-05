@@ -55,6 +55,9 @@ export {
   DEVICE_TERMINAL_TYPES,
   // KDS Inventory
   ITEM_UNAVAILABLE_REASONS,
+  // PO Quality & Stock Count
+  PO_QUALITY_STATUSES,
+  STOCK_COUNT_STATUSES,
 } from "./constants";
 
 export type {
@@ -100,6 +103,9 @@ export type {
   DeviceTerminalType,
   // KDS Inventory
   ItemUnavailableReason,
+  // PO Quality & Stock Count
+  PoQualityStatus,
+  StockCountStatus,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -161,6 +167,8 @@ export {
   createRecipeSchema,
   toggleMenuItemAvailabilitySchema,
   quickWasteLogSchema,
+  createStockCountSchema,
+  foodCostQuerySchema,
 } from "./schemas/inventory";
 export type {
   CreateIngredientInput,
@@ -169,6 +177,8 @@ export type {
   CreateRecipeInput,
   ToggleMenuItemAvailabilityInput,
   QuickWasteLogInput,
+  CreateStockCountInput,
+  FoodCostQueryInput,
 } from "./schemas/inventory";
 
 // Week 5-6: Supplier
@@ -334,6 +344,9 @@ export {
   getDeviceStatusLabel,
   // KDS Inventory
   getItemUnavailableReasonLabel,
+  // PO Quality & Stock Count
+  getPoQualityStatusLabel,
+  getStockCountStatusLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====
