@@ -128,8 +128,8 @@ export function ReceiptPrinter({
     const hasPrintedRef = useRef(false);
     useEffect(() => {
         if (autoPrint && !hasPrintedRef.current) {
-            hasPrintedRef.current = true;
             const timer = setTimeout(() => {
+                hasPrintedRef.current = true;
                 handlePrint(/* silent */ true);
             }, printerConfig?.print_delay_ms ?? 500);
             return () => clearTimeout(timer);
