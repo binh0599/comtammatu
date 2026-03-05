@@ -2,7 +2,6 @@
 
 import {
   ChefHat,
-  CookingPot,
   CreditCard,
   LayoutDashboard,
   Monitor,
@@ -63,14 +62,9 @@ const navigation = [
         icon: CreditCard,
       },
       {
-        title: "Thiết bị POS",
+        title: "Thiết bị",
         url: "/admin/terminals",
         icon: Monitor,
-      },
-      {
-        title: "Bếp KDS",
-        url: "/admin/kds-stations",
-        icon: CookingPot,
       },
       {
         title: "Kho hàng",
