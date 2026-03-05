@@ -164,7 +164,7 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ## POST-MVP BACKLOG (Updated 2026-03-05)
 
-```
+```text
 Completed (Post-MVP Sprint 1 & 2):
 - [x] Momo payment integration (webhook, HMAC)
 - [x] Stock auto-deduction on order completion (DB trigger)
@@ -228,8 +228,8 @@ Priority 4 (Growth — Week 17+):
 | Week 1-2 | Foundation — auth, admin layout, menu CRUD |
 | Week 3-4 | Split POS, Orders, KDS & Cash Payment |
 | Week 5-6 | Inventory, HR, Dashboard, Security |
-| Sprint 1 | Device approval flow, printer settings to POS/KDS |
+| Sprint 1 | Device approval flow, security hardening |
 | Sprint 2 | Payment hardening, Redis rate limiting, Resiliency |
-| Sprint 3 | Menu restructure (category types, sides, notes), device management fixes |
+| Sprint 3 | Menu restructure, device management fixes, peripheral config to POS/KDS |
 
 See `git log --oneline` for full commit history.

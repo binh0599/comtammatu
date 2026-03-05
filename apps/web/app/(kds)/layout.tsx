@@ -27,7 +27,7 @@ export default async function KdsLayout({
     }
 
     const supabase = await createSupabaseServer();
-    const { data: approvedDevice } = await supabase
+    const { data: approvedDevice, error: deviceError } = await supabase
       .from("registered_devices")
       .select("id")
       .eq("registered_by", user.id)
@@ -35,6 +35,11 @@ export default async function KdsLayout({
       .eq("status", "approved")
       .limit(1)
       .maybeSingle();
+
+    if (deviceError) {
+      // DB/RLS error — don't mask as "no device"; throw to render error boundary
+      throw new Error(`Device check failed: ${deviceError.message}`);
+    }
 
     if (!approvedDevice) {
       redirect("/login");
