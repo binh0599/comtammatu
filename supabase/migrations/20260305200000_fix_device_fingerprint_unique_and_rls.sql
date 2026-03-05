@@ -32,4 +32,6 @@ CREATE POLICY "registered_devices_reregister_own" ON registered_devices
     AND approved_by IS NULL
     AND approved_at IS NULL
     AND rejected_at IS NULL
+    AND tenant_id = auth_tenant_id()   -- immutable: must stay in user's tenant
+    AND registered_by = auth.uid()     -- immutable: must stay as user's own device
   );

@@ -69,9 +69,15 @@ export async function updateSession(request: NextRequest) {
 
     // Staff roles (cashier/waiter/chef) require device approval before redirect.
     // Without this check, refreshing /login after signIn bypasses device registration.
+    // Fail-closed: if tenant_id is missing, staff stays on login (incomplete profile).
     const deviceCheckRoles = ["cashier", "waiter", "chef"];
-    if (deviceCheckRoles.includes(role) && data?.tenant_id) {
-      const { data: approvedDevice } = await supabase
+    if (deviceCheckRoles.includes(role)) {
+      if (!data?.tenant_id) {
+        // Incomplete profile — cannot verify device; stay on login
+        return supabaseResponse;
+      }
+
+      const { data: approvedDevice, error: deviceError } = await supabase
         .from("registered_devices")
         .select("id")
         .eq("registered_by", user.id)
@@ -79,6 +85,13 @@ export async function updateSession(request: NextRequest) {
         .eq("status", "approved")
         .limit(1)
         .maybeSingle();
+
+      if (deviceError) {
+        // Transient DB failure — don't silently lock out the user.
+        // Log and return a 500-style response so the error surfaces.
+        console.error("Device check query failed:", deviceError.message);
+        return new NextResponse("Internal Server Error", { status: 500 });
+      }
 
       if (!approvedDevice) {
         // No approved device — stay on login page for device registration flow

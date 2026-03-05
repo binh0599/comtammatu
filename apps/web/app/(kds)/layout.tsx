@@ -15,13 +15,17 @@ export default async function KdsLayout({
     tenant_id: number | null;
   }>(KDS_ROLES, "role, branch_id, tenant_id");
 
-  // Staff roles must have an approved device to access KDS
+  // Staff roles must have an approved device to access KDS.
+  // Fail-closed: if tenant_id is missing, redirect to login (incomplete profile).
   if (
     DEVICE_CHECK_ROLES.includes(
       profile.role as (typeof DEVICE_CHECK_ROLES)[number],
-    ) &&
-    profile.tenant_id
+    )
   ) {
+    if (!profile.tenant_id) {
+      redirect("/login");
+    }
+
     const supabase = await createSupabaseServer();
     const { data: approvedDevice } = await supabase
       .from("registered_devices")

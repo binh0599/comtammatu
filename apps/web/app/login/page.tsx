@@ -32,39 +32,42 @@ export default async function LoginPage() {
 
     const role = data?.role ?? "customer";
 
-    // Staff roles: check device approval before redirecting
+    // Staff roles: check device approval before redirecting.
+    // Fail-closed: if tenant_id is missing, show login form (incomplete profile).
     if (
       DEVICE_CHECK_ROLES.includes(
         role as (typeof DEVICE_CHECK_ROLES)[number],
-      ) &&
-      data?.tenant_id
+      )
     ) {
-      const { data: device } = await supabase
-        .from("registered_devices")
-        .select("id, status, approval_code")
-        .eq("registered_by", user.id)
-        .eq("tenant_id", data.tenant_id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      if (data?.tenant_id) {
+        const { data: device } = await supabase
+          .from("registered_devices")
+          .select("id, status, approval_code, branch_id")
+          .eq("registered_by", user.id)
+          .eq("tenant_id", data.tenant_id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-      if (device?.status === "approved") {
-        // Device approved — redirect to role dashboard
-        if (role === "cashier" || role === "waiter") redirect("/pos");
-        else if (role === "chef") redirect("/kds");
+        if (device?.status === "approved") {
+          // Device approved — redirect to role dashboard
+          if (role === "cashier" || role === "waiter") redirect("/pos");
+          else if (role === "chef") redirect("/kds");
+        }
+
+        if (device?.status === "pending") {
+          // Device pending — pass info to client to show pending screen
+          pendingDeviceInfo = {
+            approvalCode: device.approval_code,
+            deviceId: device.id,
+            role,
+          };
+        }
+
+        // If rejected or no device: show login form (client handles re-registration)
+        // Don't redirect — let staff re-register
       }
-
-      if (device?.status === "pending") {
-        // Device pending — pass info to client to show pending screen
-        pendingDeviceInfo = {
-          approvalCode: device.approval_code,
-          deviceId: device.id,
-          role,
-        };
-      }
-
-      // If rejected or no device: show login form (client handles re-registration)
-      // Don't redirect — let staff re-register
+      // If tenant_id missing: fall through to show login form
     } else {
       // Non-staff roles: redirect directly
       if (role === "owner" || role === "manager") redirect("/admin");

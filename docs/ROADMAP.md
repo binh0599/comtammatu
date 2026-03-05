@@ -274,7 +274,7 @@ The Modular Monolith architecture is designed for easy module extraction — eac
 - [x] Monorepo scaffolding (Turborepo + pnpm)
 - [x] CI/CD pipeline (GitHub Actions + Prisma generate step)
 - [x] Database — v2.2 schema + POS/KDS triggers, RLS on all tables
-- [x] Auth & Admin — RBAC, men CRUD, terminal CRUD, KDS station CRUD
+- [x] Auth & Admin — RBAC, menu CRUD, terminal CRUD, KDS station CRUD
 - [x] POS & KDS — split flows, cashier vs waiter, realtime bump system
 - [x] Week 5-6 Operations — Inventory, suppliers, HR basic, dashboard
 - [x] Week 7-8 CRM — Customer PWA, Loyalty, Vouchers, GDPR Privacy

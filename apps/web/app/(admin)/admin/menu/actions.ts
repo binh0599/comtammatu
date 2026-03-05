@@ -286,11 +286,27 @@ async function _deleteMenuItem(id: number) {
   entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
+  // Verify menu item belongs to this tenant before any further queries
+  const { data: menuItem, error: ownershipError } = await supabase
+    .from("menu_items")
+    .select("id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (ownershipError || !menuItem) {
+    return { error: "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
   // Check if menu item has been used in any orders
-  const { count } = await supabase
+  const { count, error: orderCheckError } = await supabase
     .from("order_items")
     .select("id", { count: "exact", head: true })
     .eq("menu_item_id", id);
+
+  if (orderCheckError) {
+    return safeDbErrorResult(orderCheckError, "db");
+  }
 
   if (count && count > 0) {
     return {
