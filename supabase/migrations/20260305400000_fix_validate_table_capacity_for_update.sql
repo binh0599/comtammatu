@@ -11,6 +11,7 @@ CREATE OR REPLACE FUNCTION validate_table_capacity(
 RETURNS jsonb
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_capacity INTEGER;
