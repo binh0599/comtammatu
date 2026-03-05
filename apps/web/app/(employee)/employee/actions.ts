@@ -8,45 +8,72 @@ import {
   updateMyProfileSchema,
   changePasswordSchema,
   createMyLeaveRequestSchema,
+  dateRangeSchema,
   type UpdateMyProfileInput,
   type ChangePasswordInput,
   type CreateMyLeaveRequestInput,
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
-import { z } from "zod";
 import { createSupabaseServer } from "@comtammatu/database";
 import { revalidatePath } from "next/cache";
 
-/** Build YYYY-MM-DD from local date (avoids UTC off-by-one from toISOString) */
-function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+/**
+ * Get today's YYYY-MM-DD in the given IANA timezone.
+ * Falls back to UTC if timezone is invalid.
+ */
+function todayInTimezone(tz: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(new Date());
+    const y = parts.find((p) => p.type === "year")!.value;
+    const m = parts.find((p) => p.type === "month")!.value;
+    const d = parts.find((p) => p.type === "day")!.value;
+    return `${y}-${m}-${d}`;
+  } catch {
+    // Invalid timezone — fall back to UTC
+    const now = new Date();
+    const y = now.getUTCFullYear();
+    const m = String(now.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(now.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
 }
 
-/** Validate date range params for queries */
-const dateRangeSchema = z.object({
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
-});
+/**
+ * Get current HH:MM:SS in the given IANA timezone.
+ */
+function nowTimeInTimezone(tz: string): string {
+  try {
+    return new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: tz });
+  } catch {
+    return new Date().toLocaleTimeString("en-GB", { hour12: false, timeZone: "UTC" });
+  }
+}
 
 /**
- * Shared helper: look up the current user's employee record.
+ * Shared helper: look up the current user's employee record + branch timezone.
  * Throws on DB/RLS error, returns null if no employee record exists.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function findMyEmployee(supabase: any, userId: string, tenantId: number) {
   const { data, error } = await supabase
     .from("employees")
-    .select("id")
+    .select("id, branches!inner(timezone)")
     .eq("profile_id", userId)
     .eq("tenant_id", tenantId)
     .maybeSingle();
 
   if (error) throw safeDbError(error, "db");
-  return data as { id: number } | null;
+  if (!data) return null;
+  return {
+    id: data.id as number,
+    timezone: (data.branches?.timezone as string) ?? "UTC",
+  };
 }
 
 // =====================
@@ -79,7 +106,7 @@ async function _getMyTodayShifts() {
   const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return [];
 
-  const today = toLocalDateString(new Date());
+  const today = todayInTimezone(employee.timezone);
 
   const { data, error } = await supabase
     .from("shift_assignments")
@@ -104,7 +131,7 @@ async function _getMyTodayAttendance() {
   const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return null;
 
-  const today = toLocalDateString(new Date());
+  const today = todayInTimezone(employee.timezone);
 
   const { data, error } = await supabase
     .from("attendance_records")
@@ -376,7 +403,8 @@ async function _clockIn() {
     return { error: "Không tìm thấy hồ sơ nhân viên" };
   }
 
-  const today = toLocalDateString(new Date());
+  const tz = employee.timezone;
+  const today = todayInTimezone(tz);
   const now = new Date().toISOString();
 
   // Check if already clocked in today
@@ -405,9 +433,8 @@ async function _clockIn() {
     .maybeSingle();
 
   if (todayShift?.shifts?.start_time) {
-    // Compare clock_in time with shift start_time
     const shiftStart = todayShift.shifts.start_time as string; // "HH:MM:SS"
-    const nowTime = new Date().toLocaleTimeString("en-GB", { hour12: false }); // "HH:MM:SS"
+    const nowTime = nowTimeInTimezone(tz);
     if (nowTime > shiftStart) {
       status = "late";
     }
@@ -447,7 +474,8 @@ async function _clockOut() {
     return { error: "Không tìm thấy hồ sơ nhân viên" };
   }
 
-  const today = toLocalDateString(new Date());
+  const tz = employee.timezone;
+  const today = todayInTimezone(tz);
 
   // Get today's attendance record
   const { data: record, error: fetchError } = await supabase
@@ -491,7 +519,7 @@ async function _clockOut() {
 
   if (todayShift?.shifts?.end_time) {
     const shiftEnd = todayShift.shifts.end_time as string; // "HH:MM:SS"
-    const nowTime = now.toLocaleTimeString("en-GB", { hour12: false });
+    const nowTime = nowTimeInTimezone(tz);
     if (nowTime < shiftEnd) {
       status = "early_leave";
     }

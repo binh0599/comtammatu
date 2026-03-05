@@ -188,6 +188,8 @@ export {
   updateMyProfileSchema,
   changePasswordSchema,
   createMyLeaveRequestSchema,
+  // Shared validation
+  dateRangeSchema,
 } from "./schemas/hr";
 export type {
   CreateStaffAccountInput,

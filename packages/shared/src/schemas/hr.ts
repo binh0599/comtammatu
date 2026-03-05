@@ -98,6 +98,13 @@ export type ApproveLeaveRequestInput = z.infer<
   typeof approveLeaveRequestSchema
 >;
 
+// ===== Shared Validation Schemas =====
+
+export const dateRangeSchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
+});
+
 // ===== Employee Self-Service Schemas =====
 
 export const updateMyProfileSchema = z.object({
