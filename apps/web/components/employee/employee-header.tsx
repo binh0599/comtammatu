@@ -1,16 +1,7 @@
 "use client";
 
 import { BadgeCheck } from "lucide-react";
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: "Chủ quán",
-  manager: "Quản lý",
-  cashier: "Thu ngân",
-  chef: "Đầu bếp",
-  waiter: "Phục vụ",
-  inventory: "Kho",
-  hr: "Nhân sự",
-};
+import { ROLE_LABELS } from "@/lib/role-labels";
 
 interface EmployeeHeaderProps {
   employeeName: string;

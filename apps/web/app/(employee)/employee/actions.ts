@@ -2,7 +2,6 @@
 
 import "@/lib/server-bootstrap";
 import {
-  ActionError,
   getActionContext,
   withServerAction,
   withServerQuery,
@@ -15,8 +14,40 @@ import {
   safeDbError,
   safeDbErrorResult,
 } from "@comtammatu/shared";
+import { z } from "zod";
 import { createSupabaseServer } from "@comtammatu/database";
 import { revalidatePath } from "next/cache";
+
+/** Build YYYY-MM-DD from local date (avoids UTC off-by-one from toISOString) */
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/** Validate date range params for queries */
+const dateRangeSchema = z.object({
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
+});
+
+/**
+ * Shared helper: look up the current user's employee record.
+ * Throws on DB/RLS error, returns null if no employee record exists.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function findMyEmployee(supabase: any, userId: string, tenantId: number) {
+  const { data, error } = await supabase
+    .from("employees")
+    .select("id")
+    .eq("profile_id", userId)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (error) throw safeDbError(error, "db");
+  return data as { id: number } | null;
+}
 
 // =====================
 // Employee record for current user
@@ -45,17 +76,10 @@ export const getMyEmployee = withServerQuery(_getMyEmployee);
 async function _getMyTodayShifts() {
   const { supabase, userId, tenantId } = await getActionContext();
 
-  // Get employee ID first
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("profile_id", userId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
+  const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return [];
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toLocalDateString(new Date());
 
   const { data, error } = await supabase
     .from("shift_assignments")
@@ -77,16 +101,10 @@ export const getMyTodayShifts = withServerQuery(_getMyTodayShifts);
 async function _getMyTodayAttendance() {
   const { supabase, userId, tenantId } = await getActionContext();
 
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("profile_id", userId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
+  const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return null;
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toLocalDateString(new Date());
 
   const { data, error } = await supabase
     .from("attendance_records")
@@ -106,23 +124,22 @@ export const getMyTodayAttendance = withServerQuery(_getMyTodayAttendance);
 // =====================
 
 async function _getMyShiftAssignments(startDate: string, endDate: string) {
+  const parsed = dateRangeSchema.safeParse({ startDate, endDate });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Ngày không hợp lệ");
+  }
+
   const { supabase, userId, tenantId } = await getActionContext();
 
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("profile_id", userId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
+  const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return [];
 
   const { data, error } = await supabase
     .from("shift_assignments")
     .select("*, shifts!inner(name, start_time, end_time, branches(name))")
     .eq("employee_id", employee.id)
-    .gte("date", startDate)
-    .lte("date", endDate)
+    .gte("date", parsed.data.startDate)
+    .lte("date", parsed.data.endDate)
     .order("date")
     .order("shifts(start_time)");
 
@@ -139,13 +156,7 @@ export const getMyShiftAssignments = withServerQuery(_getMyShiftAssignments);
 async function _getMyLeaveRequests() {
   const { supabase, userId, tenantId } = await getActionContext();
 
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("profile_id", userId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
+  const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return [];
 
   const { data, error } = await supabase
@@ -171,15 +182,19 @@ async function _createMyLeaveRequest(data: CreateMyLeaveRequestInput) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
+  // Compute days server-side from dates (inclusive)
+  const start = new Date(parsed.data.start_date + "T00:00:00");
+  const end = new Date(parsed.data.end_date + "T00:00:00");
+  const diffMs = end.getTime() - start.getTime();
+  const computedDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24)) + 1;
+
+  if (computedDays < 1) {
+    return { error: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu" };
+  }
+
   const { supabase, userId, tenantId } = await getActionContext();
 
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("profile_id", userId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
+  const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) {
     return { error: "Không tìm thấy hồ sơ nhân viên" };
   }
@@ -189,7 +204,7 @@ async function _createMyLeaveRequest(data: CreateMyLeaveRequestInput) {
     type: parsed.data.type,
     start_date: parsed.data.start_date,
     end_date: parsed.data.end_date,
-    days: parsed.data.days,
+    days: computedDays,
     reason: parsed.data.reason || null,
     status: "pending",
   });
@@ -217,12 +232,14 @@ async function _getMyProfile() {
 
   if (profileError) throw safeDbError(profileError, "db");
 
-  const { data: employee } = await supabase
+  const { data: employee, error: empError } = await supabase
     .from("employees")
     .select("*, branches!inner(name)")
     .eq("profile_id", userId)
     .eq("tenant_id", tenantId)
     .maybeSingle();
+
+  if (empError) throw safeDbError(empError, "db");
 
   return { profile, employee };
 }
@@ -316,13 +333,7 @@ export const changeMyPassword = withServerAction(_changeMyPassword);
 async function _getMyLeaveSummary() {
   const { supabase, userId, tenantId } = await getActionContext();
 
-  const { data: employee } = await supabase
-    .from("employees")
-    .select("id")
-    .eq("profile_id", userId)
-    .eq("tenant_id", tenantId)
-    .maybeSingle();
-
+  const employee = await findMyEmployee(supabase, userId, tenantId);
   if (!employee) return { annual: 0, sick: 0, unpaid: 0, maternity: 0 };
 
   const yearStart = new Date().getFullYear() + "-01-01";

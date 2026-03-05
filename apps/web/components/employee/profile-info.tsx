@@ -14,16 +14,7 @@ import {
   formatDate,
 } from "@comtammatu/shared";
 import { toast } from "sonner";
-
-const ROLE_LABELS: Record<string, string> = {
-  owner: "Chủ quán",
-  manager: "Quản lý",
-  cashier: "Thu ngân",
-  chef: "Đầu bếp",
-  waiter: "Phục vụ",
-  inventory: "Kho",
-  hr: "Nhân sự",
-};
+import { ROLE_LABELS } from "@/lib/role-labels";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ProfileInfoProps {
@@ -150,7 +141,13 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => setIsEditingProfile(false)}
+                  onClick={() => {
+                    setFullName(profile?.full_name ?? "");
+                    setEcName(employee?.emergency_contact?.name ?? "");
+                    setEcPhone(employee?.emergency_contact?.phone ?? "");
+                    setEcRelationship(employee?.emergency_contact?.relationship ?? "");
+                    setIsEditingProfile(false);
+                  }}
                 >
                   Hủy
                 </Button>

@@ -10,6 +10,13 @@ import { getMyShiftAssignments } from "@/app/(employee)/employee/actions";
 
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 const MONTH_NAMES = [
   "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
   "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
@@ -54,7 +61,7 @@ export function ScheduleCalendar({
     assignmentsByDate.get(date)!.push(a);
   }
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = toLocalDateString(new Date());
 
   function navigateMonth(direction: -1 | 1) {
     let newMonth = month + direction;
@@ -71,8 +78,8 @@ export function ScheduleCalendar({
     setMonth(newMonth);
     setSelectedDate(null);
 
-    const startDate = new Date(newYear, newMonth, 1).toISOString().slice(0, 10);
-    const endDate = new Date(newYear, newMonth + 1, 0).toISOString().slice(0, 10);
+    const startDate = toLocalDateString(new Date(newYear, newMonth, 1));
+    const endDate = toLocalDateString(new Date(newYear, newMonth + 1, 0));
 
     startTransition(async () => {
       const data = await getMyShiftAssignments(startDate, endDate);
@@ -82,17 +89,35 @@ export function ScheduleCalendar({
 
   const selectedAssignments = selectedDate ? assignmentsByDate.get(selectedDate) ?? [] : [];
 
+  // Compute prev/next month labels for aria
+  const prevMonth = month === 0 ? 11 : month - 1;
+  const prevYear = month === 0 ? year - 1 : year;
+  const nextMonth = month === 11 ? 0 : month + 1;
+  const nextYear = month === 11 ? year + 1 : year;
+
   return (
     <div className="flex flex-col gap-4">
       {/* Month navigation */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="icon" onClick={() => navigateMonth(-1)} disabled={isPending}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigateMonth(-1)}
+          disabled={isPending}
+          aria-label={`Tháng trước: ${MONTH_NAMES[prevMonth]} ${prevYear}`}
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <h2 className="text-base font-semibold">
           {MONTH_NAMES[month]} {year}
         </h2>
-        <Button variant="ghost" size="icon" onClick={() => navigateMonth(1)} disabled={isPending}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigateMonth(1)}
+          disabled={isPending}
+          aria-label={`Tháng sau: ${MONTH_NAMES[nextMonth]} ${nextYear}`}
+        >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

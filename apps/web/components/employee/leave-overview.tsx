@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,10 +33,27 @@ import { toast } from "sonner";
 
 const ANNUAL_LEAVE_QUOTA = 12; // Default annual leave days
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface LeaveRequest {
+  id: number;
+  type: string;
+  start_date: string;
+  end_date: string;
+  days: number;
+  status: string;
+  reason: string | null;
+  approver: { full_name: string } | null;
+}
+
+interface LeaveSummary {
+  annual: number;
+  sick: number;
+  unpaid: number;
+  maternity: number;
+}
+
 interface LeaveOverviewProps {
-  leaveRequests: any[];
-  leaveSummary: { annual: number; sick: number; unpaid: number; maternity: number };
+  leaveRequests: LeaveRequest[];
+  leaveSummary: LeaveSummary;
 }
 
 function getStatusBadgeVariant(status: string) {
@@ -50,6 +68,7 @@ function getStatusBadgeVariant(status: string) {
 }
 
 export function LeaveOverview({ leaveRequests, leaveSummary }: LeaveOverviewProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [leaveType, setLeaveType] = useState<string>("");
@@ -90,6 +109,7 @@ export function LeaveOverview({ leaveRequests, leaveSummary }: LeaveOverviewProp
         toast.success("Đã gửi yêu cầu nghỉ phép");
         setOpen(false);
         setLeaveType("");
+        router.refresh();
       }
     });
   }
