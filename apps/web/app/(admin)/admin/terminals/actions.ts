@@ -247,13 +247,17 @@ async function _approveDevice(id: number) {
     if (termError) {
       if (termError.code === "23505") {
         // Fingerprint already exists — validate branch + type before linking
-        const { data: existing } = await supabase
+        const { data: existing, error: lookupError } = await supabase
           .from("pos_terminals")
           .select("id, branch_id, type, is_active")
           .eq("device_fingerprint", device.device_fingerprint)
           .single();
+        if (lookupError || !existing) {
+          return lookupError
+            ? safeDbErrorResult(lookupError, "db")
+            : { error: "Không tìm thấy terminal trùng fingerprint." };
+        }
         if (
-          existing &&
           existing.branch_id === device.branch_id &&
           existing.type === device.terminal_type &&
           existing.is_active
@@ -270,13 +274,15 @@ async function _approveDevice(id: number) {
     }
   } else if (device.terminal_type === "kds_station") {
     // Check if there's already a KDS station for this branch; if so, link to the first one
-    const { data: existingStations } = await supabase
+    const { data: existingStations, error: stationLookupError } = await supabase
       .from("kds_stations")
       .select("id")
       .eq("branch_id", device.branch_id)
       .eq("is_active", true)
       .order("id", { ascending: true })
       .limit(1);
+
+    if (stationLookupError) return safeDbErrorResult(stationLookupError, "db");
 
     if (existingStations && existingStations.length >= 1 && existingStations[0]) {
       linkedStationId = existingStations[0].id;

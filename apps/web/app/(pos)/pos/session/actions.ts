@@ -55,7 +55,7 @@ async function _getUserLinkedTerminal() {
 
   if (!device?.linked_terminal_id) return null;
 
-  // Validate terminal belongs to caller's branch, is cashier_station, and active
+  // Validate terminal belongs to caller's branch, is approved cashier_station, and active
   const { data: terminal } = await supabase
     .from("pos_terminals")
     .select("id, name, type")
@@ -63,6 +63,7 @@ async function _getUserLinkedTerminal() {
     .eq("branch_id", branchId)
     .eq("type", "cashier_station")
     .eq("is_active", true)
+    .not("approved_at", "is", null)
     .maybeSingle();
 
   return terminal ?? null;
