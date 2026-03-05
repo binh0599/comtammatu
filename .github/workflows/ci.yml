@@ -42,6 +42,64 @@ jobs:
       - name: Test
         run: pnpm test
 
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    needs: lint-typecheck-test
+    if: github.event_name == 'pull_request'
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_OWNER_EMAIL: ${{ secrets.E2E_OWNER_EMAIL }}
+      E2E_OWNER_PASSWORD: ${{ secrets.E2E_OWNER_PASSWORD }}
+      E2E_MANAGER_EMAIL: ${{ secrets.E2E_MANAGER_EMAIL }}
+      E2E_MANAGER_PASSWORD: ${{ secrets.E2E_MANAGER_PASSWORD }}
+      E2E_CASHIER_EMAIL: ${{ secrets.E2E_CASHIER_EMAIL }}
+      E2E_CASHIER_PASSWORD: ${{ secrets.E2E_CASHIER_PASSWORD }}
+      E2E_WAITER_EMAIL: ${{ secrets.E2E_WAITER_EMAIL }}
+      E2E_WAITER_PASSWORD: ${{ secrets.E2E_WAITER_PASSWORD }}
+      E2E_CHEF_EMAIL: ${{ secrets.E2E_CHEF_EMAIL }}
+      E2E_CHEF_PASSWORD: ${{ secrets.E2E_CHEF_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @comtammatu/database build
+
+      - name: Build app
+        run: pnpm --filter @comtammatu/web build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          CI: true
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
   secrets-scan:
     name: Secrets Scan
     runs-on: ubuntu-latest
