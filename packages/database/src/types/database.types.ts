@@ -1438,7 +1438,7 @@ export type Database = {
           subtotal: number
           table_id: number | null
           tax: number
-          terminal_id: number
+          terminal_id: number | null
           total: number
           type: string
           updated_at: string
@@ -1460,7 +1460,7 @@ export type Database = {
           subtotal?: number
           table_id?: number | null
           tax?: number
-          terminal_id: number
+          terminal_id?: number | null
           total?: number
           type: string
           updated_at?: string
@@ -1482,7 +1482,7 @@ export type Database = {
           subtotal?: number
           table_id?: number | null
           tax?: number
-          terminal_id?: number
+          terminal_id?: number | null
           total?: number
           type?: string
           updated_at?: string
@@ -1545,7 +1545,7 @@ export type Database = {
           provider: string | null
           reference_no: string | null
           status: string
-          terminal_id: number
+          terminal_id: number | null
           tip: number
           updated_at: string
         }
@@ -1561,7 +1561,7 @@ export type Database = {
           provider?: string | null
           reference_no?: string | null
           status?: string
-          terminal_id: number
+          terminal_id?: number | null
           tip?: number
           updated_at?: string
         }
@@ -1577,7 +1577,7 @@ export type Database = {
           provider?: string | null
           reference_no?: string | null
           status?: string
-          terminal_id?: number
+          terminal_id?: number | null
           tip?: number
           updated_at?: string
         }
@@ -1733,7 +1733,7 @@ export type Database = {
           opened_at: string
           opening_amount: number
           status: string
-          terminal_id: number
+          terminal_id: number | null
           updated_at: string
         }
         Insert: {
@@ -1749,7 +1749,7 @@ export type Database = {
           opened_at?: string
           opening_amount?: number
           status?: string
-          terminal_id: number
+          terminal_id?: number | null
           updated_at?: string
         }
         Update: {
@@ -1765,7 +1765,7 @@ export type Database = {
           opened_at?: string
           opening_amount?: number
           status?: string
-          terminal_id?: number
+          terminal_id?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -2198,12 +2198,16 @@ export type Database = {
           created_at: string
           device_fingerprint: string
           device_name: string
+          device_type: string | null
           id: number
           ip_address: string | null
+          linked_station_id: number | null
+          linked_terminal_id: number | null
           registered_by: string
           rejected_at: string | null
           status: string
           tenant_id: number
+          terminal_type: string | null
           updated_at: string
           user_agent: string | null
         }
@@ -2215,12 +2219,16 @@ export type Database = {
           created_at?: string
           device_fingerprint: string
           device_name?: string
+          device_type?: string | null
           id?: never
           ip_address?: string | null
+          linked_station_id?: number | null
+          linked_terminal_id?: number | null
           registered_by: string
           rejected_at?: string | null
           status?: string
           tenant_id: number
+          terminal_type?: string | null
           updated_at?: string
           user_agent?: string | null
         }
@@ -2232,12 +2240,16 @@ export type Database = {
           created_at?: string
           device_fingerprint?: string
           device_name?: string
+          device_type?: string | null
           id?: never
           ip_address?: string | null
+          linked_station_id?: number | null
+          linked_terminal_id?: number | null
           registered_by?: string
           rejected_at?: string | null
           status?: string
           tenant_id?: number
+          terminal_type?: string | null
           updated_at?: string
           user_agent?: string | null
         }
@@ -2254,6 +2266,20 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_linked_station_id_fkey"
+            columns: ["linked_station_id"]
+            isOneToOne: false
+            referencedRelation: "kds_stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_linked_terminal_id_fkey"
+            columns: ["linked_terminal_id"]
+            isOneToOne: false
+            referencedRelation: "pos_terminals"
             referencedColumns: ["id"]
           },
           {
@@ -2986,3 +3012,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

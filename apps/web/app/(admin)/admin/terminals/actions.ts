@@ -211,7 +211,7 @@ async function _approveDevice(id: number) {
   // Verify device belongs to caller's tenant
   const { data: device } = await supabase
     .from("registered_devices")
-    .select("id, status, tenant_id")
+    .select("id, status, tenant_id, branch_id, device_fingerprint, device_name, terminal_type, registered_by")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -224,18 +224,83 @@ async function _approveDevice(id: number) {
     return { error: "Thiết bị đã được duyệt trước đó" };
   }
 
+  // Auto-create linked terminal or KDS station based on terminal_type
+  let linkedTerminalId: number | null = null;
+  let linkedStationId: number | null = null;
+
+  if (device.terminal_type === "mobile_order" || device.terminal_type === "cashier_station") {
+    const { data: terminal, error: termError } = await supabase
+      .from("pos_terminals")
+      .insert({
+        name: device.device_name || `${device.terminal_type === "cashier_station" ? "Thu ngân" : "Gọi món"} - ${device.device_fingerprint.slice(0, 8)}`,
+        type: device.terminal_type,
+        branch_id: device.branch_id,
+        device_fingerprint: device.device_fingerprint,
+        registered_by: device.registered_by,
+        approved_by: userId,
+        approved_at: new Date().toISOString(),
+        is_active: true,
+      })
+      .select("id")
+      .single();
+
+    if (termError) {
+      // If fingerprint already exists in pos_terminals, find it
+      if (termError.code === "23505") {
+        const { data: existing } = await supabase
+          .from("pos_terminals")
+          .select("id")
+          .eq("device_fingerprint", device.device_fingerprint)
+          .single();
+        if (existing) linkedTerminalId = existing.id;
+      } else {
+        return safeDbErrorResult(termError, "db");
+      }
+    } else if (terminal) {
+      linkedTerminalId = terminal.id;
+    }
+  } else if (device.terminal_type === "kds_station") {
+    // Check if there's already a KDS station for this branch; if only one, link to it
+    const { data: existingStations } = await supabase
+      .from("kds_stations")
+      .select("id")
+      .eq("branch_id", device.branch_id)
+      .eq("is_active", true);
+
+    if (existingStations && existingStations.length === 1 && existingStations[0]) {
+      linkedStationId = existingStations[0].id;
+    } else {
+      // Create a new KDS station for this device
+      const { data: station, error: stationError } = await supabase
+        .from("kds_stations")
+        .insert({
+          name: device.device_name || `KDS - ${device.device_fingerprint.slice(0, 8)}`,
+          branch_id: device.branch_id,
+          is_active: true,
+        })
+        .select("id")
+        .single();
+
+      if (stationError) return safeDbErrorResult(stationError, "db");
+      if (station) linkedStationId = station.id;
+    }
+  }
+
   const { error } = await supabase
     .from("registered_devices")
     .update({
       status: "approved",
       approved_by: userId,
       approved_at: new Date().toISOString(),
+      linked_terminal_id: linkedTerminalId,
+      linked_station_id: linkedStationId,
     })
     .eq("id", id);
 
   if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/terminals");
+  revalidatePath("/admin/kds-stations");
   return { error: null };
 }
 
@@ -278,13 +343,27 @@ async function _deleteDevice(id: number) {
 
   const { data: device } = await supabase
     .from("registered_devices")
-    .select("id, tenant_id")
+    .select("id, tenant_id, linked_terminal_id, linked_station_id")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
 
   if (!device) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  // Deactivate linked terminal/station
+  if (device.linked_terminal_id) {
+    await supabase
+      .from("pos_terminals")
+      .update({ is_active: false })
+      .eq("id", device.linked_terminal_id);
+  }
+  if (device.linked_station_id) {
+    await supabase
+      .from("kds_stations")
+      .update({ is_active: false })
+      .eq("id", device.linked_station_id);
   }
 
   const { error } = await supabase
@@ -295,6 +374,7 @@ async function _deleteDevice(id: number) {
   if (error) return safeDbErrorResult(error, "db");
 
   revalidatePath("/admin/terminals");
+  revalidatePath("/admin/kds-stations");
   return { error: null };
 }
 
