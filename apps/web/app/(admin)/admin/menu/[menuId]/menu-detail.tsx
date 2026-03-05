@@ -139,6 +139,7 @@ export function MenuDetail({
   const [selectedSideIds, setSelectedSideIds] = useState<Set<number>>(
     new Set(),
   );
+  const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -221,8 +222,14 @@ export function MenuDetail({
   }
 
   function handleDeleteItem(id: number) {
+    setError(null);
     startTransition(async () => {
-      await deleteMenuItem(id);
+      const result = await deleteMenuItem(id);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setDeletingItemId(null);
+      }
     });
   }
 
@@ -327,6 +334,19 @@ export function MenuDetail({
           </DialogContent>
         </Dialog>
       </div>
+
+      {error && (
+        <div className="mb-4 flex items-center justify-between rounded-md bg-red-50 p-3 text-sm text-red-600">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-4 font-medium underline hover:no-underline"
+          >
+            Đóng
+          </button>
+        </div>
+      )}
 
       {categories.length === 0 ? (
         <div className="bg-muted/50 flex h-40 items-center justify-center rounded-xl">
@@ -618,7 +638,17 @@ export function MenuDetail({
                               </DialogContent>
                             </Dialog>
 
-                            <AlertDialog>
+                            <AlertDialog
+                              open={deletingItemId === item.id}
+                              onOpenChange={(open) => {
+                                if (open) {
+                                  setError(null);
+                                  setDeletingItemId(item.id);
+                                } else {
+                                  setDeletingItemId(null);
+                                }
+                              }}
+                            >
                               <AlertDialogTrigger asChild>
                                 <Button variant="ghost" size="icon">
                                   <Trash2 className="h-4 w-4 text-red-500" />
@@ -634,15 +664,22 @@ export function MenuDetail({
                                     vĩnh viễn.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
+                                {error && (
+                                  <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                                    {error}
+                                  </div>
+                                )}
                                 <AlertDialogFooter>
                                   <AlertDialogCancel>Hủy</AlertDialogCancel>
                                   <AlertDialogAction
-                                    onClick={() =>
-                                      handleDeleteItem(item.id)
-                                    }
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleDeleteItem(item.id);
+                                    }}
                                     className="bg-red-600 hover:bg-red-700"
+                                    disabled={isPending}
                                   >
-                                    Xóa
+                                    {isPending ? "Đang xóa..." : "Xóa"}
                                   </AlertDialogAction>
                                 </AlertDialogFooter>
                               </AlertDialogContent>

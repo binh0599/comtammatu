@@ -16,7 +16,7 @@
 | Hosting | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI |
 | Shared packages | `@comtammatu/database`, `@comtammatu/shared` (Zod schemas), `@comtammatu/security` (stub), `@comtammatu/ui` (stub) |
 
-**Phase:** MVP Complete (8 weeks). ~180 source files, 30 routes, `main` branch.
+**Phase:** Post-MVP Sprint 3 (Menu & Devices). ~180 source files, 30+ routes, `main` branch.
 
 ---
 

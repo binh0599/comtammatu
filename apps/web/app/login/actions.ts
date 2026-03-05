@@ -8,6 +8,7 @@ import {
   ActionError,
   handleServerActionError,
   entityIdSchema,
+  DEVICE_CHECK_ROLES,
 } from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
 
@@ -17,9 +18,6 @@ const loginSchema = z.object({
   device_fingerprint: z.string().min(1).max(255).optional(),
   device_name: z.string().max(255).optional(),
 });
-
-/** Roles that require device approval before accessing POS/KDS */
-const DEVICE_CHECK_ROLES = ["cashier", "waiter", "chef"];
 
 function generateApprovalCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // No 0/O/1/I to avoid confusion
@@ -91,7 +89,11 @@ async function _login(formData: FormData) {
   const role = profile?.role ?? "customer";
 
   // Owner, manager, hr, customer: skip device check, redirect directly
-  if (!DEVICE_CHECK_ROLES.includes(role)) {
+  if (
+    !DEVICE_CHECK_ROLES.includes(
+      role as (typeof DEVICE_CHECK_ROLES)[number],
+    )
+  ) {
     redirect(getRoleRedirectPath(role));
   }
 
@@ -105,18 +107,26 @@ async function _login(formData: FormData) {
     );
   }
 
-  // Check if device is already registered — scope by tenant + branch
+  // Check if device is already registered — scope by tenant (unique per tenant)
   const { data: existingDevice } = await supabase
     .from("registered_devices")
-    .select("id, status, approval_code")
+    .select("id, status, approval_code, branch_id")
     .eq("device_fingerprint", fingerprint)
     .eq("tenant_id", profile.tenant_id)
-    .eq("branch_id", profile.branch_id)
     .maybeSingle();
 
   if (existingDevice) {
     if (existingDevice.status === "approved") {
-      // Device approved — go straight through
+      if (existingDevice.branch_id !== profile.branch_id) {
+        // Device approved at a different branch — staff must contact manager
+        // Manager can delete the old registration from admin panel,
+        // then staff logs in again to create a new registration
+        throw new ActionError(
+          "Thiết bị đã được duyệt ở chi nhánh khác. Liên hệ quản lý để chuyển.",
+          "VALIDATION_ERROR",
+        );
+      }
+      // Device approved at same branch — go straight through
       redirect(getRoleRedirectPath(role));
     }
 
@@ -130,20 +140,29 @@ async function _login(formData: FormData) {
       };
     }
 
-    // Device rejected — re-create with new code
-    await supabase
+    // Device rejected — re-register with new approval code
+    // RLS policy "registered_devices_reregister_own" allows staff to UPDATE
+    // their own rejected device back to pending
+    const { error: reregError } = await supabase
       .from("registered_devices")
       .update({
         status: "pending",
         approval_code: generateApprovalCode(),
         registered_by: authData.user.id,
         ip_address: ip,
-        user_agent: parsed.data.device_name ?? "",
+        user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
         approved_by: null,
         approved_at: null,
         rejected_at: null,
       })
       .eq("id", existingDevice.id);
+
+    if (reregError) {
+      throw new ActionError(
+        "Không thể đăng ký lại thiết bị. Vui lòng liên hệ quản lý.",
+        "VALIDATION_ERROR",
+      );
+    }
 
     const { data: refreshed } = await supabase
       .from("registered_devices")
@@ -161,7 +180,7 @@ async function _login(formData: FormData) {
 
   // New device — register it
   const approvalCode = generateApprovalCode();
-  const { data: newDevice } = await supabase
+  const { data: newDevice, error: insertError } = await supabase
     .from("registered_devices")
     .insert({
       tenant_id: profile.tenant_id,
@@ -176,6 +195,20 @@ async function _login(formData: FormData) {
     })
     .select("id")
     .single();
+
+  if (insertError) {
+    // Duplicate fingerprint within tenant (23505) — device exists in another branch
+    if (insertError.code === "23505") {
+      throw new ActionError(
+        "Thiết bị đã được đăng ký ở chi nhánh khác. Vui lòng liên hệ quản lý.",
+        "VALIDATION_ERROR",
+      );
+    }
+    throw new ActionError(
+      "Không thể đăng ký thiết bị. Vui lòng thử lại.",
+      "VALIDATION_ERROR",
+    );
+  }
 
   return {
     pendingApproval: true,

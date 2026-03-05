@@ -162,10 +162,10 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ---
 
-## POST-MVP BACKLOG (Updated 2026-03-02)
+## POST-MVP BACKLOG (Updated 2026-03-05)
 
 ```
-Completed (Post-MVP Sprint 1):
+Completed (Post-MVP Sprint 1 & 2):
 - [x] Momo payment integration (webhook, HMAC)
 - [x] Stock auto-deduction on order completion (DB trigger)
 - [x] Voucher redemption at POS
@@ -174,6 +174,12 @@ Completed (Post-MVP Sprint 1):
 - [x] WCAG AAA accessibility fixes
 - [x] Security hardening (POS/KDS device flow, KDS station actions)
 - [x] HR employee auth account creation from admin
+- [x] Rate Limiting (Redis) and error boundaries
+
+Completed (Post-MVP Sprint 3):
+- [x] Menu System Restructure (Category types, side dishes, item notes)
+- [x] Device approval flow and fingerprinting for terminal registration
+- [x] Move printer settings to POS/KDS (Peripheral config)
 
 Priority 1 (Core — Week 11-12):
 - [ ] VNPay payment integration (webhooks, HMAC verification)
@@ -187,14 +193,11 @@ Priority 2 (Operations — Week 13-14):
 - [ ] Attendance clock-in/clock-out (QR scan)
 - [ ] Branch comparison in dashboard
 - [ ] Offline support (Service Worker, IndexedDB, AES-256-GCM)
-- [ ] Device fingerprinting for terminal registration
 
 Priority 3 (Quality — Week 15-16):
 - [ ] E2E testing (Playwright)
 - [ ] RLS validation test suite
 - [ ] API documentation (OpenAPI)
-- [ ] Upstash Redis rate limiting
-- [ ] Peripheral config (printers, cash drawers)
 
 Priority 4 (Growth — Week 17+):
 - [ ] Campaigns & notifications (email/SMS/push marketing)
@@ -218,20 +221,15 @@ Priority 4 (Growth — Week 17+):
 
 ---
 
-## GIT HISTORY
+## GIT HISTORY (Milestones)
 
-```
-ef127d6 fix: harden KDS station actions — role check, ownership verification, tenant filtering
-96398c0 improve: WCAG AAA accessibility fixes across admin components
-49299b6 improve: accessibility across all modules + add state machine docs
-60bcbef feat: add admin payment management page
-34c8462 fix: complete order flow — KDS sync, Momo webhook, and served status guidance
-f6f5183 fix: harden POS/KDS device flow — 7 security and correctness fixes
-05a8df3 feat: redesign HR employee management — create auth accounts from admin
-e2bc0dc feat: add Momo payment, voucher POS, stock auto-deduction, dashboard charts
-82e5c12 fix: migrate middleware.ts to proxy.ts for Next.js 16.1 compatibility
-244fa73 feat: complete Week 7-8 — CRM Admin, Customer PWA, GDPR Privacy
-0c9f776 feat: complete Week 5-6 — Inventory, HR, Dashboard, Security
-8adbbf7 feat: complete Week 3-4 — Split POS, Orders, KDS & Cash Payment
-8b48166 feat: complete Week 1-2 foundation — auth, admin layout, menu CRUD
-```
+| Milestone | Description |
+| --------- | ----------- |
+| Week 1-2 | Foundation — auth, admin layout, menu CRUD |
+| Week 3-4 | Split POS, Orders, KDS & Cash Payment |
+| Week 5-6 | Inventory, HR, Dashboard, Security |
+| Sprint 1 | Device approval flow, printer settings to POS/KDS |
+| Sprint 2 | Payment hardening, Redis rate limiting, Resiliency |
+| Sprint 3 | Menu restructure (category types, sides, notes), device management fixes |
+
+See `git log --oneline` for full commit history.

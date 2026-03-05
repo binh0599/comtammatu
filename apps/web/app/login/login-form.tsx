@@ -27,6 +27,15 @@ type LoginState =
     }
   | null;
 
+interface LoginFormProps {
+  /** Pre-populated pending device info from server (page refresh scenario) */
+  pendingDevice?: {
+    approvalCode: string;
+    deviceId: number;
+    role: string;
+  } | null;
+}
+
 function loginAction(
   _prevState: LoginState,
   formData: FormData,
@@ -34,7 +43,7 @@ function loginAction(
   return login(formData) as Promise<LoginState>;
 }
 
-export function LoginForm() {
+export function LoginForm({ pendingDevice }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(loginAction, null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -66,13 +75,21 @@ export function LoginForm() {
     dnInput.value = getDeviceName();
   }, []);
 
-  // Show pending approval screen
-  if (state && "pendingApproval" in state && state.pendingApproval) {
+  // Show pending approval screen — either from server action result OR from
+  // server-side props (page refresh while device is still pending)
+  const pendingInfo =
+    state && "pendingApproval" in state && state.pendingApproval
+      ? state
+      : pendingDevice
+        ? { ...pendingDevice, pendingApproval: true as const }
+        : null;
+
+  if (pendingInfo) {
     return (
       <DevicePendingApproval
-        approvalCode={state.approvalCode}
-        deviceId={state.deviceId}
-        role={state.role}
+        approvalCode={pendingInfo.approvalCode}
+        deviceId={pendingInfo.deviceId}
+        role={pendingInfo.role}
       />
     );
   }
