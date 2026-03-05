@@ -17,6 +17,29 @@ import {
 
 // ===== Queries =====
 
+async function _getPrintersForStation(stationId: number) {
+  const parsedId = entityIdSchema.parse(stationId);
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, KDS_ROLES, "xem cấu hình máy in");
+  const { supabase } = ctx;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any)
+    .from("printer_configs")
+    .select("*")
+    .eq("branch_id", branchId)
+    .eq("assigned_to_type", "kds_station")
+    .eq("assigned_to_id", parsedId)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export const getPrintersForStation = withServerQuery(_getPrintersForStation);
+
 async function _getPrintersForBranch() {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
