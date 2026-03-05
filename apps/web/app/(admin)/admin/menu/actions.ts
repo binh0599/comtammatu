@@ -110,7 +110,7 @@ async function _deleteMenu(id: number) {
       .select("id", { count: "exact", head: true })
       .in(
         "menu_item_id",
-        itemIds.map((i) => i.id),
+        itemIds.map((i: { id: number }) => i.id),
       );
 
     if (orderCheckError) return safeDbErrorResult(orderCheckError, "db");
