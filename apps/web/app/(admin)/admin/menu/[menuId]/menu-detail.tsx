@@ -195,8 +195,10 @@ export function MenuDetail({
   }
 
   function handleDeleteCategory(id: number) {
+    setError(null);
     startTransition(async () => {
-      await deleteCategory(id);
+      const result = await deleteCategory(id);
+      if (result?.error) setError(result.error);
     });
   }
 

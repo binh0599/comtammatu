@@ -93,8 +93,10 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
   }
 
   function handleDelete(id: number) {
+    setError(null);
     startTransition(async () => {
-      await deleteMenu(id);
+      const result = await deleteMenu(id);
+      if (result?.error) setError(result.error);
     });
   }
 
@@ -161,6 +163,19 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
           </DialogContent>
         </Dialog>
       </div>
+
+      {error && !isCreateOpen && !editingMenu && (
+        <div className="mb-4 flex items-center justify-between rounded-md bg-red-50 p-3 text-sm text-red-600">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-4 font-medium underline hover:no-underline"
+          >
+            Đóng
+          </button>
+        </div>
+      )}
 
       <div className="rounded-md border">
         <Table>
