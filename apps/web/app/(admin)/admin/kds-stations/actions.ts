@@ -142,7 +142,7 @@ async function _createKdsStation(formData: FormData) {
     if (junctionError) return { error: junctionError.message };
   }
 
-  revalidatePath("/admin/kds-stations");
+  revalidatePath("/admin/terminals");
   return { error: null, success: true };
 }
 
@@ -210,7 +210,7 @@ async function _updateKdsStation(id: number, formData: FormData) {
     if (junctionError) return { error: junctionError.message };
   }
 
-  revalidatePath("/admin/kds-stations");
+  revalidatePath("/admin/terminals");
   return { error: null, success: true };
 }
 
@@ -232,7 +232,7 @@ async function _toggleKdsStation(id: number) {
 
   if (updateError) return { error: updateError.message };
 
-  revalidatePath("/admin/kds-stations");
+  revalidatePath("/admin/terminals");
   return { error: null, success: true };
 }
 
@@ -249,7 +249,7 @@ async function _deleteKdsStation(id: number) {
 
   if (error) return safeDbErrorResult(error, "db");
 
-  revalidatePath("/admin/kds-stations");
+  revalidatePath("/admin/terminals");
   return { error: null, success: true };
 }
 

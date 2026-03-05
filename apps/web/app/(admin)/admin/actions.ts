@@ -2,11 +2,14 @@
 
 import "@/lib/server-bootstrap";
 import {
-  ActionError,
-  getActionContext,
+  getAdminContext,
+  getBranchIdsForTenant,
   withServerQuery,
   getOrderStatusLabel,
   safeDbError,
+  ADMIN_ROLES,
+  dashboardLimitSchema,
+  dashboardDaysSchema,
 } from "@comtammatu/shared";
 
 // =====================
@@ -22,30 +25,10 @@ export interface DashboardStats {
 }
 
 async function _getDashboardStats(): Promise<DashboardStats> {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) {
-    return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
-  }
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
-
-  const { data: orders, error: orderError } = await supabase
-    .from("orders")
-    .select("total, created_at, status")
-    .in("branch_id", branchIds)
-    .not("status", "in", '("cancelled","draft")');
-
-  if (orderError)
-    throw safeDbError(orderError, "db");
-  if (!orders || orders.length === 0) {
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
 
@@ -56,20 +39,64 @@ async function _getDashboardStats(): Promise<DashboardStats> {
   if (weekStart > todayStart) weekStart.setDate(weekStart.getDate() - 7);
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  let todayRevenue = 0;
+  // Use earliest boundary (monthStart) as SQL filter to avoid fetching all rows
+  const earliestDate = new Date(Math.min(monthStart.getTime(), weekStart.getTime()));
+
+  // Completed orders for order count — filtered to current month at SQL level
+  const { data: orders, error: orderError } = await supabase
+    .from("orders")
+    .select("id, created_at")
+    .in("branch_id", branchIds)
+    .eq("status", "completed")
+    .gte("created_at", earliestDate.toISOString());
+
+  if (orderError)
+    throw safeDbError(orderError, "db");
+
+  const orderIds = (orders ?? []).map((o: { id: number }) => o.id);
+
+  // Completed payments for those orders — filtered to current month at SQL level
+  let filteredPayments: { amount: number; tip: number; paid_at: string }[] = [];
+  if (orderIds.length > 0) {
+    const { data: paymentsData, error: paymentError } = await supabase
+      .from("payments")
+      .select("amount, tip, paid_at")
+      .in("order_id", orderIds)
+      .eq("status", "completed")
+      .not("paid_at", "is", null)
+      .gte("paid_at", earliestDate.toISOString());
+
+    if (paymentError)
+      throw safeDbError(paymentError, "db");
+
+    filteredPayments = (paymentsData ?? []) as typeof filteredPayments;
+  }
+
+  if (filteredPayments.length === 0 && orderIds.length === 0) {
+    return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
+  }
+
+  // Count orders by date
   let todayOrders = 0;
+  for (const order of orders ?? []) {
+    const orderDate = new Date(order.created_at);
+    if (orderDate >= todayStart) todayOrders++;
+  }
+
+  // Calculate revenue from payments
+  let todayRevenue = 0;
   let weekRevenue = 0;
   let monthRevenue = 0;
   let totalRevenue = 0;
 
-  for (const order of orders) {
-    const orderDate = new Date(order.created_at);
-    const total = Number(order.total);
+  for (const payment of filteredPayments) {
+    const paidDate = new Date(payment.paid_at);
+    const amount = Number(payment.amount) + Number(payment.tip);
 
-    if (orderDate >= todayStart) { todayRevenue += total; todayOrders++; }
-    if (orderDate >= weekStart) weekRevenue += total;
-    if (orderDate >= monthStart) monthRevenue += total;
-    totalRevenue += total;
+    if (paidDate >= todayStart) todayRevenue += amount;
+    if (paidDate >= weekStart) weekRevenue += amount;
+    if (paidDate >= monthStart) monthRevenue += amount;
+    totalRevenue += amount;
   }
 
   return {
@@ -77,7 +104,7 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     todayOrders,
     weekRevenue,
     monthRevenue,
-    avgOrderValue: orders.length > 0 ? totalRevenue / orders.length : 0,
+    avgOrderValue: filteredPayments.length > 0 ? totalRevenue / filteredPayments.length : 0,
   };
 }
 
@@ -98,25 +125,18 @@ export interface RecentOrder {
 }
 
 async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
-  const { supabase, tenantId } = await getActionContext();
+  const validLimit = dashboardLimitSchema.parse(limit);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) return [];
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return [];
 
   const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("id, order_number, status, total, type, created_at, tables(number)")
     .in("branch_id", branchIds)
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(validLimit);
 
   if (orderError)
     throw safeDbError(orderError, "db");
@@ -145,18 +165,11 @@ export interface TopSellingItem {
 }
 
 async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
-  const { supabase, tenantId } = await getActionContext();
+  const validLimit = dashboardLimitSchema.parse(limit);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) return [];
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return [];
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -204,7 +217,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
 
   return Array.from(aggregated.values())
     .sort((a, b) => b.total_qty - a.total_qty)
-    .slice(0, limit);
+    .slice(0, validLimit);
 }
 
 export const getTopSellingItems = withServerQuery(_getTopSellingItems);
@@ -214,18 +227,10 @@ export const getTopSellingItems = withServerQuery(_getTopSellingItems);
 // =====================
 
 async function _getOrderStatusCounts(): Promise<Record<string, number>> {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) return {};
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return {};
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -255,41 +260,71 @@ export const getOrderStatusCounts = withServerQuery(_getOrderStatusCounts);
 // =====================
 
 async function _getRevenueTrend(days: number = 7) {
-  const { supabase, tenantId } = await getActionContext();
+  const validDays = dashboardDaysSchema.parse(days);
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const branchIds =
-    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b: { id: number }) => b.id) ?? [];
-
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days + 1);
+  startDate.setDate(startDate.getDate() - validDays + 1);
   startDate.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  // Get completed orders in date range for order count
+  const { data: orders, error: ordersError } = await supabase
     .from("orders")
-    .select("total, created_at")
+    .select("id, created_at")
     .in("branch_id", branchIds)
-    .not("status", "in", '("cancelled","draft")')
+    .eq("status", "completed")
     .gte("created_at", startDate.toISOString());
+
+  if (ordersError)
+    throw safeDbError(ordersError, "db");
+
+  const orderIds = (orders ?? []).map((o: { id: number }) => o.id);
+
+  // Get completed payments for those orders — actual revenue
+  let payments: { amount: number; tip: number; paid_at: string }[] = [];
+  if (orderIds.length > 0) {
+    const { data: paymentsData, error: paymentsError } = await supabase
+      .from("payments")
+      .select("amount, tip, paid_at")
+      .in("order_id", orderIds)
+      .eq("status", "completed")
+      .not("paid_at", "is", null);
+
+    if (paymentsError)
+      throw safeDbError(paymentsError, "db");
+
+    payments = (paymentsData ?? []) as typeof payments;
+  }
 
   const dateMap = new Map<string, { revenue: number; orders: number }>();
 
-  for (let i = 0; i < days; i++) {
+  for (let i = 0; i < validDays; i++) {
     const d = new Date(startDate);
     d.setDate(d.getDate() + i);
     const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
     dateMap.set(key, { revenue: 0, orders: 0 });
   }
 
+  // Count orders per day
   for (const order of orders ?? []) {
     const d = new Date(order.created_at);
     const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
     const entry = dateMap.get(key);
     if (entry) {
-      entry.revenue += Number(order.total);
       entry.orders += 1;
+    }
+  }
+
+  // Sum revenue from payments per day
+  for (const payment of payments) {
+    const d = new Date(payment.paid_at);
+    const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+    const entry = dateMap.get(key);
+    if (entry) {
+      entry.revenue += Number(payment.amount) + Number(payment.tip);
     }
   }
 
@@ -307,23 +342,23 @@ export const getRevenueTrend = withServerQuery(_getRevenueTrend);
 // =====================
 
 async function _getHourlyOrderVolume() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const branchIds =
-    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b: { id: number }) => b.id) ?? [];
-
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("created_at")
     .in("branch_id", branchIds)
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", todayStart.toISOString());
+
+  if (orderError)
+    throw safeDbError(orderError, "db");
 
   const hourMap = new Map<number, number>();
   for (let h = 6; h <= 23; h++) {
@@ -348,22 +383,22 @@ export const getHourlyOrderVolume = withServerQuery(_getHourlyOrderVolume);
 // =====================
 
 async function _getOrderStatusDistribution() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const branchIds =
-    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b: { id: number }) => b.id) ?? [];
-
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("status")
     .in("branch_id", branchIds)
     .gte("created_at", todayStart.toISOString());
+
+  if (orderError)
+    throw safeDbError(orderError, "db");
 
   const statusMap = new Map<string, number>();
   for (const order of orders ?? []) {
