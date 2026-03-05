@@ -391,3 +391,74 @@ async function _getOrderStatusDistribution() {
 }
 
 export const getOrderStatusDistribution = withServerQuery(_getOrderStatusDistribution);
+
+// =====================
+// Branch Comparison
+// =====================
+
+export interface BranchComparisonData {
+  branch_id: number;
+  branch_name: string;
+  revenue: number;
+  orders: number;
+  avgTicket: number;
+}
+
+async function _getBranchComparison(
+  startDate: string,
+  endDate: string
+): Promise<BranchComparisonData[]> {
+  const { supabase, tenantId } = await getActionContext();
+
+  const { data: branches, error: branchError } = await supabase
+    .from("branches")
+    .select("id, name")
+    .eq("tenant_id", tenantId)
+    .eq("is_active", true);
+
+  if (branchError) throw safeDbError(branchError, "db");
+  if (!branches || branches.length === 0) return [];
+
+  const branchIds = branches.map((b: { id: number }) => b.id);
+
+  const start = new Date(startDate);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(endDate);
+  end.setHours(23, 59, 59, 999);
+
+  const { data: orders, error: orderError } = await supabase
+    .from("orders")
+    .select("branch_id, total")
+    .in("branch_id", branchIds)
+    .not("status", "in", '("cancelled","draft")')
+    .gte("created_at", start.toISOString())
+    .lte("created_at", end.toISOString());
+
+  if (orderError) throw safeDbError(orderError, "db");
+
+  const branchMap = new Map<number, { revenue: number; orders: number }>();
+  for (const b of branches) {
+    branchMap.set(b.id, { revenue: 0, orders: 0 });
+  }
+
+  for (const order of orders ?? []) {
+    const entry = branchMap.get(order.branch_id);
+    if (entry) {
+      entry.revenue += Number(order.total);
+      entry.orders += 1;
+    }
+  }
+
+  return branches.map((b: { id: number; name: string }) => {
+    const stats = branchMap.get(b.id) ?? { revenue: 0, orders: 0 };
+    return {
+      branch_id: b.id,
+      branch_name: b.name,
+      revenue: stats.revenue,
+      orders: stats.orders,
+      avgTicket: stats.orders > 0 ? stats.revenue / stats.orders : 0,
+    };
+  });
+}
+
+export const getBranchComparison = withServerQuery(_getBranchComparison);
