@@ -97,7 +97,7 @@ async function _deleteMenu(id: number) {
   entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
-  // Verify menu belongs to this tenant before any dependent queries
+  // Verify menu belongs to this tenant
   const { data: menu } = await supabase
     .from("menus")
     .select("id")
@@ -109,41 +109,25 @@ async function _deleteMenu(id: number) {
     return { error: "Thực đơn không tồn tại hoặc không thuộc đơn vị của bạn" };
   }
 
-  // Check if any menu items under this menu have been used in orders
-  const { data: itemIds, error: itemsError } = await supabase
-    .from("menu_items")
-    .select("id, menu_categories!inner(menu_id)")
-    .eq("menu_categories.menu_id", id)
-    .eq("tenant_id", tenantId);
-
-  if (itemsError) return safeDbErrorResult(itemsError, "db");
-
-  if (itemIds && itemIds.length > 0) {
-    const { count, error: orderCheckError } = await supabase
-      .from("order_items")
-      .select("id", { count: "exact", head: true })
-      .in(
-        "menu_item_id",
-        itemIds.map((i: { id: number }) => i.id),
-      );
-
-    if (orderCheckError) return safeDbErrorResult(orderCheckError, "db");
-
-    if (count && count > 0) {
-      return {
-        error:
-          "Không thể xoá thực đơn này vì có món ăn đã được sử dụng trong đơn hàng. Hãy tắt thực đơn (tạm dừng) thay vì xoá.",
-      };
-    }
-  }
-
+  // Delete menu — CASCADE will remove categories and items.
+  // If order_items reference any menu_items, the FK constraint (no CASCADE)
+  // will block deletion with a 23503 error. We catch that specifically
+  // instead of pre-checking order_items (which fails due to branch-scoped RLS).
   const { error } = await supabase
     .from("menus")
     .delete()
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return safeDbErrorResult(error, "db");
+  if (error) {
+    if (error.code === "23503") {
+      return {
+        error:
+          "Không thể xoá thực đơn này vì có món ăn đã được sử dụng trong đơn hàng. Hãy tắt thực đơn (tạm dừng) thay vì xoá.",
+      };
+    }
+    return safeDbErrorResult(error, "db");
+  }
 
   revalidatePath("/admin/menu");
   return { error: null, success: true };
@@ -227,29 +211,19 @@ async function _deleteCategory(id: number) {
     return { error: "Danh mục không tồn tại hoặc không thuộc đơn vị của bạn" };
   }
 
-  // Check if any menu items in this category have been used in orders
-  const { count, error: orderCheckError } = await supabase
-    .from("order_items")
-    .select("id", { count: "exact", head: true })
-    .in(
-      "menu_item_id",
-      (await supabase.from("menu_items").select("id").eq("category_id", id)).data?.map(
-        (i: { id: number }) => i.id,
-      ) ?? [],
-    );
-
-  if (orderCheckError) return safeDbErrorResult(orderCheckError, "db");
-
-  if (count && count > 0) {
-    return {
-      error:
-        "Không thể xoá danh mục này vì có món ăn đã được sử dụng trong đơn hàng. Hãy xoá từng món hoặc tắt hiển thị thay vì xoá.",
-    };
-  }
-
+  // Delete category — CASCADE will remove menu_items.
+  // If order_items reference any items, FK constraint blocks with 23503.
   const { error } = await supabase.from("menu_categories").delete().eq("id", id);
 
-  if (error) return safeDbErrorResult(error, "db");
+  if (error) {
+    if (error.code === "23503") {
+      return {
+        error:
+          "Không thể xoá danh mục này vì có món ăn đã được sử dụng trong đơn hàng. Hãy xoá từng món hoặc tắt hiển thị thay vì xoá.",
+      };
+    }
+    return safeDbErrorResult(error, "db");
+  }
 
   revalidatePath("/admin/menu");
   return { error: null, success: true };
@@ -346,7 +320,7 @@ async function _deleteMenuItem(id: number) {
   entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
-  // Verify menu item belongs to this tenant before any further queries
+  // Verify menu item belongs to this tenant
   const { data: menuItem, error: ownershipError } = await supabase
     .from("menu_items")
     .select("id")
@@ -358,30 +332,24 @@ async function _deleteMenuItem(id: number) {
     return { error: "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn" };
   }
 
-  // Check if menu item has been used in any orders
-  const { count, error: orderCheckError } = await supabase
-    .from("order_items")
-    .select("id", { count: "exact", head: true })
-    .eq("menu_item_id", id);
-
-  if (orderCheckError) {
-    return safeDbErrorResult(orderCheckError, "db");
-  }
-
-  if (count && count > 0) {
-    return {
-      error:
-        "Không thể xoá món này vì đã có đơn hàng sử dụng. Hãy tắt hiển thị (đánh dấu không khả dụng) thay vì xoá.",
-    };
-  }
-
+  // Delete menu item directly. If order_items reference it, FK constraint
+  // blocks with 23503. Pre-checking order_items is unreliable because
+  // order_items RLS is branch-scoped while admin context has no branch.
   const { error } = await supabase
     .from("menu_items")
     .delete()
     .eq("id", id)
     .eq("tenant_id", tenantId);
 
-  if (error) return safeDbErrorResult(error, "db");
+  if (error) {
+    if (error.code === "23503") {
+      return {
+        error:
+          "Không thể xoá món này vì đã có đơn hàng sử dụng. Hãy tắt hiển thị (đánh dấu không khả dụng) thay vì xoá.",
+      };
+    }
+    return safeDbErrorResult(error, "db");
+  }
 
   revalidatePath("/admin/menu");
   return { error: null, success: true };
