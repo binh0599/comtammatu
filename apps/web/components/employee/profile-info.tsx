@@ -1,0 +1,306 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { UserCircle, Shield, Building2, Briefcase, Calendar } from "lucide-react";
+import { updateMyProfile, changeMyPassword } from "@/app/(employee)/employee/actions";
+import {
+  getEmploymentTypeLabel,
+  getEmployeeStatusLabel,
+  formatDate,
+} from "@comtammatu/shared";
+import { toast } from "sonner";
+
+const ROLE_LABELS: Record<string, string> = {
+  owner: "Chủ quán",
+  manager: "Quản lý",
+  cashier: "Thu ngân",
+  chef: "Đầu bếp",
+  waiter: "Phục vụ",
+  inventory: "Kho",
+  hr: "Nhân sự",
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface ProfileInfoProps {
+  profile: { full_name: string | null; role: string; branch_id: number | null } | null;
+  employee: any | null;
+  userEmail: string | null;
+}
+
+export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) {
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
+  // Profile form state
+  const [fullName, setFullName] = useState(profile?.full_name ?? "");
+  const [ecName, setEcName] = useState(employee?.emergency_contact?.name ?? "");
+  const [ecPhone, setEcPhone] = useState(employee?.emergency_contact?.phone ?? "");
+  const [ecRelationship, setEcRelationship] = useState(employee?.emergency_contact?.relationship ?? "");
+
+  // Password form state
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  function handleProfileSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    startTransition(async () => {
+      const result = await updateMyProfile({
+        full_name: fullName,
+        emergency_contact: {
+          name: ecName || undefined,
+          phone: ecPhone || undefined,
+          relationship: ecRelationship || undefined,
+        },
+      });
+
+      if (result && "error" in result && result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Đã cập nhật thông tin");
+        setIsEditingProfile(false);
+      }
+    });
+  }
+
+  function handlePasswordSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    startTransition(async () => {
+      const result = await changeMyPassword({
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+
+      if (result && "error" in result && result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Đã đổi mật khẩu thành công");
+        setIsEditingPassword(false);
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Personal info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <UserCircle className="h-4 w-4" />
+            Thông tin cá nhân
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isEditingProfile ? (
+            <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
+              <div>
+                <Label htmlFor="full_name">Họ tên</Label>
+                <Input
+                  id="full_name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  minLength={2}
+                />
+              </div>
+
+              <Separator />
+              <p className="text-sm font-medium">Liên hệ khẩn cấp</p>
+
+              <div>
+                <Label htmlFor="ec_name">Tên người liên hệ</Label>
+                <Input
+                  id="ec_name"
+                  value={ecName}
+                  onChange={(e) => setEcName(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="ec_phone">Số điện thoại</Label>
+                <Input
+                  id="ec_phone"
+                  value={ecPhone}
+                  onChange={(e) => setEcPhone(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="ec_relationship">Quan hệ</Label>
+                <Input
+                  id="ec_relationship"
+                  value={ecRelationship}
+                  onChange={(e) => setEcRelationship(e.target.value)}
+                />
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isPending} size="sm">
+                  {isPending ? "Đang lưu..." : "Lưu"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditingProfile(false)}
+                >
+                  Hủy
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <InfoRow label="Họ tên" value={profile?.full_name ?? "—"} />
+              <InfoRow label="Email" value={userEmail ?? "—"} />
+              <InfoRow label="Vai trò" value={ROLE_LABELS[profile?.role ?? ""] ?? profile?.role ?? "—"} />
+
+              {employee && (
+                <>
+                  <Separator />
+                  <InfoRow
+                    label="Chi nhánh"
+                    value={employee.branches?.name ?? "—"}
+                    icon={<Building2 className="h-3.5 w-3.5" />}
+                  />
+                  <InfoRow
+                    label="Vị trí"
+                    value={employee.position ?? "—"}
+                    icon={<Briefcase className="h-3.5 w-3.5" />}
+                  />
+                  {employee.department && (
+                    <InfoRow label="Phòng ban" value={employee.department} />
+                  )}
+                  <InfoRow
+                    label="Ngày vào làm"
+                    value={employee.hire_date ? formatDate(employee.hire_date) : "—"}
+                    icon={<Calendar className="h-3.5 w-3.5" />}
+                  />
+                  <InfoRow label="Loại HĐ" value={getEmploymentTypeLabel(employee.employment_type)} />
+                  <InfoRow label="Trạng thái" value={getEmployeeStatusLabel(employee.status)} />
+
+                  {employee.emergency_contact && (
+                    <>
+                      <Separator />
+                      <p className="text-xs font-medium text-muted-foreground">Liên hệ khẩn cấp</p>
+                      {employee.emergency_contact.name && (
+                        <InfoRow label="Tên" value={employee.emergency_contact.name} />
+                      )}
+                      {employee.emergency_contact.phone && (
+                        <InfoRow label="SĐT" value={employee.emergency_contact.phone} />
+                      )}
+                      {employee.emergency_contact.relationship && (
+                        <InfoRow label="Quan hệ" value={employee.emergency_contact.relationship} />
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 w-fit"
+                onClick={() => setIsEditingProfile(true)}
+              >
+                Chỉnh sửa thông tin
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Security section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Shield className="h-4 w-4" />
+            Bảo mật
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isEditingPassword ? (
+            <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
+              <div>
+                <Label htmlFor="new_password">Mật khẩu mới</Label>
+                <Input
+                  id="new_password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={8}
+                  placeholder="Tối thiểu 8 ký tự"
+                />
+              </div>
+              <div>
+                <Label htmlFor="confirm_password">Xác nhận mật khẩu</Label>
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={isPending} size="sm">
+                  {isPending ? "Đang đổi..." : "Đổi mật khẩu"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setIsEditingPassword(false);
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                >
+                  Hủy
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div>
+              <p className="text-muted-foreground text-sm mb-3">
+                Đổi mật khẩu đăng nhập của bạn.
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingPassword(true)}
+              >
+                Đổi mật khẩu
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between text-sm">
+      <span className="text-muted-foreground flex items-center gap-1.5">
+        {icon}
+        {label}
+      </span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}

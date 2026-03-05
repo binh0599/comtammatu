@@ -97,3 +97,41 @@ export const approveLeaveRequestSchema = z.object({
 export type ApproveLeaveRequestInput = z.infer<
   typeof approveLeaveRequestSchema
 >;
+
+// ===== Employee Self-Service Schemas =====
+
+export const updateMyProfileSchema = z.object({
+  full_name: z.string().min(2, "Họ tên tối thiểu 2 ký tự").max(100),
+  emergency_contact: z
+    .object({
+      name: z.string().optional(),
+      phone: z.string().optional(),
+      relationship: z.string().optional(),
+    })
+    .optional(),
+});
+export type UpdateMyProfileInput = z.infer<typeof updateMyProfileSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    new_password: z.string().min(8, "Mật khẩu mới tối thiểu 8 ký tự"),
+    confirm_password: z.string().min(1, "Vui lòng xác nhận mật khẩu"),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirm_password"],
+  });
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
+export const createMyLeaveRequestSchema = z.object({
+  type: z.enum(["annual", "sick", "unpaid", "maternity"], {
+    error: "Chọn loại nghỉ",
+  }),
+  start_date: z.string().min(1, "Ngày bắt đầu không được để trống"),
+  end_date: z.string().min(1, "Ngày kết thúc không được để trống"),
+  days: z.coerce.number().int().positive("Số ngày phải lớn hơn 0"),
+  reason: z.string().max(500).optional().or(z.literal("")),
+});
+export type CreateMyLeaveRequestInput = z.infer<
+  typeof createMyLeaveRequestSchema
+>;

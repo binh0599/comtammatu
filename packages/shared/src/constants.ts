@@ -272,5 +272,8 @@ export const HR_ROLES = ["hr", "manager", "owner"] as const;
 /** Roles allowed to view admin dashboard */
 export const ADMIN_ROLES = ["owner", "manager"] as const;
 
+/** Roles allowed to access Employee Portal */
+export const EMPLOYEE_PORTAL_ROLES = [...STAFF_ROLES] as const;
+
 /** Roles allowed to manage CRM */
 export const CRM_ROLES = ["manager", "owner"] as const;
