@@ -1,10 +1,15 @@
 "use client";
 
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, CalendarDays, CalendarOff, UserCircle } from "lucide-react";
-import { formatTime, getShiftAssignmentStatusLabel, getAttendanceStatusLabel } from "@comtammatu/shared";
+import { Clock, CalendarDays, CalendarOff, UserCircle, LogIn, LogOut } from "lucide-react";
+import { formatTime, formatDateTime, getShiftAssignmentStatusLabel, getAttendanceStatusLabel } from "@comtammatu/shared";
+import { clockIn, clockOut } from "@/app/(employee)/employee/actions";
+import { toast } from "sonner";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface EmployeeHomeProps {
@@ -14,12 +19,42 @@ interface EmployeeHomeProps {
 }
 
 export function EmployeeHome({ todayShifts, todayAttendance, employee }: EmployeeHomeProps) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   const today = new Date().toLocaleDateString("vi-VN", {
     weekday: "long",
     year: "numeric",
     month: "long",
     day: "numeric",
   });
+
+  const canClockIn = employee && !todayAttendance;
+  const canClockOut = employee && todayAttendance && todayAttendance.clock_in && !todayAttendance.clock_out;
+
+  function handleClockIn() {
+    startTransition(async () => {
+      const result = await clockIn();
+      if (result && "error" in result && result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Đã chấm công vào ca");
+        router.refresh();
+      }
+    });
+  }
+
+  function handleClockOut() {
+    startTransition(async () => {
+      const result = await clockOut();
+      if (result && "error" in result && result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success("Đã chấm công ra ca");
+        router.refresh();
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -59,7 +94,7 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
         </CardContent>
       </Card>
 
-      {/* Attendance status */}
+      {/* Attendance + Clock in/out */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -68,21 +103,56 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {!todayAttendance ? (
-            <p className="text-muted-foreground text-sm">Chưa có dữ liệu chấm công hôm nay.</p>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="text-sm">
-                {todayAttendance.clock_in && (
-                  <p>Vào: <span className="font-medium">{formatTime(todayAttendance.clock_in)}</span></p>
-                )}
-                {todayAttendance.clock_out && (
-                  <p>Ra: <span className="font-medium">{formatTime(todayAttendance.clock_out)}</span></p>
-                )}
+          {todayAttendance ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  {todayAttendance.clock_in && (
+                    <p>Vào: <span className="font-medium">{formatDateTime(todayAttendance.clock_in)}</span></p>
+                  )}
+                  {todayAttendance.clock_out && (
+                    <p>Ra: <span className="font-medium">{formatDateTime(todayAttendance.clock_out)}</span></p>
+                  )}
+                  {todayAttendance.hours_worked != null && (
+                    <p>Tổng: <span className="font-medium">{todayAttendance.hours_worked}h</span></p>
+                  )}
+                </div>
+                <Badge variant="outline">
+                  {getAttendanceStatusLabel(todayAttendance.status)}
+                </Badge>
               </div>
-              <Badge variant="outline">
-                {getAttendanceStatusLabel(todayAttendance.status)}
-              </Badge>
+
+              {canClockOut && (
+                <Button
+                  onClick={handleClockOut}
+                  disabled={isPending}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {isPending ? "Đang xử lý..." : "Ra ca"}
+                </Button>
+              )}
+
+              {todayAttendance.clock_out && (
+                <p className="text-muted-foreground text-center text-xs">
+                  Đã hoàn tất chấm công hôm nay.
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <p className="text-muted-foreground text-sm">Chưa chấm công hôm nay.</p>
+              {canClockIn && (
+                <Button
+                  onClick={handleClockIn}
+                  disabled={isPending}
+                  className="w-full"
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  {isPending ? "Đang xử lý..." : "Vào ca"}
+                </Button>
+              )}
             </div>
           )}
         </CardContent>
