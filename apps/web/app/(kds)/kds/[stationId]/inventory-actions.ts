@@ -10,6 +10,7 @@ import {
   safeDbErrorResult,
   toggleMenuItemAvailabilitySchema,
   quickWasteLogSchema,
+  urgentRestockRequestSchema,
 } from "@comtammatu/shared";
 
 // ===== Portion Counter =====
@@ -330,5 +331,100 @@ export async function getExpiringBatches(
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
     throw new Error(result.error, { cause: error });
+  }
+}
+
+// ===== Urgent Restock Request =====
+
+export interface SupplierOption {
+  id: number;
+  name: string;
+}
+
+async function _getSuppliers(): Promise<SupplierOption[]> {
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
+
+  const { data, error } = await supabase
+    .from("suppliers")
+    .select("id, name")
+    .eq("tenant_id", profile.tenant_id)
+    .eq("is_active", true)
+    .order("name");
+
+  if (error) throw safeDbError(error, "db");
+  return (data ?? []) as SupplierOption[];
+}
+
+export async function getSuppliers(): Promise<SupplierOption[]> {
+  try {
+    return await _getSuppliers();
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    const result = handleServerActionError(error);
+    throw new Error(result.error, { cause: error });
+  }
+}
+
+async function _requestUrgentRestock(input: {
+  supplier_id: number;
+  items: { ingredient_id: number; quantity: number }[];
+  notes?: string;
+}) {
+  const { supabase, profile, userId } = await getKdsBranchContext(KDS_ROLES);
+
+  const total = 0; // Chef doesn't know prices; admin fills in later
+
+  const { data: po, error: poError } = await supabase
+    .from("purchase_orders")
+    .insert({
+      tenant_id: profile.tenant_id,
+      supplier_id: input.supplier_id,
+      branch_id: profile.branch_id,
+      created_by: userId,
+      status: "draft",
+      total,
+      notes: `[KHẨN CẤP - Yêu cầu từ bếp] ${input.notes || ""}`.trim(),
+    })
+    .select("id")
+    .single();
+
+  if (poError) return safeDbErrorResult(poError, "db");
+
+  const itemRows = input.items.map((item) => ({
+    po_id: po.id,
+    ingredient_id: item.ingredient_id,
+    quantity: item.quantity,
+    unit_price: 0,
+    received_qty: 0,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from("purchase_order_items")
+    .insert(itemRows);
+
+  if (itemsError) {
+    await supabase.from("purchase_orders").delete().eq("id", po.id);
+    return safeDbErrorResult(itemsError, "db");
+  }
+
+  revalidatePath("/admin/inventory");
+  return { error: null, po_id: po.id };
+}
+
+export async function requestUrgentRestock(input: {
+  supplier_id: number;
+  items: { ingredient_id: number; quantity: number }[];
+  notes?: string;
+}) {
+  const parsed = urgentRestockRequestSchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+  }
+
+  try {
+    return await _requestUrgentRestock(parsed.data);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
   }
 }

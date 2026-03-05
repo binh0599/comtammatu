@@ -46,4 +46,5 @@ export {
   createStockCount,
   approveStockCount,
   getExpiringBatches,
+  getPriceAnomalies,
 } from "./inventory-ops-actions";

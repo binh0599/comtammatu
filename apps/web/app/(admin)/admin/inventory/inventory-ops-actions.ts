@@ -250,3 +250,88 @@ async function _getExpiringBatches(daysAhead: number = 7) {
 }
 
 export const getExpiringBatches = withServerQuery(_getExpiringBatches);
+
+// ===== Price Anomaly Detection =====
+
+const PRICE_ANOMALY_THRESHOLD = 0.20; // 20% deviation
+
+async function _getPriceAnomalies() {
+  const { supabase, tenantId } = await getActionContext();
+
+  // Get all recent PO items with their prices
+  const { data: recentItems, error } = await supabase
+    .from("purchase_order_items")
+    .select(`
+      id,
+      ingredient_id,
+      unit_price,
+      quantity,
+      po_id,
+      ingredients(name, unit),
+      purchase_orders!inner(tenant_id, status, created_at)
+    `)
+    .eq("purchase_orders.tenant_id", tenantId)
+    .gt("unit_price", 0)
+    .order("po_id", { ascending: false })
+    .limit(500);
+
+  if (error) throw safeDbError(error, "db");
+  if (!recentItems || recentItems.length === 0) return [];
+
+  // Group by ingredient to calculate avg price
+  const pricesByIngredient = new Map<number, number[]>();
+  for (const item of recentItems) {
+    const prices = pricesByIngredient.get(item.ingredient_id) ?? [];
+    prices.push(Number(item.unit_price));
+    pricesByIngredient.set(item.ingredient_id, prices);
+  }
+
+  // Calculate averages (excluding current/latest entry for each ingredient)
+  const avgPrices = new Map<number, number>();
+  for (const [ingredientId, prices] of pricesByIngredient) {
+    if (prices.length < 2) continue; // Need at least 2 data points
+    const sum = prices.slice(1).reduce((a, b) => a + b, 0);
+    avgPrices.set(ingredientId, sum / (prices.length - 1));
+  }
+
+  // Find anomalies in the most recent POs (draft/sent status)
+  const anomalies: {
+    po_id: number;
+    ingredient_id: number;
+    ingredient_name: string;
+    unit: string;
+    current_price: number;
+    avg_price: number;
+    deviation_pct: number;
+    direction: "up" | "down";
+  }[] = [];
+
+  for (const item of recentItems) {
+    const po = item.purchase_orders as unknown as { status: string; created_at: string };
+    if (po.status !== "draft" && po.status !== "sent") continue;
+
+    const avg = avgPrices.get(item.ingredient_id);
+    if (avg === undefined || avg === 0) continue;
+
+    const price = Number(item.unit_price);
+    const deviation = (price - avg) / avg;
+
+    if (Math.abs(deviation) >= PRICE_ANOMALY_THRESHOLD) {
+      const ing = item.ingredients as unknown as { name: string; unit: string } | null;
+      anomalies.push({
+        po_id: item.po_id,
+        ingredient_id: item.ingredient_id,
+        ingredient_name: ing?.name ?? `#${item.ingredient_id}`,
+        unit: ing?.unit ?? "",
+        current_price: price,
+        avg_price: Math.round(avg * 100) / 100,
+        deviation_pct: Math.round(deviation * 100),
+        direction: deviation > 0 ? "up" : "down",
+      });
+    }
+  }
+
+  return anomalies;
+}
+
+export const getPriceAnomalies = withServerQuery(_getPriceAnomalies);

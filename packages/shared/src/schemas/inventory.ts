@@ -85,6 +85,22 @@ export const createStockCountSchema = z.object({
 });
 export type CreateStockCountInput = z.infer<typeof createStockCountSchema>;
 
+// ===== Urgent Restock Request (from KDS) =====
+
+export const urgentRestockRequestSchema = z.object({
+  supplier_id: z.coerce.number().int().positive("Chọn nhà cung cấp"),
+  items: z
+    .array(
+      z.object({
+        ingredient_id: z.coerce.number().int().positive(),
+        quantity: z.coerce.number().positive("Số lượng phải lớn hơn 0"),
+      })
+    )
+    .min(1, "Phải có ít nhất 1 nguyên liệu"),
+  notes: z.string().max(500).optional().or(z.literal("")),
+});
+export type UrgentRestockRequestInput = z.infer<typeof urgentRestockRequestSchema>;
+
 // ===== Food Cost Report =====
 
 export const foodCostQuerySchema = z.object({

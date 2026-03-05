@@ -7,6 +7,8 @@ import {
   Trash2,
   ChevronDown,
   ChevronUp,
+  ShoppingCart,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,9 +35,11 @@ import { getWasteReasonLabel } from "@comtammatu/shared";
 import {
   toggleMenuItemAvailability,
   logWaste,
+  requestUrgentRestock,
   getMenuPortions,
   type MenuPortionInfo,
   type IngredientOption,
+  type SupplierOption,
 } from "../inventory-actions";
 
 // ===== Low Stock Threshold =====
@@ -274,17 +278,180 @@ function WasteLogDialog({
   );
 }
 
+// ===== Urgent Restock Request Dialog =====
+function RestockRequestDialog({
+  open,
+  onOpenChange,
+  ingredients,
+  suppliers,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  ingredients: IngredientOption[];
+  suppliers: SupplierOption[];
+}) {
+  const [supplierId, setSupplierId] = useState<string>("");
+  const [items, setItems] = useState<{ ingredient_id: string; quantity: string }[]>([
+    { ingredient_id: "", quantity: "" },
+  ]);
+  const [notes, setNotes] = useState("");
+  const [isPending, startTransition] = useTransition();
+
+  function addItem() {
+    setItems((prev) => [...prev, { ingredient_id: "", quantity: "" }]);
+  }
+
+  function removeItem(index: number) {
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateItem(index: number, field: "ingredient_id" | "quantity", value: string) {
+    setItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+    );
+  }
+
+  function handleSubmit() {
+    if (!supplierId) return;
+    const validItems = items.filter((i) => i.ingredient_id && Number(i.quantity) > 0);
+    if (validItems.length === 0) return;
+
+    startTransition(async () => {
+      const result = await requestUrgentRestock({
+        supplier_id: Number(supplierId),
+        items: validItems.map((i) => ({
+          ingredient_id: Number(i.ingredient_id),
+          quantity: Number(i.quantity),
+        })),
+        notes: notes || undefined,
+      });
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Đã gửi yêu cầu mua hàng khẩn cấp");
+      setSupplierId("");
+      setItems([{ ingredient_id: "", quantity: "" }]);
+      setNotes("");
+      onOpenChange(false);
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Yêu cầu mua hàng khẩn cấp</DialogTitle>
+          <DialogDescription>
+            Tạo đơn mua hàng nháp để quản lý duyệt
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label>Nhà cung cấp</Label>
+            <Select value={supplierId} onValueChange={setSupplierId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn nhà cung cấp..." />
+              </SelectTrigger>
+              <SelectContent>
+                {suppliers.map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label>Nguyên liệu cần mua</Label>
+              <Button type="button" variant="ghost" size="sm" onClick={addItem}>
+                <Plus className="mr-1 h-3 w-3" />
+                Thêm
+              </Button>
+            </div>
+            {items.map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Select
+                  value={item.ingredient_id}
+                  onValueChange={(v) => updateItem(index, "ingredient_id", v)}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Nguyên liệu..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ingredients.map((ing) => (
+                      <SelectItem key={ing.id} value={String(ing.id)}>
+                        {ing.name} ({ing.unit})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Input
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  className="w-24"
+                  placeholder="SL"
+                  value={item.quantity}
+                  onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                />
+                {items.length > 1 && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="px-2 text-red-500"
+                    onClick={() => removeItem(index)}
+                  >
+                    X
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="space-y-2">
+            <Label>Ghi chú</Label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="VD: Cần gấp cho ca chiều..."
+              rows={2}
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+            Hủy
+          </Button>
+          <Button onClick={handleSubmit} disabled={isPending || !supplierId}>
+            {isPending ? "Đang gửi..." : "Gửi yêu cầu"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 // ===== Main Inventory Panel =====
 export function InventoryPanel({
   initialPortions,
   ingredients,
+  suppliers,
 }: {
   initialPortions: MenuPortionInfo[];
   ingredients: IngredientOption[];
+  suppliers: SupplierOption[];
 }) {
   const [portions, setPortions] = useState(initialPortions);
   const [isExpanded, setIsExpanded] = useState(false);
   const [wasteDialogOpen, setWasteDialogOpen] = useState(false);
+  const [restockDialogOpen, setRestockDialogOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Refresh portions periodically (every 60s)
@@ -404,6 +571,15 @@ export function InventoryPanel({
               size="sm"
               variant="outline"
               className="h-7 gap-1 text-xs"
+              onClick={() => setRestockDialogOpen(true)}
+            >
+              <ShoppingCart className="h-3 w-3" />
+              Đặt hàng gấp
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 text-xs"
               onClick={() => setWasteDialogOpen(true)}
             >
               <Trash2 className="h-3 w-3" />
@@ -490,6 +666,14 @@ export function InventoryPanel({
         onOpenChange={setWasteDialogOpen}
         ingredients={ingredients}
         onSubmit={handleWasteSubmit}
+      />
+
+      {/* Urgent restock request dialog */}
+      <RestockRequestDialog
+        open={restockDialogOpen}
+        onOpenChange={setRestockDialogOpen}
+        ingredients={ingredients}
+        suppliers={suppliers}
       />
     </>
   );

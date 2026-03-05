@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Send, PackageCheck, X } from "lucide-react";
+import { Plus, Send, PackageCheck, X, TrendingUp, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -31,7 +31,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { formatPrice, formatDateTime, getPoStatusLabel } from "@comtammatu/shared";
+import {
+  formatPrice,
+  formatDateTime,
+  getPoStatusLabel,
+} from "@comtammatu/shared";
 import {
   createPurchaseOrder,
   sendPurchaseOrder,
@@ -43,16 +47,29 @@ import { getStatusBadgeVariant } from "./po-types";
 import { CreatePoForm } from "./create-po-form";
 import { ReceiveDialog } from "./receive-dialog";
 
+interface PriceAnomaly {
+  po_id: number;
+  ingredient_id: number;
+  ingredient_name: string;
+  unit: string;
+  current_price: number;
+  avg_price: number;
+  deviation_pct: number;
+  direction: "up" | "down";
+}
+
 export function PurchaseOrdersTab({
   purchaseOrders,
   suppliers,
   ingredients,
   branches,
+  priceAnomalies = [],
 }: {
   purchaseOrders: PurchaseOrder[];
   suppliers: Supplier[];
   ingredients: Ingredient[];
   branches: Branch[];
+  priceAnomalies?: PriceAnomaly[];
 }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [receivingPo, setReceivingPo] = useState<PurchaseOrder | null>(null);
@@ -145,6 +162,43 @@ export function PurchaseOrdersTab({
           </DialogContent>
         </Dialog>
       </div>
+
+      {priceAnomalies.length > 0 && (
+        <div className="rounded-md border border-yellow-300 bg-yellow-50 p-3 space-y-2">
+          <h4 className="text-sm font-semibold text-yellow-800 flex items-center gap-1">
+            <TrendingUp className="h-4 w-4" />
+            Cảnh báo giá bất thường ({priceAnomalies.length})
+          </h4>
+          <div className="space-y-1">
+            {priceAnomalies.map((a) => (
+              <div
+                key={`${a.po_id}-${a.ingredient_id}`}
+                className="flex items-center gap-2 text-xs text-yellow-700"
+              >
+                {a.direction === "up" ? (
+                  <TrendingUp className="h-3 w-3 text-red-500 shrink-0" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-blue-500 shrink-0" />
+                )}
+                <span>
+                  <strong>PO #{a.po_id}</strong> — {a.ingredient_name}:{" "}
+                  {formatPrice(a.current_price)}/{a.unit} (trung bình:{" "}
+                  {formatPrice(a.avg_price)}, lệch{" "}
+                  <span
+                    className={
+                      a.direction === "up" ? "text-red-600 font-semibold" : "text-blue-600 font-semibold"
+                    }
+                  >
+                    {a.deviation_pct > 0 ? "+" : ""}
+                    {a.deviation_pct}%
+                  </span>
+                  )
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && !isCreateOpen && !receivingPo && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">

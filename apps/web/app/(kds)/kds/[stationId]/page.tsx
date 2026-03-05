@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getStationInfo, getStationTickets, getTimingRules } from "./actions";
-import { getMenuPortions, getIngredients } from "./inventory-actions";
+import { getMenuPortions, getIngredients, getSuppliers } from "./inventory-actions";
 import { KdsBoard } from "./kds-board";
 
 export const metadata: Metadata = {
@@ -19,13 +19,14 @@ export default async function KdsStationPage({
 
   if (isNaN(id)) notFound();
 
-  const [station, tickets, timingRules, portions, ingredients] =
+  const [station, tickets, timingRules, portions, ingredients, suppliers] =
     await Promise.all([
       getStationInfo(id),
       getStationTickets(id),
       getTimingRules(id),
       getMenuPortions(),
       getIngredients(),
+      getSuppliers(),
     ]);
 
   if (!station || !station.is_active) notFound();
@@ -38,6 +39,7 @@ export default async function KdsStationPage({
       timingRules={timingRules}
       initialPortions={portions}
       ingredients={ingredients}
+      suppliers={suppliers}
     />
   );
 }

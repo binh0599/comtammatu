@@ -169,6 +169,7 @@ export {
   quickWasteLogSchema,
   createStockCountSchema,
   foodCostQuerySchema,
+  urgentRestockRequestSchema,
 } from "./schemas/inventory";
 export type {
   CreateIngredientInput,
@@ -179,6 +180,7 @@ export type {
   QuickWasteLogInput,
   CreateStockCountInput,
   FoodCostQueryInput,
+  UrgentRestockRequestInput,
 } from "./schemas/inventory";
 
 // Week 5-6: Supplier

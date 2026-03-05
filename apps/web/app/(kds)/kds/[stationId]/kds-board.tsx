@@ -14,7 +14,7 @@ import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-com
 import { printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { KdsTicket, TimingRule } from "./types";
 import { InventoryPanel } from "./components/inventory-panel";
-import type { MenuPortionInfo, IngredientOption } from "./inventory-actions";
+import type { MenuPortionInfo, IngredientOption, SupplierOption } from "./inventory-actions";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
   // Only show banner for actual connection problems, not initial connecting
@@ -43,6 +43,7 @@ export function KdsBoard({
   timingRules,
   initialPortions,
   ingredients,
+  suppliers,
 }: {
   stationId: number;
   stationName: string;
@@ -50,6 +51,7 @@ export function KdsBoard({
   timingRules: TimingRule[];
   initialPortions: MenuPortionInfo[];
   ingredients: IngredientOption[];
+  suppliers: SupplierOption[];
 }) {
   const { tickets, connectionStatus } = useKdsRealtime(
     stationId,
@@ -165,6 +167,7 @@ export function KdsBoard({
       <InventoryPanel
         initialPortions={initialPortions}
         ingredients={ingredients}
+        suppliers={suppliers}
       />
 
       {/* Board */}
