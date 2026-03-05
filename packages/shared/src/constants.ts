@@ -184,6 +184,18 @@ export const ATTENDANCE_SOURCES = [
 ] as const;
 export type AttendanceSource = (typeof ATTENDANCE_SOURCES)[number];
 
+// ===== Payroll =====
+
+export const PAYROLL_STATUSES = ["draft", "calculated", "approved", "paid"] as const;
+export type PayrollStatus = (typeof PAYROLL_STATUSES)[number];
+
+export const VALID_PAYROLL_TRANSITIONS: Record<PayrollStatus, PayrollStatus[]> = {
+  draft: ["calculated"],
+  calculated: ["approved", "draft"],
+  approved: ["paid", "calculated"],
+  paid: [],
+};
+
 // ===== Security =====
 
 export const SECURITY_SEVERITIES = ["info", "warning", "critical"] as const;
