@@ -261,24 +261,30 @@ async function _getRevenueTrend(days: number = 7) {
   startDate.setHours(0, 0, 0, 0);
 
   // Get completed orders in date range for order count
-  const { data: orders } = await supabase
+  const { data: orders, error: ordersError } = await supabase
     .from("orders")
     .select("id, created_at")
     .in("branch_id", branchIds)
     .eq("status", "completed")
     .gte("created_at", startDate.toISOString());
 
+  if (ordersError)
+    throw safeDbError(ordersError, "db");
+
   const orderIds = (orders ?? []).map((o: { id: number }) => o.id);
 
   // Get completed payments for those orders — actual revenue
   let payments: { amount: number; tip: number; paid_at: string }[] = [];
   if (orderIds.length > 0) {
-    const { data: paymentsData } = await supabase
+    const { data: paymentsData, error: paymentsError } = await supabase
       .from("payments")
       .select("amount, tip, paid_at")
       .in("order_id", orderIds)
       .eq("status", "completed")
       .not("paid_at", "is", null);
+
+    if (paymentsError)
+      throw safeDbError(paymentsError, "db");
 
     payments = (paymentsData ?? []) as typeof payments;
   }
@@ -334,12 +340,15 @@ async function _getHourlyOrderVolume() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("created_at")
     .in("branch_id", branchIds)
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", todayStart.toISOString());
+
+  if (orderError)
+    throw safeDbError(orderError, "db");
 
   const hourMap = new Map<number, number>();
   for (let h = 6; h <= 23; h++) {
@@ -372,11 +381,14 @@ async function _getOrderStatusDistribution() {
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("status")
     .in("branch_id", branchIds)
     .gte("created_at", todayStart.toISOString());
+
+  if (orderError)
+    throw safeDbError(orderError, "db");
 
   const statusMap = new Map<string, number>();
   for (const order of orders ?? []) {
