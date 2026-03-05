@@ -8,6 +8,8 @@ import {
   getOrderStatusLabel,
   safeDbError,
   ADMIN_ROLES,
+  dashboardLimitSchema,
+  dashboardDaysSchema,
 } from "@comtammatu/shared";
 
 // =====================
@@ -30,19 +32,30 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
 
-  // Completed orders for order count
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const weekStart = new Date(todayStart);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
+  if (weekStart > todayStart) weekStart.setDate(weekStart.getDate() - 7);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Use earliest boundary (monthStart) as SQL filter to avoid fetching all rows
+  const earliestDate = new Date(Math.min(monthStart.getTime(), weekStart.getTime()));
+
+  // Completed orders for order count — filtered to current month at SQL level
   const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("id, created_at")
     .in("branch_id", branchIds)
-    .eq("status", "completed");
+    .eq("status", "completed")
+    .gte("created_at", earliestDate.toISOString());
 
   if (orderError)
     throw safeDbError(orderError, "db");
 
   const orderIds = (orders ?? []).map((o: { id: number }) => o.id);
 
-  // Completed payments for those orders — actual money collected
+  // Completed payments for those orders — filtered to current month at SQL level
   let filteredPayments: { amount: number; tip: number; paid_at: string }[] = [];
   if (orderIds.length > 0) {
     const { data: paymentsData, error: paymentError } = await supabase
@@ -50,7 +63,8 @@ async function _getDashboardStats(): Promise<DashboardStats> {
       .select("amount, tip, paid_at")
       .in("order_id", orderIds)
       .eq("status", "completed")
-      .not("paid_at", "is", null);
+      .not("paid_at", "is", null)
+      .gte("paid_at", earliestDate.toISOString());
 
     if (paymentError)
       throw safeDbError(paymentError, "db");
@@ -61,13 +75,6 @@ async function _getDashboardStats(): Promise<DashboardStats> {
   if (filteredPayments.length === 0 && orderIds.length === 0) {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
-
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const weekStart = new Date(todayStart);
-  weekStart.setDate(weekStart.getDate() - weekStart.getDay() + 1);
-  if (weekStart > todayStart) weekStart.setDate(weekStart.getDate() - 7);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   // Count orders by date
   let todayOrders = 0;
@@ -118,6 +125,7 @@ export interface RecentOrder {
 }
 
 async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
+  const validLimit = dashboardLimitSchema.parse(limit);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds = await getBranchIdsForTenant(supabase, tenantId);
@@ -128,7 +136,7 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .select("id, order_number, status, total, type, created_at, tables(number)")
     .in("branch_id", branchIds)
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(validLimit);
 
   if (orderError)
     throw safeDbError(orderError, "db");
@@ -157,6 +165,7 @@ export interface TopSellingItem {
 }
 
 async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
+  const validLimit = dashboardLimitSchema.parse(limit);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds = await getBranchIdsForTenant(supabase, tenantId);
@@ -208,7 +217,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
 
   return Array.from(aggregated.values())
     .sort((a, b) => b.total_qty - a.total_qty)
-    .slice(0, limit);
+    .slice(0, validLimit);
 }
 
 export const getTopSellingItems = withServerQuery(_getTopSellingItems);
@@ -251,13 +260,14 @@ export const getOrderStatusCounts = withServerQuery(_getOrderStatusCounts);
 // =====================
 
 async function _getRevenueTrend(days: number = 7) {
+  const validDays = dashboardDaysSchema.parse(days);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days + 1);
+  startDate.setDate(startDate.getDate() - validDays + 1);
   startDate.setHours(0, 0, 0, 0);
 
   // Get completed orders in date range for order count
@@ -291,7 +301,7 @@ async function _getRevenueTrend(days: number = 7) {
 
   const dateMap = new Map<string, { revenue: number; orders: number }>();
 
-  for (let i = 0; i < days; i++) {
+  for (let i = 0; i < validDays; i++) {
     const d = new Date(startDate);
     d.setDate(d.getDate() + i);
     const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });

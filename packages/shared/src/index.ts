@@ -279,6 +279,10 @@ export type {
   NetworkConnectionConfig,
 } from "./schemas/printer";
 
+// Dashboard
+export { dashboardLimitSchema, dashboardDaysSchema } from "./schemas/dashboard";
+export type { DashboardLimitInput, DashboardDaysInput } from "./schemas/dashboard";
+
 // ===== Utilities =====
 export {
   formatPrice,
