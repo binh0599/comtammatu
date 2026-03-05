@@ -72,7 +72,7 @@ export async function updateSession(request: NextRequest) {
     // Fail-closed: if tenant_id is missing, staff stays on login (incomplete profile).
     const deviceCheckRoles = ["cashier", "waiter", "chef"];
     if (deviceCheckRoles.includes(role) && data?.tenant_id) {
-      const { data: approvedDevice } = await supabase
+      const { data: approvedDevice, error: deviceError } = await supabase
         .from("registered_devices")
         .select("id")
         .eq("registered_by", user.id)
@@ -80,6 +80,16 @@ export async function updateSession(request: NextRequest) {
         .eq("status", "approved")
         .limit(1)
         .maybeSingle();
+
+      if (deviceError) {
+        // DB/RLS error — preserve auth cookies on error response.
+        // Build from supabaseResponse so Set-Cookie headers are retained.
+        console.error("[middleware] device check error:", deviceError.message);
+        return new NextResponse("Internal Server Error", {
+          status: 500,
+          headers: supabaseResponse.headers,
+        });
+      }
 
       if (!approvedDevice) {
         // No approved device — stay on login page for device registration flow

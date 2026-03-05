@@ -336,18 +336,30 @@ async function _getAvailableSides(menuItemId: number) {
   const { supabase, tenantId } = await getActionContext();
 
   // Verify menu item belongs to this tenant
-  const { data: item } = await supabase
+  const { data: item, error: ownershipError } = await supabase
     .from("menu_items")
     .select("id")
     .eq("id", menuItemId)
     .eq("tenant_id", tenantId)
     .single();
 
+  if (ownershipError) {
+    // PGRST116 = no rows found; anything else is a real DB/RLS error
+    if (ownershipError.code !== "PGRST116") {
+      throw safeDbError(ownershipError, "db");
+    }
+    throw new ActionError(
+      "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn",
+      "NOT_FOUND",
+      404,
+    );
+  }
+
   if (!item) {
     throw new ActionError(
       "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn",
       "NOT_FOUND",
-      404
+      404,
     );
   }
 

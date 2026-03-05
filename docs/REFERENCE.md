@@ -164,7 +164,7 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ## POST-MVP BACKLOG (Updated 2026-03-05)
 
-```
+```text
 Completed (Post-MVP Sprint 1 & 2):
 - [x] Momo payment integration (webhook, HMAC)
 - [x] Stock auto-deduction on order completion (DB trigger)
@@ -221,19 +221,15 @@ Priority 4 (Growth — Week 17+):
 
 ---
 
-## GIT HISTORY
+## GIT HISTORY (Milestones)
 
-```
-d0f9ce9 Merge pull request #28 from binh0599/claude/restructure-menu-system-2KrJ6
-37925d9 fix(orders): handle menu query errors and batch side validation
-29ea9c4 fix(menu): harden validation, variant handling, and DB constraints
-e226085 Merge pull request #26 from binh0599/claude/device-management-flow-4G1Ly
-ba1d3ba chore: regenerate database types after menu restructure migration
-37e7445 feat(menu): restructure menu system with category types, side dishes, and item notes
-6520279 feat: device approval flow + move printer settings to POS/KDS
-...
-ef127d6 fix: harden KDS station actions — role check, ownership verification, tenant filtering
-0c9f776 feat: complete Week 5-6 — Inventory, HR, Dashboard, Security
-8adbbf7 feat: complete Week 3-4 — Split POS, Orders, KDS & Cash Payment
-8b48166 feat: complete Week 1-2 foundation — auth, admin layout, menu CRUD
-```
+| Milestone | Description |
+| --------- | ----------- |
+| Week 1-2 | Foundation — auth, admin layout, menu CRUD |
+| Week 3-4 | Split POS, Orders, KDS & Cash Payment |
+| Week 5-6 | Inventory, HR, Dashboard, Security |
+| Sprint 1 | Device approval flow, security hardening |
+| Sprint 2 | Payment hardening, Redis rate limiting, Resiliency |
+| Sprint 3 | Menu restructure, device management fixes, peripheral config to POS/KDS |
+
+See `git log --oneline` for full commit history.
