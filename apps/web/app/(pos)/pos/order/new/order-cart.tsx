@@ -34,10 +34,13 @@ export function OrderCart({
   const [isPending, startTransition] = useTransition();
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotal = cart.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const subtotal = cart.reduce((sum, item) => {
+    let itemTotal = item.unit_price * item.quantity;
+    for (const side of item.side_items) {
+      itemTotal += side.unit_price * side.quantity;
+    }
+    return sum + itemTotal;
+  }, 0);
 
   function handleSubmit() {
     startTransition(async () => {
@@ -85,53 +88,90 @@ export function OrderCart({
 
           <div className="max-h-[50vh] overflow-y-auto px-4">
             <div className="space-y-3">
-              {cart.map((item) => (
-                <div
-                  key={`${item.menu_item_id}-${item.variant_id ?? "base"}`}
-                  className="flex items-center gap-3 rounded-lg border p-3"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">
-                      {item.name}
-                      {item.variant_name && (
-                        <span className="text-muted-foreground text-sm">
-                          {" "}
-                          ({item.variant_name})
+              {cart.map((item) => {
+                const sidesTotal = item.side_items.reduce(
+                  (sum, s) => sum + s.unit_price * s.quantity,
+                  0
+                );
+                const lineTotal =
+                  item.unit_price * item.quantity + sidesTotal;
+
+                return (
+                  <div
+                    key={`${item.menu_item_id}-${item.variant_id ?? "base"}`}
+                    className="rounded-lg border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">
+                          {item.name}
+                          {item.variant_name && (
+                            <span className="text-muted-foreground text-sm">
+                              {" "}
+                              ({item.variant_name})
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-muted-foreground text-sm">
+                          {formatPrice(item.unit_price)} x {item.quantity} ={" "}
+                          {formatPrice(item.unit_price * item.quantity)}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-11 w-11"
+                          onClick={() =>
+                            onRemoveItem(item.menu_item_id, item.variant_id)
+                          }
+                          aria-label={`Bớt ${item.name}`}
+                        >
+                          <Minus className="h-3 w-3" aria-hidden="true" />
+                        </Button>
+                        <span className="w-6 text-center text-sm font-medium">
+                          {item.quantity}
                         </span>
-                      )}
-                    </p>
-                    <p className="text-muted-foreground text-sm">
-                      {formatPrice(item.unit_price)} x {item.quantity} ={" "}
-                      {formatPrice(item.unit_price * item.quantity)}
-                    </p>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-11 w-11"
+                          onClick={() => onAddItem(item)}
+                          aria-label={`Thêm ${item.name}`}
+                        >
+                          <Plus className="h-3 w-3" aria-hidden="true" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Side items */}
+                    {item.side_items.length > 0 && (
+                      <div className="mt-2 space-y-1 border-t pt-2">
+                        {item.side_items.map((side) => (
+                          <div
+                            key={side.menu_item_id}
+                            className="text-muted-foreground flex justify-between text-sm"
+                          >
+                            <span>+ {side.name} x{side.quantity}</span>
+                            <span>{formatPrice(side.unit_price * side.quantity)}</span>
+                          </div>
+                        ))}
+                        <div className="flex justify-between text-sm font-medium">
+                          <span>Tổng dòng</span>
+                          <span>{formatPrice(lineTotal)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Notes */}
+                    {item.notes && (
+                      <div className="text-muted-foreground mt-1 text-xs italic">
+                        Ghi chú: &quot;{item.notes}&quot;
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-11 w-11"
-                      onClick={() =>
-                        onRemoveItem(item.menu_item_id, item.variant_id)
-                      }
-                      aria-label={`Bớt ${item.name}`}
-                    >
-                      <Minus className="h-3 w-3" aria-hidden="true" />
-                    </Button>
-                    <span className="w-6 text-center text-sm font-medium">
-                      {item.quantity}
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-11 w-11"
-                      onClick={() => onAddItem(item)}
-                      aria-label={`Thêm ${item.name}`}
-                    >
-                      <Plus className="h-3 w-3" aria-hidden="true" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

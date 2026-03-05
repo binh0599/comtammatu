@@ -11,6 +11,7 @@ import {
   getKdsBranchContext,
   safeDbError,
   safeDbErrorResult,
+  bumpTicketSchema,
 } from "@comtammatu/shared";
 
 // --- Data fetching (consumed by RSC — throw on error) ---
@@ -167,13 +168,18 @@ async function _bumpTicket(
     };
   }
 
+  const now = new Date().toISOString();
   const updateData: Record<string, unknown> = { status: newStatus };
 
   if (newStatus === "preparing") {
-    updateData.accepted_at = new Date().toISOString();
+    updateData.accepted_at = now;
   }
   if (newStatus === "ready") {
-    updateData.completed_at = new Date().toISOString();
+    updateData.completed_at = now;
+    // When going directly from pending → ready, also set accepted_at
+    if (currentStatus === "pending") {
+      updateData.accepted_at = now;
+    }
   }
 
   const { error } = await supabase
@@ -218,8 +224,13 @@ export async function bumpTicket(
   ticketId: number,
   newStatus: "preparing" | "ready",
 ) {
+  const parsed = bumpTicketSchema.safeParse({ ticket_id: ticketId, status: newStatus });
+  if (!parsed.success) {
+    return { error: "Dữ liệu không hợp lệ" };
+  }
+
   try {
-    return await _bumpTicket(ticketId, newStatus);
+    return await _bumpTicket(parsed.data.ticket_id, parsed.data.status);
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     return handleServerActionError(error);

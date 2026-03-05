@@ -54,11 +54,8 @@ export function TicketCard({
   const colors = getTimingColor(elapsed, timingRule);
 
   function handleBump() {
-    const newStatus =
-      ticket.status === "pending" ? "preparing" : "ready";
-
     startTransition(async () => {
-      await bumpTicket(ticket.id, newStatus as "preparing" | "ready");
+      await bumpTicket(ticket.id, "ready");
     });
   }
 
@@ -146,24 +143,15 @@ export function TicketCard({
         ))}
       </div>
 
-      {/* Bump button */}
+      {/* Bump button — single action: mark as ready */}
       <Button
         onClick={handleBump}
         disabled={isPending}
         size="lg"
-        aria-label={ticket.status === "pending" ? `Bắt đầu chuẩn bị ${orderNumber}` : `Hoàn thành ${orderNumber}`}
-        className={cn(
-          "mt-4 min-h-[64px] w-full text-lg font-bold",
-          ticket.status === "pending"
-            ? "bg-blue-600 hover:bg-blue-700"
-            : "bg-green-600 hover:bg-green-700"
-        )}
+        aria-label={`Đã ra món ${orderNumber}`}
+        className="mt-4 min-h-[64px] w-full bg-green-600 text-lg font-bold hover:bg-green-700"
       >
-        {isPending
-          ? "..."
-          : ticket.status === "pending"
-            ? "BẮT ĐẦU"
-            : "XONG"}
+        {isPending ? "ĐANG CẬP NHẬT..." : "ĐÃ RA MÓN"}
       </Button>
     </article>
   );

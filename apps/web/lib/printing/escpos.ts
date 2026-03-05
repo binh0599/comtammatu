@@ -246,29 +246,32 @@ export async function printViaUsb(
 
     await device.open();
 
-    // Find the first OUT endpoint
-    if (device.configuration === null) {
-      await device.selectConfiguration(1);
+    try {
+      // Find the first OUT endpoint
+      if (device.configuration === null) {
+        await device.selectConfiguration(1);
+      }
+
+      const iface = device.configuration?.interfaces[0];
+      if (!iface) {
+        return { success: false, error: "Không tìm thấy interface máy in" };
+      }
+
+      await device.claimInterface(iface.interfaceNumber);
+
+      const endpoint = iface.alternate.endpoints.find(
+        (e) => e.direction === "out",
+      );
+      if (!endpoint) {
+        return { success: false, error: "Không tìm thấy endpoint máy in" };
+      }
+
+      await device.transferOut(endpoint.endpointNumber, commands.buffer as ArrayBuffer);
+
+      return { success: true };
+    } finally {
+      await device.close().catch(() => {});
     }
-
-    const iface = device.configuration?.interfaces[0];
-    if (!iface) {
-      return { success: false, error: "Không tìm thấy interface máy in" };
-    }
-
-    await device.claimInterface(iface.interfaceNumber);
-
-    const endpoint = iface.alternate.endpoints.find(
-      (e) => e.direction === "out",
-    );
-    if (!endpoint) {
-      return { success: false, error: "Không tìm thấy endpoint máy in" };
-    }
-
-    await device.transferOut(endpoint.endpointNumber, commands.buffer as ArrayBuffer);
-    await device.close();
-
-    return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Lỗi kết nối USB";
     return { success: false, error: message };
@@ -284,7 +287,7 @@ export async function printViaUsb(
  */
 export async function printViaUsbAuto(
   commands: Uint8Array,
-  config: { vendor_id: number; product_id: number },
+  config: { vendor_id: number; product_id: number; device_serial?: string },
 ): Promise<PrintResult> {
   try {
     if (!navigator.usb) {
@@ -293,11 +296,22 @@ export async function printViaUsbAuto(
 
     // getDevices() returns previously paired devices — no user gesture needed
     const devices = await navigator.usb.getDevices();
-    const device = devices.find(
+
+    // Match by VID/PID, then disambiguate by serial number if provided
+    const candidates = devices.filter(
       (d) =>
         (d as unknown as { vendorId: number }).vendorId === config.vendor_id &&
         (d as unknown as { productId: number }).productId === config.product_id,
     );
+
+    let device: USBDevice | undefined;
+    if (config.device_serial && candidates.length > 1) {
+      device = candidates.find(
+        (d) => (d as unknown as { serialNumber: string }).serialNumber === config.device_serial,
+      );
+    }
+    // Fall back to first match if no serial or single device
+    device ??= candidates[0];
 
     if (!device) {
       return {
@@ -308,28 +322,31 @@ export async function printViaUsbAuto(
 
     await device.open();
 
-    if (device.configuration === null) {
-      await device.selectConfiguration(1);
+    try {
+      if (device.configuration === null) {
+        await device.selectConfiguration(1);
+      }
+
+      const iface = device.configuration?.interfaces[0];
+      if (!iface) {
+        return { success: false, error: "Không tìm thấy interface máy in" };
+      }
+
+      await device.claimInterface(iface.interfaceNumber);
+
+      const endpoint = iface.alternate.endpoints.find(
+        (e) => e.direction === "out",
+      );
+      if (!endpoint) {
+        return { success: false, error: "Không tìm thấy endpoint máy in" };
+      }
+
+      await device.transferOut(endpoint.endpointNumber, commands.buffer as ArrayBuffer);
+
+      return { success: true };
+    } finally {
+      await device.close().catch(() => {});
     }
-
-    const iface = device.configuration?.interfaces[0];
-    if (!iface) {
-      return { success: false, error: "Không tìm thấy interface máy in" };
-    }
-
-    await device.claimInterface(iface.interfaceNumber);
-
-    const endpoint = iface.alternate.endpoints.find(
-      (e) => e.direction === "out",
-    );
-    if (!endpoint) {
-      return { success: false, error: "Không tìm thấy endpoint máy in" };
-    }
-
-    await device.transferOut(endpoint.endpointNumber, commands.buffer as ArrayBuffer);
-    await device.close();
-
-    return { success: true };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Lỗi kết nối USB tự động";
     return { success: false, error: message };

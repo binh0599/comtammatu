@@ -92,7 +92,7 @@ export const VALID_KDS_TRANSITIONS: Record<
   KdsTicketStatus,
   KdsTicketStatus[]
 > = {
-  pending: ["preparing"],
+  pending: ["preparing", "ready"],
   preparing: ["ready"],
   ready: [],
 };
@@ -212,6 +212,26 @@ export const DELETION_REQUEST_STATUSES = [
 ] as const;
 export type DeletionRequestStatus =
   (typeof DELETION_REQUEST_STATUSES)[number];
+
+// ===== Menu =====
+
+export const MENU_CATEGORY_TYPES = [
+  "main_dish",
+  "side_dish",
+  "drink",
+] as const;
+export type MenuCategoryType = (typeof MENU_CATEGORY_TYPES)[number];
+
+export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
+  main_dish: "Món chính",
+  side_dish: "Món kèm",
+  drink: "Nước",
+};
+
+// ===== Device Registration =====
+
+export const DEVICE_STATUSES = ["pending", "approved", "rejected"] as const;
+export type DeviceStatus = (typeof DEVICE_STATUSES)[number];
 
 // ===== Printing =====
 

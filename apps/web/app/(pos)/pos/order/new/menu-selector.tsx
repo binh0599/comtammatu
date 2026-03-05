@@ -1,12 +1,21 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Plus, Minus } from "lucide-react";
+import { Search, Plus, Minus, MessageSquare, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatPrice } from "@comtammatu/shared";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { formatPrice, MENU_CATEGORY_TYPE_LABELS } from "@comtammatu/shared";
 
 interface MenuItem {
   id: number;
@@ -16,16 +25,18 @@ interface MenuItem {
   image_url: string | null;
   is_available: boolean;
   category_id: number;
-  menu_categories: { id: number; name: string; menu_id: number } | null;
+  menu_categories: { id: number; name: string; menu_id: number; type: string } | null;
   menu_item_variants:
     | { id: number; name: string; price_adjustment: number; is_available: boolean }[]
     | null;
+  available_side_ids: number[];
 }
 
 interface Category {
   id: number;
   name: string;
   menu_id: number;
+  type: string;
 }
 
 export interface CartItem {
@@ -33,6 +44,15 @@ export interface CartItem {
   name: string;
   variant_id: number | null;
   variant_name: string | null;
+  quantity: number;
+  unit_price: number;
+  notes: string;
+  side_items: CartSideItem[];
+}
+
+export interface CartSideItem {
+  menu_item_id: number;
+  name: string;
   quantity: number;
   unit_price: number;
   notes: string;
@@ -44,20 +64,44 @@ export function MenuSelector({
   cart,
   onAddItem,
   onRemoveItem,
+  onUpdateItemNotes,
 }: {
   menuItems: MenuItem[];
   categories: Category[];
   cart: CartItem[];
   onAddItem: (item: CartItem) => void;
   onRemoveItem: (menuItemId: number, variantId: number | null) => void;
+  onUpdateItemNotes: (menuItemId: number, variantId: number | null, notes: string) => void;
 }) {
   const [search, setSearch] = useState("");
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
     null
   );
+  const [sidesDialogItem, setSidesDialogItem] = useState<MenuItem | null>(null);
+  const [sidesDialogVariantId, setSidesDialogVariantId] = useState<number | null>(null);
+  const [sidesDialogVariantPrice, setSidesDialogVariantPrice] = useState<number>(0);
+  const [selectedSides, setSelectedSides] = useState<Map<number, number>>(new Map());
+  const [notesDialogKey, setNotesDialogKey] = useState<string | null>(null);
+  const [notesText, setNotesText] = useState("");
 
+  // Build a map of side item id -> side item data for quick lookup
+  const sideItemsMap = useMemo(() => {
+    const map = new Map<number, MenuItem>();
+    for (const item of menuItems) {
+      const catType = item.menu_categories?.type;
+      if (catType === "side_dish") {
+        map.set(item.id, item);
+      }
+    }
+    return map;
+  }, [menuItems]);
+
+  // Filter: only show main_dish and drink items (sides are shown in dialog)
   const filteredItems = useMemo(() => {
-    let items = menuItems;
+    let items = menuItems.filter((i) => {
+      const catType = i.menu_categories?.type;
+      return catType === "main_dish" || catType === "drink";
+    });
 
     if (activeCategoryId) {
       items = items.filter((i) => i.category_id === activeCategoryId);
@@ -75,12 +119,23 @@ export function MenuSelector({
     return items;
   }, [menuItems, activeCategoryId, search]);
 
+  // Filter categories to only main_dish and drink
+  const visibleCategories = useMemo(() => {
+    return categories.filter((c) => c.type === "main_dish" || c.type === "drink");
+  }, [categories]);
+
   function getCartQuantity(menuItemId: number, variantId: number | null) {
     return (
       cart.find(
         (c) =>
           c.menu_item_id === menuItemId && c.variant_id === variantId
       )?.quantity ?? 0
+    );
+  }
+
+  function getCartItem(menuItemId: number, variantId: number | null) {
+    return cart.find(
+      (c) => c.menu_item_id === menuItemId && c.variant_id === variantId
     );
   }
 
@@ -92,6 +147,19 @@ export function MenuSelector({
     const unitPrice =
       item.base_price + (variant?.price_adjustment ?? 0);
 
+    // If this main dish has available sides, open sides dialog
+    if (
+      item.available_side_ids.length > 0 &&
+      item.menu_categories?.type === "main_dish" &&
+      getCartQuantity(item.id, variant?.id ?? null) === 0
+    ) {
+      setSidesDialogItem(item);
+      setSidesDialogVariantId(variant?.id ?? null);
+      setSidesDialogVariantPrice(variant?.price_adjustment ?? 0);
+      setSelectedSides(new Map());
+      return;
+    }
+
     onAddItem({
       menu_item_id: item.id,
       name: item.name,
@@ -100,7 +168,76 @@ export function MenuSelector({
       quantity: 1,
       unit_price: unitPrice,
       notes: "",
+      side_items: [],
     });
+  }
+
+  function handleConfirmSides() {
+    if (!sidesDialogItem) return;
+
+    const variant = sidesDialogVariantId
+      ? sidesDialogItem.menu_item_variants?.find((v) => v.id === sidesDialogVariantId)
+      : null;
+    const unitPrice = sidesDialogItem.base_price + sidesDialogVariantPrice;
+
+    const sideItems: CartSideItem[] = [];
+    for (const [sideId, qty] of selectedSides) {
+      if (qty <= 0) continue;
+      const sideMenuItem = sideItemsMap.get(sideId);
+      if (!sideMenuItem) continue;
+      sideItems.push({
+        menu_item_id: sideMenuItem.id,
+        name: sideMenuItem.name,
+        quantity: qty,
+        unit_price: sideMenuItem.base_price,
+        notes: "",
+      });
+    }
+
+    onAddItem({
+      menu_item_id: sidesDialogItem.id,
+      name: sidesDialogItem.name,
+      variant_id: sidesDialogVariantId,
+      variant_name: variant?.name ?? null,
+      quantity: 1,
+      unit_price: unitPrice,
+      notes: "",
+      side_items: sideItems,
+    });
+
+    setSidesDialogItem(null);
+    setSidesDialogVariantId(null);
+    setSidesDialogVariantPrice(0);
+    setSelectedSides(new Map());
+  }
+
+  function toggleSide(sideId: number) {
+    setSelectedSides((prev) => {
+      const next = new Map(prev);
+      if (next.has(sideId)) {
+        next.delete(sideId);
+      } else {
+        next.set(sideId, 1);
+      }
+      return next;
+    });
+  }
+
+  function openNotesDialog(menuItemId: number, variantId: number | null) {
+    const key = `${menuItemId}-${variantId ?? "base"}`;
+    const existing = getCartItem(menuItemId, variantId);
+    setNotesText(existing?.notes ?? "");
+    setNotesDialogKey(key);
+  }
+
+  function handleSaveNotes() {
+    if (!notesDialogKey) return;
+    const [menuItemIdStr, variantIdStr] = notesDialogKey.split("-");
+    const menuItemId = Number(menuItemIdStr);
+    const variantId = variantIdStr === "base" ? null : Number(variantIdStr);
+    onUpdateItemNotes(menuItemId, variantId, notesText);
+    setNotesDialogKey(null);
+    setNotesText("");
   }
 
   return (
@@ -127,7 +264,7 @@ export function MenuSelector({
           >
             Tất cả
           </Button>
-          {categories.map((cat) => (
+          {visibleCategories.map((cat) => (
             <Button
               key={cat.id}
               variant={activeCategoryId === cat.id ? "default" : "outline"}
@@ -136,6 +273,11 @@ export function MenuSelector({
               className="shrink-0"
             >
               {cat.name}
+              {cat.type === "drink" && (
+                <span className="text-muted-foreground ml-1 text-xs">
+                  ({MENU_CATEGORY_TYPE_LABELS.drink})
+                </span>
+              )}
             </Button>
           ))}
         </div>
@@ -146,7 +288,10 @@ export function MenuSelector({
         {filteredItems.map((item) => {
           const hasVariants =
             item.menu_item_variants && item.menu_item_variants.length > 0;
-          const qty = getCartQuantity(item.id, null);
+          const baseQty = getCartQuantity(item.id, null);
+          const baseCartItem = getCartItem(item.id, null);
+          const hasSides = item.available_side_ids.length > 0;
+          const catType = item.menu_categories?.type;
 
           return (
             <div
@@ -154,7 +299,14 @@ export function MenuSelector({
               className="flex items-center gap-3 rounded-lg border p-3"
             >
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium">{item.name}</p>
+                <div className="flex items-center gap-1">
+                  <p className="truncate font-medium">{item.name}</p>
+                  {hasSides && catType === "main_dish" && (
+                    <Badge variant="outline" className="shrink-0 text-xs">
+                      +kèm
+                    </Badge>
+                  )}
+                </div>
                 <p className="text-primary text-sm font-semibold">
                   {formatPrice(item.base_price)}
                 </p>
@@ -162,57 +314,118 @@ export function MenuSelector({
                   <div className="mt-1 flex flex-wrap gap-1">
                     {item.menu_item_variants!.map((v) => {
                       const vQty = getCartQuantity(item.id, v.id);
+                      const vCartItem = getCartItem(item.id, v.id);
                       return (
-                        <button
-                          key={v.id}
-                          onClick={() => handleAdd(item, v.id)}
-                          className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                            vQty > 0
-                              ? "bg-primary text-primary-foreground"
-                              : "border border-input bg-background"
-                          }`}
-                          aria-label={`Thêm ${v.name}${v.price_adjustment > 0 ? ` +${formatPrice(v.price_adjustment)}` : ""}${vQty > 0 ? `, ${vQty} trong giỏ` : ""}`}
-                        >
-                          {v.name}
-                          {v.price_adjustment > 0 &&
-                            ` +${formatPrice(v.price_adjustment)}`}
-                          {vQty > 0 && ` (${vQty})`}
-                        </button>
+                        <div key={v.id} className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleAdd(item, v.id)}
+                            className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                              vQty > 0
+                                ? "bg-primary text-primary-foreground"
+                                : "border border-input bg-background"
+                            }`}
+                            aria-label={`Thêm ${v.name}${v.price_adjustment > 0 ? ` +${formatPrice(v.price_adjustment)}` : ""}${vQty > 0 ? `, ${vQty} trong giỏ` : ""}`}
+                          >
+                            {v.name}
+                            {v.price_adjustment > 0 &&
+                              ` +${formatPrice(v.price_adjustment)}`}
+                            {vQty > 0 && ` (${vQty})`}
+                          </button>
+                          {vQty > 0 && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6"
+                              onClick={() => openNotesDialog(item.id, v.id)}
+                              aria-label="Ghi chú"
+                              title="Ghi chú cho bếp"
+                            >
+                              <MessageSquare className={`h-3 w-3 ${vCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                            </Button>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
                 )}
+                {/* Show side items in cart (base item) */}
+                {baseCartItem && baseCartItem.side_items.length > 0 && (
+                  <div className="text-muted-foreground mt-1 text-xs">
+                    Kèm: {baseCartItem.side_items.map((s) => s.name).join(", ")}
+                  </div>
+                )}
+                {/* Show notes indicator (base item) */}
+                {baseCartItem?.notes && (
+                  <div className="text-muted-foreground mt-0.5 text-xs italic">
+                    &quot;{baseCartItem.notes}&quot;
+                  </div>
+                )}
+                {/* Show variant-level sides and notes */}
+                {hasVariants && item.menu_item_variants!.map((v) => {
+                  const vCartItem = getCartItem(item.id, v.id);
+                  if (!vCartItem) return null;
+                  return (
+                    <div key={`info-${v.id}`}>
+                      {vCartItem.side_items.length > 0 && (
+                        <div className="text-muted-foreground mt-1 text-xs">
+                          {v.name} kèm: {vCartItem.side_items.map((s) => s.name).join(", ")}
+                        </div>
+                      )}
+                      {vCartItem.notes && (
+                        <div className="text-muted-foreground mt-0.5 text-xs italic">
+                          {v.name}: &quot;{vCartItem.notes}&quot;
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              {!hasVariants && (
-                <div className="flex items-center gap-1">
-                  {qty > 0 && (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-11 w-11"
-                        onClick={() => onRemoveItem(item.id, null)}
-                        aria-label={`Bớt ${item.name}`}
-                      >
-                        <Minus className="h-3 w-3" aria-hidden="true" />
-                      </Button>
-                      <span className="w-6 text-center text-sm font-medium">
-                        {qty}
-                      </span>
-                    </>
-                  )}
+              <div className="flex items-center gap-1">
+                {/* Notes button (base item, no variants) */}
+                {!hasVariants && baseQty > 0 && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="h-11 w-11"
-                    onClick={() => handleAdd(item)}
-                    aria-label={`Thêm ${item.name}`}
+                    className="h-8 w-8"
+                    onClick={() => openNotesDialog(item.id, null)}
+                    aria-label="Ghi chú"
+                    title="Ghi chú cho bếp"
                   >
-                    <Plus className="h-3 w-3" aria-hidden="true" />
+                    <MessageSquare className={`h-3.5 w-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
                   </Button>
-                </div>
-              )}
+                )}
+
+                {!hasVariants && (
+                  <>
+                    {baseQty > 0 && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-11 w-11"
+                          onClick={() => onRemoveItem(item.id, null)}
+                          aria-label={`Bớt ${item.name}`}
+                        >
+                          <Minus className="h-3 w-3" aria-hidden="true" />
+                        </Button>
+                        <span className="w-6 text-center text-sm font-medium">
+                          {baseQty}
+                        </span>
+                      </>
+                    )}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-11 w-11"
+                      onClick={() => handleAdd(item)}
+                      aria-label={`Thêm ${item.name}`}
+                    >
+                      <Plus className="h-3 w-3" aria-hidden="true" />
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           );
         })}
@@ -223,6 +436,105 @@ export function MenuSelector({
           Không tìm thấy món nào
         </div>
       )}
+
+      {/* Sides selection dialog */}
+      <Dialog
+        open={sidesDialogItem !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSidesDialogItem(null);
+            setSelectedSides(new Map());
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Chọn món kèm cho {sidesDialogItem?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2 py-2">
+            {sidesDialogItem?.available_side_ids.map((sideId) => {
+              const side = sideItemsMap.get(sideId);
+              if (!side) return null;
+              const isSelected = selectedSides.has(sideId);
+              return (
+                <label
+                  key={sideId}
+                  className="hover:bg-accent flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+                >
+                  <Checkbox
+                    checked={isSelected}
+                    onCheckedChange={() => toggleSide(sideId)}
+                  />
+                  <span className="flex-1 font-medium">{side.name}</span>
+                  <span className="text-muted-foreground text-sm">
+                    +{formatPrice(side.base_price)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                // Add without sides
+                if (sidesDialogItem) {
+                  onAddItem({
+                    menu_item_id: sidesDialogItem.id,
+                    name: sidesDialogItem.name,
+                    variant_id: null,
+                    variant_name: null,
+                    quantity: 1,
+                    unit_price: sidesDialogItem.base_price,
+                    notes: "",
+                    side_items: [],
+                  });
+                  setSidesDialogItem(null);
+                  setSelectedSides(new Map());
+                }
+              }}
+            >
+              Không kèm
+            </Button>
+            <Button onClick={handleConfirmSides}>
+              <Check className="mr-1 h-4 w-4" />
+              Xác nhận
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes dialog */}
+      <Dialog
+        open={notesDialogKey !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setNotesDialogKey(null);
+            setNotesText("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ghi chú cho bếp</DialogTitle>
+          </DialogHeader>
+          <Textarea
+            placeholder="VD: ít cơm, thêm muối, không hành..."
+            value={notesText}
+            onChange={(e) => setNotesText(e.target.value)}
+            maxLength={200}
+            rows={3}
+          />
+          <p className="text-muted-foreground text-xs">
+            {notesText.length}/200 ký tự
+          </p>
+          <DialogFooter>
+            <Button onClick={handleSaveNotes}>Lưu ghi chú</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

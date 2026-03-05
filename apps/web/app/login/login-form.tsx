@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { login } from "./actions";
 import type { ActionErrorCode } from "@comtammatu/shared";
 import { Button } from "@/components/ui/button";
@@ -14,18 +14,70 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ChefHat } from "lucide-react";
+import { getDeviceFingerprint, getDeviceName } from "@/lib/device-fingerprint";
+import { DevicePendingApproval } from "./device-pending";
 
-type LoginState = { error: string; code: ActionErrorCode } | null;
+type LoginState =
+  | { error: string; code: ActionErrorCode }
+  | {
+      pendingApproval: boolean;
+      approvalCode: string;
+      deviceId: number;
+      role: string;
+    }
+  | null;
 
 function loginAction(
-  _prevState: LoginState | void,
+  _prevState: LoginState,
   formData: FormData,
-) {
-  return login(formData);
+): Promise<LoginState> {
+  return login(formData) as Promise<LoginState>;
 }
 
 export function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginAction, null);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  // Inject device fingerprint into the form before submission
+  useEffect(() => {
+    const form = formRef.current;
+    if (!form) return;
+
+    let fpInput = form.querySelector<HTMLInputElement>(
+      'input[name="device_fingerprint"]',
+    );
+    if (!fpInput) {
+      fpInput = document.createElement("input");
+      fpInput.type = "hidden";
+      fpInput.name = "device_fingerprint";
+      form.appendChild(fpInput);
+    }
+    fpInput.value = getDeviceFingerprint();
+
+    let dnInput = form.querySelector<HTMLInputElement>(
+      'input[name="device_name"]',
+    );
+    if (!dnInput) {
+      dnInput = document.createElement("input");
+      dnInput.type = "hidden";
+      dnInput.name = "device_name";
+      form.appendChild(dnInput);
+    }
+    dnInput.value = getDeviceName();
+  }, []);
+
+  // Show pending approval screen
+  if (state && "pendingApproval" in state && state.pendingApproval) {
+    return (
+      <DevicePendingApproval
+        approvalCode={state.approvalCode}
+        deviceId={state.deviceId}
+        role={state.role}
+      />
+    );
+  }
+
+  const errorState = state && "error" in state ? state : null;
 
   return (
     <Card className="w-full max-w-sm shadow-lg">
@@ -37,14 +89,14 @@ export function LoginForm() {
         <CardDescription>Đăng nhập vào hệ thống quản lý</CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="space-y-4">
-          {state?.error && (
+        <form ref={formRef} action={formAction} className="space-y-4">
+          {errorState?.error && (
             <div
               id="login-error"
               role="alert"
               className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
             >
-              {state.error}
+              {errorState.error}
             </div>
           )}
           <div className="space-y-2">
@@ -57,7 +109,7 @@ export function LoginForm() {
               required
               autoComplete="email"
               disabled={isPending}
-              aria-describedby={state?.error ? "login-error" : undefined}
+              aria-describedby={errorState?.error ? "login-error" : undefined}
             />
           </div>
           <div className="space-y-2">

@@ -11,6 +11,7 @@ import {
   menuSchema,
   menuCategorySchema,
   menuItemSchema,
+  menuItemAvailableSidesSchema,
   entityIdSchema,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
@@ -134,6 +135,7 @@ async function _createCategory(formData: FormData) {
     menu_id: formData.get("menu_id"),
     name: formData.get("name"),
     sort_order: formData.get("sort_order"),
+    type: formData.get("type") || "main_dish",
   });
 
   if (!parsed.success) {
@@ -158,6 +160,7 @@ async function _createCategory(formData: FormData) {
     menu_id: parsed.data.menu_id,
     name: parsed.data.name,
     sort_order: parsed.data.sort_order,
+    type: parsed.data.type,
   });
 
   if (error) return safeDbErrorResult(error, "db");
@@ -296,3 +299,124 @@ async function _deleteMenuItem(id: number) {
 }
 
 export const deleteMenuItem = withServerAction(_deleteMenuItem);
+
+// --- Available Sides Management ---
+
+async function _getAvailableSides(menuItemId: number) {
+  entityIdSchema.parse(menuItemId);
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify menu item belongs to this tenant
+  const { data: item } = await supabase
+    .from("menu_items")
+    .select("id")
+    .eq("id", menuItemId)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!item) {
+    throw new ActionError(
+      "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn",
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  const { data, error } = await supabase
+    .from("menu_item_available_sides")
+    .select("side_item_id, menu_items!menu_item_available_sides_side_item_id_fkey(id, name, base_price)")
+    .eq("menu_item_id", menuItemId);
+
+  if (error) throw safeDbError(error, "db");
+  return data ?? [];
+}
+
+export const getAvailableSides = withServerQuery(_getAvailableSides);
+
+async function _getSideItems(menuId: number) {
+  entityIdSchema.parse(menuId);
+  const { supabase, tenantId } = await getActionContext();
+
+  // Get all items from side_dish categories in this menu
+  const { data, error } = await supabase
+    .from("menu_items")
+    .select("id, name, base_price, category_id, menu_categories!inner(type, menu_id)")
+    .eq("tenant_id", tenantId)
+    .eq("menu_categories.type", "side_dish")
+    .eq("menu_categories.menu_id", menuId)
+    .eq("is_available", true)
+    .order("name");
+
+  if (error) throw safeDbError(error, "db");
+  return data ?? [];
+}
+
+export const getSideItems = withServerQuery(_getSideItems);
+
+async function _updateAvailableSides(data: {
+  menu_item_id: number;
+  side_item_ids: number[];
+}) {
+  const parsed = menuItemAvailableSidesSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+    };
+  }
+
+  const { supabase, tenantId } = await getActionContext();
+
+  // Verify menu item belongs to this tenant
+  const { data: item } = await supabase
+    .from("menu_items")
+    .select("id")
+    .eq("id", parsed.data.menu_item_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!item) {
+    return { error: "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  // Delete existing sides
+  const { error: deleteError } = await supabase
+    .from("menu_item_available_sides")
+    .delete()
+    .eq("menu_item_id", parsed.data.menu_item_id);
+
+  if (deleteError) return safeDbErrorResult(deleteError, "db");
+
+  // Insert new sides
+  if (parsed.data.side_item_ids.length > 0) {
+    // Verify all side_item_ids belong to this tenant
+    const { data: validSides, error: validationError } = await supabase
+      .from("menu_items")
+      .select("id")
+      .in("id", parsed.data.side_item_ids)
+      .eq("tenant_id", tenantId);
+
+    if (validationError) return safeDbErrorResult(validationError, "db");
+
+    if (!validSides || validSides.length !== parsed.data.side_item_ids.length) {
+      return {
+        error: "Một số món kèm không hợp lệ hoặc không thuộc đơn vị của bạn",
+      };
+    }
+
+    const inserts = parsed.data.side_item_ids.map((sideId) => ({
+      menu_item_id: parsed.data.menu_item_id,
+      side_item_id: sideId,
+    }));
+
+    const { error: insertError } = await supabase
+      .from("menu_item_available_sides")
+      .insert(inserts);
+
+    if (insertError) return safeDbErrorResult(insertError, "db");
+  }
+
+  revalidatePath("/admin/menu");
+  return { error: null, success: true };
+}
+
+export const updateAvailableSides = withServerAction(_updateAvailableSides);

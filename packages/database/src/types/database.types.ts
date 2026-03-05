@@ -922,6 +922,8 @@ export type Database = {
           menu_id: number
           name: string
           sort_order: number | null
+          type: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
@@ -930,6 +932,8 @@ export type Database = {
           menu_id: number
           name: string
           sort_order?: number | null
+          type?: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
@@ -938,6 +942,8 @@ export type Database = {
           menu_id?: number
           name?: string
           sort_order?: number | null
+          type?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -945,6 +951,39 @@ export type Database = {
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_item_available_sides: {
+        Row: {
+          id: number
+          menu_item_id: number
+          side_item_id: number
+        }
+        Insert: {
+          id?: never
+          menu_item_id: number
+          side_item_id: number
+        }
+        Update: {
+          id?: never
+          menu_item_id?: number
+          side_item_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_item_available_sides_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_item_available_sides_side_item_id_fkey"
+            columns: ["side_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1249,6 +1288,7 @@ export type Database = {
           modifiers: Json | null
           notes: string | null
           order_id: number
+          parent_item_id: number | null
           quantity: number
           sent_to_kds_at: string | null
           status: string
@@ -1264,6 +1304,7 @@ export type Database = {
           modifiers?: Json | null
           notes?: string | null
           order_id: number
+          parent_item_id?: number | null
           quantity: number
           sent_to_kds_at?: string | null
           status?: string
@@ -1279,6 +1320,7 @@ export type Database = {
           modifiers?: Json | null
           notes?: string | null
           order_id?: number
+          parent_item_id?: number | null
           quantity?: number
           sent_to_kds_at?: string | null
           status?: string
@@ -1313,6 +1355,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "menu_item_variants"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_parent_item_order_fk"
+            columns: ["parent_item_id", "order_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id", "order_id"]
           },
         ]
       }
@@ -1378,6 +1427,7 @@ export type Database = {
           created_by: string
           customer_id: number | null
           discount_total: number
+          guest_count: number | null
           id: number
           idempotency_key: string
           notes: string | null
@@ -1399,6 +1449,7 @@ export type Database = {
           created_by: string
           customer_id?: number | null
           discount_total?: number
+          guest_count?: number | null
           id?: never
           idempotency_key: string
           notes?: string | null
@@ -1420,6 +1471,7 @@ export type Database = {
           created_by?: string
           customer_id?: number | null
           discount_total?: number
+          guest_count?: number | null
           id?: never
           idempotency_key?: string
           notes?: string | null
@@ -1810,6 +1862,71 @@ export type Database = {
           },
         ]
       }
+      printer_configs: {
+        Row: {
+          assigned_to_id: number | null
+          assigned_to_type: string | null
+          auto_print: boolean
+          branch_id: number
+          connection_config: Json
+          created_at: string
+          encoding: string
+          id: number
+          is_active: boolean
+          last_tested_at: string | null
+          name: string
+          paper_width_mm: number
+          print_delay_ms: number
+          test_status: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to_id?: number | null
+          assigned_to_type?: string | null
+          auto_print?: boolean
+          branch_id: number
+          connection_config?: Json
+          created_at?: string
+          encoding?: string
+          id?: never
+          is_active?: boolean
+          last_tested_at?: string | null
+          name: string
+          paper_width_mm?: number
+          print_delay_ms?: number
+          test_status?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to_id?: number | null
+          assigned_to_type?: string | null
+          auto_print?: boolean
+          branch_id?: number
+          connection_config?: Json
+          created_at?: string
+          encoding?: string
+          id?: never
+          is_active?: boolean
+          last_tested_at?: string | null
+          name?: string
+          paper_width_mm?: number
+          print_delay_ms?: number
+          test_status?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "printer_configs_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2068,6 +2185,89 @@ export type Database = {
             columns: ["menu_item_id"]
             isOneToOne: true
             referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      registered_devices: {
+        Row: {
+          approval_code: string
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: number
+          created_at: string
+          device_fingerprint: string
+          device_name: string
+          id: number
+          ip_address: string | null
+          registered_by: string
+          rejected_at: string | null
+          status: string
+          tenant_id: number
+          updated_at: string
+          user_agent: string | null
+        }
+        Insert: {
+          approval_code: string
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id: number
+          created_at?: string
+          device_fingerprint: string
+          device_name?: string
+          id?: never
+          ip_address?: string | null
+          registered_by: string
+          rejected_at?: string | null
+          status?: string
+          tenant_id: number
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Update: {
+          approval_code?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: number
+          created_at?: string
+          device_fingerprint?: string
+          device_name?: string
+          id?: never
+          ip_address?: string | null
+          registered_by?: string
+          rejected_at?: string | null
+          status?: string
+          tenant_id?: number
+          updated_at?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "registered_devices_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_registered_by_fkey"
+            columns: ["registered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "registered_devices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -2642,9 +2842,17 @@ export type Database = {
       auth_role: { Args: never; Returns: string }
       auth_tenant_id: { Args: never; Returns: number }
       generate_order_number: { Args: { p_branch_id: number }; Returns: string }
+      handle_momo_payment_success: {
+        Args: { p_request_id: string; p_trans_id: string }
+        Returns: Json
+      }
       increment_voucher_usage: {
         Args: { p_voucher_id: number }
         Returns: undefined
+      }
+      validate_table_capacity: {
+        Args: { p_branch_id: number; p_guest_count: number; p_table_id: number }
+        Returns: Json
       }
     }
     Enums: {

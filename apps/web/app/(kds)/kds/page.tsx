@@ -39,7 +39,13 @@ export default async function KdsPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="absolute right-6 top-6">
+      <div className="absolute right-6 top-6 flex items-center gap-3">
+        <Link
+          href="/kds/printer"
+          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          Cài đặt máy in
+        </Link>
         <LogoutButton className="text-muted-foreground hover:text-destructive" />
       </div>
       <h1 className="mb-8 text-3xl font-bold">Chọn bếp</h1>

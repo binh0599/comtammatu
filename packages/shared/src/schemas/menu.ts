@@ -16,6 +16,7 @@ export const menuCategorySchema = z.object({
   menu_id: z.coerce.number().positive(),
   name: z.string().min(1, "Tên danh mục không được để trống"),
   sort_order: z.coerce.number().int().min(0).default(0),
+  type: z.enum(["main_dish", "side_dish", "drink"]).default("main_dish"),
 });
 
 export type MenuCategoryInput = z.infer<typeof menuCategorySchema>;
@@ -31,6 +32,17 @@ export const menuItemSchema = z.object({
 });
 
 export type MenuItemInput = z.infer<typeof menuItemSchema>;
+
+// ===== Available Sides for a Menu Item =====
+
+export const menuItemAvailableSidesSchema = z.object({
+  menu_item_id: z.number().int().positive(),
+  side_item_ids: z.array(z.number().int().positive()).min(0),
+});
+
+export type MenuItemAvailableSidesInput = z.infer<
+  typeof menuItemAvailableSidesSchema
+>;
 
 // ===== Entity ID (reusable for single-ID mutation params) =====
 
