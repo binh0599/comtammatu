@@ -161,11 +161,14 @@ async function _login(formData: FormData) {
         status: "pending",
         approval_code: generateApprovalCode(),
         registered_by: authData.user.id,
+        branch_id: profile.branch_id,
         ip_address: ip,
         user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
         approved_by: null,
         approved_at: null,
         rejected_at: null,
+        linked_terminal_id: null,
+        linked_station_id: null,
         terminal_type: reregTerminalType,
       })
       .eq("id", existingDevice.id);
