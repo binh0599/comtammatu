@@ -45,3 +45,26 @@ export const createRecipeSchema = z.object({
     .min(1, "Công thức phải có ít nhất 1 nguyên liệu"),
 });
 export type CreateRecipeInput = z.infer<typeof createRecipeSchema>;
+
+// ===== KDS Inventory: 86'd Toggle =====
+
+export const toggleMenuItemAvailabilitySchema = z.object({
+  menu_item_id: z.coerce.number().int().positive("Chọn món"),
+  is_available: z.boolean(),
+  reason: z.string().max(200).optional().or(z.literal("")),
+});
+export type ToggleMenuItemAvailabilityInput = z.infer<
+  typeof toggleMenuItemAvailabilitySchema
+>;
+
+// ===== KDS Inventory: Quick Waste Log =====
+
+export const quickWasteLogSchema = z.object({
+  ingredient_id: z.coerce.number().int().positive("Chọn nguyên liệu"),
+  quantity: z.coerce.number().positive("Số lượng phải lớn hơn 0"),
+  reason: z.enum(["expired", "spoiled", "overproduction", "other"], {
+    error: "Chọn lý do",
+  }),
+  notes: z.string().max(500).optional().or(z.literal("")),
+});
+export type QuickWasteLogInput = z.infer<typeof quickWasteLogSchema>;

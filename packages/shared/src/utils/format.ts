@@ -253,6 +253,16 @@ export const getPrinterAssignedTypeLabel = createLabelMapper({
   kds_station: "Trạm bếp",
 });
 
+// ===== 86'd / Menu Availability =====
+
+export const getItemUnavailableReasonLabel = createLabelMapper({
+  out_of_stock: "Hết hàng",
+  ingredient_shortage: "Thiếu nguyên liệu",
+  equipment_issue: "Lỗi thiết bị",
+  seasonal: "Theo mùa",
+  other: "Lý do khác",
+});
+
 // ===== Device Registration =====
 export const getDeviceStatusLabel = createLabelMapper({
   pending: "Chờ duyệt",

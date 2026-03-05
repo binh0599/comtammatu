@@ -988,6 +988,64 @@ export type Database = {
           },
         ]
       }
+      menu_item_branch_availability: {
+        Row: {
+          branch_id: number
+          created_at: string
+          disabled_at: string | null
+          disabled_by: string | null
+          id: number
+          is_available: boolean
+          menu_item_id: number
+          reason: string | null
+          updated_at: string
+        }
+        Insert: {
+          branch_id: number
+          created_at?: string
+          disabled_at?: string | null
+          disabled_by?: string | null
+          id?: never
+          is_available?: boolean
+          menu_item_id: number
+          reason?: string | null
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: number
+          created_at?: string
+          disabled_at?: string | null
+          disabled_by?: string | null
+          id?: never
+          is_available?: boolean
+          menu_item_id?: number
+          reason?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_miba_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_miba_disabled_by"
+            columns: ["disabled_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_miba_menu_item"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_item_modifiers: {
         Row: {
           created_at: string
@@ -1601,6 +1659,85 @@ export type Database = {
             columns: ["terminal_id"]
             isOneToOne: false
             referencedRelation: "pos_terminals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_entries: {
+        Row: {
+          base_pay: number
+          bonuses: number
+          created_at: string
+          deductions: number
+          employee_id: number
+          hourly_rate: number | null
+          id: number
+          monthly_salary: number | null
+          net_pay: number
+          notes: string | null
+          overtime_hours: number
+          overtime_pay: number
+          payroll_period_id: number
+          tenant_id: number
+          total_hours: number
+          updated_at: string
+        }
+        Insert: {
+          base_pay?: number
+          bonuses?: number
+          created_at?: string
+          deductions?: number
+          employee_id: number
+          hourly_rate?: number | null
+          id?: never
+          monthly_salary?: number | null
+          net_pay?: number
+          notes?: string | null
+          overtime_hours?: number
+          overtime_pay?: number
+          payroll_period_id: number
+          tenant_id: number
+          total_hours?: number
+          updated_at?: string
+        }
+        Update: {
+          base_pay?: number
+          bonuses?: number
+          created_at?: string
+          deductions?: number
+          employee_id?: number
+          hourly_rate?: number | null
+          id?: never
+          monthly_salary?: number | null
+          net_pay?: number
+          notes?: string | null
+          overtime_hours?: number
+          overtime_pay?: number
+          payroll_period_id?: number
+          tenant_id?: number
+          total_hours?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_entries_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_entries_payroll_period_id_fkey"
+            columns: ["payroll_period_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_periods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -2867,6 +3004,19 @@ export type Database = {
       auth_branch_id: { Args: never; Returns: number }
       auth_role: { Args: never; Returns: string }
       auth_tenant_id: { Args: never; Returns: number }
+      calculate_menu_portions: {
+        Args: { p_branch_id: number }
+        Returns: {
+          category_id: number
+          is_available_branch: boolean
+          is_available_global: boolean
+          limiting_ingredient_id: number
+          limiting_ingredient_name: string
+          menu_item_id: number
+          menu_item_name: string
+          portions_remaining: number
+        }[]
+      }
       generate_order_number: { Args: { p_branch_id: number }; Returns: string }
       handle_momo_payment_success: {
         Args: { p_request_id: string; p_trans_id: string }

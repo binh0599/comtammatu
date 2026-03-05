@@ -53,6 +53,8 @@ export {
   DEVICE_STATUSES,
   DEVICE_CHECK_ROLES,
   DEVICE_TERMINAL_TYPES,
+  // KDS Inventory
+  ITEM_UNAVAILABLE_REASONS,
 } from "./constants";
 
 export type {
@@ -96,6 +98,8 @@ export type {
   // Device Registration
   DeviceStatus,
   DeviceTerminalType,
+  // KDS Inventory
+  ItemUnavailableReason,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -155,12 +159,16 @@ export {
   updateIngredientSchema,
   createStockMovementSchema,
   createRecipeSchema,
+  toggleMenuItemAvailabilitySchema,
+  quickWasteLogSchema,
 } from "./schemas/inventory";
 export type {
   CreateIngredientInput,
   UpdateIngredientInput,
   CreateStockMovementInput,
   CreateRecipeInput,
+  ToggleMenuItemAvailabilityInput,
+  QuickWasteLogInput,
 } from "./schemas/inventory";
 
 // Week 5-6: Supplier
@@ -324,6 +332,8 @@ export {
   getPrinterAssignedTypeLabel,
   // Device Registration
   getDeviceStatusLabel,
+  // KDS Inventory
+  getItemUnavailableReasonLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====

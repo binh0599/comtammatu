@@ -265,6 +265,17 @@ export const PRINTER_ASSIGNED_TYPES = [
 ] as const;
 export type PrinterAssignedType = (typeof PRINTER_ASSIGNED_TYPES)[number];
 
+// ===== 86'd / Menu Availability Reasons =====
+
+export const ITEM_UNAVAILABLE_REASONS = [
+  "out_of_stock",
+  "ingredient_shortage",
+  "equipment_issue",
+  "seasonal",
+  "other",
+] as const;
+export type ItemUnavailableReason = (typeof ITEM_UNAVAILABLE_REASONS)[number];
+
 // ===== Module-Specific Role Sets =====
 
 /** Roles allowed to manage inventory */
