@@ -234,7 +234,7 @@ async function _deleteCategory(id: number) {
     .in(
       "menu_item_id",
       (await supabase.from("menu_items").select("id").eq("category_id", id)).data?.map(
-        (i) => i.id,
+        (i: { id: number }) => i.id,
       ) ?? [],
     );
 
@@ -504,7 +504,7 @@ async function _updateAvailableSides(data: {
       };
     }
 
-    const inserts = parsed.data.side_item_ids.map((sideId) => ({
+    const inserts = parsed.data.side_item_ids.map((sideId: number) => ({
       menu_item_id: parsed.data.menu_item_id,
       side_item_id: sideId,
     }));
