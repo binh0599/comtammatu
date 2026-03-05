@@ -291,7 +291,7 @@ export function PrinterSettings({
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="http">HTTP</SelectItem>
-                        <SelectItem value="tcp">TCP (raw)</SelectItem>
+                        <SelectItem value="raw">Raw TCP</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

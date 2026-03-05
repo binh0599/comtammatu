@@ -60,7 +60,9 @@ export function KdsBoard({
   const autoPrintTicket = useCallback(
     (ticket: KdsTicket) => {
       if (!printerConfig) return;
-      const commands = generateKitchenTicketCommands(ticket, stationName);
+      const paperWidth = printerConfig.paper_width_mm ?? 80;
+      const lineWidth = paperWidth === 58 ? 32 : 42;
+      const commands = generateKitchenTicketCommands(ticket, stationName, lineWidth);
       const connConfig = printerConfig.connection_config;
 
       const printFn =
