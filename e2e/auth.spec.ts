@@ -1,4 +1,4 @@
-import { test, expect, TEST_ACCOUNTS } from "./fixtures/auth";
+import { test, expect } from "./fixtures/auth";
 
 test.describe("Authentication", () => {
   test("shows login form with email and password fields", async ({ page }) => {
@@ -38,19 +38,19 @@ test.describe("Authentication", () => {
     await loginAs("owner");
     await expect(page).toHaveURL(/\/admin/);
 
-    // Find and click logout — look for the user menu or logout button
+    // Try direct logout button first, fall back to user menu dropdown
     const logoutButton = page.getByRole("button", { name: /đăng xuất|logout/i });
-    if (await logoutButton.isVisible()) {
+    const userMenu = page.getByRole("button", { name: /menu|user|avatar/i });
+
+    if (await logoutButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
+      await expect(logoutButton).toBeVisible();
       await logoutButton.click();
     } else {
-      // May be inside a dropdown menu
-      const userMenu = page.getByRole("button", { name: /menu|user|avatar/i });
-      if (await userMenu.isVisible()) {
-        await userMenu.click();
-        await page
-          .getByRole("menuitem", { name: /đăng xuất|logout/i })
-          .click();
-      }
+      await expect(userMenu).toBeVisible({ timeout: 5_000 });
+      await userMenu.click();
+      const menuItem = page.getByRole("menuitem", { name: /đăng xuất|logout/i });
+      await expect(menuItem).toBeVisible({ timeout: 5_000 });
+      await menuItem.click();
     }
 
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });

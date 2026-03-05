@@ -271,6 +271,7 @@ export type {
 // Payroll
 export {
   createPayrollPeriodSchema,
+  payrollPeriodIdSchema,
   updatePayrollEntrySchema,
 } from "./schemas/payroll";
 export type {

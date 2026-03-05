@@ -92,6 +92,12 @@ CREATE POLICY "payroll_periods_update_staff" ON payroll_periods FOR UPDATE
     AND auth_role() IN ('owner', 'manager', 'hr')
   );
 
+CREATE POLICY "payroll_periods_delete_staff" ON payroll_periods FOR DELETE
+  USING (
+    tenant_id = auth_tenant_id()
+    AND auth_role() IN ('owner', 'manager', 'hr')
+  );
+
 -- ============================================================
 -- RLS: payroll_entries
 -- ============================================================

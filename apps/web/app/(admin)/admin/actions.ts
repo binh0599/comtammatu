@@ -3,10 +3,12 @@
 import "@/lib/server-bootstrap";
 import {
   ActionError,
-  getActionContext,
+  getAdminContext,
+  ADMIN_ROLES,
   withServerQuery,
   getOrderStatusLabel,
   safeDbError,
+  dateRangeSchema,
 } from "@comtammatu/shared";
 
 // =====================
@@ -22,7 +24,7 @@ export interface DashboardStats {
 }
 
 async function _getDashboardStats(): Promise<DashboardStats> {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
     .from("branches")
@@ -98,7 +100,7 @@ export interface RecentOrder {
 }
 
 async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
     .from("branches")
@@ -145,7 +147,7 @@ export interface TopSellingItem {
 }
 
 async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
     .from("branches")
@@ -214,7 +216,7 @@ export const getTopSellingItems = withServerQuery(_getTopSellingItems);
 // =====================
 
 async function _getOrderStatusCounts(): Promise<Record<string, number>> {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
     .from("branches")
@@ -255,7 +257,7 @@ export const getOrderStatusCounts = withServerQuery(_getOrderStatusCounts);
 // =====================
 
 async function _getRevenueTrend(days: number = 7) {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
@@ -307,7 +309,7 @@ export const getRevenueTrend = withServerQuery(_getRevenueTrend);
 // =====================
 
 async function _getHourlyOrderVolume() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
@@ -348,7 +350,7 @@ export const getHourlyOrderVolume = withServerQuery(_getHourlyOrderVolume);
 // =====================
 
 async function _getOrderStatusDistribution() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds =
     (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
@@ -408,7 +410,16 @@ async function _getBranchComparison(
   startDate: string,
   endDate: string
 ): Promise<BranchComparisonData[]> {
-  const { supabase, tenantId } = await getActionContext();
+  const parsed = dateRangeSchema.safeParse({ startDate, endDate });
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Khoảng thời gian không hợp lệ",
+      "VALIDATION_ERROR",
+      400,
+    );
+  }
+
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
     .from("branches")
@@ -421,10 +432,10 @@ async function _getBranchComparison(
 
   const branchIds = branches.map((b: { id: number }) => b.id);
 
-  const start = new Date(startDate);
-  start.setHours(0, 0, 0, 0);
-  const end = new Date(endDate);
-  end.setHours(23, 59, 59, 999);
+  const [sY = 0, sM = 1, sD = 1] = parsed.data.startDate.split("-").map(Number);
+  const [eY = 0, eM = 1, eD = 1] = parsed.data.endDate.split("-").map(Number);
+  const start = new Date(Date.UTC(sY, sM - 1, sD, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(eY, eM - 1, eD, 23, 59, 59, 999));
 
   const { data: orders, error: orderError } = await supabase
     .from("orders")

@@ -233,17 +233,17 @@
 ```
 
 ### Priority 2 — Operations (Week 13-14) -- PARTIALLY COMPLETE
-```
+```text
 - [x] Attendance clock-in/clock-out — Employee Portal PWA with timesheet (commit a86dfc0)
 - [x] Device fingerprinting for terminal registration
-- [ ] Payroll calculations (HR module)
-- [ ] Branch comparison in dashboard
+- [x] Payroll calculations (HR module)
+- [x] Branch comparison in dashboard
 - [ ] Offline support — Service Worker + IndexedDB (critical for POS reliability)
 ```
 
 ### Priority 3 — Quality & Scale (Week 15-16)
-```
-- [ ] E2E testing (Playwright — critical flows: login, order, payment, KDS)
+```text
+- [x] E2E testing (Playwright — critical flows: login, order, payment, KDS)
 - [ ] RLS validation test suite
 - [ ] API documentation (OpenAPI spec)
 - [x] Upstash Redis rate limiting ← Sprint 2
@@ -251,7 +251,7 @@
 ```
 
 ### Priority 4 — Growth (Week 17+)
-```
+```text
 - [ ] Campaigns & notifications (email/SMS/push marketing)
 - [ ] Customer ordering (online menu → place order via PWA)
 - [ ] Multi-branch reporting & analytics
@@ -261,43 +261,43 @@
 
 ---
 
-## Next Sprint: Post-MVP Sprint 4 — Payroll, Analytics & Quality
+## Sprint 4: Post-MVP — Payroll, Analytics & Quality (COMPLETED)
 
 > **Goal:** Complete Priority 2 remaining items + start Priority 3 testing.
 > **Target:** Week 13-14 equivalent
 
-### Phase 1: Payroll Module (HR)
-```
-- [ ] DB migration — payroll_periods, payroll_entries tables (NUMERIC(14,2) for amounts)
-- [ ] Zod schemas — payroll period (create/close), payroll entry (calculate, approve)
-- [ ] Constants — payroll statuses (draft, calculated, approved, paid), pay components
-- [ ] Server Actions — createPayrollPeriod, calculatePayroll (hours × rate), approvePayroll
-- [ ] Admin UI — /admin/hr payroll tab: period list, calculate button, entry table, approve flow
-- [ ] Employee Portal — /employee/payroll: view pay stubs, download summary
-```
-
-### Phase 2: Branch Comparison Dashboard
-```
-- [ ] Server Actions — getBranchComparison (revenue, orders, avg ticket by branch + date range)
-- [ ] Admin UI — /admin/dashboard branch comparison tab: bar charts, date range picker
-- [ ] Recharts lazy-loaded components for branch comparison charts
+### Phase 1: Payroll Module (HR) — DONE
+```text
+- [x] DB migration — payroll_periods, payroll_entries tables (NUMERIC(14,2) for amounts)
+- [x] Zod schemas — payroll period (create/close), payroll entry (calculate, approve)
+- [x] Constants — payroll statuses (draft, calculated, approved, paid), pay components
+- [x] Server Actions — createPayrollPeriod, calculatePayroll (hours × rate), approvePayroll
+- [x] Admin UI — /admin/hr payroll tab: period list, calculate button, entry table, approve flow
+- [x] Employee Portal — /employee/payroll: view pay stubs, download summary
 ```
 
-### Phase 3: E2E Testing Foundation
-```
-- [ ] Playwright setup — config, fixtures, auth helpers (login as different roles)
-- [ ] Critical flow tests:
-  - [ ] Auth flow — login, role-based redirect, logout
-  - [ ] Order flow — waiter creates order → KDS receives → chef bumps → cashier pays
-  - [ ] Menu CRUD — admin creates/edits/deletes menu items
-  - [ ] Employee clock-in/clock-out
-- [ ] CI integration — Playwright in GitHub Actions (headless)
+### Phase 2: Branch Comparison Dashboard — DONE
+```text
+- [x] Server Actions — getBranchComparison (revenue, orders, avg ticket by branch + date range)
+- [x] Admin UI — /admin/dashboard branch comparison tab: bar charts, date range picker
+- [x] Recharts lazy-loaded components for branch comparison charts
 ```
 
-### Phase 4: Verification
+### Phase 3: E2E Testing Foundation — DONE
+```text
+- [x] Playwright setup — config, fixtures, auth helpers (login as different roles)
+- [x] Critical flow tests:
+  - [x] Auth flow — login, role-based redirect, logout
+  - [x] Order flow — waiter creates order → KDS receives → chef bumps → cashier pays
+  - [x] Menu CRUD — admin creates/edits/deletes menu items
+  - [x] Employee clock-in/clock-out
+- [x] CI integration — Playwright in GitHub Actions (headless)
 ```
-- [ ] Typecheck passes (all packages)
-- [ ] Lint passes
-- [ ] Build passes
-- [ ] E2E tests pass
+
+### Phase 4: Verification — DONE
+```text
+- [x] Typecheck passes (all packages)
+- [x] Lint passes
+- [x] Build passes
+- [x] E2E tests pass
 ```

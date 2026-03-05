@@ -283,9 +283,9 @@ The Modular Monolith architecture is designed for easy module extraction — eac
 
 ### Next Steps — Sprint 4 (Payroll, Analytics & Quality)
 
-- [ ] Payroll calculations module (HR)
-- [ ] Branch comparison dashboard
-- [ ] E2E testing foundation (Playwright)
+- [x] Payroll calculations module (HR)
+- [x] Branch comparison dashboard
+- [x] E2E testing foundation (Playwright)
 - [ ] Offline POS support (deferred to Sprint 5)
 
 ---

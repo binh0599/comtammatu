@@ -72,6 +72,7 @@ export function BranchComparison({
   const [isPending, startTransition] = useTransition();
 
   function handleFilter() {
+    if (startDate > endDate) return;
     startTransition(async () => {
       const result = await getBranchComparison(startDate, endDate);
       if (Array.isArray(result)) {

@@ -77,7 +77,11 @@ export function PayrollStubs({ entries }: PayrollStubsProps) {
                   className={
                     period.status === "paid"
                       ? "bg-purple-100 text-purple-800"
-                      : "bg-green-100 text-green-800"
+                      : period.status === "approved"
+                        ? "bg-green-100 text-green-800"
+                        : period.status === "calculated"
+                          ? "bg-blue-100 text-blue-800"
+                          : ""
                   }
                 >
                   {getPayrollStatusLabel(period.status)}

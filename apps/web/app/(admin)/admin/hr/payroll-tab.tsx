@@ -211,6 +211,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
       const result = await getPayrollEntries(period.id);
       if ("error" in result && result.error) {
         toast.error(result.error as string);
+        setEntries([]);
         setIsLoadingEntries(false);
       } else {
         setEntries(result as unknown as PayrollEntry[]);
@@ -406,6 +407,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                           onClick={() => handleCalculate(period.id)}
                           disabled={isPending}
                           title="Tính lương"
+                          aria-label="Tính lương"
                         >
                           <Calculator className="h-4 w-4" />
                         </Button>
@@ -416,6 +418,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                         onClick={() => handleViewDetail(period)}
                         disabled={isPending}
                         title="Xem chi tiết"
+                        aria-label="Xem chi tiết"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -426,6 +429,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                           onClick={() => handleApprove(period.id)}
                           disabled={isPending}
                           title="Duyệt"
+                          aria-label="Duyệt"
                           className="text-green-600 hover:text-green-700"
                         >
                           <CheckCircle className="h-4 w-4" />
@@ -438,6 +442,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                           onClick={() => handleMarkPaid(period.id)}
                           disabled={isPending}
                           title="Đã trả"
+                          aria-label="Đã trả"
                           className="text-purple-600 hover:text-purple-700"
                         >
                           <Wallet className="h-4 w-4" />
@@ -450,6 +455,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                           onClick={() => handleDelete(period.id)}
                           disabled={isPending}
                           title="Xóa"
+                          aria-label="Xóa"
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -561,6 +567,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                               setError(null);
                             }}
                             title="Chỉnh sửa"
+                            aria-label="Chỉnh sửa"
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
