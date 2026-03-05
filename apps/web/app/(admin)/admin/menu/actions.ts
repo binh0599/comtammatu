@@ -97,6 +97,46 @@ async function _deleteMenu(id: number) {
   entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
+  // Verify menu belongs to this tenant before any dependent queries
+  const { data: menu } = await supabase
+    .from("menus")
+    .select("id")
+    .eq("id", id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!menu) {
+    return { error: "Thực đơn không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  // Check if any menu items under this menu have been used in orders
+  const { data: itemIds, error: itemsError } = await supabase
+    .from("menu_items")
+    .select("id, menu_categories!inner(menu_id)")
+    .eq("menu_categories.menu_id", id)
+    .eq("tenant_id", tenantId);
+
+  if (itemsError) return safeDbErrorResult(itemsError, "db");
+
+  if (itemIds && itemIds.length > 0) {
+    const { count, error: orderCheckError } = await supabase
+      .from("order_items")
+      .select("id", { count: "exact", head: true })
+      .in(
+        "menu_item_id",
+        itemIds.map((i: { id: number }) => i.id),
+      );
+
+    if (orderCheckError) return safeDbErrorResult(orderCheckError, "db");
+
+    if (count && count > 0) {
+      return {
+        error:
+          "Không thể xoá thực đơn này vì có món ăn đã được sử dụng trong đơn hàng. Hãy tắt thực đơn (tạm dừng) thay vì xoá.",
+      };
+    }
+  }
+
   const { error } = await supabase
     .from("menus")
     .delete()
@@ -185,6 +225,26 @@ async function _deleteCategory(id: number) {
 
   if (!category) {
     return { error: "Danh mục không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  // Check if any menu items in this category have been used in orders
+  const { count, error: orderCheckError } = await supabase
+    .from("order_items")
+    .select("id", { count: "exact", head: true })
+    .in(
+      "menu_item_id",
+      (await supabase.from("menu_items").select("id").eq("category_id", id)).data?.map(
+        (i: { id: number }) => i.id,
+      ) ?? [],
+    );
+
+  if (orderCheckError) return safeDbErrorResult(orderCheckError, "db");
+
+  if (count && count > 0) {
+    return {
+      error:
+        "Không thể xoá danh mục này vì có món ăn đã được sử dụng trong đơn hàng. Hãy xoá từng món hoặc tắt hiển thị thay vì xoá.",
+    };
   }
 
   const { error } = await supabase.from("menu_categories").delete().eq("id", id);
@@ -444,7 +504,7 @@ async function _updateAvailableSides(data: {
       };
     }
 
-    const inserts = parsed.data.side_item_ids.map((sideId) => ({
+    const inserts = parsed.data.side_item_ids.map((sideId: number) => ({
       menu_item_id: parsed.data.menu_item_id,
       side_item_id: sideId,
     }));
