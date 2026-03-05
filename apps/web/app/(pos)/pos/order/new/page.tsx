@@ -28,14 +28,15 @@ export default async function NewOrderPage({
 
   if (!profile?.branch_id) redirect("/login");
 
-  // Get a terminal for this user (mobile_order type preferred)
+  // Get a terminal for this user (mobile_order or cashier_station — cashier can also take orders)
   const { data: terminal } = await supabase
     .from("pos_terminals")
     .select("id")
     .eq("branch_id", profile.branch_id)
-    .eq("type", "mobile_order")
+    .in("type", ["mobile_order", "cashier_station"])
     .eq("is_active", true)
     .not("approved_at", "is", null)
+    .order("type") // mobile_order sorts before cashier_station
     .limit(1)
     .maybeSingle();
 
