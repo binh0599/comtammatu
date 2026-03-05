@@ -253,11 +253,12 @@ async function _approveDevice(id: number) {
 
     if (termError) {
       if (termError.code === "23505") {
-        // Fingerprint already exists — find and reuse the existing terminal
+        // Fingerprint already exists — find and reuse the existing terminal (tenant-scoped)
         const { data: existing, error: lookupError } = await supabase
           .from("pos_terminals")
-          .select("id, branch_id, type, is_active")
+          .select("id, branch_id, type, is_active, branches!inner(tenant_id)")
           .eq("device_fingerprint", device.device_fingerprint)
+          .eq("branches.tenant_id", tenantId)
           .single();
         if (lookupError || !existing) {
           return lookupError

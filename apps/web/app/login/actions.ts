@@ -136,10 +136,11 @@ async function _login(formData: FormData) {
       redirect(getRoleRedirectPath(role));
     }
 
-    // Device pending for THIS user — show pending page
+    // Device pending for THIS user at same branch — show pending page
     if (
       existingDevice.status === "pending" &&
-      existingDevice.registered_by === authData.user.id
+      existingDevice.registered_by === authData.user.id &&
+      existingDevice.branch_id === profile.branch_id
     ) {
       return {
         pendingApproval: true,
