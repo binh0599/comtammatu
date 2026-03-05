@@ -221,8 +221,10 @@ export function MenuDetail({
   }
 
   function handleDeleteItem(id: number) {
+    setError(null);
     startTransition(async () => {
-      await deleteMenuItem(id);
+      const result = await deleteMenuItem(id);
+      if (result?.error) setError(result.error);
     });
   }
 

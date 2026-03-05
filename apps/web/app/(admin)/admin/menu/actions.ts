@@ -286,6 +286,19 @@ async function _deleteMenuItem(id: number) {
   entityIdSchema.parse(id);
   const { supabase, tenantId } = await getActionContext();
 
+  // Check if menu item has been used in any orders
+  const { count } = await supabase
+    .from("order_items")
+    .select("id", { count: "exact", head: true })
+    .eq("menu_item_id", id);
+
+  if (count && count > 0) {
+    return {
+      error:
+        "Không thể xoá món này vì đã có đơn hàng sử dụng. Hãy tắt hiển thị (đánh dấu không khả dụng) thay vì xoá.",
+    };
+  }
+
   const { error } = await supabase
     .from("menu_items")
     .delete()
