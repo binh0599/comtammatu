@@ -3,12 +3,15 @@
 import "@/lib/server-bootstrap";
 import {
   createFeedbackSchema,
+  customerPlaceOrderSchema,
   deletionRequestSchema,
   entityIdSchema,
   handleServerActionError,
   getCustomerContext,
   safeDbError,
+  withServerAction,
 } from "@comtammatu/shared";
+import { revalidatePath } from "next/cache";
 
 // ---------------------------------------------------------------------------
 // Public: Menu browsing (no auth required)
@@ -65,6 +68,235 @@ export async function getPublicMenu() {
     throw new Error(result.error, { cause: error });
   }
 }
+
+// ---------------------------------------------------------------------------
+// Auth: Place order
+// ---------------------------------------------------------------------------
+
+async function _placeCustomerOrder(data: {
+  branch_id: number;
+  type: "dine_in" | "takeaway";
+  table_id?: number;
+  items: {
+    menu_item_id: number;
+    quantity: number;
+    variant_id?: number;
+    modifiers?: number[];
+    notes?: string;
+  }[];
+  notes?: string;
+  voucher_code?: string;
+}) {
+  const parsed = customerPlaceOrderSchema.safeParse(data);
+  if (!parsed.success) {
+    return {
+      error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+    };
+  }
+
+  const { supabase, customer } = await getCustomerContext();
+  const tenantId = customer.tenant_id;
+
+  // Verify branch belongs to same tenant
+  const { data: branch, error: branchError } = await supabase
+    .from("branches")
+    .select("id, tenant_id")
+    .eq("id", parsed.data.branch_id)
+    .single();
+
+  if (branchError || !branch) {
+    return { error: "Chi nhánh không tồn tại" };
+  }
+  if (branch.tenant_id !== tenantId) {
+    return { error: "Chi nhánh không thuộc cửa hàng" };
+  }
+
+  const branchId = branch.id;
+
+  // Lookup menu items to get prices
+  const itemIds = parsed.data.items.map((i) => i.menu_item_id);
+  const { data: menuItems, error: menuError } = await supabase
+    .from("menu_items")
+    .select("id, base_price, is_available, name")
+    .in("id", itemIds)
+    .eq("tenant_id", tenantId);
+
+  if (menuError) throw safeDbError(menuError, "db");
+  if (!menuItems || menuItems.length === 0) {
+    return { error: "Không tìm thấy món ăn" };
+  }
+
+  // Validate all items found
+  type MenuItemRow = {
+    id: number;
+    base_price: number;
+    is_available: boolean;
+    name: string;
+  };
+  const typedMenuItems = menuItems as MenuItemRow[];
+  if (typedMenuItems.length !== itemIds.length) {
+    return { error: "Một số món ăn không tồn tại" };
+  }
+
+  // Check availability
+  const unavailable = typedMenuItems.filter((mi) => !mi.is_available);
+  if (unavailable.length > 0) {
+    const names = unavailable.map((mi) => mi.name).join(", ");
+    return { error: `Các món sau đã hết: ${names}` };
+  }
+
+  // Build price map
+  const priceMap = new Map<number, number>();
+  for (const mi of typedMenuItems) {
+    priceMap.set(mi.id, mi.base_price);
+  }
+
+  // Calculate order items
+  const orderItems = parsed.data.items.map((item) => {
+    const basePrice = priceMap.get(item.menu_item_id)!;
+    return {
+      menu_item_id: item.menu_item_id,
+      variant_id: item.variant_id ?? null,
+      quantity: item.quantity,
+      unit_price: basePrice,
+      item_total: basePrice * item.quantity,
+      modifiers: null,
+      notes: item.notes ?? null,
+      status: "pending" as const,
+    };
+  });
+
+  // Get tax settings
+  const { data: settings } = await supabase
+    .from("system_settings")
+    .select("key, value")
+    .eq("tenant_id", tenantId)
+    .in("key", ["tax_rate", "service_charge"]);
+
+  let taxRate = 10;
+  let serviceChargeRate = 5;
+  if (settings) {
+    for (const s of settings as { key: string; value: string | null }[]) {
+      if (s.key === "tax_rate" && s.value !== null) taxRate = Number(s.value);
+      if (s.key === "service_charge" && s.value !== null)
+        serviceChargeRate = Number(s.value);
+    }
+  }
+
+  // Calculate totals
+  const subtotal = orderItems.reduce((sum, item) => sum + item.item_total, 0);
+  const tax = Math.round(subtotal * (taxRate / 100));
+  const serviceCharge = Math.round(subtotal * (serviceChargeRate / 100));
+  let discountTotal = 0;
+
+  // Validate voucher if provided
+  if (parsed.data.voucher_code) {
+    const { data: voucher } = await supabase
+      .from("vouchers")
+      .select(
+        "id, code, type, value, min_order, max_uses, used_count, valid_from, valid_until, is_active",
+      )
+      .eq("code", parsed.data.voucher_code)
+      .eq("tenant_id", tenantId)
+      .eq("is_active", true)
+      .single();
+
+    if (!voucher) {
+      return { error: "Mã giảm giá không hợp lệ" };
+    }
+
+    const now = new Date();
+    if (voucher.valid_from && new Date(voucher.valid_from) > now) {
+      return { error: "Mã giảm giá chưa có hiệu lực" };
+    }
+    if (voucher.valid_until && new Date(voucher.valid_until) < now) {
+      return { error: "Mã giảm giá đã hết hạn" };
+    }
+    if (
+      voucher.max_uses != null &&
+      voucher.used_count != null &&
+      voucher.used_count >= voucher.max_uses
+    ) {
+      return { error: "Mã giảm giá đã hết lượt sử dụng" };
+    }
+    if (voucher.min_order != null && subtotal < voucher.min_order) {
+      return {
+        error: `Đơn hàng tối thiểu ${voucher.min_order.toLocaleString("vi-VN")}đ để sử dụng mã này`,
+      };
+    }
+
+    // Calculate discount
+    if (voucher.type === "percentage") {
+      discountTotal = Math.round(subtotal * (voucher.value / 100));
+    } else {
+      discountTotal = Math.min(voucher.value, subtotal);
+    }
+  }
+
+  const total = subtotal + tax + serviceCharge - discountTotal;
+
+  // Generate order number
+  const { data: orderNum, error: numError } = await supabase.rpc(
+    "generate_order_number",
+    { p_branch_id: branchId },
+  );
+
+  if (numError) throw safeDbError(numError, "db");
+
+  const idempotencyKey = crypto.randomUUID();
+
+  // Insert order — status 'confirmed' (customer orders skip draft)
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .insert({
+      order_number: orderNum as string,
+      branch_id: branchId,
+      table_id: parsed.data.table_id ?? null,
+      type: parsed.data.type,
+      status: "confirmed",
+      customer_id: customer.id,
+      idempotency_key: idempotencyKey,
+      subtotal,
+      tax,
+      service_charge: serviceCharge,
+      discount_total: discountTotal,
+      total,
+      notes: parsed.data.notes ?? null,
+    })
+    .select("id, order_number")
+    .single();
+
+  if (orderError) throw safeDbError(orderError, "db");
+
+  // Insert order items
+  const itemInserts = orderItems.map((item) => ({
+    order_id: order.id,
+    menu_item_id: item.menu_item_id,
+    variant_id: item.variant_id,
+    quantity: item.quantity,
+    unit_price: item.unit_price,
+    item_total: item.item_total,
+    modifiers: item.modifiers,
+    notes: item.notes,
+    status: item.status,
+  }));
+
+  const { error: itemsError } = await supabase
+    .from("order_items")
+    .insert(itemInserts);
+
+  if (itemsError) throw safeDbError(itemsError, "db");
+
+  revalidatePath("/customer/orders");
+
+  return {
+    error: null,
+    orderId: order.id,
+    orderNumber: order.order_number,
+  };
+}
+
+export const placeCustomerOrder = withServerAction(_placeCustomerOrder);
 
 // ---------------------------------------------------------------------------
 // Auth: Customer orders

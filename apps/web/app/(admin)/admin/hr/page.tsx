@@ -16,6 +16,7 @@ import { ScheduleTab } from "./schedule-tab";
 import { AttendanceTab } from "./attendance-tab";
 import { LeaveTab } from "./leave-tab";
 import { PayrollTab } from "./payroll-tab";
+import { PerformanceTab } from "./performance-tab";
 
 export default async function HrPage() {
   const now = new Date();
@@ -59,6 +60,7 @@ export default async function HrPage() {
             <TabsTrigger value="attendance">Chấm công</TabsTrigger>
             <TabsTrigger value="leave">Nghỉ phép</TabsTrigger>
             <TabsTrigger value="payroll">Bảng lương</TabsTrigger>
+            <TabsTrigger value="performance">Hiệu suất</TabsTrigger>
           </TabsList>
           <TabsContent value="employees">
             <EmployeesTab
@@ -85,6 +87,9 @@ export default async function HrPage() {
           </TabsContent>
           <TabsContent value="payroll">
             <PayrollTab periods={payrollPeriods} branches={branches} />
+          </TabsContent>
+          <TabsContent value="performance">
+            <PerformanceTab branches={branches} />
           </TabsContent>
         </Tabs>
       </div>
