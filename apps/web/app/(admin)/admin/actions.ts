@@ -13,6 +13,16 @@ import {
   daysSchema,
 } from "@comtammatu/shared";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getBranchIdsForTenant(supabase: any, tenantId: number): Promise<number[]> {
+  const { data, error } = await supabase
+    .from("branches")
+    .select("id")
+    .eq("tenant_id", tenantId);
+  if (error) throw safeDbError(error, "db");
+  return (data ?? []).map((b: { id: number }) => b.id);
+}
+
 // =====================
 // Dashboard Stats
 // =====================
@@ -27,19 +37,10 @@ export interface DashboardStats {
 
 async function _getDashboardStats(): Promise<DashboardStats> {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) {
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) {
     return { todayRevenue: 0, todayOrders: 0, weekRevenue: 0, monthRevenue: 0, avgOrderValue: 0 };
   }
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
 
   const { data: orders, error: orderError } = await supabase
     .from("orders")
@@ -104,17 +105,8 @@ export interface RecentOrder {
 async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
   const safeLimit = limitSchema.parse(limit);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) return [];
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return [];
 
   const { data: orders, error: orderError } = await supabase
     .from("orders")
@@ -152,17 +144,8 @@ export interface TopSellingItem {
 async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
   const safeLimit = limitSchema.parse(limit);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) return [];
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return [];
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -221,17 +204,8 @@ export const getTopSellingItems = withServerQuery(_getTopSellingItems);
 
 async function _getOrderStatusCounts(): Promise<Record<string, number>> {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-
-  if (branchError)
-    throw safeDbError(branchError, "db");
-  if (!branches || branches.length === 0) return {};
-
-  const branchIds = branches.map((b: { id: number }) => b.id);
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
+  if (branchIds.length === 0) return {};
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -263,14 +237,7 @@ export const getOrderStatusCounts = withServerQuery(_getOrderStatusCounts);
 async function _getRevenueTrend(days: number = 7) {
   const safeDays = daysSchema.parse(days);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-  if (branchError) throw safeDbError(branchError, "db");
-  const branchIds = (branches ?? []).map((b: { id: number }) => b.id);
-
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const startDate = new Date();
@@ -319,14 +286,7 @@ export const getRevenueTrend = withServerQuery(_getRevenueTrend);
 
 async function _getHourlyOrderVolume() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-  if (branchError) throw safeDbError(branchError, "db");
-  const branchIds = (branches ?? []).map((b: { id: number }) => b.id);
-
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const todayStart = new Date();
@@ -364,14 +324,7 @@ export const getHourlyOrderVolume = withServerQuery(_getHourlyOrderVolume);
 
 async function _getOrderStatusDistribution() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data: branches, error: branchError } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("tenant_id", tenantId);
-  if (branchError) throw safeDbError(branchError, "db");
-  const branchIds = (branches ?? []).map((b: { id: number }) => b.id);
-
+  const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) return [];
 
   const todayStart = new Date();
