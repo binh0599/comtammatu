@@ -1742,113 +1742,66 @@ export type Database = {
           },
         ]
       }
-      payroll_items: {
-        Row: {
-          base_pay: number | null
-          bonuses: number | null
-          created_at: string
-          deductions: Json | null
-          employee_id: number
-          id: number
-          net_pay: number | null
-          notes: string | null
-          overtime_pay: number | null
-          period_id: number
-          tax: number | null
-          tips: number | null
-        }
-        Insert: {
-          base_pay?: number | null
-          bonuses?: number | null
-          created_at?: string
-          deductions?: Json | null
-          employee_id: number
-          id?: never
-          net_pay?: number | null
-          notes?: string | null
-          overtime_pay?: number | null
-          period_id: number
-          tax?: number | null
-          tips?: number | null
-        }
-        Update: {
-          base_pay?: number | null
-          bonuses?: number | null
-          created_at?: string
-          deductions?: Json | null
-          employee_id?: number
-          id?: never
-          net_pay?: number | null
-          notes?: string | null
-          overtime_pay?: number | null
-          period_id?: number
-          tax?: number | null
-          tips?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_payroll_items_employee"
-            columns: ["employee_id"]
-            isOneToOne: false
-            referencedRelation: "employees"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_payroll_items_period"
-            columns: ["period_id"]
-            isOneToOne: false
-            referencedRelation: "payroll_periods"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       payroll_periods: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: number
           created_at: string
+          end_date: string
           id: number
+          name: string
           notes: string | null
-          period_end: string
-          period_start: string
-          processed_at: string | null
-          processed_by: string | null
+          start_date: string
           status: string
           tenant_id: number
-          total: number | null
+          updated_at: string
         }
         Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id: number
           created_at?: string
+          end_date: string
           id?: never
+          name: string
           notes?: string | null
-          period_end: string
-          period_start: string
-          processed_at?: string | null
-          processed_by?: string | null
+          start_date: string
           status?: string
           tenant_id: number
-          total?: number | null
+          updated_at?: string
         }
         Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: number
           created_at?: string
+          end_date?: string
           id?: never
+          name?: string
           notes?: string | null
-          period_end?: string
-          period_start?: string
-          processed_at?: string | null
-          processed_by?: string | null
+          start_date?: string
           status?: string
           tenant_id?: number
-          total?: number | null
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "fk_payroll_processor"
-            columns: ["processed_by"]
+            foreignKeyName: "payroll_periods_approved_by_fkey"
+            columns: ["approved_by"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_payroll_tenant"
+            foreignKeyName: "payroll_periods_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_periods_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
