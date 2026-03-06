@@ -96,12 +96,9 @@ export function MenuSelector({
     return map;
   }, [menuItems]);
 
-  // Filter: only show main_dish and drink items (sides are shown in dialog)
+  // Filter: show all orderable items (main_dish, drink, side_dish)
   const filteredItems = useMemo(() => {
-    let items = menuItems.filter((i) => {
-      const catType = i.menu_categories?.type;
-      return catType === "main_dish" || catType === "drink";
-    });
+    let items = [...menuItems];
 
     if (activeCategoryId) {
       items = items.filter((i) => i.category_id === activeCategoryId);
@@ -119,10 +116,8 @@ export function MenuSelector({
     return items;
   }, [menuItems, activeCategoryId, search]);
 
-  // Filter categories to only main_dish and drink
-  const visibleCategories = useMemo(() => {
-    return categories.filter((c) => c.type === "main_dish" || c.type === "drink");
-  }, [categories]);
+  // All categories are visible (main_dish, drink, side_dish)
+  const visibleCategories = categories;
 
   function getCartQuantity(menuItemId: number, variantId: number | null) {
     return (

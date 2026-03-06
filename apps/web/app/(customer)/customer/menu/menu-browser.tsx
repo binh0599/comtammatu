@@ -154,14 +154,7 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
         <div className="space-y-6">
           {groupedItems.map((group) => (
             <div key={group.type}>
-              <h2 className="mb-3 text-lg font-semibold">
-                {group.label}
-                {group.type === "side_dish" && (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">
-                    (gọi kèm món chính)
-                  </span>
-                )}
-              </h2>
+              <h2 className="mb-3 text-lg font-semibold">{group.label}</h2>
               <div className="grid gap-3">
                 {group.items.map((item) => (
                   <Card key={item.id}>

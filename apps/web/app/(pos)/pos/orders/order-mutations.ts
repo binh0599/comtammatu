@@ -177,7 +177,7 @@ async function _createOrder(data: {
   const itemIds = Array.from(allMenuItemIds);
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
-    .select("id, base_price, is_available, name, menu_categories!inner(type)")
+    .select("id, base_price, is_available, name")
     .in("id", itemIds)
     .eq("tenant_id", tenantId);
 
@@ -188,8 +188,8 @@ async function _createOrder(data: {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
 
-  // Check types + validate all requested IDs were found
-  type MenuItem = { id: number; base_price: number; is_available: boolean; name: string; menu_categories: { type: string } };
+  // Validate all requested IDs were found
+  type MenuItem = { id: number; base_price: number; is_available: boolean; name: string };
   const typedMenuItems = menuItems as MenuItem[];
 
   if (typedMenuItems.length !== itemIds.length) {
@@ -227,26 +227,6 @@ async function _createOrder(data: {
       `Các món sau đã hết tại chi nhánh: ${unavailableNames}`,
       "CONFLICT",
       409,
-    );
-  }
-
-  // Reject side dishes ordered as top-level items (must be nested under a main dish)
-  const categoryTypeMap = new Map<number, string>();
-  for (const mi of typedMenuItems) {
-    categoryTypeMap.set(mi.id, mi.menu_categories.type);
-  }
-
-  const standalonesSides = items.filter(
-    (i) => categoryTypeMap.get(i.menu_item_id) === "side_dish"
-  );
-  if (standalonesSides.length > 0) {
-    const sideNames = standalonesSides
-      .map((s) => typedMenuItems.find((mi) => mi.id === s.menu_item_id)?.name)
-      .filter(Boolean)
-      .join(", ");
-    throw new ActionError(
-      `Món kèm phải được gọi cùng món chính: ${sideNames}`,
-      "VALIDATION_ERROR"
     );
   }
 
@@ -681,7 +661,7 @@ async function _addOrderItems(data: {
   const itemIds = Array.from(allMenuItemIds);
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
-    .select("id, base_price, is_available, name, menu_categories!inner(type)")
+    .select("id, base_price, is_available, name")
     .in("id", itemIds)
     .eq("tenant_id", tenantId);
 
@@ -693,7 +673,7 @@ async function _addOrderItems(data: {
   }
 
   // Validate all requested IDs were found (prevents price defaulting to 0)
-  type AddMenuItem = { id: number; base_price: number; is_available: boolean; name: string; menu_categories: { type: string } };
+  type AddMenuItem = { id: number; base_price: number; is_available: boolean; name: string };
   const typedMenuItems = menuItems as AddMenuItem[];
 
   if (typedMenuItems.length !== itemIds.length) {
@@ -703,26 +683,6 @@ async function _addOrderItems(data: {
       `Các món sau không tồn tại hoặc không thuộc đơn vị: ${missing.join(", ")}`,
       "NOT_FOUND",
       404
-    );
-  }
-
-  // Reject side dishes ordered as top-level items (must be nested under a main dish)
-  const categoryTypeMap = new Map<number, string>();
-  for (const mi of typedMenuItems) {
-    categoryTypeMap.set(mi.id, mi.menu_categories.type);
-  }
-
-  const standaloneSides = items.filter(
-    (i) => categoryTypeMap.get(i.menu_item_id) === "side_dish"
-  );
-  if (standaloneSides.length > 0) {
-    const sideNames = standaloneSides
-      .map((s) => typedMenuItems.find((mi) => mi.id === s.menu_item_id)?.name)
-      .filter(Boolean)
-      .join(", ");
-    throw new ActionError(
-      `Món kèm phải được gọi cùng món chính: ${sideNames}`,
-      "VALIDATION_ERROR"
     );
   }
 
