@@ -279,6 +279,33 @@
 
 ---
 
+## Completed: Post-MVP Sprint 8 — Inventory Alerts, Kitchen Printing, Table Management
+
+### Inventory Alerts (/admin/notifications)
+- [x] Cron job `/api/cron/inventory-alerts` — daily 5 AM UTC, low stock + expiry alerts
+- [x] Admin notification center — severity badges, color-coded rows, summary cards
+- [x] Notification bell in admin header — 24h unread count badge
+- [x] Alerts stored in `security_events` (no new tables needed)
+
+### Kitchen Printing (ESC/POS)
+- [x] ESC/POS command library — `kds/lib/escpos.ts`, KDS ticket + POS receipt templates
+- [x] Web Serial API hook — `use-serial-printer.ts`, connect/disconnect/print
+- [x] Auto-print on new KDS ticket arrival via realtime subscription
+- [x] Manual print button on each KDS ticket card
+- [x] POS printer config updated with Web Serial connection
+
+### Table Management (/admin/tables)
+- [x] Admin CRUD — create, edit, delete, status change with zone/branch filters
+- [x] Floor plan tab — visual grid grouped by zone, color-coded by status
+- [x] Table list tab — data table with inline status change
+- [x] Reservation tab — reserved table quick actions (seated/cancel/no-show)
+- [x] Zod schemas + constants (RESERVATION_STATUSES, TABLE_SECTIONS)
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+---
+
 ## Remaining Roadmap (All Priorities Complete)
 
 ### Priority 1 — Offline & Resilience (Completed)
