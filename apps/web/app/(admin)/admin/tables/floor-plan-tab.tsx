@@ -40,12 +40,6 @@ const statusColors: Record<string, string> = {
   maintenance: "bg-gray-100 border-gray-400 text-gray-600",
 };
 
-const badgeVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  available: "default",
-  occupied: "destructive",
-  reserved: "secondary",
-  maintenance: "outline",
-};
 
 export function FloorPlanTab({
   tables,

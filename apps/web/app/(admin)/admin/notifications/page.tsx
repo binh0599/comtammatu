@@ -10,16 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getNotifications } from "./actions";
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatDateTime } from "@comtammatu/shared";
 
 function getTypeBadge(eventType: string) {
   if (eventType === "inventory_low_stock") {
@@ -45,7 +36,7 @@ function getDetailsSummary(eventType: string, details: Record<string, unknown> |
   }
 
   if (eventType === "inventory_expiring") {
-    const expiryDate = details.expiry_date ? formatDate(String(details.expiry_date)) : "N/A";
+    const expiryDate = details.expiry_date ? formatDateTime(String(details.expiry_date)) : "N/A";
     return `${String(details.ingredient_name ?? "")} - SL: ${String(details.quantity ?? 0)}, Hạn: ${expiryDate}`;
   }
 
@@ -96,7 +87,7 @@ export default async function NotificationsPage() {
                         >
                           <TableCell className="text-sm">
                             {event.created_at
-                              ? formatDate(String(event.created_at))
+                              ? formatDateTime(String(event.created_at))
                               : "-"}
                           </TableCell>
                           <TableCell>{getTypeBadge(eventType)}</TableCell>

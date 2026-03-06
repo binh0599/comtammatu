@@ -2,10 +2,7 @@
 
 import { useState } from "react";
 import { Package } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-    getTableStatusLabel,
-} from "@comtammatu/shared";
+
 import { TableOrderSheet } from "./table-order-sheet";
 import { VisualTable } from "./visual-table";
 import { useMenuCache, useTableCache } from "@/hooks/use-data-cache";

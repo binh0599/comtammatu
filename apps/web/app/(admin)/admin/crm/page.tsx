@@ -33,7 +33,7 @@ export default async function CrmPage() {
         <CrmStatsCards stats={stats} />
 
         <Tabs defaultValue="customers" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
             <TabsTrigger value="customers" className="gap-2">
               <Users className="hidden size-4 sm:inline-block" />
               Khách hàng

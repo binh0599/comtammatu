@@ -79,6 +79,10 @@ TYPESCRIPT_N1_FIXES.md
 REVIEW_REPORT_COMTAMMATU.docx
 plan.md
 
+# Backups (SQL dumps)
+backups/*.sql
+backups/*.sql.gz
+
 # Playwright
 playwright-report/
 test-results/

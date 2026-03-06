@@ -15,7 +15,6 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
 } from "recharts";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,7 +38,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { formatPrice } from "@comtammatu/shared";
 import {
   getBranchAnalytics,
   getPeakHoursAnalysis,

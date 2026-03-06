@@ -39,11 +39,6 @@ import {
   type StaffPerformanceRow,
 } from "./performance-actions";
 
-const ROLE_LABELS: Record<string, string> = {
-  waiter: "Phuc vu",
-  cashier: "Thu ngan",
-  chef: "Bep",
-};
 
 function getScoreBadge(score: number) {
   if (score >= 80) {
@@ -121,7 +116,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
             <Button
               variant="outline"
               className={cn(
-                "w-[200px] justify-start text-left font-normal",
+                "w-full sm:w-[200px] justify-start text-left font-normal",
                 !startDate && "text-muted-foreground",
               )}
             >
@@ -146,7 +141,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
             <Button
               variant="outline"
               className={cn(
-                "w-[200px] justify-start text-left font-normal",
+                "w-full sm:w-[200px] justify-start text-left font-normal",
                 !endDate && "text-muted-foreground",
               )}
             >
@@ -165,7 +160,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
         </Popover>
 
         <Select value={branchId} onValueChange={setBranchId}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Chi nhanh" />
           </SelectTrigger>
           <SelectContent>
@@ -179,7 +174,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
         </Select>
 
         <Select value={role} onValueChange={setRole}>
-          <SelectTrigger className="w-[150px]">
+          <SelectTrigger className="w-full sm:w-[150px]">
             <SelectValue placeholder="Vai tro" />
           </SelectTrigger>
           <SelectContent>
@@ -211,7 +206,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
               <CardHeader>
                 <CardTitle>Phuc vu ({waiters.length})</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -256,7 +251,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
               <CardHeader>
                 <CardTitle>Thu ngan ({cashiers.length})</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -299,7 +294,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
               <CardHeader>
                 <CardTitle>Bep ({chefs.length})</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>

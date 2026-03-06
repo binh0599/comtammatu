@@ -58,7 +58,7 @@ export default async function PosLayout({
       <div className="fixed top-2 right-2 z-50">
         <OfflineIndicator />
       </div>
-      <main id="main-content">{children}</main>
+      <main id="main-content" className="animate-page-in">{children}</main>
       <BottomNav />
       <Toaster position="top-center" />
     </div>

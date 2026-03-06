@@ -20,7 +20,7 @@ export default async function EmployeeLayout({
         employeeName={profile.full_name ?? "Nhân viên"}
         role={profile.role}
       />
-      <main id="main-content" className="mx-auto max-w-lg px-4 py-4">
+      <main id="main-content" className="mx-auto max-w-lg px-4 py-4 animate-page-in">
         {children}
       </main>
       <EmployeeNav />
