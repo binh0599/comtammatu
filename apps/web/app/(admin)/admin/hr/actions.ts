@@ -5,7 +5,7 @@ import {
   ActionError,
   getActionContext,
   getAdminContext,
-  ADMIN_ROLES,
+  HR_ROLES,
   withServerAction,
   withServerQuery,
   createStaffAccountSchema,
@@ -479,7 +479,7 @@ export const approveLeaveRequest = withServerAction(_approveLeaveRequest);
 // =====================
 
 async function _getPayrollPeriods(branchId?: number) {
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   let query = supabase
     .from("payroll_periods")
@@ -505,7 +505,7 @@ async function _getPayrollEntries(periodId: number) {
   if (!validId.success) {
     throw new ActionError("ID kỳ lương không hợp lệ", "VALIDATION_ERROR", 400);
   }
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   // Verify the period belongs to the tenant
   const { data: period, error: periodError } = await supabase
@@ -541,7 +541,7 @@ async function _createPayrollPeriod(data: CreatePayrollPeriodInput) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   // Verify branch belongs to tenant
   const { data: branch, error: branchError } = await supabase
@@ -583,7 +583,7 @@ async function _calculatePayroll(periodId: number) {
   if (!validId.success) {
     return { error: "ID kỳ lương không hợp lệ" };
   }
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   // Verify period exists, belongs to tenant, and is in draft or calculated status
   const { data: period, error: periodError } = await supabase
@@ -694,7 +694,7 @@ async function _updatePayrollEntry(data: UpdatePayrollEntryInput) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   // Verify the entry belongs to tenant — fetch all fields needed for net_pay recalc
   const { data: entry, error: entryError } = await supabase
@@ -760,7 +760,7 @@ async function _approvePayroll(periodId: number) {
   if (!validId.success) {
     return { error: "ID kỳ lương không hợp lệ" };
   }
-  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId, userId } = await getAdminContext(HR_ROLES);
 
   // Verify period belongs to tenant
   const { data: period, error: periodError } = await supabase
@@ -802,7 +802,7 @@ async function _markPayrollPaid(periodId: number) {
   if (!validId.success) {
     return { error: "ID kỳ lương không hợp lệ" };
   }
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   // Verify period belongs to tenant
   const { data: period, error: periodError } = await supabase
@@ -840,7 +840,7 @@ async function _deletePayrollPeriod(periodId: number) {
   if (!validId.success) {
     return { error: "ID kỳ lương không hợp lệ" };
   }
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, tenantId } = await getAdminContext(HR_ROLES);
 
   // Verify period belongs to tenant and is in draft status
   const { data: period, error: periodError } = await supabase
