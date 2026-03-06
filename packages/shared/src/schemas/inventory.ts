@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
 export const createIngredientSchema = z.object({
   name: z.string().min(1, "Tên nguyên liệu không được để trống").max(200),
   sku: z.string().max(50).optional().or(z.literal("")),
@@ -104,7 +106,7 @@ export type UrgentRestockRequestInput = z.infer<typeof urgentRestockRequestSchem
 // ===== Food Cost Report =====
 
 export const foodCostQuerySchema = z.object({
-  date_from: z.string().min(1, "Chọn ngày bắt đầu"),
-  date_to: z.string().min(1, "Chọn ngày kết thúc"),
+  date_from: z.string().min(1, "Chọn ngày bắt đầu").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
+  date_to: z.string().min(1, "Chọn ngày kết thúc").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
 });
 export type FoodCostQueryInput = z.infer<typeof foodCostQuerySchema>;

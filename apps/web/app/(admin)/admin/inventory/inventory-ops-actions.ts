@@ -192,7 +192,7 @@ async function _approveStockCount(countId: number) {
     if (Math.abs(variance) < 0.001) continue;
 
     // Create adjustment stock movement
-    await supabase.from("stock_movements").insert({
+    const { error: movError } = await supabase.from("stock_movements").insert({
       ingredient_id: typed.ingredient_id,
       branch_id: branchId,
       type: "adjust",
@@ -201,23 +201,34 @@ async function _approveStockCount(countId: number) {
       created_by: userId,
     });
 
-    // Update stock_levels to match actual
-    const { data: existing } = await supabase
-      .from("stock_levels")
-      .select("id, version")
-      .eq("ingredient_id", typed.ingredient_id)
-      .eq("branch_id", branchId)
-      .single();
+    if (movError) return safeDbErrorResult(movError, "db");
 
-    if (existing) {
-      await supabase
+    // Update stock_levels to match actual (with version check + retry)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data: existing } = await supabase
+        .from("stock_levels")
+        .select("id, version")
+        .eq("ingredient_id", typed.ingredient_id)
+        .eq("branch_id", branchId)
+        .single();
+
+      if (!existing) break;
+
+      const { data: updated, error: updateErr } = await supabase
         .from("stock_levels")
         .update({
           quantity: typed.actual_qty,
           version: existing.version + 1,
         })
         .eq("id", existing.id)
-        .eq("version", existing.version);
+        .eq("version", existing.version)
+        .select("id");
+
+      if (updateErr) return safeDbErrorResult(updateErr, "db");
+      if (updated && updated.length > 0) break;
+      if (attempt === 2) {
+        return { error: "Xung đột cập nhật tồn kho, vui lòng thử lại" };
+      }
     }
   }
 

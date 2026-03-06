@@ -128,11 +128,11 @@ export function ReceiveDialog({
         const data = items[item.id];
         return {
           po_item_id: item.id,
-          received_qty: parseFloat(data?.received_qty ?? "0"),
-          reject_qty: parseFloat(data?.reject_qty ?? "0"),
-          reject_reason: data?.reject_reason ?? "",
+          received_qty: parseFloat(data?.received_qty || "0") || 0,
+          reject_qty: parseFloat(data?.reject_qty || "0") || 0,
+          reject_reason: data?.reject_reason || undefined,
           quality_status: data?.quality_status ?? "accepted",
-          expiry_date: data?.expiry_date ?? "",
+          expiry_date: data?.expiry_date || undefined,
         };
       }),
     });

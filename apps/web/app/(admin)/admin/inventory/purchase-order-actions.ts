@@ -222,7 +222,7 @@ async function _receivePurchaseOrder(input: {
     if (!ingredientId) continue;
 
     // Create stock movement
-    await supabase.from("stock_movements").insert({
+    const { error: movError } = await supabase.from("stock_movements").insert({
       ingredient_id: ingredientId,
       branch_id: po.branch_id,
       type: "in",
@@ -235,38 +235,56 @@ async function _receivePurchaseOrder(input: {
       created_by: userId,
     });
 
+    if (movError) {
+      return { error: `Lỗi tạo phiếu nhập (nguyên liệu #${ingredientId}, PO #${parsed.data.po_id}): ${movError.message}` };
+    }
+
     // Create stock batch for expiry tracking
     if (item.expiry_date) {
-      await supabase.from("stock_batches").insert({
+      const { error: batchError } = await supabase.from("stock_batches").insert({
         ingredient_id: ingredientId,
         branch_id: po.branch_id,
         quantity: item.received_qty,
         expiry_date: item.expiry_date,
         po_id: parsed.data.po_id,
       });
+
+      if (batchError) {
+        return { error: `Lỗi tạo lô hàng (nguyên liệu #${ingredientId}, PO #${parsed.data.po_id}): ${batchError.message}` };
+      }
     }
 
-    // Update stock levels
-    const { data: existing } = await supabase
-      .from("stock_levels")
-      .select("id, quantity, version")
-      .eq("ingredient_id", ingredientId)
-      .eq("branch_id", po.branch_id)
-      .single();
-
-    if (existing) {
-      const newQty = existing.quantity + item.received_qty;
-      await supabase
+    // Update stock levels with optimistic locking + retry
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data: existing } = await supabase
         .from("stock_levels")
-        .update({ quantity: newQty, version: existing.version + 1 })
-        .eq("id", existing.id)
-        .eq("version", existing.version);
-    } else {
-      await supabase.from("stock_levels").insert({
-        ingredient_id: ingredientId,
-        branch_id: po.branch_id,
-        quantity: item.received_qty,
-      });
+        .select("id, quantity, version")
+        .eq("ingredient_id", ingredientId)
+        .eq("branch_id", po.branch_id)
+        .single();
+
+      if (existing) {
+        const newQty = existing.quantity + item.received_qty;
+        const { data: updated, error: updateErr } = await supabase
+          .from("stock_levels")
+          .update({ quantity: newQty, version: existing.version + 1 })
+          .eq("id", existing.id)
+          .eq("version", existing.version)
+          .select("id");
+
+        if (updateErr) return { error: updateErr.message };
+        if (updated && updated.length > 0) break;
+        if (attempt === 2) {
+          return { error: `Xung đột cập nhật tồn kho nguyên liệu #${ingredientId}` };
+        }
+      } else {
+        await supabase.from("stock_levels").insert({
+          ingredient_id: ingredientId,
+          branch_id: po.branch_id,
+          quantity: item.received_qty,
+        });
+        break;
+      }
     }
   }
 

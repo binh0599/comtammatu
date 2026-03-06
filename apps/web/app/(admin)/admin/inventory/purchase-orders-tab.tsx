@@ -190,7 +190,7 @@ export function PurchaseOrdersTab({
                     }
                   >
                     {a.deviation_pct > 0 ? "+" : ""}
-                    {a.deviation_pct}%
+                    {Number(a.deviation_pct).toFixed(1)}%
                   </span>
                   )
                 </span>
@@ -323,7 +323,7 @@ export function PurchaseOrdersTab({
                           </AlertDialog>
                         </>
                       )}
-                      {po.status === "sent" && (
+                      {(po.status === "sent" || po.status === "partially_received") && (
                         <>
                           <Button
                             variant="outline"

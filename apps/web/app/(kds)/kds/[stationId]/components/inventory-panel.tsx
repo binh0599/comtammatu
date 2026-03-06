@@ -291,23 +291,25 @@ function RestockRequestDialog({
   suppliers: SupplierOption[];
 }) {
   const [supplierId, setSupplierId] = useState<string>("");
-  const [items, setItems] = useState<{ ingredient_id: string; quantity: string }[]>([
-    { ingredient_id: "", quantity: "" },
+  const [items, setItems] = useState<{ _key: number; ingredient_id: string; quantity: string }[]>([
+    { _key: 1, ingredient_id: "", quantity: "" },
   ]);
+  const [nextKey, setNextKey] = useState(2);
   const [notes, setNotes] = useState("");
   const [isPending, startTransition] = useTransition();
 
   function addItem() {
-    setItems((prev) => [...prev, { ingredient_id: "", quantity: "" }]);
+    setItems((prev) => [...prev, { _key: nextKey, ingredient_id: "", quantity: "" }]);
+    setNextKey((k) => k + 1);
   }
 
-  function removeItem(index: number) {
-    setItems((prev) => prev.filter((_, i) => i !== index));
+  function removeItem(key: number) {
+    setItems((prev) => prev.filter((item) => item._key !== key));
   }
 
-  function updateItem(index: number, field: "ingredient_id" | "quantity", value: string) {
+  function updateItem(key: number, field: "ingredient_id" | "quantity", value: string) {
     setItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+      prev.map((item) => (item._key === key ? { ...item, [field]: value } : item))
     );
   }
 
@@ -332,7 +334,8 @@ function RestockRequestDialog({
       }
       toast.success("Đã gửi yêu cầu mua hàng khẩn cấp");
       setSupplierId("");
-      setItems([{ ingredient_id: "", quantity: "" }]);
+      setItems([{ _key: 1, ingredient_id: "", quantity: "" }]);
+      setNextKey(2);
       setNotes("");
       onOpenChange(false);
     });
@@ -373,11 +376,11 @@ function RestockRequestDialog({
                 Thêm
               </Button>
             </div>
-            {items.map((item, index) => (
-              <div key={index} className="flex items-center gap-2">
+            {items.map((item) => (
+              <div key={item._key} className="flex items-center gap-2">
                 <Select
                   value={item.ingredient_id}
-                  onValueChange={(v) => updateItem(index, "ingredient_id", v)}
+                  onValueChange={(v) => updateItem(item._key, "ingredient_id", v)}
                 >
                   <SelectTrigger className="flex-1">
                     <SelectValue placeholder="Nguyên liệu..." />
@@ -397,7 +400,7 @@ function RestockRequestDialog({
                   className="w-24"
                   placeholder="SL"
                   value={item.quantity}
-                  onChange={(e) => updateItem(index, "quantity", e.target.value)}
+                  onChange={(e) => updateItem(item._key, "quantity", e.target.value)}
                 />
                 {items.length > 1 && (
                   <Button
@@ -405,7 +408,7 @@ function RestockRequestDialog({
                     variant="ghost"
                     size="sm"
                     className="px-2 text-red-500"
-                    onClick={() => removeItem(index)}
+                    onClick={() => removeItem(item._key)}
                   >
                     X
                   </Button>
@@ -493,7 +496,8 @@ export function InventoryPanel({
         setPortions(updated);
       });
     },
-    [toast],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable module import
+    [],
   );
 
   const handleWasteSubmit = useCallback(
@@ -513,7 +517,8 @@ export function InventoryPanel({
       const updated = await getMenuPortions();
       setPortions(updated);
     },
-    [toast],
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable module import
+    [],
   );
 
   // Summary badge count

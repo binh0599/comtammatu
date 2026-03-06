@@ -37,24 +37,31 @@ export type CreatePurchaseOrderInput = z.infer<
   typeof createPurchaseOrderSchema
 >;
 
+const receiveItemSchema = z
+  .object({
+    po_item_id: z.coerce.number().int().positive(),
+    received_qty: z.coerce.number().min(0, "Số lượng nhận phải >= 0"),
+    reject_qty: z.coerce.number().min(0).default(0),
+    reject_reason: z.string().max(200).optional().or(z.literal("")),
+    quality_status: z
+      .enum(["accepted", "partial", "rejected"], {
+        error: "Chọn trạng thái kiểm tra",
+      })
+      .default("accepted"),
+    expiry_date: z.string().optional().or(z.literal("")),
+  })
+  .refine(
+    (data) => data.reject_qty <= data.received_qty + data.reject_qty,
+    { message: "Số lượng từ chối không thể vượt quá tổng đặt hàng", path: ["reject_qty"] },
+  )
+  .refine(
+    (data) => !(data.quality_status === "accepted" && data.reject_qty > 0),
+    { message: "Không thể từ chối khi chất lượng 'Đạt'", path: ["reject_qty"] },
+  );
+
 export const receivePurchaseOrderSchema = z.object({
   po_id: z.coerce.number().int().positive(),
-  items: z
-    .array(
-      z.object({
-        po_item_id: z.coerce.number().int().positive(),
-        received_qty: z.coerce.number().min(0, "Số lượng nhận phải >= 0"),
-        reject_qty: z.coerce.number().min(0).default(0),
-        reject_reason: z.string().max(200).optional().or(z.literal("")),
-        quality_status: z
-          .enum(["accepted", "partial", "rejected"], {
-            error: "Chọn trạng thái kiểm tra",
-          })
-          .default("accepted"),
-        expiry_date: z.string().optional().or(z.literal("")),
-      })
-    )
-    .min(1, "Phải có ít nhất 1 mục"),
+  items: z.array(receiveItemSchema).min(1, "Phải có ít nhất 1 mục"),
 });
 export type ReceivePurchaseOrderInput = z.infer<
   typeof receivePurchaseOrderSchema

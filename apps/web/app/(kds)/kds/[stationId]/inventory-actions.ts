@@ -403,7 +403,13 @@ async function _requestUrgentRestock(input: {
     .insert(itemRows);
 
   if (itemsError) {
-    await supabase.from("purchase_orders").delete().eq("id", po.id);
+    const { error: cleanupError } = await supabase
+      .from("purchase_orders")
+      .delete()
+      .eq("id", po.id);
+    if (cleanupError) {
+      return { error: `Lỗi tạo mục PO và không thể dọn dẹp PO #${po.id}: ${cleanupError.message}` };
+    }
     return safeDbErrorResult(itemsError, "db");
   }
 

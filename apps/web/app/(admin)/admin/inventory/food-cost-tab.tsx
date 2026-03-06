@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -31,9 +30,18 @@ interface FoodCostData {
   top_cost_items: { ingredient_name: string; total_qty: number; total_cost: number }[];
 }
 
+function formatLocalDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 export function FoodCostTab() {
-  const today = new Date().toISOString().split("T")[0] ?? "";
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0] ?? "";
+  const today = formatLocalDate(new Date());
+  const weekAgoDate = new Date();
+  weekAgoDate.setDate(weekAgoDate.getDate() - 7);
+  const weekAgo = formatLocalDate(weekAgoDate);
 
   const [dateFrom, setDateFrom] = useState(weekAgo);
   const [dateTo, setDateTo] = useState(today);
@@ -43,6 +51,12 @@ export function FoodCostTab() {
 
   function handleSearch() {
     setError(null);
+
+    if (dateFrom && dateTo && new Date(dateFrom) > new Date(dateTo)) {
+      setError("Ngày bắt đầu phải trước ngày kết thúc");
+      return;
+    }
+
     startTransition(async () => {
       const result = await getFoodCostReport({
         date_from: dateFrom,
@@ -67,16 +81,16 @@ export function FoodCostTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Chi phi nguyen lieu</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Chi phí nguyên liệu</h2>
           <p className="text-muted-foreground">
-            Bao cao food cost theo khoang thoi gian
+            Báo cáo food cost theo khoảng thời gian
           </p>
         </div>
       </div>
 
       <div className="flex items-end gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="date-from">Tu ngay</Label>
+          <Label htmlFor="date-from">Từ ngày</Label>
           <Input
             id="date-from"
             type="date"
@@ -86,7 +100,7 @@ export function FoodCostTab() {
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="date-to">Den ngay</Label>
+          <Label htmlFor="date-to">Đến ngày</Label>
           <Input
             id="date-to"
             type="date"
@@ -97,7 +111,7 @@ export function FoodCostTab() {
         </div>
         <Button onClick={handleSearch} disabled={isPending}>
           <Search className={`mr-2 h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
-          {isPending ? "Dang tinh..." : "Xem bao cao"}
+          {isPending ? "Đang tính..." : "Xem báo cáo"}
         </Button>
       </div>
 
@@ -120,7 +134,7 @@ export function FoodCostTab() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>Chi phi nguyen lieu</CardDescription>
+                <CardDescription>Chi phí nguyên liệu</CardDescription>
                 <CardTitle className="text-2xl">
                   {formatPrice(data.total_ingredient_cost)}
                 </CardTitle>
@@ -136,7 +150,7 @@ export function FoodCostTab() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>So mon ban</CardDescription>
+                <CardDescription>Số món bán</CardDescription>
                 <CardTitle className="text-2xl">
                   {data.item_count}
                 </CardTitle>
@@ -147,18 +161,18 @@ export function FoodCostTab() {
           {data.top_cost_items && data.top_cost_items.length > 0 && (
             <div>
               <h3 className="mb-2 text-lg font-semibold">
-                Nguyen lieu ton nhieu chi phi nhat
+                Nguyên liệu tốn nhiều chi phí nhất
               </h3>
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead scope="col">Nguyen lieu</TableHead>
+                      <TableHead scope="col">Nguyên liệu</TableHead>
                       <TableHead scope="col" className="text-right">
-                        Tong so luong
+                        Tổng số lượng
                       </TableHead>
                       <TableHead scope="col" className="text-right">
-                        Tong chi phi
+                        Tổng chi phí
                       </TableHead>
                     </TableRow>
                   </TableHeader>

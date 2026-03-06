@@ -20,11 +20,9 @@ import { getExpiringBatches } from "./actions";
 interface ExpiringBatch {
   id: number;
   ingredient_id: number;
-  branch_id: number;
   quantity: number;
   expiry_date: string;
-  po_id: number | null;
-  created_at: string;
+  po_id?: number | null;
   ingredients: { name: string; unit: string } | null;
 }
 
@@ -40,8 +38,10 @@ export function ExpiryTab({
   function handleRefresh() {
     startTransition(async () => {
       const days = parseInt(daysAhead) || 7;
-      const data = await getExpiringBatches(days);
-      setBatches(data as ExpiringBatch[]);
+      const result = await getExpiringBatches(days);
+      if (Array.isArray(result)) {
+        setBatches(result);
+      }
     });
   }
 
@@ -56,28 +56,28 @@ export function ExpiryTab({
   function getExpiryBadge(expiryDate: string) {
     const days = getDaysUntilExpiry(expiryDate);
     if (days < 0) {
-      return <Badge variant="destructive">Da het han</Badge>;
+      return <Badge variant="destructive">Đã hết hạn</Badge>;
     }
     if (days === 0) {
-      return <Badge variant="destructive">Het han hom nay</Badge>;
+      return <Badge variant="destructive">Hết hạn hôm nay</Badge>;
     }
     if (days <= 2) {
       return (
         <Badge className="bg-red-500 hover:bg-red-600">
-          Con {days} ngay
+          Còn {days} ngày
         </Badge>
       );
     }
     if (days <= 5) {
       return (
         <Badge className="bg-yellow-600 hover:bg-yellow-700">
-          Con {days} ngay
+          Còn {days} ngày
         </Badge>
       );
     }
     return (
       <Badge variant="outline">
-        Con {days} ngay
+        Còn {days} ngày
       </Badge>
     );
   }
@@ -86,15 +86,15 @@ export function ExpiryTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Han su dung</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Hạn sử dụng</h2>
           <p className="text-muted-foreground">
-            Theo doi lo hang sap het han su dung
+            Theo dõi lô hàng sắp hết hạn sử dụng
           </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
             <Label htmlFor="days-ahead" className="whitespace-nowrap text-sm">
-              Xem truoc (ngay)
+              Xem trước (ngày)
             </Label>
             <Input
               id="days-ahead"
@@ -108,7 +108,7 @@ export function ExpiryTab({
           </div>
           <Button variant="outline" onClick={handleRefresh} disabled={isPending}>
             <RefreshCw className={`mr-2 h-4 w-4 ${isPending ? "animate-spin" : ""}`} />
-            {isPending ? "Dang tai..." : "Lam moi"}
+            {isPending ? "Đang tải..." : "Làm mới"}
           </Button>
         </div>
       </div>
@@ -117,12 +117,12 @@ export function ExpiryTab({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Nguyen lieu</TableHead>
-              <TableHead scope="col">Don vi</TableHead>
-              <TableHead scope="col" className="text-right">So luong</TableHead>
-              <TableHead scope="col">Han su dung</TableHead>
-              <TableHead scope="col">Tinh trang</TableHead>
-              <TableHead scope="col">Don mua hang</TableHead>
+              <TableHead scope="col">Nguyên liệu</TableHead>
+              <TableHead scope="col">Đơn vị</TableHead>
+              <TableHead scope="col" className="text-right">Số lượng</TableHead>
+              <TableHead scope="col">Hạn sử dụng</TableHead>
+              <TableHead scope="col">Tình trạng</TableHead>
+              <TableHead scope="col">Đơn mua hàng</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,7 +132,7 @@ export function ExpiryTab({
                   colSpan={6}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Khong co lo hang nao sap het han
+                  Không có lô hàng nào sắp hết hạn
                 </TableCell>
               </TableRow>
             ) : (

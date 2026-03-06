@@ -55,6 +55,15 @@ const STATUS_BADGE: Record<string, string> = {
   approved: "bg-green-600 hover:bg-green-700",
 };
 
+let nextCountItemId = 1;
+
+interface CountItem {
+  _key: number;
+  ingredient_id: number;
+  actual_qty: string;
+  notes: string;
+}
+
 export function StockCountTab({
   stockCounts,
   ingredients,
@@ -65,28 +74,32 @@ export function StockCountTab({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [countItems, setCountItems] = useState<
-    { ingredient_id: number; actual_qty: string; notes: string }[]
-  >([]);
+  const [countItems, setCountItems] = useState<CountItem[]>([]);
 
   function addCountItem() {
     setCountItems((prev) => [
       ...prev,
-      { ingredient_id: 0, actual_qty: "", notes: "" },
+      { _key: nextCountItemId++, ingredient_id: 0, actual_qty: "", notes: "" },
     ]);
   }
 
-  function removeCountItem(index: number) {
-    setCountItems((prev) => prev.filter((_, i) => i !== index));
+  function removeCountItem(key: number) {
+    setCountItems((prev) => prev.filter((item) => item._key !== key));
   }
 
   function updateCountItem(
-    index: number,
+    key: number,
     field: "ingredient_id" | "actual_qty" | "notes",
     value: string
   ) {
     setCountItems((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
+      prev.map((item) => {
+        if (item._key !== key) return item;
+        if (field === "ingredient_id") {
+          return { ...item, ingredient_id: Number(value) };
+        }
+        return { ...item, [field]: value };
+      })
     );
   }
 
@@ -99,7 +112,7 @@ export function StockCountTab({
     );
 
     if (validItems.length === 0) {
-      setError("Vui long them it nhat 1 nguyen lieu");
+      setError("Vui lòng thêm ít nhất 1 nguyên liệu");
       return;
     }
 
@@ -118,7 +131,7 @@ export function StockCountTab({
         setIsCreateOpen(false);
         setCountItems([]);
         setError(null);
-        toast.success("Phieu kiem kho da duoc tao");
+        toast.success("Phiếu kiểm kho đã được tạo");
       }
     });
   }
@@ -129,7 +142,7 @@ export function StockCountTab({
       if (result && "error" in result && result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Phieu kiem kho da duoc duyet");
+        toast.success("Phiếu kiểm kho đã được duyệt");
       }
     });
   }
@@ -138,9 +151,9 @@ export function StockCountTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Kiem kho</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Kiểm kho</h2>
           <p className="text-muted-foreground">
-            Kiem ke cuoi ngay, doi chieu ton kho thuc te
+            Kiểm kê cuối ngày, đối chiếu tồn kho thực tế
           </p>
         </div>
         <Dialog
@@ -156,15 +169,15 @@ export function StockCountTab({
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
-              Tao phieu kiem kho
+              Tạo phiếu kiểm kho
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
             <form action={handleCreate}>
               <DialogHeader>
-                <DialogTitle>Tao phieu kiem kho</DialogTitle>
+                <DialogTitle>Tạo phiếu kiểm kho</DialogTitle>
                 <DialogDescription>
-                  Nhap so luong thuc te cua tung nguyen lieu
+                  Nhập số lượng thực tế của từng nguyên liệu
                 </DialogDescription>
               </DialogHeader>
               {error && (
@@ -174,17 +187,17 @@ export function StockCountTab({
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="notes">Ghi chu chung</Label>
+                  <Label htmlFor="notes">Ghi chú chung</Label>
                   <Textarea
                     id="notes"
                     name="notes"
-                    placeholder="VD: Kiem kho cuoi ngay 05/03"
+                    placeholder="VD: Kiểm kho cuối ngày 05/03"
                     rows={2}
                   />
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label>Nguyen lieu</Label>
+                    <Label>Nguyên liệu</Label>
                     <Button
                       type="button"
                       variant="outline"
@@ -192,19 +205,19 @@ export function StockCountTab({
                       onClick={addCountItem}
                     >
                       <Plus className="mr-1 h-3 w-3" />
-                      Them dong
+                      Thêm dòng
                     </Button>
                   </div>
-                  {countItems.map((item, index) => (
-                    <div key={index} className="flex items-center gap-2">
+                  {countItems.map((item) => (
+                    <div key={item._key} className="flex items-center gap-2">
                       <select
                         className="h-9 flex-1 rounded-md border bg-background px-3 text-sm"
                         value={item.ingredient_id}
                         onChange={(e) =>
-                          updateCountItem(index, "ingredient_id", e.target.value)
+                          updateCountItem(item._key, "ingredient_id", e.target.value)
                         }
                       >
-                        <option value="0">Chon nguyen lieu</option>
+                        <option value="0">Chọn nguyên liệu</option>
                         {ingredients.map((ing) => (
                           <option key={ing.id} value={ing.id}>
                             {ing.name} ({ing.unit})
@@ -216,19 +229,19 @@ export function StockCountTab({
                         step="0.01"
                         min="0"
                         className="h-9 w-28"
-                        placeholder="SL thuc te"
+                        placeholder="SL thực tế"
                         value={item.actual_qty}
                         onChange={(e) =>
-                          updateCountItem(index, "actual_qty", e.target.value)
+                          updateCountItem(item._key, "actual_qty", e.target.value)
                         }
                       />
                       <Input
                         type="text"
                         className="h-9 w-32"
-                        placeholder="Ghi chu"
+                        placeholder="Ghi chú"
                         value={item.notes}
                         onChange={(e) =>
-                          updateCountItem(index, "notes", e.target.value)
+                          updateCountItem(item._key, "notes", e.target.value)
                         }
                       />
                       <Button
@@ -236,7 +249,7 @@ export function StockCountTab({
                         variant="ghost"
                         size="sm"
                         className="h-9 px-2 text-red-500"
-                        onClick={() => removeCountItem(index)}
+                        onClick={() => removeCountItem(item._key)}
                       >
                         X
                       </Button>
@@ -250,10 +263,10 @@ export function StockCountTab({
                   variant="outline"
                   onClick={() => setIsCreateOpen(false)}
                 >
-                  Huy
+                  Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
-                  {isPending ? "Dang tao..." : "Tao phieu"}
+                  {isPending ? "Đang tạo..." : "Tạo phiếu"}
                 </Button>
               </DialogFooter>
             </form>
@@ -266,12 +279,12 @@ export function StockCountTab({
           <TableHeader>
             <TableRow>
               <TableHead scope="col">#</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
-              <TableHead scope="col">Nguoi kiem</TableHead>
-              <TableHead scope="col">Ghi chu</TableHead>
-              <TableHead scope="col">Thoi gian</TableHead>
-              <TableHead scope="col">Duyet boi</TableHead>
-              <TableHead scope="col">Thao tac</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
+              <TableHead scope="col">Người kiểm</TableHead>
+              <TableHead scope="col">Ghi chú</TableHead>
+              <TableHead scope="col">Thời gian</TableHead>
+              <TableHead scope="col">Duyệt bởi</TableHead>
+              <TableHead scope="col">Thao tác</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -281,7 +294,7 @@ export function StockCountTab({
                   colSpan={7}
                   className="text-muted-foreground h-24 text-center"
                 >
-                  Chua co phieu kiem kho
+                  Chưa có phiếu kiểm kho
                 </TableCell>
               </TableRow>
             ) : (
@@ -312,7 +325,7 @@ export function StockCountTab({
                         onClick={() => handleApprove(sc.id)}
                       >
                         <CheckCircle className="mr-1 h-3 w-3" />
-                        Duyet
+                        Duyệt
                       </Button>
                     )}
                   </TableCell>

@@ -24,6 +24,16 @@ interface PrepItem {
   prep_qty: number;
 }
 
+function mapPrepData(raw: unknown[]): PrepItem[] {
+  return (raw as Record<string, unknown>[]).map((r) => ({
+    ingredient_name: String(r.ingredient_name ?? ""),
+    unit: String(r.unit ?? ""),
+    current_stock: Number(r.current_stock ?? 0),
+    needed_qty: Number(r.total_needed ?? r.needed_qty ?? 0),
+    prep_qty: Number(r.to_prep ?? r.prep_qty ?? 0),
+  }));
+}
+
 export function PrepListTab({
   initialData,
 }: {
@@ -37,7 +47,9 @@ export function PrepListTab({
     startTransition(async () => {
       const target = portions ? Number(portions) : undefined;
       const data = await getPrepList(target);
-      setItems(data as PrepItem[]);
+      if (Array.isArray(data)) {
+        setItems(mapPrepData(data));
+      }
     });
   }
 
