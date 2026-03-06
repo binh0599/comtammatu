@@ -8,6 +8,7 @@ import {
 } from "@comtammatu/shared";
 import { TableOrderSheet } from "./table-order-sheet";
 import { VisualTable } from "./visual-table";
+import { useMenuCache, useTableCache } from "@/hooks/use-data-cache";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -75,6 +76,8 @@ export function TableMapClient({
     categories: Category[];
     terminalId: number;
 }) {
+    useMenuCache(menuItems, categories);
+    useTableCache(tables);
     const [sheetOpen, setSheetOpen] = useState(false);
     const [sheetMode, setSheetMode] = useState<"view" | "create" | "list">("create");
     const [selectedTableId, setSelectedTableId] = useState<number | null>(null);

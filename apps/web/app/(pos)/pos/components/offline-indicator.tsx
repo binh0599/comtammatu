@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Wifi, WifiOff, CloudUpload, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
@@ -34,10 +35,12 @@ export function OfflineIndicator() {
           Ngoại tuyến
         </Badge>
         {pendingCount > 0 && (
-          <Badge variant="outline" className="border-orange-300 bg-orange-50 text-orange-700 gap-1.5">
-            <CloudUpload className="h-3 w-3" aria-hidden="true" />
-            {pendingCount} đơn chờ
-          </Badge>
+          <Link href="/pos/pending">
+            <Badge variant="outline" className="border-orange-300 bg-orange-50 text-orange-700 gap-1.5 cursor-pointer hover:bg-orange-100">
+              <CloudUpload className="h-3 w-3" aria-hidden="true" />
+              {pendingCount} đơn chờ
+            </Badge>
+          </Link>
         )}
       </div>
     );

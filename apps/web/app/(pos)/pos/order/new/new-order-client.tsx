@@ -10,6 +10,7 @@ import { MenuSelector, type CartItem } from "./menu-selector";
 import { OrderCart } from "./order-cart";
 import { createOrder, confirmOrder } from "../../orders/actions";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useMenuCache } from "@/hooks/use-data-cache";
 import { queueOfflineOrder } from "../../lib/offline-queue";
 interface MenuItem {
   id: number;
@@ -159,6 +160,7 @@ export function NewOrderClient({
 }) {
   const router = useRouter();
   const isOnline = useOnlineStatus();
+  useMenuCache(menuItems, categories);
   const [cart, setCart] = useState<CartItem[]>([]);
   const isDineIn = tableId !== null;
   const [guestCount, setGuestCount] = useState<number | null>(isDineIn ? null : null);
