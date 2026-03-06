@@ -11,6 +11,30 @@
 -- ============================================================
 
 -- ============================================================
+-- Safety check: abort if old tables contain data
+-- ============================================================
+DO $$
+DECLARE
+  _cnt BIGINT;
+BEGIN
+  SELECT COALESCE(
+    (SELECT count(*) FROM payroll_periods), 0
+  ) + COALESCE(
+    (SELECT count(*) FROM payroll_items), 0
+  ) INTO _cnt;
+
+  IF _cnt > 0 THEN
+    RAISE EXCEPTION
+      'payroll_periods/payroll_items contain % row(s). '
+      'Back up data before running this migration.', _cnt;
+  END IF;
+EXCEPTION
+  WHEN undefined_table THEN
+    NULL; -- tables already dropped, nothing to guard
+END;
+$$;
+
+-- ============================================================
 -- DROP old tables + policies (from initial schema)
 -- ============================================================
 
