@@ -111,7 +111,7 @@ async function _createStockCount(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, branchId, userId } = await getAdminContext(ADMIN_ROLES);
+  const { supabase, branchId, userId, tenantId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return { error: "Chưa chọn chi nhánh" };
 
   // Create the stock count header
@@ -128,13 +128,35 @@ async function _createStockCount(input: {
 
   if (countError) return safeDbErrorResult(countError, "db");
 
-  // Fetch current system quantities for each ingredient
+  // Verify all ingredient IDs belong to the tenant
   const ingredientIds = parsed.data.items.map((i) => i.ingredient_id);
-  const { data: stockLevels } = await supabase
+  const { data: validIngredients, error: ingError } = await supabase
+    .from("ingredients")
+    .select("id")
+    .in("id", ingredientIds)
+    .eq("tenant_id", tenantId);
+
+  if (ingError) return safeDbErrorResult(ingError, "db");
+
+  const validIdSet = new Set((validIngredients ?? []).map((i: { id: number }) => i.id));
+  const invalidIds = ingredientIds.filter((id) => !validIdSet.has(id));
+  if (invalidIds.length > 0) {
+    // Clean up the header we just created
+    await supabase.from("stock_counts").delete().eq("id", count.id);
+    return { error: `Nguyên liệu không hợp lệ: ${invalidIds.join(", ")}` };
+  }
+
+  // Fetch current system quantities for each ingredient
+  const { data: stockLevels, error: slError } = await supabase
     .from("stock_levels")
     .select("ingredient_id, quantity")
     .in("ingredient_id", ingredientIds)
     .eq("branch_id", branchId);
+
+  if (slError) {
+    await supabase.from("stock_counts").delete().eq("id", count.id);
+    return safeDbErrorResult(slError, "db");
+  }
 
   const systemQtyMap = new Map(
     (stockLevels ?? []).map((sl: { ingredient_id: number; quantity: number }) => [
@@ -190,7 +212,11 @@ async function _approveStockCount(countId: number) {
     .eq("branch_id", branchId)
     .single();
 
-  if (countError || !count) return { error: "Phiếu kiểm kho không tồn tại" };
+  if (countError) {
+    if (countError.code === PGRST_NO_ROWS) return { error: "Phiếu kiểm kho không tồn tại" };
+    return safeDbErrorResult(countError, "db");
+  }
+  if (!count) return { error: "Phiếu kiểm kho không tồn tại" };
   if (count.status !== "submitted") {
     return { error: "Chỉ có thể duyệt phiếu ở trạng thái 'Đã nộp'" };
   }

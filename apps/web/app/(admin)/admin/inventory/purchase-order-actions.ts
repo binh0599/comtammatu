@@ -8,6 +8,7 @@ import {
   withServerQuery,
   createPurchaseOrderSchema,
   receivePurchaseOrderSchema,
+  entityIdSchema,
   VALID_PO_TRANSITIONS,
   type PoStatus,
   safeDbError,
@@ -91,6 +92,9 @@ async function _createPurchaseOrder(input: {
 export const createPurchaseOrder = withServerAction(_createPurchaseOrder);
 
 async function _sendPurchaseOrder(id: number) {
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return { error: "ID không hợp lệ" };
+
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
@@ -177,6 +181,12 @@ async function _receivePurchaseOrder(input: {
     (existingPoItems ?? []).map((pi: ExistingPoItem) => [pi.id, pi])
   );
 
+  // Validate all submitted po_item_ids exist in the PO
+  const missingIds = poItemIds.filter((id) => !existingMap.has(id));
+  if (missingIds.length > 0) {
+    return { error: `Mục PO không hợp lệ: ${missingIds.join(", ")}` };
+  }
+
   // Determine if this is a full or partial receive
   let hasRejected = false;
   let hasAccepted = false;
@@ -186,29 +196,9 @@ async function _receivePurchaseOrder(input: {
   }
   const newPoStatus = hasRejected && hasAccepted ? "partially_received" : "received";
 
-  // Update each PO item with quality check data
+  // 1. Process stock updates using deltas FIRST (before PO item/status updates)
   for (const item of parsed.data.items) {
-    const updateData: Record<string, unknown> = {
-      received_qty: item.received_qty,
-      reject_qty: item.reject_qty ?? 0,
-      quality_status: item.quality_status ?? "accepted",
-      reject_reason: item.reject_reason ?? null,
-    };
-
-    const { error: itemError } = await supabase
-      .from("purchase_order_items")
-      .update(updateData)
-      .eq("id", item.po_item_id)
-      .eq("po_id", parsed.data.po_id);
-
-    if (itemError) return { error: itemError.message };
-  }
-
-  // Process stock updates using deltas
-  for (const item of parsed.data.items) {
-    const existing = existingMap.get(item.po_item_id);
-    if (!existing) continue;
-
+    const existing = existingMap.get(item.po_item_id)!;
     const ingredientId = existing.ingredient_id;
     const previousReceived = Number(existing.received_qty) || 0;
     const delta = item.received_qty - previousReceived;
@@ -230,9 +220,7 @@ async function _receivePurchaseOrder(input: {
       created_by: userId,
     });
 
-    if (movError) {
-      return { error: `Lỗi tạo phiếu nhập (nguyên liệu #${ingredientId}, PO #${parsed.data.po_id}): ${movError.message}` };
-    }
+    if (movError) return safeDbErrorResult(movError, "db");
 
     // Create stock batch for expiry tracking (only for new receives)
     if (item.expiry_date) {
@@ -244,9 +232,7 @@ async function _receivePurchaseOrder(input: {
         po_id: parsed.data.po_id,
       });
 
-      if (batchError) {
-        return { error: `Lỗi tạo lô hàng (nguyên liệu #${ingredientId}, PO #${parsed.data.po_id}): ${batchError.message}` };
-      }
+      if (batchError) return safeDbErrorResult(batchError, "db");
     }
 
     // Update stock levels with optimistic locking + retry (delta-based)
@@ -260,7 +246,6 @@ async function _receivePurchaseOrder(input: {
 
       if (selectErr) {
         if (selectErr.code !== "PGRST116") {
-          // Real DB error — not just "no rows"
           return safeDbErrorResult(selectErr, "db");
         }
         // No stock_levels row — insert new one
@@ -291,7 +276,7 @@ async function _receivePurchaseOrder(input: {
         .eq("version", existingStock.version)
         .select("id");
 
-      if (updateErr) return { error: updateErr.message };
+      if (updateErr) return safeDbErrorResult(updateErr, "db");
       if (updated && updated.length > 0) break;
       if (attempt === 2) {
         return { error: `Xung đột cập nhật tồn kho nguyên liệu #${ingredientId}` };
@@ -299,7 +284,25 @@ async function _receivePurchaseOrder(input: {
     }
   }
 
-  // Update PO status AFTER all stock operations succeed
+  // 2. Update each PO item with quality check data (after stock ops succeed)
+  for (const item of parsed.data.items) {
+    const updateData: Record<string, unknown> = {
+      received_qty: item.received_qty,
+      reject_qty: item.reject_qty ?? 0,
+      quality_status: item.quality_status ?? "accepted",
+      reject_reason: item.reject_reason ?? null,
+    };
+
+    const { error: itemError } = await supabase
+      .from("purchase_order_items")
+      .update(updateData)
+      .eq("id", item.po_item_id)
+      .eq("po_id", parsed.data.po_id);
+
+    if (itemError) return safeDbErrorResult(itemError, "db");
+  }
+
+  // 3. Update PO status AFTER all stock + item operations succeed
   const { error: poError } = await supabase
     .from("purchase_orders")
     .update({
@@ -318,6 +321,9 @@ async function _receivePurchaseOrder(input: {
 export const receivePurchaseOrder = withServerAction(_receivePurchaseOrder);
 
 async function _cancelPurchaseOrder(id: number) {
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return { error: "ID không hợp lệ" };
+
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
