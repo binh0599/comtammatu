@@ -10,6 +10,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Service Worker must be served without caching to allow updates
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-cache, no-store, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/pos",
+          },
+        ],
+      },
+      {
         source: "/(.*)",
         headers: [
           {

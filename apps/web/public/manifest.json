@@ -1,0 +1,17 @@
+{
+  "name": "Com Tam Ma Tu - POS",
+  "short_name": "POS",
+  "description": "He thong quan ly nha hang Com Tam Ma Tu",
+  "start_url": "/pos",
+  "scope": "/pos",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

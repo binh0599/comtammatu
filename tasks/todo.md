@@ -212,12 +212,30 @@
 
 ---
 
+## In Progress: Post-MVP Sprint 5 — Offline & Resilience
+
+### POS Offline Support
+- [x] IndexedDB utility module — pending orders, menu cache, table cache stores
+- [x] Service Worker — POS asset caching (stale-while-revalidate), navigation fallback
+- [x] Offline order queue — queue orders in IndexedDB when offline, sync on reconnect
+- [x] Online/offline detection hook — `useOnlineStatus` with `useSyncExternalStore`
+- [x] Sync-on-reconnect hook — auto-sync pending orders with toast notifications
+- [x] Offline indicator component — status badge in POS header (online/offline/syncing)
+- [x] Order creation offline path — queue to IndexedDB when offline, normal flow when online
+- [x] SW registration in POS layout + offline fallback page
+- [x] PWA manifest for POS standalone mode
+- [x] next.config.ts — SW headers (no-cache, Service-Worker-Allowed)
+- [x] Build verification — lint, build pass
+
+---
+
 ## Remaining Roadmap
 
-### Priority 1 — Offline & Resilience (Next)
+### Priority 1 — Offline & Resilience (Remaining)
 ```text
-- [ ] Offline support — Service Worker + IndexedDB for POS reliability
-      (critical for restaurant ops when internet drops)
+- [x] Offline support — Service Worker + IndexedDB for POS reliability ✓
+- [ ] Offline menu/table caching (pre-populate IndexedDB from server data)
+- [ ] Pending orders UI (view/retry/discard queued orders)
 ```
 
 ### Priority 2 — Quality & Compliance
