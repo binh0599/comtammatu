@@ -8,12 +8,14 @@ import {
   getShiftAssignments,
   getAttendanceRecords,
   getLeaveRequests,
+  getPayrollPeriods,
 } from "./actions";
 import { EmployeesTab } from "./employees-tab";
 import { ShiftsTab } from "./shifts-tab";
 import { ScheduleTab } from "./schedule-tab";
 import { AttendanceTab } from "./attendance-tab";
 import { LeaveTab } from "./leave-tab";
+import { PayrollTab } from "./payroll-tab";
 
 export default async function HrPage() {
   const now = new Date();
@@ -33,6 +35,7 @@ export default async function HrPage() {
     assignments,
     attendance,
     leaveRequests,
+    payrollPeriods,
   ] = await Promise.all([
     getEmployees(),
     getCreatableRoles(),
@@ -41,6 +44,7 @@ export default async function HrPage() {
     getShiftAssignments(weekStart, weekEnd),
     getAttendanceRecords(today),
     getLeaveRequests(),
+    getPayrollPeriods(),
   ]);
 
   return (
@@ -54,6 +58,7 @@ export default async function HrPage() {
             <TabsTrigger value="schedule">Lịch phân ca</TabsTrigger>
             <TabsTrigger value="attendance">Chấm công</TabsTrigger>
             <TabsTrigger value="leave">Nghỉ phép</TabsTrigger>
+            <TabsTrigger value="payroll">Bảng lương</TabsTrigger>
           </TabsList>
           <TabsContent value="employees">
             <EmployeesTab
@@ -77,6 +82,9 @@ export default async function HrPage() {
           </TabsContent>
           <TabsContent value="leave">
             <LeaveTab leaveRequests={leaveRequests} employees={employees} />
+          </TabsContent>
+          <TabsContent value="payroll">
+            <PayrollTab periods={payrollPeriods} branches={branches} />
           </TabsContent>
         </Tabs>
       </div>

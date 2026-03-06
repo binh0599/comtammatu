@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isRealDate } from "./payroll";
 
 export const createStaffAccountSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -100,10 +101,24 @@ export type ApproveLeaveRequestInput = z.infer<
 
 // ===== Shared Validation Schemas =====
 
-export const dateRangeSchema = z.object({
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ"),
-});
+export const dateRangeSchema = z
+  .object({
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ")
+      .refine(isRealDate, "Ngày bắt đầu không hợp lệ"),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày không hợp lệ")
+      .refine(isRealDate, "Ngày kết thúc không hợp lệ"),
+  })
+  .refine((data) => data.endDate >= data.startDate, {
+    message: "Ngày kết thúc phải cùng hoặc sau ngày bắt đầu",
+    path: ["endDate"],
+  });
+
+export const limitSchema = z.coerce.number().int().min(1).max(100).default(10);
+export const daysSchema = z.coerce.number().int().min(1).max(365).default(7);
 
 // ===== Employee Self-Service Schemas =====
 

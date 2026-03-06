@@ -178,6 +178,13 @@ export const getLeaveStatusLabel = createLabelMapper({
   rejected: "Từ chối",
 });
 
+export const getPayrollStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  calculated: "Đã tính",
+  approved: "Đã duyệt",
+  paid: "Đã trả",
+});
+
 export const getSeverityLabel = createLabelMapper({
   info: "Thông tin",
   warning: "Cảnh báo",

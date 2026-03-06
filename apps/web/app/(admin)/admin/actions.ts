@@ -2,6 +2,7 @@
 
 import "@/lib/server-bootstrap";
 import {
+  ActionError,
   getAdminContext,
   getBranchIdsForTenant,
   withServerQuery,
@@ -10,6 +11,7 @@ import {
   ADMIN_ROLES,
   dashboardLimitSchema,
   dashboardDaysSchema,
+  dateRangeSchema,
 } from "@comtammatu/shared";
 
 // =====================
@@ -426,3 +428,78 @@ async function _getOrderStatusDistribution() {
 }
 
 export const getOrderStatusDistribution = withServerQuery(_getOrderStatusDistribution);
+
+// =====================
+// Branch Comparison
+// =====================
+
+export interface BranchComparisonData {
+  branch_id: number;
+  branch_name: string;
+  revenue: number;
+  orders: number;
+  avgTicket: number;
+}
+
+async function _getBranchComparison(
+  startDate: string,
+  endDate: string
+): Promise<BranchComparisonData[]> {
+  const parsed = dateRangeSchema.safeParse({ startDate, endDate });
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Khoảng thời gian không hợp lệ",
+      "VALIDATION_ERROR",
+      400,
+    );
+  }
+
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const { data: branches, error: branchError } = await supabase
+    .from("branches")
+    .select("id, name")
+    .eq("tenant_id", tenantId)
+    .eq("is_active", true);
+
+  if (branchError) throw safeDbError(branchError, "db");
+  if (!branches || branches.length === 0) return [];
+
+  const branchIds = branches.map((b: { id: number }) => b.id);
+
+  const [sY = 0, sM = 1, sD = 1] = parsed.data.startDate.split("-").map(Number);
+  const [eY = 0, eM = 1, eD = 1] = parsed.data.endDate.split("-").map(Number);
+  const start = new Date(Date.UTC(sY, sM - 1, sD, 0, 0, 0, 0));
+  const end = new Date(Date.UTC(eY, eM - 1, eD, 23, 59, 59, 999));
+
+  const { data: orders, error: orderError } = await supabase
+    .from("orders")
+    .select("branch_id, total")
+    .in("branch_id", branchIds)
+    .not("status", "in", '("cancelled","draft")')
+    .gte("created_at", start.toISOString())
+    .lte("created_at", end.toISOString());
+
+  if (orderError) throw safeDbError(orderError, "db");
+
+  const branchMap = new Map<number, { revenue: number; orders: number }>();
+  for (const order of orders ?? []) {
+    const entry = branchMap.get(order.branch_id) ?? { revenue: 0, orders: 0 };
+    entry.revenue += Number(order.total);
+    entry.orders += 1;
+    branchMap.set(order.branch_id, entry);
+  }
+
+  return branches.map((b: { id: number; name: string }) => {
+    const stats = branchMap.get(b.id) ?? { revenue: 0, orders: 0 };
+    return {
+      branch_id: b.id,
+      branch_name: b.name,
+      revenue: stats.revenue,
+      orders: stats.orders,
+      avgTicket: stats.orders > 0 ? stats.revenue / stats.orders : 0,
+    };
+  });
+}
+
+export const getBranchComparison = withServerQuery(_getBranchComparison);

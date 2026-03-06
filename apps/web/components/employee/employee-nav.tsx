@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CalendarDays, Monitor, CalendarOff, UserCircle } from "lucide-react";
+import { Home, CalendarDays, Monitor, CalendarOff, Wallet, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/employee/schedule", icon: CalendarDays, label: "Ca làm" },
   { href: "/employee/workspace", icon: Monitor, label: "POS/KDS" },
   { href: "/employee/leave", icon: CalendarOff, label: "Nghỉ phép" },
+  { href: "/employee/payroll", icon: Wallet, label: "Lương" },
   { href: "/employee/profile", icon: UserCircle, label: "Cá nhân" },
 ];
 

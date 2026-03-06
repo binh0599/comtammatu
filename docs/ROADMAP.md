@@ -281,10 +281,12 @@ The Modular Monolith architecture is designed for easy module extraction — eac
 - [x] Post-MVP Sprint 1 & 2 — Payment hardening, Redis rate limiting, Resiliency
 - [x] Post-MVP Sprint 3 — Menu system restructure and precise device management
 
-### Next Steps
+### Next Steps — Sprint 4 (Payroll, Analytics & Quality)
 
-- [ ] Further enhancements in Priority 1-4 Post-MVP Backlog
-- [ ] Offline POS support, E2E Testing, Advanced analytics
+- [x] Payroll calculations module (HR)
+- [x] Branch comparison dashboard
+- [x] E2E testing foundation (Playwright)
+- [ ] Offline POS support (deferred to Sprint 5)
 
 ---
 

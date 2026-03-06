@@ -78,3 +78,8 @@ REMEDIATION_GUIDE.md
 TYPESCRIPT_N1_FIXES.md
 REVIEW_REPORT_COMTAMMATU.docx
 plan.md
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
