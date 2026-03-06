@@ -231,19 +231,19 @@
 
 ## Remaining Roadmap
 
-### Priority 1 — Offline & Resilience (Remaining)
+### Priority 1 — Offline & Resilience (Completed)
 ```text
-- [x] Offline support — Service Worker + IndexedDB for POS reliability ✓
-- [ ] Offline menu/table caching (pre-populate IndexedDB from server data)
-- [ ] Pending orders UI (view/retry/discard queued orders)
+- [x] Offline support — Service Worker + IndexedDB for POS reliability
+- [x] Offline menu/table caching — useMenuCache/useTableCache hooks
+- [x] Pending orders UI — /pos/pending page (view/retry/discard)
 ```
 
-### Priority 2 — Quality & Compliance
+### Priority 2 — Quality & Compliance (Completed)
 ```text
-- [ ] RLS validation test suite (verify all policies per role)
-- [ ] API documentation (OpenAPI spec for privacy + webhook endpoints)
-- [ ] Admin reports page — build out actual report content
-- [ ] Admin settings page — build out actual settings management
+- [x] RLS validation test suite — 252 tests (tests/rls/rls-policy-spec.test.ts)
+- [x] API documentation — OpenAPI 3.1 spec (docs/openapi.yaml)
+- [x] Admin reports page — date-range revenue, payment methods, top items
+- [x] Admin settings page — tenant info, tax/service charge, branch management
 ```
 
 ### Priority 3 — Growth Features
