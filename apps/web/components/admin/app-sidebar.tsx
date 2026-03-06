@@ -14,6 +14,7 @@ import {
   Settings,
   Utensils,
   Heart,
+  Armchair,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -51,6 +52,11 @@ const navigation = [
         title: "Thực đơn",
         url: "/admin/menu",
         icon: Utensils,
+      },
+      {
+        title: "Bàn",
+        url: "/admin/tables",
+        icon: Armchair,
       },
       {
         title: "Đơn hàng",

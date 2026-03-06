@@ -65,6 +65,9 @@ export {
   CAMPAIGN_TYPES,
   CAMPAIGN_STATUSES,
   NOTIFICATION_CHANNELS,
+  // Table Management
+  RESERVATION_STATUSES,
+  TABLE_SECTIONS,
 } from "./constants";
 
 export type {
@@ -119,6 +122,8 @@ export type {
   CampaignType,
   CampaignStatus,
   NotificationChannel,
+  // Table Management
+  ReservationStatus,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -355,6 +360,18 @@ export type {
   StaffPerformanceQueryInput,
 } from "./schemas/campaign";
 
+// Table Management
+export {
+  createTableSchema,
+  updateTableSchema,
+  createReservationSchema,
+} from "./schemas/table";
+export type {
+  CreateTableInput,
+  UpdateTableInput,
+  CreateReservationInput,
+} from "./schemas/table";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -407,6 +424,8 @@ export {
   getCampaignTypeLabel,
   getCampaignStatusLabel,
   getNotificationChannelLabel,
+  // Table Management
+  getReservationStatusLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====

@@ -311,3 +311,12 @@ export const getNotificationChannelLabel = createLabelMapper({
   email: "Email",
   sms: "SMS",
 });
+
+// ===== Reservations =====
+export const getReservationStatusLabel = createLabelMapper({
+  pending: "Chờ xác nhận",
+  confirmed: "Đã xác nhận",
+  seated: "Đã ngồi",
+  no_show: "Không đến",
+  cancelled: "Đã hủy",
+});
