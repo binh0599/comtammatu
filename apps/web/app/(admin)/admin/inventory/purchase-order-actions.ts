@@ -2,7 +2,8 @@
 
 import "@/lib/server-bootstrap";
 import {
-  getActionContext,
+  getAdminContext,
+  ADMIN_ROLES,
   withServerAction,
   withServerQuery,
   createPurchaseOrderSchema,
@@ -15,7 +16,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 async function _getPurchaseOrders() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
     .from("purchase_orders")
@@ -42,7 +43,7 @@ async function _createPurchaseOrder(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, userId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const total = parsed.data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
@@ -90,7 +91,7 @@ async function _createPurchaseOrder(input: {
 export const createPurchaseOrder = withServerAction(_createPurchaseOrder);
 
 async function _sendPurchaseOrder(id: number) {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
@@ -139,7 +140,7 @@ async function _receivePurchaseOrder(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, userId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
@@ -191,10 +192,8 @@ async function _receivePurchaseOrder(input: {
       received_qty: item.received_qty,
       reject_qty: item.reject_qty ?? 0,
       quality_status: item.quality_status ?? "accepted",
+      reject_reason: item.reject_reason ?? null,
     };
-    if (item.reject_reason) {
-      updateData.reject_reason = item.reject_reason;
-    }
 
     const { error: itemError } = await supabase
       .from("purchase_order_items")
@@ -259,16 +258,28 @@ async function _receivePurchaseOrder(input: {
         .eq("branch_id", po.branch_id)
         .single();
 
-      if (selectErr || !existingStock) {
+      if (selectErr) {
+        if (selectErr.code !== "PGRST116") {
+          // Real DB error — not just "no rows"
+          return safeDbErrorResult(selectErr, "db");
+        }
         // No stock_levels row — insert new one
         const { error: insertErr } = await supabase.from("stock_levels").insert({
           ingredient_id: ingredientId,
           branch_id: po.branch_id,
           quantity: delta,
         });
-        if (insertErr) {
-          return { error: `Lỗi tạo tồn kho (nguyên liệu #${ingredientId}): ${insertErr.message}` };
-        }
+        if (insertErr) return safeDbErrorResult(insertErr, "db");
+        break;
+      }
+
+      if (!existingStock) {
+        const { error: insertErr } = await supabase.from("stock_levels").insert({
+          ingredient_id: ingredientId,
+          branch_id: po.branch_id,
+          quantity: delta,
+        });
+        if (insertErr) return safeDbErrorResult(insertErr, "db");
         break;
       }
 
@@ -307,7 +318,7 @@ async function _receivePurchaseOrder(input: {
 export const receivePurchaseOrder = withServerAction(_receivePurchaseOrder);
 
 async function _cancelPurchaseOrder(id: number) {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")

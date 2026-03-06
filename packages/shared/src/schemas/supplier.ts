@@ -58,11 +58,24 @@ const receiveItemSchema = z
   .refine(
     (data) => !(data.quality_status === "accepted" && data.reject_qty > 0),
     { message: "Không thể từ chối khi chất lượng 'Đạt'", path: ["reject_qty"] },
+  )
+  .refine(
+    (data) => !(data.quality_status === "rejected" && data.received_qty > 0),
+    { message: "Không thể nhận khi chất lượng 'Từ chối'", path: ["received_qty"] },
   );
 
 export const receivePurchaseOrderSchema = z.object({
   po_id: z.coerce.number().int().positive(),
-  items: z.array(receiveItemSchema).min(1, "Phải có ít nhất 1 mục"),
+  items: z
+    .array(receiveItemSchema)
+    .min(1, "Phải có ít nhất 1 mục")
+    .refine(
+      (items) => {
+        const ids = items.map((i) => i.po_item_id);
+        return new Set(ids).size === ids.length;
+      },
+      { message: "po_item_id phải là duy nhất trong danh sách" },
+    ),
 });
 export type ReceivePurchaseOrderInput = z.infer<
   typeof receivePurchaseOrderSchema

@@ -2,7 +2,8 @@
 
 import "@/lib/server-bootstrap";
 import {
-  getActionContext,
+  getAdminContext,
+  ADMIN_ROLES,
   withServerAction,
   withServerQuery,
   createStockCountSchema,
@@ -15,6 +16,9 @@ import {
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 
+// PostgREST "no rows returned" error code
+const PGRST_NO_ROWS = "PGRST116";
+
 // ===== Prep List =====
 
 async function _getPrepList(targetPortions?: number) {
@@ -23,7 +27,7 @@ async function _getPrepList(targetPortions?: number) {
     throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
   }
 
-  const { supabase, branchId } = await getActionContext();
+  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES);
 
   if (!branchId) return [];
 
@@ -49,7 +53,7 @@ async function _getFoodCostReport(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, branchId } = await getActionContext();
+  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return { error: "Chưa chọn chi nhánh" };
 
   const { data, error } = await supabase.rpc("calculate_food_cost", {
@@ -58,7 +62,10 @@ async function _getFoodCostReport(input: {
     p_date_to: parsed.data.date_to,
   });
 
-  if (error) return { error: error.message };
+  if (error) {
+    console.error("Food cost report DB error:", error);
+    return { error: "Lỗi truy vấn dữ liệu báo cáo" };
+  }
 
   const result = Array.isArray(data) ? data[0] : data;
   return {
@@ -78,7 +85,7 @@ export const getFoodCostReport = withServerAction(_getFoodCostReport);
 // ===== Stock Count (End-of-Day) =====
 
 async function _getStockCounts() {
-  const { supabase, branchId } = await getActionContext();
+  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES);
 
   if (!branchId) return [];
 
@@ -104,7 +111,7 @@ async function _createStockCount(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, branchId, userId } = await getActionContext();
+  const { supabase, branchId, userId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return { error: "Chưa chọn chi nhánh" };
 
   // Create the stock count header
@@ -151,7 +158,10 @@ async function _createStockCount(input: {
 
   if (itemsError) {
     // Clean up orphaned header
-    await supabase.from("stock_counts").delete().eq("id", count.id);
+    const { error: deleteErr } = await supabase.from("stock_counts").delete().eq("id", count.id);
+    if (deleteErr) {
+      console.error(`Failed to clean up orphaned stock_count #${count.id}:`, deleteErr);
+    }
     return safeDbErrorResult(itemsError, "db");
   }
 
@@ -167,7 +177,7 @@ async function _approveStockCount(countId: number) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, branchId, userId } = await getActionContext();
+  const { supabase, branchId, userId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return { error: "Chưa chọn chi nhánh" };
 
   const validatedCountId = parsed.data.count_id;
@@ -219,8 +229,23 @@ async function _approveStockCount(countId: number) {
         .eq("branch_id", branchId)
         .single();
 
-      if (selectErr || !existing) {
-        // No stock_levels row exists — upsert a new one
+      if (selectErr) {
+        if (selectErr.code === PGRST_NO_ROWS || !existing) {
+          // No stock_levels row exists — insert a new one
+          const { error: insertErr } = await supabase.from("stock_levels").insert({
+            ingredient_id: typed.ingredient_id,
+            branch_id: branchId,
+            quantity: typed.actual_qty,
+          });
+          if (insertErr) return safeDbErrorResult(insertErr, "db");
+          break;
+        }
+        // Real DB error
+        return safeDbErrorResult(selectErr, "db");
+      }
+
+      if (!existing) {
+        // Shouldn't happen when selectErr is null, but handle gracefully
         const { error: insertErr } = await supabase.from("stock_levels").insert({
           ingredient_id: typed.ingredient_id,
           branch_id: branchId,
@@ -274,7 +299,7 @@ async function _getExpiringBatches(daysAhead: number = 7) {
     throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
   }
 
-  const { supabase, branchId } = await getActionContext();
+  const { supabase, branchId } = await getAdminContext(ADMIN_ROLES);
   if (!branchId) return [];
 
   const validatedDays = parsed.data.days_ahead ?? 7;
@@ -301,7 +326,7 @@ export const getExpiringBatches = withServerQuery(_getExpiringBatches);
 const PRICE_ANOMALY_THRESHOLD = 0.20; // 20% deviation
 
 async function _getPriceAnomalies() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   // Get all recent PO items with their prices
   const { data: recentItems, error } = await supabase

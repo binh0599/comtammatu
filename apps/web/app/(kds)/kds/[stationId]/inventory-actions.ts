@@ -209,7 +209,11 @@ async function _logWaste(
       .eq("branch_id", profile.branch_id)
       .single();
 
-    if (selectErr || !currentStock) break; // No stock record to deduct from
+    if (selectErr) {
+      if (selectErr.code === "PGRST116") break; // No stock record to deduct from
+      return safeDbErrorResult(selectErr, "db"); // Real DB error
+    }
+    if (!currentStock) break;
 
     const newQty = Math.max(0, Number(currentStock.quantity) - quantity);
     const { data: updated, error: updateError } = await supabase
