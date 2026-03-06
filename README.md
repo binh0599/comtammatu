@@ -1,6 +1,6 @@
 # Cơm tấm Má Tư — F&B CRM Platform
 
-A multi-tenant, multi-branch restaurant management platform built for the **Cơm tấm Má Tư** chain. Covers the full service lifecycle: order management, kitchen display, cashier & payment, inventory, loyalty, HR, and admin reporting — all in one codebase.
+A multi-tenant, multi-branch restaurant management platform built for the **Cơm tấm Má Tư** chain. Covers the full service lifecycle: order management, kitchen display, cashier & payment, inventory, loyalty, HR & payroll, and admin reporting — all in one codebase.
 
 **Live:** [comtammatu.vercel.app](https://comtammatu.vercel.app)
 
@@ -8,13 +8,14 @@ A multi-tenant, multi-branch restaurant management platform built for the **Cơm
 
 ## Overview
 
-The system is split into four distinct UIs served from a single Next.js application:
+The system is split into five distinct UIs served from a single Next.js application:
 
 | Interface | Path | Who uses it |
 |---|---|---|
 | **Admin Panel** | `/admin` | Owner, Manager |
 | **POS Terminal** | `/pos` | Cashier, Waiter |
 | **Kitchen Display (KDS)** | `/kds/:stationId` | Chef |
+| **Employee Portal** | `/employee` | All staff |
 | **Customer PWA** | `/customer` | Guests |
 
 ---
@@ -23,12 +24,13 @@ The system is split into four distinct UIs served from a single Next.js applicat
 
 | Layer | Choice |
 |---|---|
-| Framework | Next.js 16.1 App Router · React 19.1 · TypeScript 5.9 strict |
+| Framework | Next.js 16.1 App Router · React 19.2 · TypeScript 5.9 strict |
 | Database | Supabase (PostgreSQL) · Prisma 7.2 · `@prisma/adapter-pg` |
-| Auth | Supabase Auth · `@supabase/ssr@0.8.0` — cookie-based sessions |
+| Auth | Supabase Auth · `@supabase/ssr@0.9.0` — cookie-based sessions |
 | UI | shadcn/ui (new-york) · Tailwind CSS v4.2 · Lucide React |
 | Monorepo | Turborepo 2.8 · pnpm 9.15.0 workspaces |
 | Hosting | Vercel · GitHub Actions CI |
+| Testing | Playwright (E2E) |
 
 ---
 
@@ -39,12 +41,13 @@ The system is split into four distinct UIs served from a single Next.js applicat
 ├── apps/
 │   └── web/                        # Next.js application
 │       └── app/
-│           ├── (admin)/admin/       # Admin routes (dashboard, menu, HR, CRM, inventory…)
-│           ├── (pos)/pos/           # POS routes (orders, cashier, session)
-│           ├── (kds)/kds/           # Kitchen Display routes
-│           ├── (customer)/customer/ # Customer PWA (menu, orders, loyalty, feedback)
+│           ├── (admin)/admin/       # Admin routes (dashboard, menu, HR, CRM, inventory, reports, settings…)
+│           ├── (pos)/pos/           # POS routes (orders, cashier, session, printer, notifications)
+│           ├── (kds)/kds/           # Kitchen Display routes (+ printer)
+│           ├── (employee)/employee/ # Employee portal (profile, schedule, leave, payroll, workspace)
+│           ├── (customer)/customer/ # Customer PWA (menu, orders, loyalty, feedback, account)
 │           ├── login/               # Auth pages + actions
-│           └── api/                 # Route handlers (privacy/GDPR)
+│           └── api/                 # Route handlers (auth callback, GDPR, health, cron, webhooks)
 │
 ├── packages/
 │   ├── database/                   # Prisma client, Supabase helpers (server/client/middleware)
@@ -67,7 +70,7 @@ The system is split into four distinct UIs served from a single Next.js applicat
 
 ### Prerequisites
 
-- Node.js ≥ 20
+- Node.js >= 20
 - pnpm 9.15.0 (`npm install -g pnpm@9.15.0`)
 - A Supabase project with the migrations applied
 - A Vercel project (optional, for deployment)
@@ -135,6 +138,7 @@ pnpm --filter @comtammatu/web dev                 # Web app only
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm test:e2e                                     # Playwright end-to-end tests
 pnpm format
 
 # Database
@@ -163,7 +167,7 @@ Eight roles with a strict hierarchy:
 owner > manager > cashier > chef > waiter > inventory > hr > customer
 ```
 
-The `/admin` layout enforces `owner | manager` server-side. POS and KDS routes carry their own auth guards.
+The `/admin` layout enforces `owner | manager` server-side. POS, KDS, and Employee routes carry their own auth guards.
 
 ### Order Lifecycle
 
@@ -203,13 +207,15 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 
 ### Admin Panel (`/admin`)
 - Dashboard with revenue charts, order stats, top items
-- Menu management (categories, items, modifiers)
+- Menu management (categories, items, modifiers, sides)
 - Inventory & stock level tracking
 - HR — employee profiles, auth account provisioning
 - CRM — customer database, loyalty tiers, vouchers
 - Payment management
 - KDS station configuration
-- POS terminal management
+- POS terminal & device management
+- Reports & analytics
+- Settings
 - Security event log
 
 ### POS (`/pos`)
@@ -218,11 +224,21 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 - Real-time order status board
 - Cashier — payment processing (cash, Momo; VNPay upcoming)
 - Voucher redemption
+- Notifications
+- Receipt printing
 
 ### Kitchen Display System (`/kds/:stationId`)
 - Real-time ticket board per station
 - Item-level ready bumping
 - Ticket completion
+- Printer management
+
+### Employee Portal (`/employee`)
+- Personal profile management
+- Work schedule viewing
+- Leave requests
+- Payroll information
+- Workspace dashboard
 
 ### Customer PWA (`/customer`)
 - Menu browsing
@@ -237,32 +253,43 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 
 | Method | Status |
 |---|---|
-| Cash | ✅ Live |
-| Momo | ✅ Live (HMAC webhook verification) |
-| VNPay | 🔜 Planned (Priority 1) |
+| Cash | Live |
+| Momo | Live (HMAC webhook verification) |
+| VNPay | Planned (Priority 1) |
 
 Payment credentials are stored in **Supabase Vault** — never in environment variables or the database.
 
 ---
 
+## API Routes
+
+| Endpoint | Purpose |
+|---|---|
+| `/api/auth/callback` | Supabase Auth OAuth callback |
+| `/api/health` | Health check |
+| `/api/cron/process-deletions` | GDPR auto-deletion cron job |
+| `/api/privacy/data-export` | GDPR data export |
+| `/api/privacy/deletion-request` | GDPR deletion request |
+| `/api/webhooks/momo` | Momo payment webhook receiver |
+
+---
+
 ## Roadmap
 
-**Priority 1 — Core (Week 11–12)**
+**Priority 1 — Core**
 - VNPay integration with HMAC webhook verification
-- Retention cron jobs (GDPR auto-delete after 30-day grace period)
 - Auto loyalty-tier upgrade triggers
 - Thermal receipt printing
 - In-app + push notification system
 
-**Priority 2 — Operations (Week 13–14)**
-- Payroll calculations (HR module)
+**Priority 2 — Operations**
 - Attendance clock-in/out via QR scan
 - Branch comparison in dashboard
 - Offline support (Service Worker, IndexedDB, AES-256-GCM)
 - Device fingerprinting for terminal registration
 
-**Priority 3 — Quality (Week 15–16)**
-- Playwright end-to-end test suite
+**Priority 3 — Quality**
+- Playwright end-to-end test suite expansion
 - RLS validation test suite
 - OpenAPI documentation
 - Upstash Redis rate limiting
@@ -296,4 +323,4 @@ Payment credentials are stored in **Supabase Vault** — never in environment va
 
 ## License
 
-Private — all rights reserved. © Cơm tấm Má Tư.
+Private — all rights reserved. (c) Cơm tấm Má Tư.
