@@ -173,7 +173,7 @@ async function _createOrder(data: {
     }
   }
 
-  // Lookup menu item prices — scoped to tenant
+  // Lookup menu item prices + category type — scoped to tenant
   const itemIds = Array.from(allMenuItemIds);
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
@@ -188,7 +188,7 @@ async function _createOrder(data: {
     throw new ActionError("Không tìm thấy món ăn", "NOT_FOUND", 404);
   }
 
-  // Check types + validate all requested IDs were found
+  // Validate all requested IDs were found
   type MenuItem = { id: number; base_price: number; is_available: boolean; name: string };
   const typedMenuItems = menuItems as MenuItem[];
 
@@ -657,11 +657,11 @@ async function _addOrderItems(data: {
     }
   }
 
-  // Lookup prices — scoped to tenant
+  // Lookup prices + category type — scoped to tenant
   const itemIds = Array.from(allMenuItemIds);
   const { data: menuItems, error: menuError } = await supabase
     .from("menu_items")
-    .select("id, base_price, is_available")
+    .select("id, base_price, is_available, name")
     .in("id", itemIds)
     .eq("tenant_id", tenantId);
 
@@ -673,7 +673,7 @@ async function _addOrderItems(data: {
   }
 
   // Validate all requested IDs were found (prevents price defaulting to 0)
-  type AddMenuItem = { id: number; base_price: number; is_available: boolean };
+  type AddMenuItem = { id: number; base_price: number; is_available: boolean; name: string };
   const typedMenuItems = menuItems as AddMenuItem[];
 
   if (typedMenuItems.length !== itemIds.length) {
