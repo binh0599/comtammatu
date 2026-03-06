@@ -1,0 +1,346 @@
+openapi: 3.1.0
+info:
+  title: Com Tam Ma Tu - API
+  version: 1.0.0
+  description: |
+    REST API endpoints for Com Tam Ma Tu F&B CRM system.
+    Most business logic uses Next.js Server Actions (not REST).
+    These endpoints handle auth callbacks, GDPR privacy, webhooks, and system health.
+  contact:
+    name: Com Tam Ma Tu Dev Team
+
+servers:
+  - url: https://comtammatu.vercel.app
+    description: Production
+
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      description: Returns server status and timestamp. No authentication required.
+      operationId: getHealth
+      tags: [System]
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /api/auth/callback:
+    get:
+      summary: Supabase OAuth callback
+      description: |
+        Handles Supabase Auth PKCE code exchange.
+        Redirects to the `next` parameter or `/` on success.
+        Redirects to `/login?error=auth_callback_failed` on failure.
+      operationId: authCallback
+      tags: [Auth]
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: PKCE authorization code from Supabase Auth
+        - name: next
+          in: query
+          required: false
+          schema:
+            type: string
+            default: /
+          description: URL path to redirect to after successful auth
+      responses:
+        "302":
+          description: Redirect to next URL on success, or /login on failure
+
+  /api/privacy/data-export:
+    get:
+      summary: Export customer data (GDPR/DSAR)
+      description: |
+        Downloads all customer data as a JSON file.
+        Includes: profile, loyalty transactions, feedback, orders with items.
+        Requires authenticated customer session (Supabase cookie auth).
+        Rate limited per customer ID.
+      operationId: exportCustomerData
+      tags: [Privacy]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: JSON file download with customer data
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: 'attachment; filename="my-data-2026-03-06.json"'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  exported_at:
+                    type: string
+                    format: date-time
+                  customer:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      full_name:
+                        type: string
+                      email:
+                        type: string
+                  loyalty_transactions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        type: { type: string }
+                        points: { type: integer }
+                        balance_after: { type: integer }
+                        reference_type: { type: string }
+                        reference_id: { type: integer }
+                        created_at: { type: string, format: date-time }
+                  feedback:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        order_id: { type: integer }
+                        branch_id: { type: integer }
+                        rating: { type: integer }
+                        comment: { type: string }
+                        response: { type: string }
+                        created_at: { type: string, format: date-time }
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        order_number: { type: string }
+                        status: { type: string }
+                        total: { type: number }
+                        created_at: { type: string, format: date-time }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /api/privacy/deletion-request:
+    get:
+      summary: Check deletion request status
+      description: |
+        Returns the latest deletion request for the authenticated customer.
+        Returns null if no request exists.
+      operationId: getDeletionRequest
+      tags: [Privacy]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Deletion request status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deletion_request:
+                    nullable: true
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      status: { type: string, enum: [pending, completed, cancelled] }
+                      reason: { type: string, nullable: true }
+                      scheduled_deletion_at: { type: string, format: date-time }
+                      created_at: { type: string, format: date-time }
+                      completed_at: { type: string, format: date-time, nullable: true }
+        "401":
+          description: Not authenticated
+
+    post:
+      summary: Create deletion request (GDPR Right to Erasure)
+      description: |
+        Creates a new account deletion request with a 30-day grace period.
+        Customer data will be anonymized after the scheduled deletion date.
+        Only one pending request allowed at a time.
+        Rate limited per customer ID.
+      operationId: createDeletionRequest
+      tags: [Privacy]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  maxLength: 500
+                  description: Optional reason for deletion
+      responses:
+        "201":
+          description: Deletion request created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deletion_request:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      status: { type: string }
+                      scheduled_deletion_at: { type: string, format: date-time }
+                      created_at: { type: string, format: date-time }
+        "401":
+          description: Not authenticated
+        "409":
+          description: Pending deletion request already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "429":
+          description: Rate limit exceeded
+
+  /api/webhooks/momo:
+    post:
+      summary: Momo IPN webhook
+      description: |
+        Receives Momo payment Instant Payment Notification (IPN).
+        Verifies HMAC-SHA256 signature using MOMO_SECRET_KEY.
+        Validates webhook timestamp (rejects if > 1 hour old).
+        On success (resultCode=0): calls handle_momo_payment_success RPC
+        to atomically complete payment and update order status.
+        On failure: marks payment as failed.
+        Logs failed HMAC/stale webhooks to security_events.
+        Rate limited by IP address.
+      operationId: momoWebhook
+      tags: [Webhooks]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [requestId, orderId, resultCode, transId, amount, signature]
+              properties:
+                requestId:
+                  type: string
+                  description: Idempotency key (matches payments.idempotency_key)
+                orderId:
+                  type: string
+                  description: Momo order identifier
+                resultCode:
+                  type: integer
+                  description: "0 = success, non-zero = failure"
+                transId:
+                  type: integer
+                  description: Momo transaction ID
+                amount:
+                  type: integer
+                  description: Payment amount in VND
+                signature:
+                  type: string
+                  description: HMAC-SHA256 signature
+                responseTime:
+                  type: integer
+                  description: Unix timestamp (ms) of Momo response
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resultCode: { type: integer }
+                  message: { type: string }
+        "400":
+          description: Invalid signature or stale webhook
+        "404":
+          description: Payment not found
+        "429":
+          description: Rate limit exceeded
+        "500":
+          description: Server error
+
+  /api/cron/process-deletions:
+    get:
+      summary: GDPR deletion cron job
+      description: |
+        Vercel Cron Job — runs daily at 3 AM UTC.
+        Processes pending deletion requests past their scheduled_deletion_at date.
+        Anonymizes customer PII, nullifies order references, deletes loyalty
+        transactions and feedback, then marks request as completed.
+        Logs each deletion to security_events for compliance.
+        Requires Bearer token matching CRON_SECRET env var.
+      operationId: processDeletions
+      tags: [System]
+      security:
+        - cronSecret: []
+      responses:
+        "200":
+          description: Cron job completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  processed: { type: integer }
+                  total: { type: integer }
+                  errors:
+                    type: array
+                    nullable: true
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        error: { type: string }
+        "401":
+          description: Invalid or missing cron secret
+        "500":
+          description: Failed to fetch deletion requests
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: Supabase Auth cookie-based session
+    cronSecret:
+      type: http
+      scheme: bearer
+      description: CRON_SECRET environment variable
