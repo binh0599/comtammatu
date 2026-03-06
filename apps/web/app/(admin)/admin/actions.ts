@@ -1,7 +1,6 @@
 "use server";
 
 import "@/lib/server-bootstrap";
-import { z } from "zod";
 import {
   ActionError,
   getAdminContext,
@@ -10,10 +9,9 @@ import {
   getOrderStatusLabel,
   safeDbError,
   dateRangeSchema,
+  limitSchema,
+  daysSchema,
 } from "@comtammatu/shared";
-
-const limitSchema = z.coerce.number().int().min(1).max(100).default(10);
-const daysSchema = z.coerce.number().int().min(1).max(365).default(7);
 
 // =====================
 // Dashboard Stats
@@ -266,9 +264,12 @@ async function _getRevenueTrend(days: number = 7) {
   const safeDays = daysSchema.parse(days);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const branchIds =
-    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b: { id: number }) => b.id) ?? [];
+  const { data: branches, error: branchError } = await supabase
+    .from("branches")
+    .select("id")
+    .eq("tenant_id", tenantId);
+  if (branchError) throw safeDbError(branchError, "db");
+  const branchIds = (branches ?? []).map((b: { id: number }) => b.id);
 
   if (branchIds.length === 0) return [];
 
@@ -276,12 +277,13 @@ async function _getRevenueTrend(days: number = 7) {
   startDate.setDate(startDate.getDate() - safeDays + 1);
   startDate.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("total, created_at")
     .in("branch_id", branchIds)
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", startDate.toISOString());
+  if (orderError) throw safeDbError(orderError, "db");
 
   const dateMap = new Map<string, { revenue: number; orders: number }>();
 
@@ -318,21 +320,25 @@ export const getRevenueTrend = withServerQuery(_getRevenueTrend);
 async function _getHourlyOrderVolume() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const branchIds =
-    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b: { id: number }) => b.id) ?? [];
+  const { data: branches, error: branchError } = await supabase
+    .from("branches")
+    .select("id")
+    .eq("tenant_id", tenantId);
+  if (branchError) throw safeDbError(branchError, "db");
+  const branchIds = (branches ?? []).map((b: { id: number }) => b.id);
 
   if (branchIds.length === 0) return [];
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("created_at")
     .in("branch_id", branchIds)
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", todayStart.toISOString());
+  if (orderError) throw safeDbError(orderError, "db");
 
   const hourMap = new Map<number, number>();
   for (let h = 6; h <= 23; h++) {
@@ -359,20 +365,24 @@ export const getHourlyOrderVolume = withServerQuery(_getHourlyOrderVolume);
 async function _getOrderStatusDistribution() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  const branchIds =
-    (await supabase.from("branches").select("id").eq("tenant_id", tenantId))
-      .data?.map((b: { id: number }) => b.id) ?? [];
+  const { data: branches, error: branchError } = await supabase
+    .from("branches")
+    .select("id")
+    .eq("tenant_id", tenantId);
+  if (branchError) throw safeDbError(branchError, "db");
+  const branchIds = (branches ?? []).map((b: { id: number }) => b.id);
 
   if (branchIds.length === 0) return [];
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
 
-  const { data: orders } = await supabase
+  const { data: orders, error: orderError } = await supabase
     .from("orders")
     .select("status")
     .in("branch_id", branchIds)
     .gte("created_at", todayStart.toISOString());
+  if (orderError) throw safeDbError(orderError, "db");
 
   const statusMap = new Map<string, number>();
   for (const order of orders ?? []) {
@@ -421,14 +431,6 @@ async function _getBranchComparison(
   if (!parsed.success) {
     throw new ActionError(
       parsed.error.issues[0]?.message ?? "Khoảng thời gian không hợp lệ",
-      "VALIDATION_ERROR",
-      400,
-    );
-  }
-
-  if (parsed.data.startDate > parsed.data.endDate) {
-    throw new ActionError(
-      "Ngày bắt đầu phải trước hoặc bằng ngày kết thúc",
       "VALIDATION_ERROR",
       400,
     );

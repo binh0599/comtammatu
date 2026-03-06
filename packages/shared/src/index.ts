@@ -197,6 +197,8 @@ export {
   createMyLeaveRequestSchema,
   // Shared validation
   dateRangeSchema,
+  limitSchema,
+  daysSchema,
 } from "./schemas/hr";
 export type {
   CreateStaffAccountInput,

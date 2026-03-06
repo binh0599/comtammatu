@@ -49,7 +49,7 @@ test.describe("Order Flow", () => {
     if (!text) {
       throw new Error("Order number element is visible but has no text content");
     }
-    orderNumber = text;
+    orderNumber = text.trim();
   });
 
   test("KDS receives the order", async ({ page, loginAs }) => {
@@ -122,9 +122,13 @@ test.describe("Order Flow", () => {
     await expect(confirmPay).toBeVisible({ timeout: 3_000 });
     await confirmPay.click();
 
-    // Payment should succeed
+    // Confirm button should disappear after payment
+    await expect(confirmPay).not.toBeVisible({ timeout: 5_000 });
+
+    // Payment should succeed — match success toast/banner, not the button
     await expect(
-      page.getByText(/thành công|success|hoàn tất/i)
+      page.locator("[data-testid='payment-success'], .payment-success, [role='status']")
+        .or(page.getByText(/thành công|thanh toán xong|payment success/i))
     ).toBeVisible({ timeout: 10_000 });
   });
 });
