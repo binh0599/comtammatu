@@ -34,16 +34,6 @@
 - [x] CI update — Prisma generate step added to GitHub Actions
 - [x] Build fix — client-side imports bypass server barrel (`@comtammatu/database/src/supabase/client`)
 
-### What was NOT done in Week 3-4 (deferred)
-
-- [ ] VNPay/Momo payment integration (webhooks, HMAC verification) — **cash-only MVP**
-- [ ] Offline support (Service Worker, IndexedDB, AES-256-GCM encryption)
-- [ ] Device fingerprinting for terminal registration
-- [ ] Peripheral config (printers, cash drawers)
-- [ ] Receipt printing
-- [ ] Order discounts and voucher application
-- [ ] Upstash Redis rate limiting
-
 ## Completed: Week 5-6 — Operations
 
 ### Shared Package Extensions
@@ -59,16 +49,16 @@
 
 ### Inventory Management (6 tabs)
 - [x] Ingredients CRUD — create, edit, delete with unit/category
-- [x] Stock levels — per-branch view with low-stock alert badges ("Sắp hết" / "Đủ hàng")
+- [x] Stock levels — per-branch view with low-stock alert badges
 - [x] Stock movements — log + create dialog, color-coded type badges
-- [x] Recipes — link menu items → ingredients with quantities + waste %
+- [x] Recipes — link menu items -> ingredients with quantities + waste %
 - [x] Suppliers CRUD — name, contact, rating stars
-- [x] Purchase orders — full workflow (draft → send → receive → cancel), dynamic item rows, stock level auto-update on receive
+- [x] Purchase orders — full workflow (draft -> send -> receive -> cancel), dynamic item rows, stock level auto-update on receive
 
 ### HR Basic (5 tabs)
 - [x] Employees — directory linked to profiles, CRUD with status/employment type badges
 - [x] Shifts — template management with time inputs, branch filter
-- [x] Schedule — shift assignments by date, "Phân ca" dialog
+- [x] Schedule — shift assignments by date
 - [x] Attendance — read-only view with status/source badges
 - [x] Leave — requests with filter tabs, approve/reject buttons
 
@@ -77,130 +67,71 @@
 - [x] Audit logs — resource type filter, expandable old/new value JSON diff
 
 ### Navigation & Verification
-- [x] Sidebar updated — Kho hàng, Nhân sự, Bảo mật links with icons
-- [x] Typecheck passes (all packages)
-- [x] Lint passes (fixed Date.now() purity violation in HR page)
-- [x] Build passes (21 routes including 3 new: /admin/inventory, /admin/hr, /admin/security)
-- [x] CI green — all 3 jobs pass (secrets scan, lint/typecheck/test, dependency audit)
-- [x] Commit: `0c9f776` — 31 files, +7,274 lines
-
-### What was NOT done in Week 5-6 (deferred)
-
-- [ ] Stock auto-deduction trigger on order completion
-- [ ] Charts/graphs for dashboard (plain Cards + Tables for MVP)
-- [ ] Payroll calculations
-- [ ] Attendance clock-in/clock-out mechanism (QR scan, etc.)
-- [ ] Branch comparison in dashboard
+- [x] Sidebar updated — Kho hang, Nhan su, Bao mat links with icons
+- [x] Typecheck, lint, build all pass
+- [x] CI green
 
 ## Completed: Week 7-8 — CRM, Privacy & Customer PWA
 
-### Shared Package Extensions (Phase 0)
-- [x] Zod schemas — CRM (customer, loyalty tier, loyalty points), voucher (create/update with branch_ids), feedback (create, respond), privacy (deletion request)
-- [x] Constants — 5 new enums (customer genders, customer sources, loyalty transaction types, voucher types, deletion request statuses) + CRM_ROLES
-- [x] Formatters — 6 new Vietnamese label functions (getCustomerGenderLabel, getCustomerSourceLabel, getLoyaltyTransactionTypeLabel, getVoucherTypeLabel, getDeletionStatusLabel, formatPoints)
+### CRM Admin — /admin/crm (4 tabs)
+- [x] Customers tab — CRUD table with loyalty tier badge, total_spent, loyalty history dialog, points adjust dialog
+- [x] Loyalty Tiers tab — CRUD with min_points, discount_pct, benefits, sort_order
+- [x] Vouchers tab — CRUD with type badges (percent/fixed/free_item), branch multi-select
+- [x] Feedback tab — Star rating display, response dialog, responded/unanswered badges
+- [x] Server Actions — 20 actions (customers, loyalty points, tiers, vouchers, feedback, GDPR admin)
 
-### CRM Admin — /admin/crm (Phase 1, 4 tabs)
-- [x] Customers tab — CRUD table with loyalty tier badge, total_spent, active/inactive toggle, loyalty history dialog, points adjust dialog (earn/redeem/adjust)
-- [x] Loyalty Tiers tab — CRUD with min_points, discount_pct, benefits, sort_order. Delete protection if customers linked
-- [x] Vouchers tab — CRUD with type badges (percent/fixed/free_item), branch multi-select via voucher_branches junction, date range, toggle active
-- [x] Feedback tab — Star rating display (1-5), response dialog for admin, responded/unanswered badges
-- [x] Server Actions — 20 actions (customers CRUD, loyalty points, tiers CRUD, vouchers CRUD with junction, feedback response, GDPR admin: deletion requests, cancel, process anonymization)
+### Customer PWA — /customer (6 pages)
+- [x] Layout — Mobile-first with sticky header, bottom nav
+- [x] Home, Menu (public), Orders (auth), Loyalty (auth), Feedback (auth), Account (auth)
+- [x] Server Actions — 8 actions
 
-### Customer PWA — /customer (Phase 2, 6 pages)
-- [x] Layout — Mobile-first with sticky header (Cơm Tấm Mã Tú), bottom nav (Trang chủ, Thực đơn, Đơn hàng, Tài khoản), Toaster
-- [x] Home page — Welcome message, 3 action cards, loyalty summary if logged in
-- [x] Menu page (PUBLIC) — Category tabs with horizontal scroll, search bar, item cards with price. Read-only for MVP
-- [x] Orders page (AUTH) — Order cards with status badges, expandable items, "Đánh giá" link for completed orders
-- [x] Loyalty page (AUTH) — Tier card with discount %, points balance, progress bar to next tier, transaction history
-- [x] Feedback page (AUTH) — Dynamic route /feedback/[orderId], interactive 5-star rating, comment textarea
-- [x] Account page (AUTH) — Profile info, logout, data export (JSON download), deletion request with 30-day grace period AlertDialog
-- [x] Server Actions — 8 actions (getPublicMenu, getCustomerOrders, getCustomerLoyalty, submitFeedback, getOrderForFeedback, getCustomerProfile, requestDataExport, requestDeletion)
-
-### GDPR Privacy API (Phase 3)
-- [x] GET /api/privacy/data-export — Authenticated JSON download of all customer data (orders, loyalty, feedback)
-- [x] GET/POST /api/privacy/deletion-request — Create deletion request (30-day grace) / check status
-- [x] Shared auth helper (helpers.ts) — getAuthenticatedCustomer() for privacy routes
-
-### Middleware & Verification (Phase 4)
-- [x] Middleware updated — Added `/customer` and `/api/privacy` to publicRoutes
-- [x] Typecheck passes (all 5 packages)
-- [x] Lint passes (0 errors, 0 warnings — fixed unused isLoggedIn prop, img→Image)
-- [x] Build passes (30 routes including 9 new: /admin/crm, /customer, /customer/menu, /customer/orders, /customer/loyalty, /customer/feedback/[orderId], /customer/account, /api/privacy/data-export, /api/privacy/deletion-request)
-- [x] Commit: `244fa73` — 37 files, +4,963 lines
-- [x] Pushed to origin/main
-
-### What was NOT done in Week 7-8 (deferred)
-
-- [ ] Campaigns (email/SMS/push notifications)
-- [ ] Notifications system
-- [ ] Auto-tier upgrade triggers (auto-promote customer when points reach tier threshold)
-- [ ] Retention cron jobs (scheduled deletion after 30-day grace)
-- [ ] E2E testing for critical flows
-- [ ] RLS validation test suite
-- [ ] Documentation (API docs, user guide, deployment runbook)
-- [ ] Order discounts/voucher redemption at POS (voucher application during order creation)
+### GDPR Privacy API
+- [x] GET /api/privacy/data-export, GET/POST /api/privacy/deletion-request
 
 ## Completed: Post-MVP Sprint 1 (Week 9-10)
 
 ### Payment & Order Flow Hardening
-- [x] Momo payment integration (webhook, HMAC verification) — commit `e2bc0dc`
-- [x] Stock auto-deduction on order completion (DB trigger) — commit `e2bc0dc`
-- [x] Voucher redemption at POS during order creation — commit `e2bc0dc`
-- [x] Dashboard charts (revenue chart, hourly chart, status chart) — commit `e2bc0dc`
-- [x] Allow takeaway orders (null table_id) — commit `b1848f4`
-- [x] Allow null variant_id, modifiers, notes in order items — commit `6fa2fa6`
-- [x] Complete order flow fix — KDS sync, Momo webhook, served status — commit `34c8462`
-- [x] Admin payment management page — commit `60bcbef`
-- [x] Next.js 16.1 middleware → proxy.ts migration — commit `82e5c12`
+- [x] Momo payment integration (webhook, HMAC verification)
+- [x] Stock auto-deduction on order completion (DB trigger)
+- [x] Voucher redemption at POS during order creation
+- [x] Dashboard charts (revenue, hourly, status)
+- [x] Allow takeaway orders (null table_id)
+- [x] Complete order flow fix — KDS sync, Momo webhook, served status
+- [x] Admin payment management page
+- [x] Next.js 16.1 middleware -> proxy.ts migration
 
 ### HR Redesign
-- [x] Redesign HR employee management — create auth accounts from admin — commit `05a8df3`
+- [x] Redesign HR employee management — create auth accounts from admin
 
 ### Security Hardening
-- [x] Harden POS/KDS device flow — 7 security and correctness fixes — commit `f6f5183`
-- [x] Harden KDS station actions — role check, ownership verification, tenant filtering — commit `ef127d6`
+- [x] Harden POS/KDS device flow — 7 security and correctness fixes
+- [x] Harden KDS station actions — role check, ownership verification, tenant filtering
 - [x] Validate client-provided IDs against auth context (VALIDATE_CLIENT_IDS rule)
 
 ### Accessibility & Quality
-- [x] WCAG AAA accessibility fixes across admin components — commit `96398c0`
-- [x] Accessibility improvements across all modules — commit `49299b6`
+- [x] WCAG AAA accessibility fixes across admin components
+- [x] Accessibility improvements across all modules
 - [x] State machine documentation for order flow
-- [x] CLAUDE.md workflow restructure for production use — commit `cebc9f0`
-
-### What was NOT done in Post-MVP Sprint 1 (deferred)
-- [ ] VNPay payment integration (only Momo done)
-- [ ] Retention cron jobs (auto-delete after 30-day grace period)
-- [ ] Auto-tier upgrade triggers for loyalty
+- [x] CLAUDE.md workflow restructure
 
 ## Completed: Post-MVP Sprint 2 — Production Resilience
 
-### Loading States (22 loading.tsx files)
-- [x] Reusable skeleton components — `StatCardSkeleton`, `ChartSkeleton`, `TableSkeleton`, `TabsSkeleton`, `CardSkeleton`, `OrderCardSkeleton`, `KdsTicketSkeleton`
-- [x] Admin routes (9) — dashboard, menu, crm, hr, inventory, payments, security, terminals, kds-stations
-- [x] POS routes (5) — pos, orders, order/new, cashier, session
-- [x] KDS routes (2) — station list, station board (dark theme)
-- [x] Customer routes (6) — home, menu, orders, loyalty, account, feedback
+### Loading States (24 loading.tsx files)
+- [x] Admin routes (10), POS routes (6), KDS routes (2), Customer routes (6)
+- [x] Reusable skeleton components
 
-### Error Boundaries (8 files)
+### Error Boundaries (9 files)
 - [x] Route group level (4) — admin, pos, kds (dark), customer (mobile)
-- [x] Critical sub-routes (3) — pos/orders, pos/cashier, kds/[stationId]
-- [x] Global not-found.tsx — Vietnamese 404 page
-
-### Lazy Loading
-- [x] Recharts lazy loaded via `next/dynamic` on admin dashboard (3 chart components)
+- [x] Critical sub-routes (4) — pos/orders, pos/cashier, pos/order/[orderId], kds/[stationId]
+- [x] Menu detail error boundary — admin/menu/[menuId]
+- [x] Global not-found.tsx
 
 ### Rate Limiting
-- [x] `@comtammatu/security` — Upstash Redis sliding window rate limiter with graceful degradation
-- [x] `authLimiter` (5/60s) on login
-- [x] `webhookLimiter` (10/60s) on Momo webhook
-- [x] `apiLimiter` (30/60s) on privacy data-export and deletion-request
+- [x] `@comtammatu/security` — Upstash Redis sliding window rate limiter
+- [x] authLimiter (5/60s), webhookLimiter (10/60s), apiLimiter (30/60s)
 
 ### Zod v4 Compatibility Fixes
-- [x] `.error.errors` → `.error.issues` (41 occurrences across 11 action files)
-- [x] `required_error` → `error` in `z.enum()` (5 occurrences in hr.ts, inventory.ts)
-- [x] `z.record(schema)` → `z.record(z.string(), schema)` (3 occurrences in kds.ts, pos.ts)
-
----
+- [x] `.error.errors` -> `.error.issues`, `required_error` -> `error` in `z.enum()`, `z.record()` fix
 
 ## Completed: Post-MVP Sprint 3 — Menu & Devices
 
@@ -215,89 +146,105 @@
 - [x] Require `table_id` and `guest_count` for dine-in orders
 - [x] KDS connection redesign
 
+## Completed: Post-MVP Sprint 4 — Payroll, Analytics & Quality
+
+### Payroll Module (HR)
+- [x] DB migration — payroll_periods, payroll_entries tables
+- [x] Zod schemas, constants, server actions
+- [x] Admin UI — /admin/hr payroll tab: period list, calculate, approve flow
+- [x] Employee Portal — /employee/payroll: view pay stubs
+
+### Branch Comparison Dashboard
+- [x] Server Actions — getBranchComparison (revenue, orders, avg ticket by branch + date range)
+- [x] Admin UI — /admin/dashboard branch comparison tab with bar charts
+
+### E2E Testing Foundation
+- [x] Playwright setup — config, fixtures, auth helpers
+- [x] Critical flow tests: auth, order flow, menu CRUD, employee attendance
+- [x] 4 spec files: auth.spec.ts, order-flow.spec.ts, menu-crud.spec.ts, attendance.spec.ts
+
+### Advanced Inventory Features
+- [x] Partial PO receiving, stock counts, prep list, food cost, expiry tracking
+- [x] Admin UI tabs, urgent restock from KDS, price anomaly alerts
+- [x] getBranchIdsForTenant helper to deduplicate 7 queries
+- [x] 4 rounds of code review fixes (RBAC, error handling, schema safety, ownership)
+
+### Verification
+- [x] Typecheck, lint, build all pass
+- [x] CI green
+
 ---
 
-## Current Roadmap — Post-MVP
+## Current State Summary (2026-03-06)
 
-### Priority 1 — Core Business (Week 11-12) -- COMPLETE
-```
-- [x] Retention cron jobs (scheduled deletion after 30-day GDPR grace period) — fixed 5 bugs in existing route
-- [x] Auto-tier upgrade triggers (auto-promote customer when points reach tier) — fixed trigger audit log bug
-- [x] Receipt printing (thermal printer integration)
-- [x] Notifications system (in-app + push for order status)
-```
+### What Exists Now
+| Module | Routes | Status |
+|--------|--------|--------|
+| Auth | /login | Done |
+| Admin Dashboard | /admin | Done (charts, branch comparison) |
+| Menu Management | /admin/menu, /admin/menu/[menuId] | Done (categories, sides, notes) |
+| CRM | /admin/crm | Done (customers, loyalty, vouchers, feedback) |
+| HR | /admin/hr | Done (employees, shifts, schedule, attendance, leave, payroll) |
+| Inventory | /admin/inventory | Done (ingredients, stock, POs, recipes, suppliers, food cost, expiry) |
+| Security | /admin/security | Done (events, audit logs) |
+| Payments | /admin/payments | Done |
+| Orders (Admin) | /admin/orders | Done |
+| Reports | /admin/reports | Exists (page created) |
+| Settings | /admin/settings | Exists (page created) |
+| Terminals | /admin/terminals | Done (device approval, fingerprinting) |
+| KDS Stations | /admin/kds-stations | Done |
+| POS | /pos, /pos/orders, /pos/order/new, /pos/order/[orderId], /pos/cashier, /pos/session | Done |
+| POS Printer | /pos/printer | Done |
+| KDS | /kds, /kds/[stationId], /kds/printer | Done |
+| Customer PWA | /customer (6 pages) | Done |
+| Employee Portal | /employee (5 pages: home, schedule, profile, workspace, leave, payroll) | Done |
+| Privacy API | /api/privacy/* | Done |
 
-### Excluded (not planned)
-```
-- [—] VNPay payment integration — Momo QR is sufficient for MVP
-```
+**37 page routes, 20 action files, 16 Zod schema files, 4 E2E spec files**
 
-### Priority 2 — Operations (Week 13-14) -- PARTIALLY COMPLETE
+### Infrastructure
+- 24 loading.tsx skeletons, 9 error boundaries
+- Rate limiting on auth, webhooks, privacy APIs
+- Momo payment integration (cash + QR)
+- Realtime subscriptions (orders, tables, KDS tickets)
+- Device fingerprinting & approval flow
+- Printer config for POS & KDS
+
+---
+
+## Remaining Roadmap
+
+### Priority 1 — Offline & Resilience (Next)
 ```text
-- [x] Attendance clock-in/clock-out — Employee Portal PWA with timesheet (commit a86dfc0)
-- [x] Device fingerprinting for terminal registration
-- [x] Payroll calculations (HR module)
-- [x] Branch comparison in dashboard
-- [ ] Offline support — Service Worker + IndexedDB (critical for POS reliability)
+- [ ] Offline support — Service Worker + IndexedDB for POS reliability
+      (critical for restaurant ops when internet drops)
 ```
 
-### Priority 3 — Quality & Scale (Week 15-16)
+### Priority 2 — Quality & Compliance
 ```text
-- [x] E2E testing (Playwright — critical flows: login, order, payment, KDS)
-- [ ] RLS validation test suite
-- [ ] API documentation (OpenAPI spec)
-- [x] Upstash Redis rate limiting ← Sprint 2
-- [x] Peripheral config (printers, cash drawers)
+- [ ] RLS validation test suite (verify all policies per role)
+- [ ] API documentation (OpenAPI spec for privacy + webhook endpoints)
+- [ ] Admin reports page — build out actual report content
+- [ ] Admin settings page — build out actual settings management
 ```
 
-### Priority 4 — Growth (Week 17+)
+### Priority 3 — Growth Features
 ```text
 - [ ] Campaigns & notifications (email/SMS/push marketing)
-- [ ] Customer ordering (online menu → place order via PWA)
-- [ ] Multi-branch reporting & analytics
+- [ ] Customer ordering (online menu -> place order via PWA)
+- [ ] Multi-branch reporting & analytics (beyond current comparison)
 - [ ] Inventory forecasting (based on order history)
 - [ ] Staff performance metrics
 ```
 
----
-
-## Sprint 4: Post-MVP — Payroll, Analytics & Quality (COMPLETED)
-
-> **Goal:** Complete Priority 2 remaining items + start Priority 3 testing.
-> **Target:** Week 13-14 equivalent
-
-### Phase 1: Payroll Module (HR) — DONE
+### Priority 4 — Operational Polish
 ```text
-- [x] DB migration — payroll_periods, payroll_entries tables (NUMERIC(14,2) for amounts)
-- [x] Zod schemas — payroll period (create/close), payroll entry (calculate, approve)
-- [x] Constants — payroll statuses (draft, calculated, approved, paid), pay components
-- [x] Server Actions — createPayrollPeriod, calculatePayroll (hours × rate), approvePayroll
-- [x] Admin UI — /admin/hr payroll tab: period list, calculate button, entry table, approve flow
-- [x] Employee Portal — /employee/payroll: view pay stubs, download summary
+- [ ] Retention cron jobs (auto-delete after 30-day GDPR grace period)
+- [ ] Auto-tier upgrade triggers (auto-promote on points threshold)
+- [ ] VNPay payment integration (if Momo QR insufficient)
 ```
 
-### Phase 2: Branch Comparison Dashboard — DONE
+### Excluded (not planned)
 ```text
-- [x] Server Actions — getBranchComparison (revenue, orders, avg ticket by branch + date range)
-- [x] Admin UI — /admin/dashboard branch comparison tab: bar charts, date range picker
-- [x] Recharts lazy-loaded components for branch comparison charts
-```
-
-### Phase 3: E2E Testing Foundation — DONE
-```text
-- [x] Playwright setup — config, fixtures, auth helpers (login as different roles)
-- [x] Critical flow tests:
-  - [x] Auth flow — login, role-based redirect, logout
-  - [x] Order flow — waiter creates order → KDS receives → chef bumps → cashier pays
-  - [x] Menu CRUD — admin creates/edits/deletes menu items
-  - [x] Employee clock-in/clock-out
-- [x] CI integration — Playwright in GitHub Actions (headless)
-```
-
-### Phase 4: Verification — DONE
-```text
-- [x] Typecheck passes (all packages)
-- [x] Lint passes
-- [x] Build passes
-- [x] E2E tests pass
+- [--] VNPay — Momo QR sufficient for current operations
 ```
