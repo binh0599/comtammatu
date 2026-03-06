@@ -155,9 +155,9 @@ async function _createOrder(data: {
       "VALIDATION_ERROR"
     );
   }
-  if (terminal.type !== "mobile_order") {
+  if (terminal.type !== "mobile_order" && terminal.type !== "cashier_station") {
     throw new ActionError(
-      "Chỉ thiết bị đặt món (mobile) mới có thể tạo đơn hàng",
+      "Chỉ thiết bị POS (gọi món hoặc thu ngân) mới có thể tạo đơn hàng",
       "VALIDATION_ERROR"
     );
   }
@@ -202,11 +202,32 @@ async function _createOrder(data: {
     );
   }
 
-  // Check availability
+  // Check global availability
   const unavailable = typedMenuItems.filter((mi) => !mi.is_available);
   if (unavailable.length > 0) {
     const names = unavailable.map((mi) => mi.name).join(", ");
     throw new ActionError(`Các món sau đã hết: ${names}`, "CONFLICT", 409);
+  }
+
+  // Check branch-level availability (86'd items)
+  const { data: branchUnavailable } = await supabase
+    .from("menu_item_branch_availability")
+    .select("menu_item_id")
+    .in("menu_item_id", itemIds)
+    .eq("branch_id", branchId)
+    .eq("is_available", false);
+
+  if (branchUnavailable && branchUnavailable.length > 0) {
+    const unavailableIds = new Set(branchUnavailable.map((r: { menu_item_id: number }) => r.menu_item_id));
+    const unavailableNames = typedMenuItems
+      .filter((mi) => unavailableIds.has(mi.id))
+      .map((mi) => mi.name)
+      .join(", ");
+    throw new ActionError(
+      `Các món sau đã hết tại chi nhánh: ${unavailableNames}`,
+      "CONFLICT",
+      409,
+    );
   }
 
   // Build price map
@@ -671,6 +692,22 @@ async function _addOrderItems(data: {
       throw new ActionError("Một số món đã hết", "CONFLICT", 409);
     }
     priceMap.set(mi.id, mi.base_price);
+  }
+
+  // Check branch-level availability (86'd items)
+  const { data: branchUnavailableItems } = await supabase
+    .from("menu_item_branch_availability")
+    .select("menu_item_id")
+    .in("menu_item_id", itemIds)
+    .eq("branch_id", order.branch_id)
+    .eq("is_available", false);
+
+  if (branchUnavailableItems && branchUnavailableItems.length > 0) {
+    throw new ActionError(
+      "Một số món đã hết tại chi nhánh",
+      "CONFLICT",
+      409,
+    );
   }
 
   // Validate side items against allowed list (batched query)

@@ -2,11 +2,13 @@
 
 import "@/lib/server-bootstrap";
 import {
-  getActionContext,
+  getAdminContext,
+  ADMIN_ROLES,
   withServerAction,
   withServerQuery,
   createPurchaseOrderSchema,
   receivePurchaseOrderSchema,
+  entityIdSchema,
   VALID_PO_TRANSITIONS,
   type PoStatus,
   safeDbError,
@@ -15,7 +17,7 @@ import {
 import { revalidatePath } from "next/cache";
 
 async function _getPurchaseOrders() {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
     .from("purchase_orders")
@@ -42,7 +44,7 @@ async function _createPurchaseOrder(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, userId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const total = parsed.data.items.reduce(
     (sum, item) => sum + item.quantity * item.unit_price,
@@ -90,7 +92,10 @@ async function _createPurchaseOrder(input: {
 export const createPurchaseOrder = withServerAction(_createPurchaseOrder);
 
 async function _sendPurchaseOrder(id: number) {
-  const { supabase, tenantId } = await getActionContext();
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return { error: "ID không hợp lệ" };
+
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
@@ -123,7 +128,15 @@ export const sendPurchaseOrder = withServerAction(_sendPurchaseOrder);
 
 async function _receivePurchaseOrder(input: {
   po_id: number;
-  items: { po_item_id: number; received_qty: number }[];
+  items: {
+    po_item_id: number;
+    ordered_qty: number;
+    received_qty: number;
+    reject_qty?: number;
+    reject_reason?: string;
+    quality_status?: string;
+    expiry_date?: string;
+  }[];
 }) {
   const parsed = receivePurchaseOrderSchema.safeParse(input);
 
@@ -131,7 +144,7 @@ async function _receivePurchaseOrder(input: {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  const { supabase, tenantId, userId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")
@@ -143,79 +156,163 @@ async function _receivePurchaseOrder(input: {
   if (fetchError) return { error: fetchError.message };
   if (!po) return { error: "Đơn mua hàng không tồn tại" };
 
-  const validNextStatuses = VALID_PO_TRANSITIONS[po.status as PoStatus];
-  if (!validNextStatuses || !validNextStatuses.includes("received")) {
+  const currentStatus = po.status as PoStatus;
+  const validNextStatuses = VALID_PO_TRANSITIONS[currentStatus];
+  if (
+    !validNextStatuses ||
+    (!validNextStatuses.includes("received") &&
+      !validNextStatuses.includes("partially_received" as PoStatus))
+  ) {
     return { error: `Không thể nhận hàng ở trạng thái "${po.status}"` };
   }
 
+  // Fetch existing PO items to compute deltas (prevents double-counting on re-receive)
+  const poItemIds = parsed.data.items.map((i) => i.po_item_id);
+  const { data: existingPoItems, error: existingErr } = await supabase
+    .from("purchase_order_items")
+    .select("id, ingredient_id, received_qty, reject_qty")
+    .eq("po_id", parsed.data.po_id)
+    .in("id", poItemIds);
+
+  if (existingErr) return { error: existingErr.message };
+
+  type ExistingPoItem = { id: number; ingredient_id: number; received_qty: number; reject_qty: number };
+  const existingMap = new Map<number, ExistingPoItem>(
+    (existingPoItems ?? []).map((pi: ExistingPoItem) => [pi.id, pi])
+  );
+
+  // Validate all submitted po_item_ids exist in the PO
+  const missingIds = poItemIds.filter((id) => !existingMap.has(id));
+  if (missingIds.length > 0) {
+    return { error: `Mục PO không hợp lệ: ${missingIds.join(", ")}` };
+  }
+
+  // Determine if this is a full or partial receive
+  let hasRejected = false;
+  let hasAccepted = false;
   for (const item of parsed.data.items) {
+    if (item.received_qty > 0) hasAccepted = true;
+    if ((item.reject_qty ?? 0) > 0 || item.quality_status === "rejected") hasRejected = true;
+  }
+  const newPoStatus = hasRejected && hasAccepted ? "partially_received" : "received";
+
+  // 1. Process stock updates using deltas FIRST (before PO item/status updates)
+  for (const item of parsed.data.items) {
+    const existing = existingMap.get(item.po_item_id)!;
+    const ingredientId = existing.ingredient_id;
+    const previousReceived = Number(existing.received_qty) || 0;
+    const delta = item.received_qty - previousReceived;
+
+    // Skip stock operations if no new quantity received
+    if (delta <= 0) continue;
+
+    // Create stock movement for the delta only
+    const { error: movError } = await supabase.from("stock_movements").insert({
+      ingredient_id: ingredientId,
+      branch_id: po.branch_id,
+      type: "in",
+      quantity: delta,
+      notes: `Nhận hàng từ đơn mua #${parsed.data.po_id}${
+        (item.reject_qty ?? 0) > 0
+          ? ` (từ chối ${item.reject_qty}: ${item.reject_reason || "không đạt"})`
+          : ""
+      }`,
+      created_by: userId,
+    });
+
+    if (movError) return safeDbErrorResult(movError, "db");
+
+    // Create stock batch for expiry tracking (only for new receives)
+    if (item.expiry_date) {
+      const { error: batchError } = await supabase.from("stock_batches").insert({
+        ingredient_id: ingredientId,
+        branch_id: po.branch_id,
+        quantity: delta,
+        expiry_date: item.expiry_date,
+        po_id: parsed.data.po_id,
+      });
+
+      if (batchError) return safeDbErrorResult(batchError, "db");
+    }
+
+    // Update stock levels with optimistic locking + retry (delta-based)
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { data: existingStock, error: selectErr } = await supabase
+        .from("stock_levels")
+        .select("id, quantity, version")
+        .eq("ingredient_id", ingredientId)
+        .eq("branch_id", po.branch_id)
+        .single();
+
+      if (selectErr) {
+        if (selectErr.code !== "PGRST116") {
+          return safeDbErrorResult(selectErr, "db");
+        }
+        // No stock_levels row — insert new one
+        const { error: insertErr } = await supabase.from("stock_levels").insert({
+          ingredient_id: ingredientId,
+          branch_id: po.branch_id,
+          quantity: delta,
+        });
+        if (insertErr) return safeDbErrorResult(insertErr, "db");
+        break;
+      }
+
+      if (!existingStock) {
+        const { error: insertErr } = await supabase.from("stock_levels").insert({
+          ingredient_id: ingredientId,
+          branch_id: po.branch_id,
+          quantity: delta,
+        });
+        if (insertErr) return safeDbErrorResult(insertErr, "db");
+        break;
+      }
+
+      const newQty = existingStock.quantity + delta;
+      const { data: updated, error: updateErr } = await supabase
+        .from("stock_levels")
+        .update({ quantity: newQty, version: existingStock.version + 1 })
+        .eq("id", existingStock.id)
+        .eq("version", existingStock.version)
+        .select("id");
+
+      if (updateErr) return safeDbErrorResult(updateErr, "db");
+      if (updated && updated.length > 0) break;
+      if (attempt === 2) {
+        return { error: `Xung đột cập nhật tồn kho nguyên liệu #${ingredientId}` };
+      }
+    }
+  }
+
+  // 2. Update each PO item with quality check data (after stock ops succeed)
+  for (const item of parsed.data.items) {
+    const updateData: Record<string, unknown> = {
+      received_qty: item.received_qty,
+      reject_qty: item.reject_qty ?? 0,
+      quality_status: item.quality_status ?? "accepted",
+      reject_reason: item.reject_reason ?? null,
+    };
+
     const { error: itemError } = await supabase
       .from("purchase_order_items")
-      .update({ received_qty: item.received_qty })
+      .update(updateData)
       .eq("id", item.po_item_id)
       .eq("po_id", parsed.data.po_id);
 
-    if (itemError) return { error: itemError.message };
+    if (itemError) return safeDbErrorResult(itemError, "db");
   }
 
+  // 3. Update PO status AFTER all stock + item operations succeed
   const { error: poError } = await supabase
     .from("purchase_orders")
-    .update({ status: "received", received_at: new Date().toISOString() })
+    .update({
+      status: newPoStatus,
+      received_at: new Date().toISOString(),
+    })
     .eq("id", parsed.data.po_id)
     .eq("tenant_id", tenantId);
 
   if (poError) return { error: poError.message };
-
-  const poItemIds = parsed.data.items.map((i) => i.po_item_id);
-  const { data: poItems, error: poItemsError } = await supabase
-    .from("purchase_order_items")
-    .select("id, ingredient_id")
-    .eq("po_id", parsed.data.po_id)
-    .in("id", poItemIds);
-
-  if (poItemsError) return { error: poItemsError.message };
-
-  const ingredientMap = new Map(
-    (poItems ?? []).map((pi: { id: number; ingredient_id: number }) => [pi.id, pi.ingredient_id])
-  );
-
-  for (const item of parsed.data.items) {
-    if (item.received_qty <= 0) continue;
-
-    const ingredientId = ingredientMap.get(item.po_item_id);
-    if (!ingredientId) continue;
-
-    await supabase.from("stock_movements").insert({
-      ingredient_id: ingredientId,
-      branch_id: po.branch_id,
-      type: "in",
-      quantity: item.received_qty,
-      notes: `Nhận hàng từ đơn mua #${parsed.data.po_id}`,
-      created_by: userId,
-    });
-
-    const { data: existing } = await supabase
-      .from("stock_levels")
-      .select("id, quantity, version")
-      .eq("ingredient_id", ingredientId)
-      .eq("branch_id", po.branch_id)
-      .single();
-
-    if (existing) {
-      const newQty = existing.quantity + item.received_qty;
-      await supabase
-        .from("stock_levels")
-        .update({ quantity: newQty, version: existing.version + 1 })
-        .eq("id", existing.id)
-        .eq("version", existing.version);
-    } else {
-      await supabase.from("stock_levels").insert({
-        ingredient_id: ingredientId,
-        branch_id: po.branch_id,
-        quantity: item.received_qty,
-      });
-    }
-  }
 
   revalidatePath("/admin/inventory");
   return { error: null, success: true };
@@ -224,7 +321,10 @@ async function _receivePurchaseOrder(input: {
 export const receivePurchaseOrder = withServerAction(_receivePurchaseOrder);
 
 async function _cancelPurchaseOrder(id: number) {
-  const { supabase, tenantId } = await getActionContext();
+  const parsedId = entityIdSchema.safeParse(id);
+  if (!parsedId.success) return { error: "ID không hợp lệ" };
+
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: po, error: fetchError } = await supabase
     .from("purchase_orders")

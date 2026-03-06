@@ -134,8 +134,22 @@ export const getWasteReasonLabel = createLabelMapper({
 export const getPoStatusLabel = createLabelMapper({
   draft: "Nháp",
   sent: "Đã gửi",
+  partially_received: "Nhận 1 phần",
   received: "Đã nhận",
   cancelled: "Đã hủy",
+});
+
+export const getPoQualityStatusLabel = createLabelMapper({
+  pending: "Chờ kiểm tra",
+  accepted: "Đạt",
+  partial: "Đạt 1 phần",
+  rejected: "Không đạt",
+});
+
+export const getStockCountStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  submitted: "Đã nộp",
+  approved: "Đã duyệt",
 });
 
 export const getEmploymentTypeLabel = createLabelMapper({
@@ -258,6 +272,16 @@ export const getPrinterTestStatusLabel = createLabelMapper({
 export const getPrinterAssignedTypeLabel = createLabelMapper({
   pos_terminal: "Máy thu ngân",
   kds_station: "Trạm bếp",
+});
+
+// ===== 86'd / Menu Availability =====
+
+export const getItemUnavailableReasonLabel = createLabelMapper({
+  out_of_stock: "Hết hàng",
+  ingredient_shortage: "Thiếu nguyên liệu",
+  equipment_issue: "Lỗi thiết bị",
+  seasonal: "Theo mùa",
+  other: "Lý do khác",
 });
 
 // ===== Device Registration =====

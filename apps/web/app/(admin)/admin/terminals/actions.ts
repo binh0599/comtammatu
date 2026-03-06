@@ -253,11 +253,12 @@ async function _approveDevice(id: number) {
 
     if (termError) {
       if (termError.code === "23505") {
-        // Fingerprint already exists — validate branch + type before linking
+        // Fingerprint already exists — find and reuse the existing terminal (tenant-scoped)
         const { data: existing, error: lookupError } = await supabase
           .from("pos_terminals")
-          .select("id, branch_id, type, is_active")
+          .select("id, branch_id, type, is_active, branches!inner(tenant_id)")
           .eq("device_fingerprint", device.device_fingerprint)
+          .eq("branches.tenant_id", tenantId)
           .single();
         if (lookupError || !existing) {
           return lookupError
@@ -266,12 +267,38 @@ async function _approveDevice(id: number) {
         }
         if (
           existing.branch_id === device.branch_id &&
-          existing.type === device.terminal_type &&
-          existing.is_active
+          existing.type === device.terminal_type
         ) {
+          // Reactivate if deactivated (e.g., device was deleted then re-registered)
+          if (!existing.is_active) {
+            const { error: reactivateError } = await supabase
+              .from("pos_terminals")
+              .update({
+                is_active: true,
+                approved_by: userId,
+                approved_at: new Date().toISOString(),
+                registered_by: device.registered_by,
+              })
+              .eq("id", existing.id);
+            if (reactivateError) return safeDbErrorResult(reactivateError, "db");
+          }
           linkedTerminalId = existing.id;
         } else {
-          return { error: "Thiết bị đã gắn với terminal không tương thích. Liên hệ quản lý." };
+          // Branch or type mismatch — update the terminal to match new registration
+          const { error: updateError } = await supabase
+            .from("pos_terminals")
+            .update({
+              branch_id: device.branch_id,
+              type: device.terminal_type,
+              name: device.device_name || `${device.terminal_type === "cashier_station" ? "Thu ngân" : "Gọi món"} - ${device.device_fingerprint.slice(0, 8)}`,
+              is_active: true,
+              approved_by: userId,
+              approved_at: new Date().toISOString(),
+              registered_by: device.registered_by,
+            })
+            .eq("id", existing.id);
+          if (updateError) return safeDbErrorResult(updateError, "db");
+          linkedTerminalId = existing.id;
         }
       } else {
         return safeDbErrorResult(termError, "db");

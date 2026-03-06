@@ -1,3 +1,5 @@
+export type QualityStatus = "accepted" | "partial" | "rejected";
+
 export interface Supplier {
   id: number;
   name: string;
@@ -20,6 +22,9 @@ export interface PoItem {
   quantity: number;
   unit_price: number;
   received_qty: number;
+  reject_qty: number;
+  reject_reason: string | null;
+  quality_status: QualityStatus;
   ingredients: { name: string; unit: string } | null;
 }
 
@@ -56,8 +61,18 @@ export interface CreatePoData {
 
 export interface ReceivePoData {
   po_id: number;
-  items: { po_item_id: number; received_qty: number }[];
+  items: {
+    po_item_id: number;
+    ordered_qty: number;
+    received_qty: number;
+    reject_qty: number;
+    reject_reason?: string;
+    quality_status: QualityStatus;
+    expiry_date?: string;
+  }[];
 }
+
+const OUTLINE_STATUSES = ["sent", "partially_received"];
 
 export function getStatusBadgeVariant(
   status: string,
@@ -65,13 +80,12 @@ export function getStatusBadgeVariant(
   switch (status) {
     case "draft":
       return "secondary";
-    case "sent":
-      return "outline";
     case "received":
       return "default";
     case "cancelled":
       return "destructive";
     default:
+      if (OUTLINE_STATUSES.includes(status)) return "outline";
       return "secondary";
   }
 }

@@ -36,28 +36,30 @@ export default async function PosPage() {
   let terminalId: number | null = null;
 
   // Validate the linked terminal is still valid for this branch
+  // Accept both mobile_order and cashier_station (cashier can also take orders)
   if (device?.linked_terminal_id) {
     const { data: linkedTerminal } = await supabase
       .from("pos_terminals")
       .select("id")
       .eq("id", device.linked_terminal_id)
       .eq("branch_id", profile.branch_id)
-      .eq("type", "mobile_order")
+      .in("type", ["mobile_order", "cashier_station"])
       .eq("is_active", true)
       .not("approved_at", "is", null)
       .maybeSingle();
     terminalId = linkedTerminal?.id ?? null;
   }
 
-  // Fallback: find any active mobile_order terminal in the branch
+  // Fallback: find any active POS terminal in the branch (mobile_order preferred)
   if (!terminalId) {
     const { data: terminal } = await supabase
       .from("pos_terminals")
       .select("id")
       .eq("branch_id", profile.branch_id)
-      .eq("type", "mobile_order")
+      .in("type", ["mobile_order", "cashier_station"])
       .eq("is_active", true)
       .not("approved_at", "is", null)
+      .order("type") // mobile_order sorts before cashier_station
       .limit(1)
       .maybeSingle();
     terminalId = terminal?.id ?? null;

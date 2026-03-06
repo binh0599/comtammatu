@@ -202,8 +202,27 @@ async function _getMenuItems() {
   if (itemsError) throw safeDbError(itemsError, "db");
   if (!menuItems || menuItems.length === 0) return [];
 
-  const categoryIds = [...new Set(menuItems.map((item: any) => item.category_id as number))];
-  const itemIds = menuItems.map((item: any) => item.id as number);
+  // Filter out branch-level 86'd items
+  const branchId = ctx.branchId!;
+  const allItemIds = menuItems.map((item: any) => item.id as number);
+  const { data: branchDisabled } = await supabase
+    .from("menu_item_branch_availability")
+    .select("menu_item_id")
+    .in("menu_item_id", allItemIds)
+    .eq("branch_id", branchId)
+    .eq("is_available", false);
+
+  const disabledSet = new Set(
+    (branchDisabled ?? []).map((r: { menu_item_id: number }) => r.menu_item_id),
+  );
+  const filteredItems = disabledSet.size > 0
+    ? menuItems.filter((item: any) => !disabledSet.has(item.id))
+    : menuItems;
+
+  if (filteredItems.length === 0) return [];
+
+  const categoryIds = [...new Set(filteredItems.map((item: any) => item.category_id as number))];
+  const itemIds = filteredItems.map((item: any) => item.id as number);
 
   const { batchFetch } = await import("@comtammatu/database");
 
@@ -249,13 +268,13 @@ async function _getMenuItems() {
     }
   }
 
-  for (const item of menuItems) {
+  for (const item of filteredItems) {
     (item as any).menu_categories = categoryMap.get(item.category_id) ?? null;
     (item as any).menu_item_variants = variantsMap.get(item.id) ?? [];
     (item as any).available_side_ids = availableSidesMap.get(item.id) ?? [];
   }
 
-  return menuItems;
+  return filteredItems;
 }
 
 export const getMenuItems = withServerQuery(_getMenuItems);

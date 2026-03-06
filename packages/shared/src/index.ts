@@ -56,6 +56,11 @@ export {
   // Payroll
   PAYROLL_STATUSES,
   VALID_PAYROLL_TRANSITIONS,
+  // KDS Inventory
+  ITEM_UNAVAILABLE_REASONS,
+  // PO Quality & Stock Count
+  PO_QUALITY_STATUSES,
+  STOCK_COUNT_STATUSES,
 } from "./constants";
 
 export type {
@@ -101,6 +106,11 @@ export type {
   DeviceTerminalType,
   // Payroll
   PayrollStatus,
+  // KDS Inventory
+  ItemUnavailableReason,
+  // PO Quality & Stock Count
+  PoQualityStatus,
+  StockCountStatus,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -160,12 +170,28 @@ export {
   updateIngredientSchema,
   createStockMovementSchema,
   createRecipeSchema,
+  toggleMenuItemAvailabilitySchema,
+  quickWasteLogSchema,
+  createStockCountSchema,
+  approveStockCountSchema,
+  prepListQuerySchema,
+  expiringBatchesQuerySchema,
+  foodCostQuerySchema,
+  urgentRestockRequestSchema,
 } from "./schemas/inventory";
 export type {
   CreateIngredientInput,
   UpdateIngredientInput,
   CreateStockMovementInput,
   CreateRecipeInput,
+  ToggleMenuItemAvailabilityInput,
+  QuickWasteLogInput,
+  CreateStockCountInput,
+  ApproveStockCountInput,
+  PrepListQueryInput,
+  ExpiringBatchesQueryInput,
+  FoodCostQueryInput,
+  UrgentRestockRequestInput,
 } from "./schemas/inventory";
 
 // Week 5-6: Supplier
@@ -298,6 +324,10 @@ export type {
   NetworkConnectionConfig,
 } from "./schemas/printer";
 
+// Dashboard
+export { dashboardLimitSchema, dashboardDaysSchema } from "./schemas/dashboard";
+export type { DashboardLimitInput, DashboardDaysInput } from "./schemas/dashboard";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -341,6 +371,11 @@ export {
   getDeviceStatusLabel,
   // Payroll
   getPayrollStatusLabel,
+  // KDS Inventory
+  getItemUnavailableReasonLabel,
+  // PO Quality & Stock Count
+  getPoQualityStatusLabel,
+  getStockCountStatusLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====
