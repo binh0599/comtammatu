@@ -9,6 +9,10 @@ import {
   getMenuItemsForRecipe,
   getSuppliers,
   getPurchaseOrders,
+  getPrepList,
+  getStockCounts,
+  getExpiringBatches,
+  getPriceAnomalies,
 } from "./actions";
 import { IngredientsTab } from "./ingredients-tab";
 import { StockLevelsTab } from "./stock-levels-tab";
@@ -16,6 +20,10 @@ import { StockMovementsTab } from "./stock-movements-tab";
 import { RecipesTab } from "./recipes-tab";
 import { SuppliersTab } from "./suppliers-tab";
 import { PurchaseOrdersTab } from "./purchase-orders-tab";
+import { PrepListTab } from "./prep-list-tab";
+import { StockCountTab } from "./stock-count-tab";
+import { FoodCostTab } from "./food-cost-tab";
+import { ExpiryTab } from "./expiry-tab";
 
 export default async function InventoryPage() {
   const [
@@ -27,6 +35,10 @@ export default async function InventoryPage() {
     menuItems,
     suppliers,
     purchaseOrders,
+    prepList,
+    stockCounts,
+    expiringBatches,
+    priceAnomalies,
   ] = await Promise.all([
     getIngredients(),
     getBranches(),
@@ -36,6 +48,10 @@ export default async function InventoryPage() {
     getMenuItemsForRecipe(),
     getSuppliers(),
     getPurchaseOrders(),
+    getPrepList(),
+    getStockCounts(),
+    getExpiringBatches(),
+    getPriceAnomalies(),
   ]);
 
   return (
@@ -43,13 +59,17 @@ export default async function InventoryPage() {
       <Header breadcrumbs={[{ label: "Kho hàng" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Tabs defaultValue="ingredients" className="w-full">
-          <TabsList>
+          <TabsList className="flex-wrap">
             <TabsTrigger value="ingredients">Nguyên liệu</TabsTrigger>
             <TabsTrigger value="stock">Tồn kho</TabsTrigger>
             <TabsTrigger value="movements">Nhập/Xuất</TabsTrigger>
             <TabsTrigger value="recipes">Công thức</TabsTrigger>
             <TabsTrigger value="suppliers">Nhà cung cấp</TabsTrigger>
             <TabsTrigger value="purchase-orders">Đơn mua hàng</TabsTrigger>
+            <TabsTrigger value="prep-list">Chuẩn bị</TabsTrigger>
+            <TabsTrigger value="stock-count">Kiểm kho</TabsTrigger>
+            <TabsTrigger value="food-cost">Food Cost</TabsTrigger>
+            <TabsTrigger value="expiry">Hạn sử dụng</TabsTrigger>
           </TabsList>
           <TabsContent value="ingredients">
             <IngredientsTab ingredients={ingredients} />
@@ -84,7 +104,23 @@ export default async function InventoryPage() {
               suppliers={suppliers}
               ingredients={ingredients}
               branches={branches}
+              priceAnomalies={priceAnomalies}
             />
+          </TabsContent>
+          <TabsContent value="prep-list">
+            <PrepListTab initialData={prepList} />
+          </TabsContent>
+          <TabsContent value="stock-count">
+            <StockCountTab
+              stockCounts={stockCounts}
+              ingredients={ingredients}
+            />
+          </TabsContent>
+          <TabsContent value="food-cost">
+            <FoodCostTab />
+          </TabsContent>
+          <TabsContent value="expiry">
+            <ExpiryTab initialData={expiringBatches} />
           </TabsContent>
         </Tabs>
       </div>

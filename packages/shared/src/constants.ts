@@ -128,6 +128,7 @@ export type WasteReason = (typeof WASTE_REASONS)[number];
 export const PO_STATUSES = [
   "draft",
   "sent",
+  "partially_received",
   "received",
   "cancelled",
 ] as const;
@@ -135,7 +136,8 @@ export type PoStatus = (typeof PO_STATUSES)[number];
 
 export const VALID_PO_TRANSITIONS: Record<PoStatus, PoStatus[]> = {
   draft: ["sent", "cancelled"],
-  sent: ["received", "cancelled"],
+  sent: ["partially_received", "received", "cancelled"],
+  partially_received: ["received", "cancelled"],
   received: [],
   cancelled: [],
 };
@@ -264,6 +266,36 @@ export const PRINTER_ASSIGNED_TYPES = [
   "kds_station",
 ] as const;
 export type PrinterAssignedType = (typeof PRINTER_ASSIGNED_TYPES)[number];
+
+// ===== PO Quality Check =====
+
+export const PO_QUALITY_STATUSES = [
+  "pending",
+  "accepted",
+  "partial",
+  "rejected",
+] as const;
+export type PoQualityStatus = (typeof PO_QUALITY_STATUSES)[number];
+
+// ===== Stock Count =====
+
+export const STOCK_COUNT_STATUSES = [
+  "draft",
+  "submitted",
+  "approved",
+] as const;
+export type StockCountStatus = (typeof STOCK_COUNT_STATUSES)[number];
+
+// ===== 86'd / Menu Availability Reasons =====
+
+export const ITEM_UNAVAILABLE_REASONS = [
+  "out_of_stock",
+  "ingredient_shortage",
+  "equipment_issue",
+  "seasonal",
+  "other",
+] as const;
+export type ItemUnavailableReason = (typeof ITEM_UNAVAILABLE_REASONS)[number];
 
 // ===== Module-Specific Role Sets =====
 
