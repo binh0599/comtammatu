@@ -261,9 +261,25 @@
 ### Verification
 - [x] Typecheck, lint (0 errors), build all pass
 
+## Completed: Post-MVP Sprint 7 — Operational Polish (Phase 4)
+
+### GDPR Retention (already existed)
+- [x] Vercel cron job `/api/cron/process-deletions` — daily 3 AM UTC
+- [x] Supabase Edge Function `process-deletion-requests` — backup processor
+- [x] 30-day grace period on deletion requests
+- [x] Anonymize PII, null order refs, delete loyalty/feedback, audit log
+
+### Auto-Tier Upgrade
+- [x] Inline upgrade in `adjustLoyaltyPoints` — after earning points, auto-promote to highest qualifying tier
+- [x] Batch cron `/api/cron/upgrade-tiers` — daily 4 AM UTC, checks all active customers against tier thresholds
+- [x] vercel.json updated with upgrade-tiers schedule
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
 ---
 
-## Remaining Roadmap
+## Remaining Roadmap (All Priorities Complete)
 
 ### Priority 1 — Offline & Resilience (Completed)
 ```text
@@ -289,14 +305,9 @@
 - [x] Staff performance metrics — role-specific KPIs (waiter/cashier/chef), attendance rate
 ```
 
-### Priority 4 — Operational Polish
+### Priority 4 — Operational Polish (Completed)
 ```text
-- [ ] Retention cron jobs (auto-delete after 30-day GDPR grace period)
-- [ ] Auto-tier upgrade triggers (auto-promote on points threshold)
-- [ ] VNPay payment integration (if Momo QR insufficient)
-```
-
-### Excluded (not planned)
-```text
-- [--] VNPay — Momo QR sufficient for current operations
+- [x] Retention cron jobs — already implemented (process-deletions cron at 3 AM UTC, 30-day grace period)
+- [x] Auto-tier upgrade triggers — inline upgrade in adjustLoyaltyPoints + daily batch cron at 4 AM UTC
+- [--] VNPay — excluded, Momo QR sufficient for current operations
 ```
