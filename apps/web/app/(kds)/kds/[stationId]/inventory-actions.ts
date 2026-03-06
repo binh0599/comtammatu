@@ -11,6 +11,8 @@ import {
   toggleMenuItemAvailabilitySchema,
   quickWasteLogSchema,
   urgentRestockRequestSchema,
+  prepListQuerySchema,
+  expiringBatchesQuerySchema,
 } from "@comtammatu/shared";
 
 // ===== Portion Counter =====
@@ -198,17 +200,19 @@ async function _logWaste(
 
   if (movementError) return safeDbErrorResult(movementError, "db");
 
-  // 3. Deduct from stock_levels (optimistic locking)
-  const { data: currentStock } = await supabase
-    .from("stock_levels")
-    .select("id, quantity, version")
-    .eq("ingredient_id", ingredientId)
-    .eq("branch_id", profile.branch_id)
-    .single();
+  // 3. Deduct from stock_levels (optimistic locking with retry)
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data: currentStock, error: selectErr } = await supabase
+      .from("stock_levels")
+      .select("id, quantity, version")
+      .eq("ingredient_id", ingredientId)
+      .eq("branch_id", profile.branch_id)
+      .single();
 
-  if (currentStock) {
+    if (selectErr || !currentStock) break; // No stock record to deduct from
+
     const newQty = Math.max(0, Number(currentStock.quantity) - quantity);
-    const { error: updateError } = await supabase
+    const { data: updated, error: updateError } = await supabase
       .from("stock_levels")
       .update({
         quantity: newQty,
@@ -216,9 +220,14 @@ async function _logWaste(
         updated_at: new Date().toISOString(),
       })
       .eq("id", currentStock.id)
-      .eq("version", currentStock.version);
+      .eq("version", currentStock.version)
+      .select("id");
 
     if (updateError) return safeDbErrorResult(updateError, "db");
+    if (updated && updated.length > 0) break;
+    if (attempt === 2) {
+      return { error: "Xung đột cập nhật tồn kho, vui lòng thử lại" };
+    }
   }
 
   revalidatePath("/kds");
@@ -282,8 +291,13 @@ async function _getPrepList(targetPortions?: number): Promise<PrepListItem[]> {
 export async function getPrepList(
   targetPortions?: number,
 ): Promise<PrepListItem[]> {
+  const parsed = prepListQuerySchema.safeParse({ target_portions: targetPortions });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
+  }
+
   try {
-    return await _getPrepList(targetPortions);
+    return await _getPrepList(parsed.data.target_portions);
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
@@ -325,8 +339,13 @@ async function _getExpiringBatches(
 export async function getExpiringBatches(
   daysAhead?: number,
 ): Promise<ExpiringBatch[]> {
+  const parsed = expiringBatchesQuerySchema.safeParse({ days_ahead: daysAhead });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
+  }
+
   try {
-    return await _getExpiringBatches(daysAhead);
+    return await _getExpiringBatches(parsed.data.days_ahead);
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     const result = handleServerActionError(error);
@@ -372,6 +391,31 @@ async function _requestUrgentRestock(input: {
 }) {
   const { supabase, profile, userId } = await getKdsBranchContext(KDS_ROLES);
 
+  // Verify supplier belongs to tenant
+  const { data: supplier, error: supplierErr } = await supabase
+    .from("suppliers")
+    .select("id, tenant_id")
+    .eq("id", input.supplier_id)
+    .eq("tenant_id", profile.tenant_id)
+    .single();
+
+  if (supplierErr || !supplier) {
+    return { error: "Nhà cung cấp không tồn tại hoặc không thuộc hệ thống" };
+  }
+
+  // Verify all ingredients belong to tenant
+  const ingredientIds = input.items.map((i) => i.ingredient_id);
+  const { data: ingredients, error: ingErr } = await supabase
+    .from("ingredients")
+    .select("id, tenant_id")
+    .in("id", ingredientIds)
+    .eq("tenant_id", profile.tenant_id);
+
+  if (ingErr) return safeDbErrorResult(ingErr, "db");
+  if (!ingredients || ingredients.length !== ingredientIds.length) {
+    return { error: "Một hoặc nhiều nguyên liệu không thuộc hệ thống" };
+  }
+
   const total = 0; // Chef doesn't know prices; admin fills in later
 
   const { data: po, error: poError } = await supabase
@@ -408,7 +452,8 @@ async function _requestUrgentRestock(input: {
       .delete()
       .eq("id", po.id);
     if (cleanupError) {
-      return { error: `Lỗi tạo mục PO và không thể dọn dẹp PO #${po.id}: ${cleanupError.message}` };
+      console.error(`Failed to clean up PO #${po.id} after items insert failure:`, cleanupError);
+      return { error: "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ." };
     }
     return safeDbErrorResult(itemsError, "db");
   }

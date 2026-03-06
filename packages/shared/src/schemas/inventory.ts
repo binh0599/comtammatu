@@ -82,10 +82,22 @@ export const createStockCountSchema = z.object({
         notes: z.string().max(200).optional().or(z.literal("")),
       })
     )
-    .min(1, "Phải kiểm đếm ít nhất 1 nguyên liệu"),
+    .min(1, "Phải kiểm đếm ít nhất 1 nguyên liệu")
+    .refine(
+      (items) => {
+        const ids = items.map((i) => i.ingredient_id);
+        return new Set(ids).size === ids.length;
+      },
+      { message: "ingredient_id phải là duy nhất trong danh sách" },
+    ),
   notes: z.string().max(500).optional().or(z.literal("")),
 });
 export type CreateStockCountInput = z.infer<typeof createStockCountSchema>;
+
+export const approveStockCountSchema = z.object({
+  count_id: z.coerce.number().int().positive("ID phiếu kiểm kho không hợp lệ"),
+});
+export type ApproveStockCountInput = z.infer<typeof approveStockCountSchema>;
 
 // ===== Urgent Restock Request (from KDS) =====
 
@@ -103,10 +115,29 @@ export const urgentRestockRequestSchema = z.object({
 });
 export type UrgentRestockRequestInput = z.infer<typeof urgentRestockRequestSchema>;
 
+// ===== Prep List Query =====
+
+export const prepListQuerySchema = z.object({
+  target_portions: z.coerce.number().int().min(0, "Số phần phải >= 0").optional(),
+});
+export type PrepListQueryInput = z.infer<typeof prepListQuerySchema>;
+
+// ===== Expiring Batches Query =====
+
+export const expiringBatchesQuerySchema = z.object({
+  days_ahead: z.coerce.number().int().positive("Số ngày phải > 0").optional(),
+});
+export type ExpiringBatchesQueryInput = z.infer<typeof expiringBatchesQuerySchema>;
+
 // ===== Food Cost Report =====
 
-export const foodCostQuerySchema = z.object({
-  date_from: z.string().min(1, "Chọn ngày bắt đầu").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
-  date_to: z.string().min(1, "Chọn ngày kết thúc").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
-});
+export const foodCostQuerySchema = z
+  .object({
+    date_from: z.string().min(1, "Chọn ngày bắt đầu").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
+    date_to: z.string().min(1, "Chọn ngày kết thúc").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
+  })
+  .refine(
+    (data) => data.date_from <= data.date_to,
+    { message: "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc", path: ["date_from"] },
+  );
 export type FoodCostQueryInput = z.infer<typeof foodCostQuerySchema>;

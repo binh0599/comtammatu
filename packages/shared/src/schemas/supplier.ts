@@ -40,6 +40,7 @@ export type CreatePurchaseOrderInput = z.infer<
 const receiveItemSchema = z
   .object({
     po_item_id: z.coerce.number().int().positive(),
+    ordered_qty: z.coerce.number().positive("Số lượng đặt phải > 0"),
     received_qty: z.coerce.number().min(0, "Số lượng nhận phải >= 0"),
     reject_qty: z.coerce.number().min(0).default(0),
     reject_reason: z.string().max(200).optional().or(z.literal("")),
@@ -51,8 +52,8 @@ const receiveItemSchema = z
     expiry_date: z.string().optional().or(z.literal("")),
   })
   .refine(
-    (data) => data.reject_qty <= data.received_qty + data.reject_qty,
-    { message: "Số lượng từ chối không thể vượt quá tổng đặt hàng", path: ["reject_qty"] },
+    (data) => data.reject_qty + data.received_qty <= data.ordered_qty,
+    { message: "Tổng nhận + từ chối không thể vượt quá số lượng đặt", path: ["reject_qty"] },
   )
   .refine(
     (data) => !(data.quality_status === "accepted" && data.reject_qty > 0),

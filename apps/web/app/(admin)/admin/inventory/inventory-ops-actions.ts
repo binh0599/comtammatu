@@ -6,6 +6,9 @@ import {
   withServerAction,
   withServerQuery,
   createStockCountSchema,
+  approveStockCountSchema,
+  prepListQuerySchema,
+  expiringBatchesQuerySchema,
   foodCostQuerySchema,
   safeDbError,
   safeDbErrorResult,
@@ -15,13 +18,18 @@ import { revalidatePath } from "next/cache";
 // ===== Prep List =====
 
 async function _getPrepList(targetPortions?: number) {
+  const parsed = prepListQuerySchema.safeParse({ target_portions: targetPortions });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
+  }
+
   const { supabase, branchId } = await getActionContext();
 
   if (!branchId) return [];
 
   const { data, error } = await supabase.rpc("calculate_prep_list", {
     p_branch_id: branchId,
-    p_target_portions: targetPortions ?? 0,
+    p_target_portions: parsed.data.target_portions ?? 0,
   });
 
   if (error) throw safeDbError(error, "db");
@@ -141,7 +149,11 @@ async function _createStockCount(input: {
     .from("stock_count_items")
     .insert(countItems);
 
-  if (itemsError) return safeDbErrorResult(itemsError, "db");
+  if (itemsError) {
+    // Clean up orphaned header
+    await supabase.from("stock_counts").delete().eq("id", count.id);
+    return safeDbErrorResult(itemsError, "db");
+  }
 
   revalidatePath("/admin/inventory");
   return { error: null, success: true, count_id: count.id };
@@ -150,14 +162,21 @@ async function _createStockCount(input: {
 export const createStockCount = withServerAction(_createStockCount);
 
 async function _approveStockCount(countId: number) {
+  const parsed = approveStockCountSchema.safeParse({ count_id: countId });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+  }
+
   const { supabase, branchId, userId } = await getActionContext();
   if (!branchId) return { error: "Chưa chọn chi nhánh" };
+
+  const validatedCountId = parsed.data.count_id;
 
   // Fetch count + items
   const { data: count, error: countError } = await supabase
     .from("stock_counts")
     .select("id, status, branch_id")
-    .eq("id", countId)
+    .eq("id", validatedCountId)
     .eq("branch_id", branchId)
     .single();
 
@@ -169,23 +188,11 @@ async function _approveStockCount(countId: number) {
   const { data: items, error: itemsError } = await supabase
     .from("stock_count_items")
     .select("ingredient_id, system_qty, actual_qty")
-    .eq("stock_count_id", countId);
+    .eq("stock_count_id", validatedCountId);
 
   if (itemsError) return safeDbErrorResult(itemsError, "db");
 
-  // Approve the count
-  const { error: updateError } = await supabase
-    .from("stock_counts")
-    .update({
-      status: "approved",
-      approved_by: userId,
-      approved_at: new Date().toISOString(),
-    })
-    .eq("id", countId);
-
-  if (updateError) return safeDbErrorResult(updateError, "db");
-
-  // Apply adjustments for items with variance
+  // Apply adjustments FIRST, before marking as approved
   for (const item of items ?? []) {
     const typed = item as { ingredient_id: number; system_qty: number; actual_qty: number };
     const variance = typed.actual_qty - typed.system_qty;
@@ -197,7 +204,7 @@ async function _approveStockCount(countId: number) {
       branch_id: branchId,
       type: "adjust",
       quantity: Math.abs(variance),
-      notes: `Kiểm kho #${countId}: ${variance > 0 ? "thừa" : "thiếu"} ${Math.abs(variance).toFixed(2)}`,
+      notes: `Kiểm kho #${validatedCountId}: ${variance > 0 ? "thừa" : "thiếu"} ${Math.abs(variance).toFixed(2)}`,
       created_by: userId,
     });
 
@@ -205,14 +212,23 @@ async function _approveStockCount(countId: number) {
 
     // Update stock_levels to match actual (with version check + retry)
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { data: existing } = await supabase
+      const { data: existing, error: selectErr } = await supabase
         .from("stock_levels")
         .select("id, version")
         .eq("ingredient_id", typed.ingredient_id)
         .eq("branch_id", branchId)
         .single();
 
-      if (!existing) break;
+      if (selectErr || !existing) {
+        // No stock_levels row exists — upsert a new one
+        const { error: insertErr } = await supabase.from("stock_levels").insert({
+          ingredient_id: typed.ingredient_id,
+          branch_id: branchId,
+          quantity: typed.actual_qty,
+        });
+        if (insertErr) return safeDbErrorResult(insertErr, "db");
+        break;
+      }
 
       const { data: updated, error: updateErr } = await supabase
         .from("stock_levels")
@@ -232,6 +248,18 @@ async function _approveStockCount(countId: number) {
     }
   }
 
+  // Only approve AFTER all adjustments succeeded
+  const { error: updateError } = await supabase
+    .from("stock_counts")
+    .update({
+      status: "approved",
+      approved_by: userId,
+      approved_at: new Date().toISOString(),
+    })
+    .eq("id", validatedCountId);
+
+  if (updateError) return safeDbErrorResult(updateError, "db");
+
   revalidatePath("/admin/inventory");
   return { error: null, success: true };
 }
@@ -241,11 +269,17 @@ export const approveStockCount = withServerAction(_approveStockCount);
 // ===== Expiry Tracking =====
 
 async function _getExpiringBatches(daysAhead: number = 7) {
+  const parsed = expiringBatchesQuerySchema.safeParse({ days_ahead: daysAhead });
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
+  }
+
   const { supabase, branchId } = await getActionContext();
   if (!branchId) return [];
 
+  const validatedDays = parsed.data.days_ahead ?? 7;
   const futureDate = new Date();
-  futureDate.setDate(futureDate.getDate() + daysAhead);
+  futureDate.setDate(futureDate.getDate() + validatedDays);
 
   const { data, error } = await supabase
     .from("stock_batches")

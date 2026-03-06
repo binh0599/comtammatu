@@ -54,10 +54,10 @@ export function ReceiveDialog({
     }> = {};
     for (const item of po.purchase_order_items) {
       initial[item.id] = {
-        received_qty: String(item.quantity),
-        reject_qty: "0",
-        reject_reason: "",
-        quality_status: "accepted",
+        received_qty: String(item.received_qty != null && item.received_qty > 0 ? item.received_qty : item.quantity),
+        reject_qty: String(item.reject_qty ?? 0),
+        reject_reason: item.reject_reason ?? "",
+        quality_status: item.quality_status ?? "accepted",
         expiry_date: "",
       };
     }
@@ -128,6 +128,7 @@ export function ReceiveDialog({
         const data = items[item.id];
         return {
           po_item_id: item.id,
+          ordered_qty: item.quantity,
           received_qty: parseFloat(data?.received_qty || "0") || 0,
           reject_qty: parseFloat(data?.reject_qty || "0") || 0,
           reject_reason: data?.reject_reason || undefined,

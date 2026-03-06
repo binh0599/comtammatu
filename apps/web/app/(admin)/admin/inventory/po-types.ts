@@ -63,6 +63,7 @@ export interface ReceivePoData {
   po_id: number;
   items: {
     po_item_id: number;
+    ordered_qty: number;
     received_qty: number;
     reject_qty: number;
     reject_reason?: string;

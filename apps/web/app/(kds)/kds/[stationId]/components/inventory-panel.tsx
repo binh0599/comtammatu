@@ -169,17 +169,21 @@ function WasteLogDialog({
   function handleSubmit() {
     if (!ingredientId || !quantity || !reason) return;
     startTransition(async () => {
-      await onSubmit(
-        Number(ingredientId),
-        Number(quantity),
-        reason as "expired" | "spoiled" | "overproduction" | "other",
-        notes || undefined,
-      );
-      setIngredientId("");
-      setQuantity("");
-      setReason("");
-      setNotes("");
-      onOpenChange(false);
+      try {
+        await onSubmit(
+          Number(ingredientId),
+          Number(quantity),
+          reason as "expired" | "spoiled" | "overproduction" | "other",
+          notes || undefined,
+        );
+        setIngredientId("");
+        setQuantity("");
+        setReason("");
+        setNotes("");
+        onOpenChange(false);
+      } catch {
+        // Keep form state intact on error; toast is handled by the caller
+      }
     });
   }
 
@@ -474,6 +478,11 @@ export function InventoryPanel({
     (p) => !p.is_available_global || !p.is_available_branch,
   );
 
+  // Deduplicate alert count (items can be both low-stock and unavailable)
+  const alertIds = new Set<number>();
+  for (const p of lowStockItems) alertIds.add(p.menu_item_id);
+  for (const p of unavailableItems) alertIds.add(p.menu_item_id);
+
   const handleToggle = useCallback(
     (menuItemId: number, isAvailable: boolean, reason?: string) => {
       startTransition(async () => {
@@ -496,7 +505,6 @@ export function InventoryPanel({
         setPortions(updated);
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable module import
     [],
   );
 
@@ -510,19 +518,18 @@ export function InventoryPanel({
       const result = await logWaste(ingredientId, quantity, reason, notes);
       if (result.error) {
         toast.error(result.error);
-        return;
+        throw new Error(result.error);
       }
       toast.success("Đã ghi nhận hao hụt");
       // Refresh portions
       const updated = await getMenuPortions();
       setPortions(updated);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- toast is a stable module import
     [],
   );
 
   // Summary badge count
-  const alertCount = lowStockItems.length + unavailableItems.length;
+  const alertCount = alertIds.size;
 
   return (
     <>

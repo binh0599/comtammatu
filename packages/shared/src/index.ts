@@ -168,6 +168,9 @@ export {
   toggleMenuItemAvailabilitySchema,
   quickWasteLogSchema,
   createStockCountSchema,
+  approveStockCountSchema,
+  prepListQuerySchema,
+  expiringBatchesQuerySchema,
   foodCostQuerySchema,
   urgentRestockRequestSchema,
 } from "./schemas/inventory";
@@ -179,6 +182,9 @@ export type {
   ToggleMenuItemAvailabilityInput,
   QuickWasteLogInput,
   CreateStockCountInput,
+  ApproveStockCountInput,
+  PrepListQueryInput,
+  ExpiringBatchesQueryInput,
   FoodCostQueryInput,
   UrgentRestockRequestInput,
 } from "./schemas/inventory";
