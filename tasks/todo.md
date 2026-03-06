@@ -229,6 +229,40 @@
 
 ---
 
+## Completed: Post-MVP Sprint 6 — Growth Features (Phase 3)
+
+### Campaign Management (/admin/campaigns)
+- [x] Server Actions — CRUD, schedule, send with target segment matching
+- [x] Admin UI — campaign table, create/edit dialog, schedule dialog, stats cards
+- [x] Loading skeleton
+
+### Customer Online Ordering (/customer)
+- [x] Cart context with localStorage persistence
+- [x] Cart drawer — quantity controls, voucher code input, order type selector
+- [x] Place order action — price lookup, tax/service charge, order creation
+- [x] Order confirmation page (/customer/orders/[orderId])
+- [x] Menu browser updated with "Add to cart" buttons
+
+### Multi-Branch Analytics (/admin/reports)
+- [x] Branch analytics — revenue, orders, avg ticket per branch
+- [x] Peak hours heatmap — hourly x day-of-week order volume
+- [x] Category mix breakdown per branch
+
+### Inventory Forecasting (/admin/inventory)
+- [x] Demand forecast — 30-day historical usage -> projected need
+- [x] Days-until-stockout with color-coded urgency
+- [x] Forecast tab with days-ahead selector and branch filter
+
+### Staff Performance (/admin/hr)
+- [x] Role-specific KPIs — waiters (orders), cashiers (payments), chefs (prep time)
+- [x] Attendance rate tracking
+- [x] Performance tab with date range and role filters
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+---
+
 ## Remaining Roadmap
 
 ### Priority 1 — Offline & Resilience (Completed)
@@ -246,13 +280,13 @@
 - [x] Admin settings page — tenant info, tax/service charge, branch management
 ```
 
-### Priority 3 — Growth Features
+### Priority 3 — Growth Features (Completed)
 ```text
-- [ ] Campaigns & notifications (email/SMS/push marketing)
-- [ ] Customer ordering (online menu -> place order via PWA)
-- [ ] Multi-branch reporting & analytics (beyond current comparison)
-- [ ] Inventory forecasting (based on order history)
-- [ ] Staff performance metrics
+- [x] Campaigns & notifications — admin CRUD, schedule/send, target segments
+- [x] Customer ordering — cart, checkout, place order via PWA, order confirmation
+- [x] Multi-branch analytics — branch comparison, peak hours heatmap, category mix
+- [x] Inventory forecasting — demand prediction, days-until-stockout, urgency badges
+- [x] Staff performance metrics — role-specific KPIs (waiter/cashier/chef), attendance rate
 ```
 
 ### Priority 4 — Operational Polish
