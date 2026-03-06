@@ -273,6 +273,7 @@ export {
   createPayrollPeriodSchema,
   payrollPeriodIdSchema,
   updatePayrollEntrySchema,
+  isRealDate,
 } from "./schemas/payroll";
 export type {
   CreatePayrollPeriodInput,

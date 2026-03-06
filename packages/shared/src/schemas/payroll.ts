@@ -3,7 +3,7 @@ import { z } from "zod";
 const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 /** Verify that a YYYY-MM-DD string is a real calendar date (rejects e.g. 2023-02-30). */
-function isRealDate(d: string): boolean {
+export function isRealDate(d: string): boolean {
   const [y, m, day] = d.split("-").map(Number);
   if (y === undefined || m === undefined || day === undefined) return false;
   const dt = new Date(Date.UTC(y, m - 1, day));

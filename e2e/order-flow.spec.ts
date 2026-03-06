@@ -99,7 +99,7 @@ test.describe("Order Flow", () => {
 
     // Scope to the row/card for this order
     const orderRow = page
-      .locator("[data-order-row], [data-order-id], tr, [data-testid='order-card']")
+      .locator("[data-order-row], [data-order-id], [data-testid='order-card']")
       .filter({ hasText: orderNumber })
       .first();
     await expect(orderRow).toBeVisible({ timeout: 10_000 });

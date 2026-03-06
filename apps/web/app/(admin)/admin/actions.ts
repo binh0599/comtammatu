@@ -1,6 +1,7 @@
 "use server";
 
 import "@/lib/server-bootstrap";
+import { z } from "zod";
 import {
   ActionError,
   getAdminContext,
@@ -10,6 +11,9 @@ import {
   safeDbError,
   dateRangeSchema,
 } from "@comtammatu/shared";
+
+const limitSchema = z.coerce.number().int().min(1).max(100).default(10);
+const daysSchema = z.coerce.number().int().min(1).max(365).default(7);
 
 // =====================
 // Dashboard Stats
@@ -100,6 +104,7 @@ export interface RecentOrder {
 }
 
 async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
+  const safeLimit = limitSchema.parse(limit);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
@@ -118,7 +123,7 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .select("id, order_number, status, total, type, created_at, tables(number)")
     .in("branch_id", branchIds)
     .order("created_at", { ascending: false })
-    .limit(limit);
+    .limit(safeLimit);
 
   if (orderError)
     throw safeDbError(orderError, "db");
@@ -147,6 +152,7 @@ export interface TopSellingItem {
 }
 
 async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
+  const safeLimit = limitSchema.parse(limit);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data: branches, error: branchError } = await supabase
@@ -206,7 +212,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
 
   return Array.from(aggregated.values())
     .sort((a, b) => b.total_qty - a.total_qty)
-    .slice(0, limit);
+    .slice(0, safeLimit);
 }
 
 export const getTopSellingItems = withServerQuery(_getTopSellingItems);
@@ -257,6 +263,7 @@ export const getOrderStatusCounts = withServerQuery(_getOrderStatusCounts);
 // =====================
 
 async function _getRevenueTrend(days: number = 7) {
+  const safeDays = daysSchema.parse(days);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const branchIds =
@@ -266,7 +273,7 @@ async function _getRevenueTrend(days: number = 7) {
   if (branchIds.length === 0) return [];
 
   const startDate = new Date();
-  startDate.setDate(startDate.getDate() - days + 1);
+  startDate.setDate(startDate.getDate() - safeDays + 1);
   startDate.setHours(0, 0, 0, 0);
 
   const { data: orders } = await supabase
@@ -278,7 +285,7 @@ async function _getRevenueTrend(days: number = 7) {
 
   const dateMap = new Map<string, { revenue: number; orders: number }>();
 
-  for (let i = 0; i < days; i++) {
+  for (let i = 0; i < safeDays; i++) {
     const d = new Date(startDate);
     d.setDate(d.getDate() + i);
     const key = d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
