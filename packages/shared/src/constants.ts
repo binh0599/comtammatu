@@ -325,3 +325,24 @@ export const EMPLOYEE_PORTAL_ROLES = [...STAFF_ROLES] as const;
 
 /** Roles allowed to manage CRM */
 export const CRM_ROLES = ["manager", "owner"] as const;
+
+// ===== Campaigns =====
+
+export const CAMPAIGN_TYPES = ["email", "sms", "push"] as const;
+export type CampaignType = (typeof CAMPAIGN_TYPES)[number];
+
+export const CAMPAIGN_STATUSES = [
+  "draft",
+  "scheduled",
+  "sent",
+  "completed",
+] as const;
+export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
+
+export const NOTIFICATION_CHANNELS = [
+  "in_app",
+  "push",
+  "email",
+  "sms",
+] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];

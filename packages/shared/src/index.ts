@@ -61,6 +61,10 @@ export {
   // PO Quality & Stock Count
   PO_QUALITY_STATUSES,
   STOCK_COUNT_STATUSES,
+  // Campaigns
+  CAMPAIGN_TYPES,
+  CAMPAIGN_STATUSES,
+  NOTIFICATION_CHANNELS,
 } from "./constants";
 
 export type {
@@ -111,6 +115,10 @@ export type {
   // PO Quality & Stock Count
   PoQualityStatus,
   StockCountStatus,
+  // Campaigns
+  CampaignType,
+  CampaignStatus,
+  NotificationChannel,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -328,6 +336,25 @@ export type {
 export { dashboardLimitSchema, dashboardDaysSchema } from "./schemas/dashboard";
 export type { DashboardLimitInput, DashboardDaysInput } from "./schemas/dashboard";
 
+// Campaign & Analytics (Phase 3)
+export {
+  createCampaignSchema,
+  updateCampaignSchema,
+  customerPlaceOrderSchema,
+  customerOrderItemSchema,
+  analyticsQuerySchema,
+  forecastQuerySchema,
+  staffPerformanceQuerySchema,
+} from "./schemas/campaign";
+export type {
+  CreateCampaignInput,
+  UpdateCampaignInput,
+  CustomerPlaceOrderInput,
+  AnalyticsQueryInput,
+  ForecastQueryInput,
+  StaffPerformanceQueryInput,
+} from "./schemas/campaign";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -376,6 +403,10 @@ export {
   // PO Quality & Stock Count
   getPoQualityStatusLabel,
   getStockCountStatusLabel,
+  // Campaigns
+  getCampaignTypeLabel,
+  getCampaignStatusLabel,
+  getNotificationChannelLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====

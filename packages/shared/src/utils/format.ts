@@ -290,3 +290,24 @@ export const getDeviceStatusLabel = createLabelMapper({
   approved: "Đã duyệt",
   rejected: "Từ chối",
 });
+
+// ===== Campaigns =====
+export const getCampaignTypeLabel = createLabelMapper({
+  email: "Email",
+  sms: "SMS",
+  push: "Thông báo đẩy",
+});
+
+export const getCampaignStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  scheduled: "Đã lên lịch",
+  sent: "Đã gửi",
+  completed: "Hoàn tất",
+});
+
+export const getNotificationChannelLabel = createLabelMapper({
+  in_app: "Trong ứng dụng",
+  push: "Thông báo đẩy",
+  email: "Email",
+  sms: "SMS",
+});
