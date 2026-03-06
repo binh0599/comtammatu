@@ -1,11 +1,36 @@
 -- ============================================================
 -- Migration: Payroll Module
 -- Date: 2026-03-05
--- Description: Add payroll_periods and payroll_entries tables
+-- Description: Replace old payroll_periods + payroll_items
+--              with new payroll_periods + payroll_entries tables.
+--
+-- The initial schema (20260228000000) created payroll_periods
+-- (with period_start/period_end columns) and payroll_items.
+-- This migration replaces both with the updated schema the
+-- application code expects.
 -- ============================================================
 
 -- ============================================================
--- TABLE: payroll_periods
+-- DROP old tables + policies (from initial schema)
+-- ============================================================
+
+-- Drop old RLS policies first (they reference the old tables)
+DROP POLICY IF EXISTS "payroll_items_all_hr" ON payroll_items;
+DROP POLICY IF EXISTS "payroll_items_select_hr" ON payroll_items;
+DROP POLICY IF EXISTS "payroll_periods_all_hr" ON payroll_periods;
+DROP POLICY IF EXISTS "payroll_periods_select_hr" ON payroll_periods;
+
+-- Drop old indexes
+DROP INDEX IF EXISTS idx_payroll_periods_date_range;
+DROP INDEX IF EXISTS idx_payroll_items_period_id;
+DROP INDEX IF EXISTS idx_payroll_items_employee_id;
+
+-- Drop old tables (payroll_items references payroll_periods, so drop it first)
+DROP TABLE IF EXISTS payroll_items;
+DROP TABLE IF EXISTS payroll_periods;
+
+-- ============================================================
+-- TABLE: payroll_periods (new schema)
 -- ============================================================
 CREATE TABLE payroll_periods (
   id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
