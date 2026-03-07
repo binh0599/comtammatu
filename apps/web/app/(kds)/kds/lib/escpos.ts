@@ -16,6 +16,15 @@ const LF = 0x0a;
 
 // ===== Helpers =====
 
+/**
+ * Compute the printed display width of a string for monospaced thermal printers.
+ * Normalizes to NFC to collapse combining marks (e.g., Vietnamese diacritics)
+ * into precomposed characters, then counts Unicode code points.
+ */
+function getDisplayWidth(str: string): number {
+  return [...str.normalize("NFC")].length;
+}
+
 function bytes(...values: number[]): Uint8Array {
   return new Uint8Array(values);
 }
@@ -33,9 +42,12 @@ function concat(...buffers: Uint8Array[]): Uint8Array {
 
 // ===== Low-level command functions =====
 
-/** Initialize printer -- ESC @ */
+/** Initialize printer -- ESC @ + select UTF-8 charset (FS C 0 0 48 for multilingual UTF-8 mode) */
 export function escposInit(): Uint8Array {
-  return bytes(ESC, 0x40);
+  return concat(
+    bytes(ESC, 0x40),       // ESC @ — hardware reset
+    bytes(0x1c, 0x43, 0x00, 0x00, 48), // FS C 0 0 48 — UTF-8 multilingual mode
+  );
 }
 
 /** Paper cut (full cut) -- GS V 0 */
@@ -72,9 +84,9 @@ export function escposFeedLines(n: number): Uint8Array {
   return new Uint8Array(feeds);
 }
 
-/** Encode text as UTF-8 bytes */
+/** Encode text as NFC-normalized UTF-8 bytes for ESC/POS printers */
 export function escposText(text: string): Uint8Array {
-  return new TextEncoder().encode(text);
+  return new TextEncoder().encode(text.normalize("NFC"));
 }
 
 /** Print a dashed separator line */
@@ -107,7 +119,7 @@ export function escposTextLn(text: string): Uint8Array {
  * padded with spaces to fill lineWidth.
  */
 function escposColumns(left: string, right: string, lineWidth: number): Uint8Array {
-  const spaces = Math.max(1, lineWidth - left.length - right.length);
+  const spaces = Math.max(1, lineWidth - getDisplayWidth(left) - getDisplayWidth(right));
   return escposTextLn(left + " ".repeat(spaces) + right);
 }
 
@@ -206,7 +218,7 @@ export function buildKdsTicket(ticket: {
   return concat(...parts);
 }
 
-const PAYMENT_METHOD_LABELS: Record<string, string> = {
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
   cash: "TIEN MAT",
   card: "THE",
   ewallet: "VI DIEN TU",
@@ -230,6 +242,7 @@ export function buildPosReceipt(receipt: {
   cashierName: string;
   createdAt: string;
   paperWidth: number;
+  wifiPassword?: string;
 }): Uint8Array {
   const lineWidth = receipt.paperWidth === 58 ? 32 : 42;
   const parts: Uint8Array[] = [];
@@ -308,7 +321,9 @@ export function buildPosReceipt(receipt: {
   parts.push(escposBold(true));
   parts.push(escposTextLn("Cam on va hen gap lai!"));
   parts.push(escposBold(false));
-  parts.push(escposTextLn("Pass WiFi: comtammatu"));
+  if (receipt.wifiPassword) {
+    parts.push(escposTextLn(`Pass WiFi: ${receipt.wifiPassword}`));
+  }
   parts.push(escposFeedLines(1));
 
   // Cut

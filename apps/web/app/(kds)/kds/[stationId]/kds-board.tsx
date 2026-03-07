@@ -136,7 +136,7 @@ export function KdsBoard({
           );
       }, printerConfig.print_delay_ms);
     },
-    [printerConfig, stationName, serialPrinter],
+    [printerConfig, stationName, serialPrinter.status, serialPrinter.print],
   );
 
   useEffect(() => {
