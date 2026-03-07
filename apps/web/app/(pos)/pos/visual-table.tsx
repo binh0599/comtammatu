@@ -150,7 +150,7 @@ export function VisualTable({
       className={cn(
         "group relative flex flex-col items-center rounded-xl border p-2 transition-all",
         tableStatusBg[status] ?? "bg-gray-50 border-gray-300",
-        isClickable && "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]",
+        isClickable && "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         !isClickable && "cursor-default opacity-60",
       )}
     >
@@ -233,7 +233,7 @@ export function VisualTable({
             >
               <span
                 className={cn(
-                  "inline-block h-1.5 w-1.5 rounded-full",
+                  "inline-block size-1.5 rounded-full",
                   orderStatusDot[order.status] ?? "bg-gray-400",
                 )}
               />

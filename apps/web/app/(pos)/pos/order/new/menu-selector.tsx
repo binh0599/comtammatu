@@ -245,6 +245,7 @@ export function MenuSelector({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="pl-9"
+          aria-label="Tìm kiếm món ăn"
         />
       </div>
 
@@ -314,7 +315,7 @@ export function MenuSelector({
                         <div key={v.id} className="flex items-center gap-1">
                           <button
                             onClick={() => handleAdd(item, v.id)}
-                            className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                            className={`cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                               vQty > 0
                                 ? "bg-primary text-primary-foreground"
                                 : "border border-input bg-background"
@@ -330,9 +331,9 @@ export function MenuSelector({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="size-6"
+                              className="size-8"
                               onClick={() => openNotesDialog(item.id, v.id)}
-                              aria-label="Ghi chú"
+                              aria-label={`Ghi chú cho ${item.name} ${v.name}`}
                               title="Ghi chú cho bếp"
                             >
                               <MessageSquare className={`size-3 ${vCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
@@ -384,7 +385,7 @@ export function MenuSelector({
                     size="icon"
                     className="size-8"
                     onClick={() => openNotesDialog(item.id, null)}
-                    aria-label="Ghi chú"
+                    aria-label={`Ghi chú cho ${item.name}`}
                     title="Ghi chú cho bếp"
                   >
                     <MessageSquare className={`size-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />

@@ -416,6 +416,7 @@ function RestockRequestDialog({
                     size="sm"
                     className="px-2 text-red-500"
                     onClick={() => removeItem(item._key)}
+                    aria-label="Xóa dòng"
                   >
                     X
                   </Button>

@@ -141,23 +141,23 @@ export function KdsBoard({
               {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>
           )}
-          <div className="hidden gap-2 md:flex" aria-label="Chú thích màu">
+          <div className="hidden gap-2 md:flex" role="group" aria-label="Chú thích thời gian">
             <span className="flex items-center gap-1 text-xs text-green-700">
-              <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
+              <span className="size-2 rounded-full bg-green-500" aria-hidden="true" />
               Bình thường
             </span>
             <span className="flex items-center gap-1 text-xs text-yellow-700">
-              <span className="h-2 w-2 rounded-full bg-yellow-500" aria-hidden="true" />
+              <span className="size-2 rounded-full bg-yellow-500" aria-hidden="true" />
               Gần trễ
             </span>
             <span className="flex items-center gap-1 text-xs text-red-700">
-              <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+              <span className="size-2 rounded-full bg-red-500" aria-hidden="true" />
               Trễ
             </span>
           </div>
-          <Button variant="outline" size="sm" asChild className="gap-1">
+          <Button variant="outline" size="sm" asChild className="gap-1" aria-label="Cài đặt máy in">
             <Link href="/kds/printer">
-              <Settings className="size-3.5" />
+              <Settings className="size-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">Máy in</span>
             </Link>
           </Button>

@@ -475,7 +475,7 @@ export function PaymentPanel({
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={momoState.qrUrl}
-                      alt="Momo QR"
+                      alt="Mã QR Momo — quét để thanh toán"
                       className="mx-auto h-48 w-48"
                     />
                   </div>
