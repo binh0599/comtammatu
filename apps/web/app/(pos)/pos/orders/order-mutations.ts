@@ -592,10 +592,12 @@ async function _updateOrderStatus(data: {
     };
     const targetRoles = pushTargetRoles[newStatus];
     if (targetRoles) {
+      const pushUrl =
+        newStatus === "confirmed" ? "/kds" : `/pos/order/${order_id}`;
       void sendPushToBranchRole(ctx.tenantId, branchId, targetRoles, {
         title: `Đơn ${order.order_number}`,
         body: msg.message,
-        url: `/pos/order/${order_id}`,
+        url: pushUrl,
         type: "order_status",
       }, "order_status");
     }
