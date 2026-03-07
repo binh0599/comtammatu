@@ -18,6 +18,7 @@ import {
   calculateOrderTotals,
   maybeReleaseTable,
 } from "./helpers";
+import { sendPushToBranchRole } from "@/lib/push-sender";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function getTaxSettings(supabase: any, tenantId: number) {
@@ -582,6 +583,24 @@ async function _updateOrderStatus(data: {
       },
     });
     supabase.removeChannel(channel);
+
+    // Send push notification to relevant staff (fire-and-forget)
+    const pushTargetRoles: Record<string, string[]> = {
+      confirmed: ["chef"],
+      ready: ["waiter", "cashier"],
+      completed: ["owner", "manager"],
+    };
+    const targetRoles = pushTargetRoles[newStatus];
+    if (targetRoles) {
+      const pushUrl =
+        newStatus === "confirmed" ? "/kds" : `/pos/order/${order_id}`;
+      void sendPushToBranchRole(ctx.tenantId, branchId, targetRoles, {
+        title: `Đơn ${order.order_number}`,
+        body: msg.message,
+        url: pushUrl,
+        type: "order_status",
+      }, "order_status");
+    }
   }
 
   revalidatePath("/pos/orders");

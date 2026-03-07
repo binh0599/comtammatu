@@ -29,6 +29,7 @@ import { formatDateTime, formatPrice } from "@comtammatu/shared";
 import { logout } from "@/app/login/actions";
 import { requestDataExport, requestDeletion } from "../actions";
 import { toast } from "sonner";
+import { PushNotificationToggle } from "@/components/push-notification-toggle";
 
 interface ProfileData {
   fullName: string;
@@ -144,6 +145,9 @@ export function AccountClient({ profile, userEmail }: AccountClientProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Push notifications */}
+      <PushNotificationToggle />
 
       {/* Actions */}
       <div className="space-y-3">

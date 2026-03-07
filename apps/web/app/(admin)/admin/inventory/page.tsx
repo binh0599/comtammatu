@@ -24,6 +24,7 @@ import { PrepListTab } from "./prep-list-tab";
 import { StockCountTab } from "./stock-count-tab";
 import { FoodCostTab } from "./food-cost-tab";
 import { ExpiryTab } from "./expiry-tab";
+import { ForecastTab } from "./forecast-tab";
 
 export default async function InventoryPage() {
   const [
@@ -70,6 +71,7 @@ export default async function InventoryPage() {
             <TabsTrigger value="stock-count">Kiểm kho</TabsTrigger>
             <TabsTrigger value="food-cost">Food Cost</TabsTrigger>
             <TabsTrigger value="expiry">Hạn sử dụng</TabsTrigger>
+            <TabsTrigger value="forecast">Dự báo</TabsTrigger>
           </TabsList>
           <TabsContent value="ingredients">
             <IngredientsTab ingredients={ingredients} />
@@ -121,6 +123,9 @@ export default async function InventoryPage() {
           </TabsContent>
           <TabsContent value="expiry">
             <ExpiryTab initialData={expiringBatches} />
+          </TabsContent>
+          <TabsContent value="forecast">
+            <ForecastTab branches={branches} />
           </TabsContent>
         </Tabs>
       </div>

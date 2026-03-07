@@ -34,13 +34,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Printer, Trash2 } from "lucide-react";
+import { Plus, Printer, Trash2, Usb } from "lucide-react";
 import {
   getPrinterTypeLabel,
   getPrinterTestStatusLabel,
 } from "@comtammatu/shared";
 import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 import { createPrinter, deletePrinter, updatePrinter } from "./actions";
+import { useSerialPrinter } from "@/app/(kds)/kds/hooks/use-serial-printer";
+import { buildPosReceipt } from "@/app/(kds)/kds/lib/escpos";
 
 type PrinterType = "browser" | "thermal_usb" | "thermal_network";
 
@@ -72,6 +75,35 @@ export function PrinterSettings({
   const [newPrinterType, setNewPrinterType] = useState<PrinterType>("browser");
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const serialPrinter = useSerialPrinter();
+
+  async function handleSerialTestPrint() {
+    try {
+      const testReceipt = buildPosReceipt({
+        storeName: "COM TAM MA TU",
+        branchName: "Chi nhanh test",
+        orderNumber: "TEST-001",
+        tableNumber: "1",
+        items: [
+          { quantity: 2, name: "Com tam suon bi cha", price: 45000, total: 90000 },
+          { quantity: 1, name: "Nuoc mia", price: 15000, total: 15000 },
+        ],
+        subtotal: 105000,
+        tax: 0,
+        serviceCharge: 0,
+        total: 105000,
+        paymentMethod: "cash",
+        cashierName: "Test",
+        createdAt: new Date().toISOString(),
+        paperWidth: 80,
+      });
+      await serialPrinter.print(testReceipt);
+      toast.success("Da in thu thanh cong!");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Loi in thu";
+      toast.error(msg);
+    }
+  }
 
   function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -167,6 +199,63 @@ export function PrinterSettings({
           </Button>
         </CardHeader>
         <CardContent>
+          {/* Web Serial API Connection */}
+          {serialPrinter.isSupported && (
+            <div className="mb-4 flex items-center gap-3 rounded-lg border p-3">
+              <Usb className="size-5 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium">Web Serial (ESC/POS)</p>
+                <p className="text-xs text-muted-foreground">
+                  Ket noi may in nhiet qua cong Serial
+                </p>
+              </div>
+              <Badge
+                variant={
+                  serialPrinter.status === "connected"
+                    ? "default"
+                    : serialPrinter.status === "error"
+                      ? "destructive"
+                      : "secondary"
+                }
+              >
+                {serialPrinter.status === "connected"
+                  ? "Da ket noi"
+                  : serialPrinter.status === "connecting"
+                    ? "Dang ket noi..."
+                    : serialPrinter.status === "error"
+                      ? "Loi"
+                      : "Chua ket noi"}
+              </Badge>
+              {serialPrinter.status === "connected" ? (
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSerialTestPrint}
+                  >
+                    In thu
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => serialPrinter.disconnect()}
+                  >
+                    Ngat ket noi
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => serialPrinter.connect()}
+                  disabled={serialPrinter.status === "connecting"}
+                >
+                  Ket noi
+                </Button>
+              )}
+            </div>
+          )}
+
           {error && (
             <div role="alert" className="mb-4 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
               {error}

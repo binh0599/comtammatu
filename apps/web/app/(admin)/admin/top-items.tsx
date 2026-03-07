@@ -33,6 +33,7 @@ export function TopItems({ items }: TopItemsProps) {
             Chưa có dữ liệu bán hàng
           </p>
         ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -59,6 +60,7 @@ export function TopItems({ items }: TopItemsProps) {
               ))}
             </TableBody>
           </Table>
+          </div>
         )}
       </CardContent>
     </Card>

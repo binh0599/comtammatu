@@ -189,13 +189,13 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
             placeholder="Tìm theo mã đơn..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-56 pl-8"
+            className="w-full sm:w-56 pl-8"
           />
         </div>
 
         {branches.length > 1 && (
           <Select value={branchFilter} onValueChange={setBranchFilter}>
-            <SelectTrigger className="w-44">
+            <SelectTrigger className="w-full sm:w-44">
               <SelectValue placeholder="Chi nhánh" />
             </SelectTrigger>
             <SelectContent>
@@ -210,7 +210,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
         )}
 
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
           <SelectContent>
@@ -224,7 +224,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
         </Select>
 
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-full sm:w-36">
             <SelectValue placeholder="Loại đơn" />
           </SelectTrigger>
           <SelectContent>
@@ -237,7 +237,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
           </SelectContent>
         </Select>
 
-        <div className="text-muted-foreground ml-auto text-sm">
+        <div className="text-muted-foreground w-full sm:ml-auto sm:w-auto text-sm">
           {filtered.length} đơn &middot;{" "}
           <span className="font-medium text-green-700">{completedCount} hoàn tất</span>
           {cancelledCount > 0 && (
@@ -249,7 +249,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
       </div>
 
       {/* Table */}
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>

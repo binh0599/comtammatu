@@ -180,6 +180,7 @@ export function BranchComparison({
 
       {/* Summary Table */}
       {data.length > 0 && (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -221,6 +222,7 @@ export function BranchComparison({
             )}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

@@ -255,7 +255,7 @@ export function ScheduleTab({
           {sortedDates.map((date) => (
             <div key={date} className="space-y-2">
               <h3 className="text-lg font-semibold">{formatDate(date)}</h3>
-              <div className="rounded-md border">
+              <div className="overflow-x-auto rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>

@@ -4,6 +4,7 @@ import {
   ChefHat,
   CreditCard,
   LayoutDashboard,
+  Megaphone,
   Monitor,
   Package,
   ShieldAlert,
@@ -13,6 +14,7 @@ import {
   Settings,
   Utensils,
   Heart,
+  Armchair,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -52,6 +54,11 @@ const navigation = [
         icon: Utensils,
       },
       {
+        title: "Bàn",
+        url: "/admin/tables",
+        icon: Armchair,
+      },
+      {
         title: "Đơn hàng",
         url: "/admin/orders",
         icon: ShoppingCart,
@@ -85,6 +92,11 @@ const navigation = [
         title: "Khách hàng",
         url: "/admin/crm",
         icon: Heart,
+      },
+      {
+        title: "Chiến dịch",
+        url: "/admin/campaigns",
+        icon: Megaphone,
       },
       {
         title: "Báo cáo",

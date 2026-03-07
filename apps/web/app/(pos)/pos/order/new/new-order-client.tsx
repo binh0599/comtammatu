@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { MenuSelector, type CartItem } from "./menu-selector";
 import { OrderCart } from "./order-cart";
 import { createOrder, confirmOrder } from "../../orders/actions";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useMenuCache } from "@/hooks/use-data-cache";
+import { queueOfflineOrder } from "../../lib/offline-queue";
 interface MenuItem {
   id: number;
   name: string;
@@ -156,6 +159,8 @@ export function NewOrderClient({
   tableCapacity: number | null;
 }) {
   const router = useRouter();
+  const isOnline = useOnlineStatus();
+  useMenuCache(menuItems, categories);
   const [cart, setCart] = useState<CartItem[]>([]);
   const isDineIn = tableId !== null;
   const [guestCount, setGuestCount] = useState<number | null>(isDineIn ? null : null);
@@ -246,13 +251,29 @@ export function NewOrderClient({
         : undefined,
     }));
 
-    const result = await createOrder({
+    const orderPayload = {
       table_id: tableId,
-      type: isDineIn ? "dine_in" : "takeaway",
+      type: isDineIn ? "dine_in" as const : "takeaway" as const,
       terminal_id: terminalId,
       guest_count: guestCount ?? undefined,
       items: orderItems,
-    });
+    };
+
+    // Offline path: queue order in IndexedDB for later sync
+    if (!isOnline) {
+      try {
+        await queueOfflineOrder(orderPayload);
+        toast.success("Đơn hàng đã lưu offline — sẽ tự động gửi khi có mạng");
+        setCart([]);
+        router.push("/pos/orders");
+      } catch {
+        toast.error("Không thể lưu đơn hàng offline");
+      }
+      return;
+    }
+
+    // Online path: normal server action flow
+    const result = await createOrder(orderPayload);
 
     if (result.error !== null) {
       toast.error(result.error);

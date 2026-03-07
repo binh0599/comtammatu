@@ -2,13 +2,15 @@
 
 import { useState, useMemo } from "react";
 import Image from "next/image";
-import { Search, UtensilsCrossed } from "lucide-react";
+import { Search, UtensilsCrossed, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { formatPrice, MENU_CATEGORY_TYPE_LABELS } from "@comtammatu/shared";
+import { useCart } from "./cart-context";
 
 interface MenuItem {
   id: number;
@@ -41,6 +43,7 @@ interface MenuBrowserProps {
 export function MenuBrowser({ items, categories }: MenuBrowserProps) {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [searchText, setSearchText] = useState("");
+  const { addItem } = useCart();
 
   const filteredItems = useMemo(() => {
     let result = items;
@@ -184,15 +187,32 @@ export function MenuBrowser({ items, categories }: MenuBrowserProps) {
                             </p>
                           )}
                         </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-primary font-semibold">
-                            {formatPrice(item.base_price)}
-                          </span>
-                          {item.allergens && item.allergens.length > 0 && (
-                            <Badge variant="outline" className="text-xs">
-                              {item.allergens.join(", ")}
-                            </Badge>
-                          )}
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-primary font-semibold">
+                              {formatPrice(item.base_price)}
+                            </span>
+                            {item.allergens && item.allergens.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {item.allergens.join(", ")}
+                              </Badge>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 shrink-0 gap-1"
+                            onClick={() =>
+                              addItem({
+                                menuItemId: item.id,
+                                name: item.name,
+                                price: item.base_price,
+                              })
+                            }
+                          >
+                            <Plus className="h-3.5 w-3.5" />
+                            <span className="text-xs">Thêm</span>
+                          </Button>
                         </div>
                       </div>
                     </CardContent>

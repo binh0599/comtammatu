@@ -61,6 +61,16 @@ export {
   // PO Quality & Stock Count
   PO_QUALITY_STATUSES,
   STOCK_COUNT_STATUSES,
+  // Campaigns
+  CAMPAIGN_TYPES,
+  CAMPAIGN_STATUSES,
+  NOTIFICATION_CHANNELS,
+  // Table Management
+  RESERVATION_STATUSES,
+  TABLE_SECTIONS,
+  // Push Notifications
+  PUSH_NOTIFICATION_TYPES,
+  PUSH_SUBSCRIPTION_STATUSES,
 } from "./constants";
 
 export type {
@@ -111,6 +121,15 @@ export type {
   // PO Quality & Stock Count
   PoQualityStatus,
   StockCountStatus,
+  // Campaigns
+  CampaignType,
+  CampaignStatus,
+  NotificationChannel,
+  // Table Management
+  ReservationStatus,
+  // Push Notifications
+  PushNotificationType,
+  PushSubscriptionStatus,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -328,6 +347,49 @@ export type {
 export { dashboardLimitSchema, dashboardDaysSchema } from "./schemas/dashboard";
 export type { DashboardLimitInput, DashboardDaysInput } from "./schemas/dashboard";
 
+// Campaign & Analytics (Phase 3)
+export {
+  createCampaignSchema,
+  updateCampaignSchema,
+  customerPlaceOrderSchema,
+  customerOrderItemSchema,
+  analyticsQuerySchema,
+  forecastQuerySchema,
+  staffPerformanceQuerySchema,
+} from "./schemas/campaign";
+export type {
+  CreateCampaignInput,
+  UpdateCampaignInput,
+  CustomerPlaceOrderInput,
+  AnalyticsQueryInput,
+  ForecastQueryInput,
+  StaffPerformanceQueryInput,
+} from "./schemas/campaign";
+
+// Table Management
+export {
+  createTableSchema,
+  updateTableSchema,
+  createReservationSchema,
+} from "./schemas/table";
+export type {
+  CreateTableInput,
+  UpdateTableInput,
+  CreateReservationInput,
+} from "./schemas/table";
+
+// Push Notifications
+export {
+  subscribePushSchema,
+  unsubscribePushSchema,
+  sendPushNotificationSchema,
+} from "./schemas/push-notification";
+export type {
+  SubscribePushInput,
+  UnsubscribePushInput,
+  SendPushNotificationInput,
+} from "./schemas/push-notification";
+
 // ===== Utilities =====
 export {
   formatPrice,
@@ -376,6 +438,14 @@ export {
   // PO Quality & Stock Count
   getPoQualityStatusLabel,
   getStockCountStatusLabel,
+  // Campaigns
+  getCampaignTypeLabel,
+  getCampaignStatusLabel,
+  getNotificationChannelLabel,
+  // Table Management
+  getReservationStatusLabel,
+  // Push Notifications
+  getPushNotificationTypeLabel,
 } from "./utils/format";
 
 // ===== Error Handling =====

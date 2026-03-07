@@ -44,13 +44,6 @@ const tableStatusBg: Record<string, string> = {
   cleaning: "bg-gray-50 border-gray-300",
 };
 
-const chairFill: Record<string, string> = {
-  available: "fill-green-200 stroke-green-500",
-  occupied: "fill-red-200 stroke-red-500",
-  reserved: "fill-yellow-200 stroke-yellow-500",
-  cleaning: "fill-gray-200 stroke-gray-400",
-};
-
 const occupiedChairFill = "fill-orange-300 stroke-orange-600";
 const emptyChairFill: Record<string, string> = {
   available: "fill-green-100 stroke-green-400",

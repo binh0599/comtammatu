@@ -1,6 +1,8 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { requireLayoutAuth } from "@/lib/layout-auth";
+import { NotificationBadge } from "./admin/notifications/notification-badge";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const ADMIN_ALLOWED_ROLES = ["owner", "manager", "hr"] as const;
 
@@ -24,7 +26,11 @@ export default async function AdminLayout({
         }}
       />
       <SidebarInset>
-        <main id="main-content">{children}</main>
+        <div className="flex items-center justify-end gap-2 border-b px-4 py-1">
+          <ThemeToggle />
+          <NotificationBadge />
+        </div>
+        <main id="main-content" className="animate-page-in">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

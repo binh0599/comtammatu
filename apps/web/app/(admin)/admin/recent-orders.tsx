@@ -57,6 +57,7 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
             Chưa có đơn hàng nào
           </p>
         ) : (
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -98,6 +99,7 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
               ))}
             </TableBody>
           </Table>
+          </div>
         )}
       </CardContent>
     </Card>

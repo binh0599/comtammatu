@@ -1,5 +1,7 @@
+import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   getEmployees,
   getCreatableRoles,
@@ -16,6 +18,11 @@ import { ScheduleTab } from "./schedule-tab";
 import { AttendanceTab } from "./attendance-tab";
 import { LeaveTab } from "./leave-tab";
 import { PayrollTab } from "./payroll-tab";
+
+const PerformanceTab = dynamic(
+  () => import("./performance-tab").then((m) => ({ default: m.PerformanceTab })),
+  { loading: () => <Skeleton className="h-[400px] w-full" /> },
+);
 
 export default async function HrPage() {
   const now = new Date();
@@ -52,13 +59,14 @@ export default async function HrPage() {
       <Header breadcrumbs={[{ label: "Nhân sự" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Tabs defaultValue="employees" className="w-full">
-          <TabsList>
+          <TabsList className="flex-wrap h-auto">
             <TabsTrigger value="employees">Nhân viên</TabsTrigger>
             <TabsTrigger value="shifts">Ca làm</TabsTrigger>
             <TabsTrigger value="schedule">Lịch phân ca</TabsTrigger>
             <TabsTrigger value="attendance">Chấm công</TabsTrigger>
             <TabsTrigger value="leave">Nghỉ phép</TabsTrigger>
             <TabsTrigger value="payroll">Bảng lương</TabsTrigger>
+            <TabsTrigger value="performance">Hiệu suất</TabsTrigger>
           </TabsList>
           <TabsContent value="employees">
             <EmployeesTab
@@ -85,6 +93,9 @@ export default async function HrPage() {
           </TabsContent>
           <TabsContent value="payroll">
             <PayrollTab periods={payrollPeriods} branches={branches} />
+          </TabsContent>
+          <TabsContent value="performance">
+            <PerformanceTab branches={branches} />
           </TabsContent>
         </Tabs>
       </div>

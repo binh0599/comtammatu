@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useCallback } from "react";
+import { Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { bumpTicket } from "./actions";
 import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
+import { buildKdsTicket } from "../lib/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
 import { parseItems, type KdsTicket, type TimingRule } from "./types";
 
@@ -25,11 +28,14 @@ export function TicketCard({
   timingRule,
   printerConfig,
   stationName,
+  serialPrint,
 }: {
   ticket: KdsTicket;
   timingRule: TimingRule | null;
   printerConfig?: PrinterConfig | null;
   stationName?: string;
+  /** If provided, Web Serial printing is available for this ticket */
+  serialPrint?: (data: Uint8Array) => Promise<void>;
 }) {
   const [isPending, startTransition] = useTransition();
   const [elapsed, setElapsed] = useState(0);
@@ -37,6 +43,32 @@ export function TicketCard({
   const items = parseItems(ticket.items);
   const orderNumber = ticket.orders?.order_number ?? `#${ticket.order_id}`;
   const tableNumber = ticket.orders?.tables?.number;
+
+  /** Print this ticket via Web Serial API */
+  const handleSerialPrint = useCallback(async () => {
+    if (!serialPrint) return;
+    try {
+      const paperWidth = printerConfig?.paper_width_mm ?? 80;
+      const commands = buildKdsTicket({
+        stationName: stationName ?? "Bep",
+        orderNumber,
+        tableNumber: tableNumber?.toString() ?? null,
+        items: items.map((i) => ({
+          quantity: i.quantity,
+          name: i.menu_item_name + (i.variant_name ? ` - ${i.variant_name}` : ""),
+          notes: i.notes ?? undefined,
+          modifiers: i.modifiers,
+        })),
+        createdAt: ticket.created_at,
+        paperWidth,
+      });
+      await serialPrint(commands);
+      toast.success("Da in phieu bep");
+    } catch (err) {
+      console.error("Serial print error:", err);
+      toast.error("Loi in phieu bep qua Serial");
+    }
+  }, [serialPrint, printerConfig, stationName, orderNumber, tableNumber, items, ticket.created_at]);
 
   // Update elapsed timer every 10 seconds
   useEffect(() => {
@@ -78,12 +110,25 @@ export function TicketCard({
             )}
           </div>
           {(ticket.status === "pending" || ticket.status === "preparing") && (
-            <KitchenTicketPrinter
-              ticket={ticket}
-              stationName={stationName}
-              printerConfig={printerConfig}
-              preferThermal={!!printerConfig && printerConfig.type !== "browser"}
-            />
+            <>
+              <KitchenTicketPrinter
+                ticket={ticket}
+                stationName={stationName}
+                printerConfig={printerConfig}
+                preferThermal={!!printerConfig && printerConfig.type !== "browser"}
+              />
+              {serialPrint && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSerialPrint}
+                  title="In qua Serial"
+                  className="size-8"
+                >
+                  <Printer className="size-4" />
+                </Button>
+              )}
+            </>
           )}
         </div>
         <div className="text-right">
