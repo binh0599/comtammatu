@@ -73,7 +73,7 @@ export function useSerialPrinter() {
     if (!isSupported) {
       setStatus("error");
       throw new Error(
-        "Web Serial API khong duoc ho tro tren trinh duyet nay. Vui long su dung Chrome hoac Edge.",
+        "Web Serial API không được hỗ trợ trên trình duyệt này. Vui lòng sử dụng Chrome hoặc Edge.",
       );
     }
 
@@ -144,12 +144,12 @@ export function useSerialPrinter() {
   const print = useCallback(
     async (data: Uint8Array) => {
       if (status !== "connected") {
-        throw new Error("May in chua ket noi. Vui long ket noi truoc khi in.");
+        throw new Error("Máy in chưa kết nối. Vui lòng kết nối trước khi in.");
       }
 
       const writer = writerRef.current;
       if (!writer) {
-        throw new Error("Khong the ghi du lieu vao may in.");
+        throw new Error("Không thể ghi dữ liệu vào máy in.");
       }
 
       try {

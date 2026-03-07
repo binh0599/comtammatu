@@ -40,7 +40,7 @@ function getUrgencyBadge(days: number | null) {
     return (
       <Badge variant="outline" className="gap-1">
         <CheckCircle className="h-3 w-3" />
-        Khong su dung
+        Không sử dụng
       </Badge>
     );
   }
@@ -48,7 +48,7 @@ function getUrgencyBadge(days: number | null) {
     return (
       <Badge variant="destructive" className="gap-1">
         <AlertTriangle className="h-3 w-3" />
-        {days} ngay
+        {days} ngày
       </Badge>
     );
   }
@@ -56,14 +56,14 @@ function getUrgencyBadge(days: number | null) {
     return (
       <Badge className="gap-1 bg-yellow-500 text-white hover:bg-yellow-600">
         <Clock className="h-3 w-3" />
-        {days} ngay
+        {days} ngày
       </Badge>
     );
   }
   return (
     <Badge className="gap-1 bg-green-600 text-white hover:bg-green-700">
       <CheckCircle className="h-3 w-3" />
-      {days} ngay
+      {days} ngày
     </Badge>
   );
 }
@@ -112,21 +112,21 @@ export function ForecastTab({ branches }: ForecastTabProps) {
       <div className="flex flex-wrap items-center gap-3">
         <Select value={daysAhead} onValueChange={handleDaysChange}>
           <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="So ngay" />
+            <SelectValue placeholder="Số ngày" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="7">7 ngay</SelectItem>
-            <SelectItem value="14">14 ngay</SelectItem>
-            <SelectItem value="30">30 ngay</SelectItem>
+            <SelectItem value="7">7 ngày</SelectItem>
+            <SelectItem value="14">14 ngày</SelectItem>
+            <SelectItem value="30">30 ngày</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={branchId} onValueChange={handleBranchChange}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Chi nhanh" />
+            <SelectValue placeholder="Chi nhánh" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca chi nhanh</SelectItem>
+            <SelectItem value="all">Tất cả chi nhánh</SelectItem>
             {branches.map((b) => (
               <SelectItem key={b.id} value={String(b.id)}>
                 {b.name}
@@ -136,14 +136,14 @@ export function ForecastTab({ branches }: ForecastTabProps) {
         </Select>
 
         <Button onClick={handleLoad} disabled={isPending}>
-          {isPending ? "Dang tai..." : "Du bao"}
+          {isPending ? "Đang tải..." : "Dự báo"}
         </Button>
       </div>
 
       {!loaded && (
         <div className="flex h-40 items-center justify-center">
           <p className="text-muted-foreground text-sm">
-            Chon tham so va nhan &quot;Du bao&quot; de xem ket qua
+            Chọn tham số và nhấn &quot;Dự báo&quot; để xem kết quả
           </p>
         </div>
       )}
@@ -155,7 +155,7 @@ export function ForecastTab({ branches }: ForecastTabProps) {
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Can dat hang gap
+                  Cần đặt hàng gấp
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -163,14 +163,14 @@ export function ForecastTab({ branches }: ForecastTabProps) {
                   {urgentCount}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Het trong vong 3 ngay
+                  Hết trong vòng 3 ngày
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Can theo doi
+                  Cần theo dõi
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -178,20 +178,20 @@ export function ForecastTab({ branches }: ForecastTabProps) {
                   {warningCount}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Het trong 3-7 ngay
+                  Hết trong 3-7 ngày
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Tong nguyen lieu
+                  Tổng nguyên liệu
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{data.length}</div>
                 <p className="text-xs text-muted-foreground">
-                  Du bao {daysAhead} ngay toi
+                  Dự báo {daysAhead} ngày tới
                 </p>
               </CardContent>
             </Card>
@@ -200,32 +200,32 @@ export function ForecastTab({ branches }: ForecastTabProps) {
           {/* Forecast table */}
           <Card>
             <CardHeader>
-              <CardTitle>Du bao nhu cau nguyen lieu</CardTitle>
+              <CardTitle>Dự báo nhu cầu nguyên liệu</CardTitle>
             </CardHeader>
             <CardContent>
               {data.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
-                  Khong co du lieu nguyen lieu
+                  Không có dữ liệu nguyên liệu
                 </p>
               ) : (
                 <div className="max-h-[600px] overflow-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nguyen lieu</TableHead>
-                        <TableHead>Don vi</TableHead>
-                        <TableHead className="text-right">Ton kho</TableHead>
+                        <TableHead>Nguyên liệu</TableHead>
+                        <TableHead>Đơn vị</TableHead>
+                        <TableHead className="text-right">Tồn kho</TableHead>
                         <TableHead className="text-right">
                           TB/ngay
                         </TableHead>
                         <TableHead className="text-right">
-                          Can ({daysAhead} ngay)
+                          Cần ({daysAhead} ngày)
                         </TableHead>
                         <TableHead className="text-center">
-                          Con lai
+                          Còn lại
                         </TableHead>
                         <TableHead className="text-center">
-                          Dat hang
+                          Đặt hàng
                         </TableHead>
                       </TableRow>
                     </TableHeader>
@@ -261,9 +261,9 @@ export function ForecastTab({ branches }: ForecastTabProps) {
                           </TableCell>
                           <TableCell className="text-center">
                             {row.reorder_suggested ? (
-                              <Badge variant="destructive">Can dat</Badge>
+                              <Badge variant="destructive">Cần đặt</Badge>
                             ) : (
-                              <Badge variant="outline">Du</Badge>
+                              <Badge variant="outline">Đủ</Badge>
                             )}
                           </TableCell>
                         </TableRow>

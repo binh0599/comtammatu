@@ -81,12 +81,12 @@ export function PrinterSettings({
     try {
       const testReceipt = buildPosReceipt({
         storeName: "COM TAM MA TU",
-        branchName: "Chi nhanh test",
+        branchName: "Chi nhánh test",
         orderNumber: "TEST-001",
         tableNumber: "1",
         items: [
-          { quantity: 2, name: "Com tam suon bi cha", price: 45000, total: 90000 },
-          { quantity: 1, name: "Nuoc mia", price: 15000, total: 15000 },
+          { quantity: 2, name: "Cơm tấm sườn bì chả", price: 45000, total: 90000 },
+          { quantity: 1, name: "Nước mía", price: 15000, total: 15000 },
         ],
         subtotal: 105000,
         tax: 0,

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createCampaignSchema = z.object({
-  name: z.string().min(1, "Ten chien dich khong duoc de trong").max(200),
+  name: z.string().min(1, "Tên chiến dịch không được để trống").max(200),
   type: z.enum(["email", "sms", "push"]),
   target_segment: z
     .object({
@@ -13,7 +13,7 @@ export const createCampaignSchema = z.object({
     .optional(),
   content: z.object({
     subject: z.string().max(200).optional(),
-    body: z.string().min(1, "Noi dung khong duoc de trong").max(5000),
+    body: z.string().min(1, "Nội dung không được để trống").max(5000),
     cta_url: z.string().url().optional().or(z.literal("")),
   }),
   scheduled_at: z.string().datetime().optional().or(z.literal("")),
@@ -35,7 +35,7 @@ export const customerPlaceOrderSchema = z.object({
   branch_id: z.coerce.number().int().positive(),
   type: z.enum(["dine_in", "takeaway"]),
   table_id: z.coerce.number().int().positive().optional(),
-  items: z.array(customerOrderItemSchema).min(1, "Phai co it nhat 1 mon"),
+  items: z.array(customerOrderItemSchema).min(1, "Phải có ít nhất 1 món"),
   notes: z.string().max(500).optional().or(z.literal("")),
   voucher_code: z.string().optional().or(z.literal("")),
 });

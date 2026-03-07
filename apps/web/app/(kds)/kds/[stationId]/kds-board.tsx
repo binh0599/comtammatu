@@ -174,7 +174,7 @@ export function KdsBoard({
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
           {printerConfig && (
-            <Badge variant="outline" className="hidden gap-1 text-xs sm:flex">
+            <Badge variant="outline" className="gap-1 text-xs">
               <Printer className="size-3" aria-hidden="true" />
               {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>

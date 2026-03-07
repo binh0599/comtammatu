@@ -35,6 +35,7 @@
 10. **VALIDATE_CLIENT_IDS** — Every Server Action receiving an entity ID from client must verify branch + tenant ownership before use.
 11. **REGEN_TYPES** — After any migration adding/modifying SQL functions, run `supabase gen types typescript` before referencing via `.rpc()`.
 12. **ZOD_SCHEMAS** — Every Server Action and API route validates input with a Zod schema from `@comtammatu/shared`.
+13. **VIETNAMESE_DIACRITICS** — Toàn bộ text tiếng Việt trong hệ thống (UI labels, messages, placeholders, comments, metadata) phải được viết có dấu đầy đủ. Tuyệt đối không được viết tiếng Việt không dấu. Ví dụ: "Đăng nhập" (đúng) vs "Dang nhap" (sai), "Quản lý" (đúng) vs "Quan ly" (sai).
 
 ---
 
