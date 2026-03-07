@@ -106,7 +106,7 @@ async function _updateBranch(input: z.infer<typeof updateBranchSchema>) {
     .single();
 
   if (checkErr || !branch) {
-    return { error: "Chi nhanh khong ton tai" };
+    return { error: "Chi nhánh không tồn tại" };
   }
 
   const updateFields: Record<string, unknown> = {};

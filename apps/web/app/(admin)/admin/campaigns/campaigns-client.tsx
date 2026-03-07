@@ -89,7 +89,7 @@ function getTypeLabel(type: string): string {
     case "sms":
       return "SMS";
     case "push":
-      return "Thong bao day";
+      return "Thông báo đẩy";
     default:
       return type;
   }
@@ -98,13 +98,13 @@ function getTypeLabel(type: string): string {
 function getStatusLabel(status: string): string {
   switch (status) {
     case "draft":
-      return "Nhap";
+      return "Nháp";
     case "scheduled":
-      return "Da len lich";
+      return "Đã lên lịch";
     case "sent":
-      return "Da gui";
+      return "Đã gửi";
     case "completed":
-      return "Hoan tat";
+      return "Hoàn tất";
     default:
       return status;
   }
@@ -164,22 +164,22 @@ function StatsCards({ campaigns }: { campaigns: Campaign[] }) {
 
   const cards = [
     {
-      title: "Tong chien dich",
+      title: "Tổng chiến dịch",
       value: total,
       icon: Megaphone,
     },
     {
-      title: "Ban nhap",
+      title: "Bản nháp",
       value: draft,
       icon: FileText,
     },
     {
-      title: "Da len lich",
+      title: "Đã lên lịch",
       value: scheduled,
       icon: Clock,
     },
     {
-      title: "Da gui",
+      title: "Đã gửi",
       value: sent,
       icon: CheckCircle2,
     },
@@ -276,12 +276,12 @@ function CampaignFormDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Chinh sua chien dich" : "Tao chien dich moi"}
+            {isEditing ? "Chỉnh sửa chiến dịch" : "Tạo chiến dịch mới"}
           </DialogTitle>
           <DialogDescription>
             {isEditing
-              ? "Cap nhat thong tin chien dich"
-              : "Dien thong tin de tao chien dich marketing"}
+              ? "Cập nhật thông tin chiến dịch"
+              : "Điền thông tin để tạo chiến dịch marketing"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -292,50 +292,50 @@ function CampaignFormDialog({
               </div>
             )}
             <div className="grid gap-2">
-              <Label htmlFor="name">Ten chien dich</Label>
+              <Label htmlFor="name">Tên chiến dịch</Label>
               <Input
                 id="name"
                 name="name"
-                placeholder="VD: Khuyen mai cuoi tuan"
+                placeholder="VD: Khuyến mãi cuối tuần"
                 defaultValue={campaign?.name ?? ""}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="type">Loai</Label>
+              <Label htmlFor="type">Loại</Label>
               <Select name="type" defaultValue={campaign?.type ?? "email"}>
                 <SelectTrigger id="type">
-                  <SelectValue placeholder="Chon loai chien dich" />
+                  <SelectValue placeholder="Chọn loại chiến dịch" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="email">Email</SelectItem>
                   <SelectItem value="sms">SMS</SelectItem>
-                  <SelectItem value="push">Thong bao day</SelectItem>
+                  <SelectItem value="push">Thông báo đẩy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="subject">Tieu de</Label>
+              <Label htmlFor="subject">Tiêu đề</Label>
               <Input
                 id="subject"
                 name="subject"
-                placeholder="Tieu de email/thong bao"
+                placeholder="Tiêu đề email/thông báo"
                 defaultValue={content.subject ?? ""}
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="body">Noi dung</Label>
+              <Label htmlFor="body">Nội dung</Label>
               <Textarea
                 id="body"
                 name="body"
-                placeholder="Noi dung chien dich..."
+                placeholder="Nội dung chiến dịch..."
                 rows={4}
                 defaultValue={content.body ?? ""}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="cta_url">Lien ket CTA</Label>
+              <Label htmlFor="cta_url">Liên kết CTA</Label>
               <Input
                 id="cta_url"
                 name="cta_url"
@@ -346,12 +346,12 @@ function CampaignFormDialog({
 
             <div className="border-t pt-4">
               <p className="text-sm font-medium mb-3">
-                Doi tuong muc tieu
+                Đối tượng mục tiêu
               </p>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="grid gap-1">
                   <Label htmlFor="min_total_spent" className="text-xs">
-                    Chi tieu toi thieu
+                    Chi tiêu tối thiểu
                   </Label>
                   <Input
                     id="min_total_spent"
@@ -364,7 +364,7 @@ function CampaignFormDialog({
                 </div>
                 <div className="grid gap-1">
                   <Label htmlFor="min_visits" className="text-xs">
-                    So lan ghe toi thieu
+                    Số lần ghé tối thiểu
                   </Label>
                   <Input
                     id="min_visits"
@@ -377,20 +377,20 @@ function CampaignFormDialog({
                 </div>
                 <div className="grid gap-1">
                   <Label htmlFor="gender" className="text-xs">
-                    Gioi tinh
+                    Giới tính
                   </Label>
                   <Select
                     name="gender"
                     defaultValue={segment.gender ?? "ALL"}
                   >
                     <SelectTrigger id="gender">
-                      <SelectValue placeholder="Tat ca" />
+                      <SelectValue placeholder="Tất cả" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL">Tat ca</SelectItem>
+                      <SelectItem value="ALL">Tất cả</SelectItem>
                       <SelectItem value="M">Nam</SelectItem>
-                      <SelectItem value="F">Nu</SelectItem>
-                      <SelectItem value="Other">Khac</SelectItem>
+                      <SelectItem value="F">Nữ</SelectItem>
+                      <SelectItem value="Other">Khác</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -403,16 +403,16 @@ function CampaignFormDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Huy
+              Hủy
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending
                 ? isEditing
-                  ? "Dang luu..."
-                  : "Dang tao..."
+                  ? "Đang lưu..."
+                  : "Đang tạo..."
                 : isEditing
-                  ? "Luu thay doi"
-                  : "Tao chien dich"}
+                  ? "Lưu thay đổi"
+                  : "Tạo chiến dịch"}
             </Button>
           </DialogFooter>
         </form>
@@ -447,7 +447,7 @@ function ScheduleDialog({
     const datetimeLocal = form.get("scheduled_at") as string;
 
     if (!datetimeLocal) {
-      setError("Vui long chon thoi gian");
+      setError("Vui lòng chọn thời gian");
       return;
     }
 
@@ -469,9 +469,9 @@ function ScheduleDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Len lich gui</DialogTitle>
+          <DialogTitle>Lên lịch gửi</DialogTitle>
           <DialogDescription>
-            Chon thoi gian gui chien dich &quot;{campaign.name}&quot;
+            Chọn thời gian gửi chiến dịch &quot;{campaign.name}&quot;
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -482,7 +482,7 @@ function ScheduleDialog({
               </div>
             )}
             <div className="grid gap-2">
-              <Label htmlFor="scheduled_at">Thoi gian gui</Label>
+              <Label htmlFor="scheduled_at">Thời gian gửi</Label>
               <Input
                 id="scheduled_at"
                 name="scheduled_at"
@@ -497,10 +497,10 @@ function ScheduleDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Huy
+              Hủy
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Dang xu ly..." : "Len lich"}
+              {isPending ? "Đang xử lý..." : "Lên lịch"}
             </Button>
           </DialogFooter>
         </form>
@@ -566,14 +566,14 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
 
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Chien dich</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Chiến dịch</h2>
           <p className="text-muted-foreground">
-            Quan ly chien dich marketing cho nha hang
+            Quản lý chiến dịch marketing cho nhà hàng
           </p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
-          Tao chien dich
+          Tạo chiến dịch
         </Button>
       </div>
 
@@ -587,16 +587,16 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col">Ten</TableHead>
-              <TableHead scope="col">Loai</TableHead>
-              <TableHead scope="col">Trang thai</TableHead>
+              <TableHead scope="col">Tên</TableHead>
+              <TableHead scope="col">Loại</TableHead>
+              <TableHead scope="col">Trạng thái</TableHead>
               <TableHead scope="col" className="text-right">
-                Da gui
+                Đã gửi
               </TableHead>
-              <TableHead scope="col">Lich gui</TableHead>
-              <TableHead scope="col">Ngay tao</TableHead>
+              <TableHead scope="col">Lịch gửi</TableHead>
+              <TableHead scope="col">Ngày tạo</TableHead>
               <TableHead scope="col" className="text-right">
-                Thao tac
+                Thao tác
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -607,7 +607,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                   colSpan={7}
                   className="h-24 text-center text-muted-foreground"
                 >
-                  Chua co chien dich nao
+                  Chưa có chiến dịch nào
                 </TableCell>
               </TableRow>
             ) : (
@@ -645,7 +645,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           size="icon"
                           onClick={() => setEditCampaign(campaign)}
                           disabled={isPending}
-                          aria-label="Chinh sua"
+                          aria-label="Chỉnh sửa"
                         >
                           <Pencil className="h-4 w-4" aria-hidden="true" />
                         </Button>
@@ -658,7 +658,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           size="icon"
                           onClick={() => setScheduleCampaignItem(campaign)}
                           disabled={isPending}
-                          aria-label="Len lich"
+                          aria-label="Lên lịch"
                         >
                           <CalendarClock
                             className="h-4 w-4"
@@ -675,7 +675,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                               variant="ghost"
                               size="icon"
                               disabled={isPending}
-                              aria-label="Gui ngay"
+                              aria-label="Gửi ngay"
                             >
                               <Send
                                 className="h-4 w-4"
@@ -686,19 +686,19 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                Gui chien dich
+                                Gửi chiến dịch
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Ban co chac muon gui chien dich &quot;
-                                {campaign.name}&quot; ngay bay gio?
+                                Bạn có chắc muốn gửi chiến dịch &quot;
+                                {campaign.name}&quot; ngay bây giờ?
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Huy</AlertDialogCancel>
+                              <AlertDialogCancel>Hủy</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleSend(campaign.id)}
                               >
-                                Gui ngay
+                                Gửi ngay
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -712,7 +712,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                             <Button
                               variant="ghost"
                               size="icon"
-                              aria-label="Xoa chien dich"
+                              aria-label="Xóa chiến dịch"
                             >
                               <Trash2
                                 className="h-4 w-4"
@@ -723,20 +723,20 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           <AlertDialogContent>
                             <AlertDialogHeader>
                               <AlertDialogTitle>
-                                Xoa chien dich
+                                Xóa chiến dịch
                               </AlertDialogTitle>
                               <AlertDialogDescription>
-                                Ban co chac muon xoa chien dich &quot;
-                                {campaign.name}&quot;? Hanh dong nay khong
-                                the hoan tac.
+                                Bạn có chắc muốn xóa chiến dịch &quot;
+                                {campaign.name}&quot;? Hành động này không
+                                thể hoàn tác.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Huy</AlertDialogCancel>
+                              <AlertDialogCancel>Hủy</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(campaign.id)}
                               >
-                                Xoa
+                                Xóa
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>

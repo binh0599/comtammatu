@@ -7,7 +7,7 @@ export default async function CampaignsPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Chien dich" }]} />
+      <Header breadcrumbs={[{ label: "Chiến dịch" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <CampaignsClient campaigns={campaigns ?? []} />
       </div>

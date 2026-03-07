@@ -73,7 +73,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold">Diem thuong</h1>
+      <h1 className="text-xl font-bold">Điểm thưởng</h1>
 
       {/* Tier card */}
       <Card className="border-primary/20 bg-primary/5">
@@ -85,14 +85,14 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold">
-                  {tierName ?? "Thanh vien"}
+                  {tierName ?? "Thành viên"}
                 </span>
                 {tierDiscountPct != null && tierDiscountPct > 0 && (
-                  <Badge variant="secondary">Giam {tierDiscountPct}%</Badge>
+                  <Badge variant="secondary">Giảm {tierDiscountPct}%</Badge>
                 )}
               </div>
               <p className="text-primary text-2xl font-bold">
-                {new Intl.NumberFormat("vi-VN").format(currentPoints)} diem
+                {new Intl.NumberFormat("vi-VN").format(currentPoints)} điểm
               </p>
             </div>
           </div>
@@ -102,7 +102,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
             <div className="mt-4 space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">
-                  Hang tiep theo: {nextTier.name}
+                  Hạng tiếp theo: {nextTier.name}
                 </span>
                 <span className="text-muted-foreground">
                   {new Intl.NumberFormat("vi-VN").format(currentPoints)}/
@@ -135,7 +135,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
             <ShoppingBag aria-hidden="true" className="text-muted-foreground h-5 w-5" />
             <div>
               <p className="text-lg font-bold">{totalVisits}</p>
-              <p className="text-muted-foreground text-xs">Lan ghe tham</p>
+              <p className="text-muted-foreground text-xs">Lần ghé thăm</p>
             </div>
           </CardContent>
         </Card>
@@ -144,7 +144,7 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
             <TrendingUp aria-hidden="true" className="text-muted-foreground h-5 w-5" />
             <div>
               <p className="text-lg font-bold">{formatPrice(totalSpent)}</p>
-              <p className="text-muted-foreground text-xs">Tong chi tieu</p>
+              <p className="text-muted-foreground text-xs">Tổng chi tiêu</p>
             </div>
           </CardContent>
         </Card>
@@ -153,12 +153,12 @@ export function LoyaltyDashboard({ loyalty }: LoyaltyDashboardProps) {
       {/* Transaction history */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-base">Lich su diem</CardTitle>
+          <CardTitle className="text-base">Lịch sử điểm</CardTitle>
         </CardHeader>
         <CardContent className="px-4 pb-4">
           {transactions.length === 0 ? (
             <p className="text-muted-foreground py-4 text-center text-sm">
-              Chua co giao dich nao
+              Chưa có giao dịch nào
             </p>
           ) : (
             <div className="space-y-3">

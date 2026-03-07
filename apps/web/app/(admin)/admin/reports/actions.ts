@@ -168,7 +168,7 @@ async function _getReportData(
   const itemAgg = new Map<number, { name: string; qty: number; revenue: number }>();
   for (const item of orderItems ?? []) {
     const menuItem = item.menu_items as { name: string } | null;
-    const name = menuItem?.name ?? "Khong ro";
+    const name = menuItem?.name ?? "Không rõ";
     const existing = itemAgg.get(item.menu_item_id);
     if (existing) {
       existing.qty += item.quantity;

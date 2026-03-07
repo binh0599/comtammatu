@@ -171,13 +171,13 @@ export function buildKdsTicket(ticket: {
 
   // Order number (double height, centered)
   parts.push(escposDoubleHeight(true));
-  parts.push(escposTextLn(`Don #${ticket.orderNumber}`));
+  parts.push(escposTextLn(`Đơn #${ticket.orderNumber}`));
   parts.push(escposDoubleHeight(false));
 
   // Table
   parts.push(escposAlignLeft());
   parts.push(escposTextLn(
-    ticket.tableNumber ? `Ban: ${ticket.tableNumber}` : "Mang ve",
+    ticket.tableNumber ? `Bàn: ${ticket.tableNumber}` : "Mang về",
   ));
 
   // Separator
@@ -206,11 +206,11 @@ export function buildKdsTicket(ticket: {
 
   // Notes
   if (ticket.notes) {
-    parts.push(escposTextLn(`Ghi chu: ${ticket.notes}`));
+    parts.push(escposTextLn(`Ghi chú: ${ticket.notes}`));
   }
 
   // Time
-  parts.push(escposTextLn(`Luc: ${fmtDateTime(ticket.createdAt)}`));
+  parts.push(escposTextLn(`Lúc: ${fmtDateTime(ticket.createdAt)}`));
 
   // Cut
   parts.push(escposCut());
@@ -219,9 +219,9 @@ export function buildKdsTicket(ticket: {
 }
 
 export const PAYMENT_METHOD_LABELS: Record<string, string> = {
-  cash: "TIEN MAT",
-  card: "THE",
-  ewallet: "VI DIEN TU",
+  cash: "TIỀN MẶT",
+  card: "THẺ",
+  ewallet: "VÍ ĐIỆN TỬ",
   qr: "QR CODE",
 };
 
@@ -261,19 +261,19 @@ export function buildPosReceipt(receipt: {
   parts.push(escposFeedLines(1));
 
   parts.push(escposBold(true));
-  parts.push(escposTextLn("PHIEU THANH TOAN"));
+  parts.push(escposTextLn("PHIẾU THANH TOÁN"));
   parts.push(escposBold(false));
 
   parts.push(escposAlignLeft());
   parts.push(escposLine(lineWidth));
 
   // Order info
-  parts.push(escposColumns("Ma HD:", receipt.orderNumber, lineWidth));
-  parts.push(escposColumns("Ngay:", fmtDateTime(receipt.createdAt), lineWidth));
-  parts.push(escposColumns("Thu ngan:", receipt.cashierName, lineWidth));
+  parts.push(escposColumns("Mã HĐ:", receipt.orderNumber, lineWidth));
+  parts.push(escposColumns("Ngày:", fmtDateTime(receipt.createdAt), lineWidth));
+  parts.push(escposColumns("Thu ngân:", receipt.cashierName, lineWidth));
   parts.push(escposColumns(
-    "Vi tri:",
-    receipt.tableNumber ? `Ban ${receipt.tableNumber}` : "Mang di",
+    "Vị trí:",
+    receipt.tableNumber ? `Bàn ${receipt.tableNumber}` : "Mang đi",
     lineWidth,
   ));
 
@@ -292,34 +292,34 @@ export function buildPosReceipt(receipt: {
   parts.push(escposLine(lineWidth));
 
   // Totals
-  parts.push(escposColumns("Tam tinh", fmtPrice(receipt.subtotal), lineWidth));
+  parts.push(escposColumns("Tạm tính", fmtPrice(receipt.subtotal), lineWidth));
 
   if (receipt.tax > 0) {
-    parts.push(escposColumns("Thue VAT", fmtPrice(receipt.tax), lineWidth));
+    parts.push(escposColumns("Thuế VAT", fmtPrice(receipt.tax), lineWidth));
   }
 
   if (receipt.serviceCharge > 0) {
-    parts.push(escposColumns("Phi dich vu", fmtPrice(receipt.serviceCharge), lineWidth));
+    parts.push(escposColumns("Phí dịch vụ", fmtPrice(receipt.serviceCharge), lineWidth));
   }
 
   // Total (bold, double width)
   parts.push(escposTextLn("=".repeat(lineWidth)));
   parts.push(escposBold(true));
   parts.push(escposDoubleHeight(true));
-  parts.push(escposColumns("TONG CONG", `${fmtPrice(receipt.total)}d`, lineWidth));
+  parts.push(escposColumns("TỔNG CỘNG", `${fmtPrice(receipt.total)}d`, lineWidth));
   parts.push(escposDoubleHeight(false));
   parts.push(escposBold(false));
 
   // Payment method
   parts.push(escposLine(lineWidth));
   const methodLabel = PAYMENT_METHOD_LABELS[receipt.paymentMethod] ?? receipt.paymentMethod.toUpperCase();
-  parts.push(escposColumns("Thanh toan:", methodLabel, lineWidth));
+  parts.push(escposColumns("Thanh toán:", methodLabel, lineWidth));
 
   // Footer
   parts.push(escposFeedLines(1));
   parts.push(escposAlignCenter());
   parts.push(escposBold(true));
-  parts.push(escposTextLn("Cam on va hen gap lai!"));
+  parts.push(escposTextLn("Cảm ơn và hẹn gặp lại!"));
   parts.push(escposBold(false));
   if (receipt.wifiPassword) {
     parts.push(escposTextLn(`Pass WiFi: ${receipt.wifiPassword}`));

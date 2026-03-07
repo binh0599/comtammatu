@@ -21,7 +21,7 @@ import {
 } from "./actions";
 
 const PLAN_LABELS: Record<string, string> = {
-  free: "Mien phi",
+  free: "Miễn phí",
   starter: "Starter",
   pro: "Pro",
   enterprise: "Enterprise",
@@ -45,7 +45,7 @@ function SettingInput({
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success(`Da cap nhat ${label}`);
+        toast.success(`Đã cập nhật ${label}`);
       }
     });
   }
@@ -67,7 +67,7 @@ function SettingInput({
         className="gap-1"
       >
         <Save className="h-3.5 w-3.5" />
-        {isPending ? "..." : "Luu"}
+        {isPending ? "..." : "Lưu"}
       </Button>
     </div>
   );
@@ -99,7 +99,7 @@ function BranchCard({
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Da cap nhat chi nhanh");
+        toast.success("Đã cập nhật chi nhánh");
       }
     });
   }
@@ -113,13 +113,13 @@ function BranchCard({
             {branch.code}
           </CardTitle>
           <Badge variant={branch.is_active ? "default" : "secondary"}>
-            {branch.is_active ? "Hoat dong" : "Ngung"}
+            {branch.is_active ? "Hoạt động" : "Ngưng"}
           </Badge>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor={`branch-name-${branch.id}`}>Ten chi nhanh</Label>
+          <Label htmlFor={`branch-name-${branch.id}`}>Tên chi nhánh</Label>
           <Input
             id={`branch-name-${branch.id}`}
             value={name}
@@ -127,7 +127,7 @@ function BranchCard({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`branch-addr-${branch.id}`}>Dia chi</Label>
+          <Label htmlFor={`branch-addr-${branch.id}`}>Địa chỉ</Label>
           <Input
             id={`branch-addr-${branch.id}`}
             value={address}
@@ -135,7 +135,7 @@ function BranchCard({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor={`branch-phone-${branch.id}`}>So dien thoai</Label>
+          <Label htmlFor={`branch-phone-${branch.id}`}>Số điện thoại</Label>
           <Input
             id={`branch-phone-${branch.id}`}
             value={phone}
@@ -143,7 +143,7 @@ function BranchCard({
           />
         </div>
         <div className="text-xs text-muted-foreground">
-          Mui gio: {branch.timezone}
+          Múi giờ: {branch.timezone}
         </div>
         {hasChanges && (
           <Button
@@ -153,7 +153,7 @@ function BranchCard({
             className="gap-1"
           >
             <Save className="h-3.5 w-3.5" />
-            {isPending ? "Dang luu..." : "Luu thay doi"}
+            {isPending ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
         )}
       </CardContent>
@@ -174,16 +174,16 @@ export function SettingsClient({ data }: { data: SettingsData }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Thong tin doanh nghiep
+            Thông tin doanh nghiệp
           </CardTitle>
           <CardDescription>
-            Thong tin chung cua he thong
+            Thông tin chung của hệ thống
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <Label className="text-muted-foreground text-xs">Ten</Label>
+              <Label className="text-muted-foreground text-xs">Tên</Label>
               <p className="font-medium">{data.tenant.name}</p>
             </div>
             <div>
@@ -191,7 +191,7 @@ export function SettingsClient({ data }: { data: SettingsData }) {
               <p className="font-medium">{data.tenant.slug}</p>
             </div>
             <div>
-              <Label className="text-muted-foreground text-xs">Goi</Label>
+              <Label className="text-muted-foreground text-xs">Gói</Label>
               <Badge variant="outline">
                 {PLAN_LABELS[data.tenant.subscription_plan] ??
                   data.tenant.subscription_plan}
@@ -206,20 +206,20 @@ export function SettingsClient({ data }: { data: SettingsData }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
-            Cai dat he thong
+            Cài đặt hệ thống
           </CardTitle>
           <CardDescription>
-            Thue va phu thu ap dung cho tat ca don hang
+            Thuế và phụ thu áp dụng cho tất cả đơn hàng
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <SettingInput
-            label="Thue VAT (%)"
+            label="Thuế VAT (%)"
             settingKey="tax_rate"
             currentValue={taxRate}
           />
           <SettingInput
-            label="Phu thu dich vu (%)"
+            label="Phụ thu dịch vụ (%)"
             settingKey="service_charge"
             currentValue={serviceCharge}
           />
@@ -228,7 +228,7 @@ export function SettingsClient({ data }: { data: SettingsData }) {
 
       {/* Branches */}
       <div>
-        <h2 className="text-lg font-semibold mb-3">Chi nhanh</h2>
+        <h2 className="text-lg font-semibold mb-3">Chi nhánh</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {data.branches.map((branch) => (
             <BranchCard key={branch.id} branch={branch} />

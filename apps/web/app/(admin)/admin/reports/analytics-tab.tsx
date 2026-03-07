@@ -135,7 +135,7 @@ export function AnalyticsTab() {
           </PopoverContent>
         </Popover>
 
-        <span className="text-muted-foreground">den</span>
+        <span className="text-muted-foreground">đến</span>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -161,14 +161,14 @@ export function AnalyticsTab() {
         </Popover>
 
         <Button onClick={handleLoad} disabled={isPending}>
-          {isPending ? "Dang tai..." : "Xem phan tich"}
+          {isPending ? "Đang tải..." : "Xem phân tích"}
         </Button>
       </div>
 
       {!loaded && (
         <div className="flex h-40 items-center justify-center">
           <p className="text-muted-foreground text-sm">
-            Chon khoang thoi gian va nhan &quot;Xem phan tich&quot;
+            Chọn khoảng thời gian và nhấn &quot;Xem phân tích&quot;
           </p>
         </div>
       )}
@@ -178,21 +178,21 @@ export function AnalyticsTab() {
           {/* Branch performance table */}
           <Card>
             <CardHeader>
-              <CardTitle>Hieu suat theo chi nhanh</CardTitle>
+              <CardTitle>Hiệu suất theo chi nhánh</CardTitle>
             </CardHeader>
             <CardContent>
               {branchData.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Khong co du lieu</p>
+                <p className="text-muted-foreground text-sm">Không có dữ liệu</p>
               ) : (
                 <>
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Chi nhanh</TableHead>
+                        <TableHead>Chi nhánh</TableHead>
                         <TableHead className="text-right">Doanh thu</TableHead>
-                        <TableHead className="text-right">Don hang</TableHead>
-                        <TableHead className="text-right">TB/don</TableHead>
-                        <TableHead>Danh muc ban chay</TableHead>
+                        <TableHead className="text-right">Đơn hàng</TableHead>
+                        <TableHead className="text-right">TB/đơn</TableHead>
+                        <TableHead>Danh mục bán chạy</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -263,17 +263,17 @@ export function AnalyticsTab() {
           {/* Peak hours heatmap */}
           <Card>
             <CardHeader>
-              <CardTitle>Gio cao diem (Heatmap)</CardTitle>
+              <CardTitle>Giờ cao điểm (Heatmap)</CardTitle>
             </CardHeader>
             <CardContent>
               {peakData.length === 0 ? (
-                <p className="text-muted-foreground text-sm">Khong co du lieu</p>
+                <p className="text-muted-foreground text-sm">Không có dữ liệu</p>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
                       <tr>
-                        <th className="p-1 text-left font-medium">Gio</th>
+                        <th className="p-1 text-left font-medium">Giờ</th>
                         {DAY_LABELS.map((d) => (
                           <th key={d} className="p-1 text-center font-medium">
                             {d}
@@ -298,7 +298,7 @@ export function AnalyticsTab() {
                                     "p-1 text-center rounded-sm min-w-[32px]",
                                     getHeatColor(count, maxPeak),
                                   )}
-                                  title={`${DAY_LABELS[dow]} ${hour}h: ${count} don`}
+                                  title={`${DAY_LABELS[dow]} ${hour}h: ${count} đơn`}
                                 >
                                   {count > 0 ? count : ""}
                                 </td>
@@ -310,12 +310,12 @@ export function AnalyticsTab() {
                     </tbody>
                   </table>
                   <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>It</span>
+                    <span>Ít</span>
                     <span className="inline-block h-3 w-4 rounded-sm bg-green-200" />
                     <span className="inline-block h-3 w-4 rounded-sm bg-yellow-300" />
                     <span className="inline-block h-3 w-4 rounded-sm bg-orange-400" />
                     <span className="inline-block h-3 w-4 rounded-sm bg-red-500" />
-                    <span>Nhieu</span>
+                    <span>Nhiều</span>
                   </div>
                 </div>
               )}
@@ -326,12 +326,12 @@ export function AnalyticsTab() {
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
               <CardHeader>
-                <CardTitle>Doanh thu theo danh muc</CardTitle>
+                <CardTitle>Doanh thu theo danh mục</CardTitle>
               </CardHeader>
               <CardContent>
                 {categoryData.length === 0 ? (
                   <p className="text-muted-foreground text-sm">
-                    Khong co du lieu
+                    Không có dữ liệu
                   </p>
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
@@ -373,19 +373,19 @@ export function AnalyticsTab() {
 
             <Card>
               <CardHeader>
-                <CardTitle>Chi tiet danh muc</CardTitle>
+                <CardTitle>Chi tiết danh mục</CardTitle>
               </CardHeader>
               <CardContent>
                 {categoryData.length === 0 ? (
                   <p className="text-muted-foreground text-sm">
-                    Khong co du lieu
+                    Không có dữ liệu
                   </p>
                 ) : (
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Danh muc</TableHead>
-                        <TableHead className="text-right">So luong</TableHead>
+                        <TableHead>Danh mục</TableHead>
+                        <TableHead className="text-right">Số lượng</TableHead>
                         <TableHead className="text-right">Doanh thu</TableHead>
                       </TableRow>
                     </TableHeader>
