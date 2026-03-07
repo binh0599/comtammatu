@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { createSupabaseServer } from "@comtammatu/database";
 import { getPublicMenu } from "../actions";
 import { MenuBrowser } from "./menu-browser";
 import { MenuPageClient } from "./menu-page-client";
@@ -14,7 +15,6 @@ export default async function MenuPage() {
   const { items, categories } = await getPublicMenu();
 
   // Resolve branch_id for ordering (single-tenant: pick lowest-id branch deterministically)
-  const { createSupabaseServer } = await import("@comtammatu/database");
   const supabase = await createSupabaseServer();
   const { data: branch } = await supabase
     .from("branches")

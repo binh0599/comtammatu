@@ -21,11 +21,17 @@ export interface CartItem {
   notes?: string;
 }
 
+/** Stable composite key for a cart item (menuItemId + variantId + sorted modifiers). */
+export function buildCartItemKey(item: Pick<CartItem, "menuItemId" | "variantId" | "modifiers">): string {
+  const mods = item.modifiers ? [...item.modifiers].sort((a, b) => a - b).join(",") : "";
+  return `${item.menuItemId}:${item.variantId ?? 0}:${mods}`;
+}
+
 interface CartContextValue {
   items: CartItem[];
   addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  removeItem: (menuItemId: number) => void;
-  updateQuantity: (menuItemId: number, quantity: number) => void;
+  removeItem: (key: string) => void;
+  updateQuantity: (key: string, quantity: number) => void;
   clearCart: () => void;
   cartTotal: number;
   cartCount: number;
@@ -72,11 +78,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback(
     (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
+      const key = buildCartItemKey(item);
       setItems((prev) => {
-        const existing = prev.find((i) => i.menuItemId === item.menuItemId);
+        const existing = prev.find((i) => buildCartItemKey(i) === key);
         if (existing) {
           return prev.map((i) =>
-            i.menuItemId === item.menuItemId
+            buildCartItemKey(i) === key
               ? { ...i, quantity: i.quantity + (item.quantity ?? 1) }
               : i,
           );
@@ -87,18 +94,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [],
   );
 
-  const removeItem = useCallback((menuItemId: number) => {
-    setItems((prev) => prev.filter((i) => i.menuItemId !== menuItemId));
+  const removeItem = useCallback((key: string) => {
+    setItems((prev) => prev.filter((i) => buildCartItemKey(i) !== key));
   }, []);
 
-  const updateQuantity = useCallback((menuItemId: number, quantity: number) => {
+  const updateQuantity = useCallback((key: string, quantity: number) => {
     if (quantity <= 0) {
-      setItems((prev) => prev.filter((i) => i.menuItemId !== menuItemId));
+      setItems((prev) => prev.filter((i) => buildCartItemKey(i) !== key));
       return;
     }
     setItems((prev) =>
       prev.map((i) =>
-        i.menuItemId === menuItemId ? { ...i, quantity } : i,
+        buildCartItemKey(i) === key ? { ...i, quantity } : i,
       ),
     );
   }, []);

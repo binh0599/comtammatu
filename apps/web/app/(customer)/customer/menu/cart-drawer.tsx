@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@comtammatu/shared";
-import { useCart } from "./cart-context";
+import { useCart, buildCartItemKey } from "./cart-context";
 import { placeCustomerOrder } from "../actions";
 import { toast } from "sonner";
 
@@ -68,7 +68,12 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
         setOpen(false);
         toast.success("Đặt hàng thành công!");
         router.push(`/customer/orders/${result.orderId}`);
+        return;
       }
+
+      // Unexpected result shape — treat as failure
+      console.error("placeCustomerOrder: unexpected result", result);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
     });
   }
 
@@ -104,9 +109,11 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
           <>
             {/* Cart items list */}
             <div className="flex-1 space-y-3 overflow-y-auto py-2">
-              {items.map((item) => (
+              {items.map((item) => {
+                const itemKey = buildCartItemKey(item);
+                return (
                 <div
-                  key={item.menuItemId}
+                  key={itemKey}
                   className="flex items-center justify-between gap-3"
                 >
                   <div className="min-w-0 flex-1">
@@ -123,7 +130,7 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
                       size="icon"
                       className="h-7 w-7"
                       onClick={() =>
-                        updateQuantity(item.menuItemId, item.quantity - 1)
+                        updateQuantity(itemKey, item.quantity - 1)
                       }
                       aria-label={`Giảm số lượng ${item.name}`}
                     >
@@ -137,7 +144,7 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
                       size="icon"
                       className="h-7 w-7"
                       onClick={() =>
-                        updateQuantity(item.menuItemId, item.quantity + 1)
+                        updateQuantity(itemKey, item.quantity + 1)
                       }
                       aria-label={`Tăng số lượng ${item.name}`}
                     >
@@ -153,13 +160,14 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7 shrink-0"
-                    onClick={() => removeItem(item.menuItemId)}
+                    onClick={() => removeItem(itemKey)}
                     aria-label={`Xóa ${item.name}`}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             <Separator />
