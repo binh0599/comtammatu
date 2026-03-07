@@ -13,16 +13,17 @@ export const revalidate = 300;
 export default async function MenuPage() {
   const { items, categories } = await getPublicMenu();
 
-  // Resolve branch_id for ordering (single-tenant: first branch)
+  // Resolve branch_id for ordering (single-tenant: pick lowest-id branch deterministically)
   const { createSupabaseServer } = await import("@comtammatu/database");
   const supabase = await createSupabaseServer();
   const { data: branch } = await supabase
     .from("branches")
     .select("id")
+    .order("id", { ascending: true })
     .limit(1)
     .single();
 
-  const branchId = branch?.id ?? 0;
+  const branchId = branch?.id ?? null;
 
   return (
     <MenuPageClient branchId={branchId}>

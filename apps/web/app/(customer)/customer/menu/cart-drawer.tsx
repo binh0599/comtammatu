@@ -22,7 +22,7 @@ import { placeCustomerOrder } from "../actions";
 import { toast } from "sonner";
 
 interface CartDrawerProps {
-  branchId: number;
+  branchId: number | null;
 }
 
 export function CartDrawer({ branchId }: CartDrawerProps) {
@@ -41,7 +41,7 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
   const router = useRouter();
 
   function handlePlaceOrder() {
-    if (items.length === 0) return;
+    if (items.length === 0 || branchId === null) return;
 
     startTransition(async () => {
       const result = await placeCustomerOrder({
@@ -218,9 +218,11 @@ export function CartDrawer({ branchId }: CartDrawerProps) {
                 className="w-full"
                 size="lg"
                 onClick={handlePlaceOrder}
-                disabled={isPending || items.length === 0}
+                disabled={isPending || items.length === 0 || branchId === null}
               >
-                {isPending ? (
+                {branchId === null ? (
+                  "Không thể đặt hàng — chưa có chi nhánh"
+                ) : isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Đang đặt hàng...

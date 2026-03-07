@@ -5,7 +5,7 @@ import { CartProvider } from "./cart-context";
 import { CartDrawer } from "./cart-drawer";
 
 interface MenuPageClientProps {
-  branchId: number;
+  branchId: number | null;
   children: ReactNode;
 }
 
