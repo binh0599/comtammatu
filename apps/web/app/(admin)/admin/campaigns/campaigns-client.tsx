@@ -250,7 +250,7 @@ function CampaignFormDialog({
         min_visits: form.get("min_visits")
           ? Number(form.get("min_visits"))
           : undefined,
-        gender: (form.get("gender") as string) || undefined,
+        gender: ((g) => g && g !== "ALL" ? g : undefined)(form.get("gender") as string),
       },
     };
 
@@ -377,13 +377,13 @@ function CampaignFormDialog({
                   </Label>
                   <Select
                     name="gender"
-                    defaultValue={segment.gender ?? ""}
+                    defaultValue={segment.gender ?? "ALL"}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Tat ca" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Tat ca</SelectItem>
+                      <SelectItem value="ALL">Tat ca</SelectItem>
                       <SelectItem value="M">Nam</SelectItem>
                       <SelectItem value="F">Nu</SelectItem>
                       <SelectItem value="Other">Khac</SelectItem>
