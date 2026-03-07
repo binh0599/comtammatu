@@ -112,7 +112,7 @@ export function TicketCard({
                   onClick={handleSerialPrint}
                   title="In qua Serial"
                   aria-label={`In phiếu bếp qua Serial ${orderNumber}`}
-                  className="size-9"
+                  className="size-11"
                 >
                   <Printer className="size-4" aria-hidden="true" />
                 </Button>
