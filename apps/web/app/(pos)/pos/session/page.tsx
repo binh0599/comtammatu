@@ -13,7 +13,7 @@ export default async function SessionPage() {
     const summary = await getSessionSummary(activeSession.id);
 
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-4">
+      <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4">
         <ActiveSessionCard session={activeSession} summary={summary} />
       </div>
     );
@@ -26,7 +26,7 @@ export default async function SessionPage() {
     : await getTerminalsForSession();
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4">
       <OpenSessionForm terminals={terminals} linkedTerminalId={linkedTerminal?.id} />
     </div>
   );

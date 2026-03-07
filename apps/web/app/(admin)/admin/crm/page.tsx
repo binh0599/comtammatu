@@ -29,7 +29,7 @@ export default async function CrmPage() {
   return (
     <>
       <Header breadcrumbs={[{ label: "Khách hàng" }]} />
-      <div className="flex flex-1 flex-col gap-6 p-4">
+      <div className="flex flex-1 flex-col gap-4 p-4">
         <CrmStatsCards stats={stats} />
 
         <Tabs defaultValue="customers" className="w-full">
@@ -51,19 +51,19 @@ export default async function CrmPage() {
               Phản hồi
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="customers" className="mt-6">
+          <TabsContent value="customers">
             <CustomersTab
               customers={customers}
               loyaltyTiers={loyaltyTiers}
             />
           </TabsContent>
-          <TabsContent value="loyalty" className="mt-6">
+          <TabsContent value="loyalty">
             <LoyaltyTiersTab loyaltyTiers={loyaltyTiers} />
           </TabsContent>
-          <TabsContent value="vouchers" className="mt-6">
+          <TabsContent value="vouchers">
             <VouchersTab vouchers={vouchers} branches={branches} />
           </TabsContent>
-          <TabsContent value="feedback" className="mt-6">
+          <TabsContent value="feedback">
             <FeedbackTab feedback={feedback} />
           </TabsContent>
         </Tabs>

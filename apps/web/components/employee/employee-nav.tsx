@@ -31,13 +31,13 @@ export function EmployeeNav() {
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 text-xs",
+                "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px]",
                 isActive
                   ? "text-primary font-medium"
                   : "text-muted-foreground"
               )}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-4 w-4" />
               <span>{item.label}</span>
             </Link>
           );

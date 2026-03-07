@@ -29,7 +29,7 @@ export default async function LoyaltyPage() {
     return (
       <div className="flex flex-col items-center gap-3 py-16">
         <p className="text-muted-foreground text-sm">
-          Chua co thong tin tich diem. Vui long lien he nha hang.
+          Chưa có thông tin tích điểm. Vui lòng liên hệ nhà hàng.
         </p>
       </div>
     );
