@@ -102,7 +102,7 @@ export function OrdersList({
       </div>
 
       {/* Orders */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {filteredOrders.map((order) => {
           const itemCount = order.order_items.reduce(
             (sum, i) => sum + i.quantity,
@@ -145,7 +145,7 @@ export function OrdersList({
               <div className="text-right">
                 <p className="font-semibold">{formatPrice(order.total)}</p>
               </div>
-              <ChevronRight className="text-muted-foreground h-5 w-5 shrink-0" aria-hidden="true" />
+              <ChevronRight className="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
             </Link>
           );
         })}

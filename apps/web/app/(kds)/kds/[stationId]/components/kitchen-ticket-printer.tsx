@@ -120,9 +120,10 @@ export function KitchenTicketPrinter({
         size="icon"
         onClick={() => handlePrint()}
         title="In phiếu bếp"
-        className="size-8"
+        aria-label={`In phiếu bếp ${orderNumber}`}
+        className="size-9"
       >
-        <Printer className="size-4" />
+        <Printer className="size-4" aria-hidden="true" />
       </Button>
 
       {/* Hidden Print Content — 80mm thermal layout */}
@@ -209,22 +210,6 @@ export function KitchenTicketPrinter({
         </div>
       </div>
 
-      {/* Print-specific styles */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        @media print {
-          body > *:not(.print\\:block) {
-            display: none !important;
-          }
-          @page {
-            margin: 0;
-            size: 80mm auto;
-          }
-        }
-      `,
-        }}
-      />
     </>
   );
 }

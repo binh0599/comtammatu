@@ -156,7 +156,7 @@ export function ReceiptPrinter({
                 <div onClick={() => handlePrint()}>{trigger}</div>
             ) : (
                 <Button variant="outline" onClick={() => handlePrint()} className="gap-2">
-                    <Printer className="w-4 h-4" />
+                    <Printer className="size-4" />
                     In hóa đơn
                 </Button>
             )}
@@ -275,19 +275,6 @@ export function ReceiptPrinter({
                 </div>
             </div>
 
-            {/* Inject print-specific styles globally to hide UI when printing */}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-        @media print {
-          body > *:not(.print\\:block) {
-            display: none !important;
-          }
-          @page {
-            margin: 0;
-            size: 80mm 297mm;
-          }
-        }
-      `}} />
         </>
     );
 }

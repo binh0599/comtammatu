@@ -143,6 +143,23 @@
   }
 }
 
+@media print {
+  body > * {
+    visibility: hidden !important;
+  }
+  .print\:block,
+  .print\:block * {
+    visibility: visible !important;
+  }
+  .print\:block {
+    display: block !important;
+  }
+  @page {
+    margin: 0;
+    size: 80mm 297mm;
+  }
+}
+
 @keyframes page-fade-in {
   from {
     opacity: 0;

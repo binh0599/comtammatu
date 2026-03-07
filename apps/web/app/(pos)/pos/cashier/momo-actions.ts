@@ -30,6 +30,17 @@ async function _createMomoPayment(orderId: number) {
 
   if (!session) return { error: "Chưa mở ca." };
 
+  // Verify terminal is cashier_station
+  const { data: terminal } = await supabase
+    .from("pos_terminals")
+    .select("type")
+    .eq("id", session.terminal_id)
+    .single();
+
+  if (terminal?.type !== "cashier_station") {
+    return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
+  }
+
   // Get order — validate branch ownership
   const { data: order } = await supabase
     .from("orders")

@@ -9,19 +9,7 @@ import { bumpTicket } from "./actions";
 import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
 import { buildKdsTicket } from "../lib/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
-import { parseItems, type KdsTicket, type TimingRule } from "./types";
-
-function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
-  if (!rule) return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
-
-  if (rule.critical_min && elapsedMinutes >= rule.critical_min) {
-    return { border: "border-red-500", bg: "bg-red-50", label: "Trễ" };
-  }
-  if (rule.warning_min && elapsedMinutes >= rule.warning_min) {
-    return { border: "border-yellow-500", bg: "bg-yellow-50", label: "Gần trễ" };
-  }
-  return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
-}
+import { getTimingColor, parseItems, type KdsTicket, type TimingRule } from "./types";
 
 export function TicketCard({
   ticket,
@@ -123,9 +111,10 @@ export function TicketCard({
                   size="icon"
                   onClick={handleSerialPrint}
                   title="In qua Serial"
-                  className="size-8"
+                  aria-label={`In phiếu bếp qua Serial ${orderNumber}`}
+                  className="size-11"
                 >
-                  <Printer className="size-4" />
+                  <Printer className="size-4" aria-hidden="true" />
                 </Button>
               )}
             </>

@@ -39,9 +39,9 @@ export default async function PrinterPage({ searchParams }: PrinterPageProps) {
     return (
       <div className="p-4 space-y-4">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild aria-label="Quay lại">
             <Link href="/pos">
-              <ArrowLeft className="size-5" />
+              <ArrowLeft className="size-5" aria-hidden="true" />
             </Link>
           </Button>
           <div>
@@ -82,9 +82,9 @@ export default async function PrinterPage({ searchParams }: PrinterPageProps) {
     <div className="p-4 space-y-4">
       <div className="flex items-center gap-4">
         {terminalList.length > 1 && (
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" asChild aria-label="Quay lại chọn thiết bị">
             <Link href="/pos/printer">
-              <ArrowLeft className="size-5" />
+              <ArrowLeft className="size-5" aria-hidden="true" />
             </Link>
           </Button>
         )}

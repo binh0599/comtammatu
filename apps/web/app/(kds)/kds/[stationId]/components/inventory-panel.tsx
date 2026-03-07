@@ -31,6 +31,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { getWasteReasonLabel } from "@comtammatu/shared";
 import {
   toggleMenuItemAvailability,
@@ -87,16 +88,18 @@ function MenuItemRow({
 
   return (
     <div
-      className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 ${
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-lg border px-3 py-2",
         isDisabled ? "border-red-300 bg-red-50" : "border-border"
-      }`}
+      )}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`text-sm font-medium truncate ${
+            className={cn(
+              "text-sm font-medium truncate",
               isDisabled ? "text-red-700 line-through" : "text-foreground"
-            }`}
+            )}
           >
             {item.menu_item_name}
           </span>
@@ -376,7 +379,7 @@ function RestockRequestDialog({
             <div className="flex items-center justify-between">
               <Label>Nguyên liệu cần mua</Label>
               <Button type="button" variant="ghost" size="sm" onClick={addItem}>
-                <Plus className="mr-1 h-3 w-3" />
+                <Plus className="mr-1 size-3" />
                 Thêm
               </Button>
             </div>
@@ -413,6 +416,7 @@ function RestockRequestDialog({
                     size="sm"
                     className="px-2 text-red-500"
                     onClick={() => removeItem(item._key)}
+                    aria-label="Xóa dòng"
                   >
                     X
                   </Button>
@@ -538,9 +542,10 @@ export function InventoryPanel({
         <div className="flex items-center justify-between">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-expanded={isExpanded}
             className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            <Package className="h-4 w-4" />
+            <Package className="size-4" />
             <span>Kho hàng</span>
             {alertCount > 0 && (
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
@@ -548,9 +553,9 @@ export function InventoryPanel({
               </Badge>
             )}
             {isExpanded ? (
-              <ChevronUp className="h-3.5 w-3.5" />
+              <ChevronUp className="size-3.5" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="size-3.5" />
             )}
           </button>
 
@@ -585,7 +590,7 @@ export function InventoryPanel({
               className="h-7 gap-1 text-xs"
               onClick={() => setRestockDialogOpen(true)}
             >
-              <ShoppingCart className="h-3 w-3" />
+              <ShoppingCart className="size-3" />
               Đặt hàng gấp
             </Button>
             <Button
@@ -594,7 +599,7 @@ export function InventoryPanel({
               className="h-7 gap-1 text-xs"
               onClick={() => setWasteDialogOpen(true)}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="size-3" />
               Hao hụt
             </Button>
           </div>
@@ -607,7 +612,7 @@ export function InventoryPanel({
             {unavailableItems.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold text-red-700 uppercase mb-1.5 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
+                  <AlertTriangle className="size-3" />
                   Đã tắt ({unavailableItems.length})
                 </h4>
                 <div className="space-y-1">
@@ -651,7 +656,7 @@ export function InventoryPanel({
               <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
                 Tất cả món ({portions.length})
               </h4>
-              <div className="max-h-64 overflow-y-auto space-y-1">
+              <div className="max-h-64 overflow-y-auto space-y-1 md:max-h-96">
                 {portions
                   .filter(
                     (i) =>

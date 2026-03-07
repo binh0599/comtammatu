@@ -30,10 +30,10 @@ function ConnectionBanner({ status }: { status: ConnectionStatus }) {
 
   return (
     <div
-      className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-1.5 text-sm font-medium text-yellow-800"
+      className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-2 text-sm font-medium text-yellow-800"
       role="alert"
     >
-      <WifiOff className="h-4 w-4" />
+      <WifiOff className="size-4" aria-hidden="true" />
       {messages[status]}
     </div>
   );
@@ -165,15 +165,17 @@ export function KdsBoard({
       <ConnectionBanner status={connectionStatus} />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
-        <h1 className="text-2xl font-bold text-foreground">{stationName}</h1>
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-bold text-foreground sm:text-2xl">{stationName}</h1>
           <span className="text-sm text-muted-foreground" role="status">
-            {tickets.length} đơn đang chờ
+            {tickets.length} đơn
           </span>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-4">
           {printerConfig && (
             <Badge variant="outline" className="gap-1 text-xs">
-              <Printer className="size-3" />
+              <Printer className="size-3" aria-hidden="true" />
               {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>
           )}
@@ -189,7 +191,7 @@ export function KdsBoard({
               }
               disabled={serialPrinter.status === "connecting"}
             >
-              <Usb className="size-3.5" />
+              <Usb className="size-3.5" aria-hidden="true" />
               {serialPrinter.status === "connected"
                 ? "Serial: Đã kết nối"
                 : serialPrinter.status === "connecting"
@@ -199,24 +201,24 @@ export function KdsBoard({
                     : "Kết nối Serial"}
             </Button>
           )}
-          <div className="flex gap-2" aria-label="Chú thích màu">
+          <div className="hidden gap-2 md:flex" role="group" aria-label="Chú thích thời gian">
             <span className="flex items-center gap-1 text-xs text-green-700">
-              <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
+              <span className="size-2 rounded-full bg-green-500" aria-hidden="true" />
               Bình thường
             </span>
             <span className="flex items-center gap-1 text-xs text-yellow-700">
-              <span className="h-2 w-2 rounded-full bg-yellow-500" aria-hidden="true" />
+              <span className="size-2 rounded-full bg-yellow-500" aria-hidden="true" />
               Gần trễ
             </span>
             <span className="flex items-center gap-1 text-xs text-red-700">
-              <span className="h-2 w-2 rounded-full bg-red-500" aria-hidden="true" />
+              <span className="size-2 rounded-full bg-red-500" aria-hidden="true" />
               Trễ
             </span>
           </div>
-          <Button variant="outline" size="sm" asChild className="gap-1">
+          <Button variant="outline" size="sm" asChild className="gap-1" aria-label="Cài đặt máy in">
             <Link href="/kds/printer">
-              <Settings className="size-3.5" />
-              Máy in
+              <Settings className="size-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">Máy in</span>
             </Link>
           </Button>
           <LogoutButton className="rounded-lg border border-border px-3 py-1.5 text-sm" />
