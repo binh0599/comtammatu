@@ -135,7 +135,12 @@ export function buildKdsTicket(ticket: {
   stationName: string;
   orderNumber: string;
   tableNumber: string | null;
-  items: Array<{ quantity: number; name: string; notes?: string }>;
+  items: Array<{
+    quantity: number;
+    name: string;
+    notes?: string;
+    modifiers?: Array<{ name: string; options?: string[] }> | null;
+  }>;
   notes?: string;
   createdAt: string;
   paperWidth: number; // 58 or 80
@@ -171,6 +176,13 @@ export function buildKdsTicket(ticket: {
     parts.push(escposBold(true));
     parts.push(escposTextLn(`${item.quantity}x  ${item.name}`));
     parts.push(escposBold(false));
+
+    if (item.modifiers?.length) {
+      for (const mod of item.modifiers) {
+        const detail = mod.options?.length ? `: ${mod.options.join(", ")}` : "";
+        parts.push(escposTextLn(`    + ${mod.name}${detail}`));
+      }
+    }
 
     if (item.notes) {
       parts.push(escposTextLn(`    * ${item.notes}`));

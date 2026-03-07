@@ -85,6 +85,7 @@ export function KdsBoard({
             quantity: i.quantity,
             name: i.menu_item_name + (i.variant_name ? ` - ${i.variant_name}` : ""),
             notes: i.notes ?? undefined,
+            modifiers: i.modifiers,
           })),
           createdAt: ticket.created_at,
           paperWidth,
