@@ -37,8 +37,8 @@ function formatVND(value: number): string {
 }
 
 const METHOD_LABELS: Record<string, string> = {
-  cash: "Tien mat",
-  qr: "QR / Chuyen khoan",
+  cash: "Tiền mặt",
+  qr: "QR / Chuyển khoản",
   momo: "Momo",
 };
 
@@ -96,7 +96,7 @@ export function ReportsClient({
           </PopoverContent>
         </Popover>
 
-        <span className="text-muted-foreground">den</span>
+        <span className="text-muted-foreground">đến</span>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -122,7 +122,7 @@ export function ReportsClient({
         </Popover>
 
         <Button onClick={handleRefresh} disabled={isPending}>
-          {isPending ? "Dang tai..." : "Xem bao cao"}
+          {isPending ? "Đang tải..." : "Xem báo cáo"}
         </Button>
       </div>
 
@@ -130,7 +130,7 @@ export function ReportsClient({
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Tong doanh thu</CardTitle>
+            <CardTitle className="text-sm font-medium">Tổng doanh thu</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -140,7 +140,7 @@ export function ReportsClient({
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Tong don hang</CardTitle>
+            <CardTitle className="text-sm font-medium">Tổng đơn hàng</CardTitle>
             <Receipt className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -150,7 +150,7 @@ export function ReportsClient({
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Gia tri TB/don</CardTitle>
+            <CardTitle className="text-sm font-medium">Giá trị TB/đơn</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -160,7 +160,7 @@ export function ReportsClient({
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Tong tip</CardTitle>
+            <CardTitle className="text-sm font-medium">Tổng tip</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -173,15 +173,15 @@ export function ReportsClient({
       {data.paymentMethods.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Phuong thuc thanh toan</CardTitle>
+            <CardTitle>Phương thức thanh toán</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Phuong thuc</TableHead>
-                  <TableHead className="text-right">So luong</TableHead>
-                  <TableHead className="text-right">Tong tien</TableHead>
+                  <TableHead>Phương thức</TableHead>
+                  <TableHead className="text-right">Số lượng</TableHead>
+                  <TableHead className="text-right">Tổng tiền</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -203,17 +203,17 @@ export function ReportsClient({
         {data.dailyData.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Doanh thu theo ngay</CardTitle>
+              <CardTitle>Doanh thu theo ngày</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-[400px] overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ngay</TableHead>
-                      <TableHead className="text-right">Don</TableHead>
+                      <TableHead>Ngày</TableHead>
+                      <TableHead className="text-right">Đơn</TableHead>
                       <TableHead className="text-right">Doanh thu</TableHead>
-                      <TableHead className="text-right">TB/don</TableHead>
+                      <TableHead className="text-right">TB/đơn</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -240,14 +240,14 @@ export function ReportsClient({
         {data.topItems.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle>Mon ban chay</CardTitle>
+              <CardTitle>Món bán chạy</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-[400px] overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Mon</TableHead>
+                      <TableHead>Món</TableHead>
                       <TableHead className="text-right">SL</TableHead>
                       <TableHead className="text-right">Doanh thu</TableHead>
                     </TableRow>

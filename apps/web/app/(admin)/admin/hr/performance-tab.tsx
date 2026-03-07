@@ -134,7 +134,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
           </PopoverContent>
         </Popover>
 
-        <span className="text-muted-foreground">den</span>
+        <span className="text-muted-foreground">đến</span>
 
         <Popover>
           <PopoverTrigger asChild>
@@ -161,10 +161,10 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
 
         <Select value={branchId} onValueChange={setBranchId}>
           <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Chi nhanh" />
+            <SelectValue placeholder="Chi nhánh" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca chi nhanh</SelectItem>
+            <SelectItem value="all">Tất cả chi nhánh</SelectItem>
             {branches.map((b) => (
               <SelectItem key={b.id} value={String(b.id)}>
                 {b.name}
@@ -175,25 +175,25 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
 
         <Select value={role} onValueChange={setRole}>
           <SelectTrigger className="w-full sm:w-[150px]">
-            <SelectValue placeholder="Vai tro" />
+            <SelectValue placeholder="Vai trò" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Tat ca</SelectItem>
-            <SelectItem value="waiter">Phuc vu</SelectItem>
-            <SelectItem value="cashier">Thu ngan</SelectItem>
-            <SelectItem value="chef">Bep</SelectItem>
+            <SelectItem value="all">Tất cả</SelectItem>
+            <SelectItem value="waiter">Phục vụ</SelectItem>
+            <SelectItem value="cashier">Thu ngân</SelectItem>
+            <SelectItem value="chef">Bếp</SelectItem>
           </SelectContent>
         </Select>
 
         <Button onClick={handleLoad} disabled={isPending}>
-          {isPending ? "Dang tai..." : "Xem hieu suat"}
+          {isPending ? "Đang tải..." : "Xem hiệu suất"}
         </Button>
       </div>
 
       {!loaded && (
         <div className="flex h-40 items-center justify-center">
           <p className="text-muted-foreground text-sm">
-            Chon tham so va nhan &quot;Xem hieu suat&quot;
+            Chọn tham số và nhấn &quot;Xem hiệu suất&quot;
           </p>
         </div>
       )}
@@ -204,18 +204,18 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
           {showWaiters && waiters.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Phuc vu ({waiters.length})</CardTitle>
+                <CardTitle>Phục vụ ({waiters.length})</CardTitle>
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ten</TableHead>
-                      <TableHead>Chi nhanh</TableHead>
-                      <TableHead className="text-right">Don tao</TableHead>
-                      <TableHead className="text-right">TB mon/don</TableHead>
-                      <TableHead className="text-right">Chuyen can</TableHead>
-                      <TableHead className="text-center">Diem</TableHead>
+                      <TableHead>Tên</TableHead>
+                      <TableHead>Chi nhánh</TableHead>
+                      <TableHead className="text-right">Đơn tạo</TableHead>
+                      <TableHead className="text-right">TB món/đơn</TableHead>
+                      <TableHead className="text-right">Chuyên cần</TableHead>
+                      <TableHead className="text-center">Điểm</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -249,19 +249,19 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
           {showCashiers && cashiers.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Thu ngan ({cashiers.length})</CardTitle>
+                <CardTitle>Thu ngân ({cashiers.length})</CardTitle>
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ten</TableHead>
-                      <TableHead>Chi nhanh</TableHead>
+                      <TableHead>Tên</TableHead>
+                      <TableHead>Chi nhánh</TableHead>
                       <TableHead className="text-right">
-                        Thanh toan xu ly
+                        Thanh toán xử lý
                       </TableHead>
-                      <TableHead className="text-right">Chuyen can</TableHead>
-                      <TableHead className="text-center">Diem</TableHead>
+                      <TableHead className="text-right">Chuyên cần</TableHead>
+                      <TableHead className="text-center">Điểm</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -292,22 +292,22 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
           {showChefs && chefs.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Bep ({chefs.length})</CardTitle>
+                <CardTitle>Bếp ({chefs.length})</CardTitle>
               </CardHeader>
               <CardContent className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Ten</TableHead>
-                      <TableHead>Chi nhanh</TableHead>
+                      <TableHead>Tên</TableHead>
+                      <TableHead>Chi nhánh</TableHead>
                       <TableHead className="text-right">
-                        Ticket xu ly
+                        Ticket xử lý
                       </TableHead>
                       <TableHead className="text-right">
-                        TB thoi gian (phut)
+                        TB thời gian (phút)
                       </TableHead>
-                      <TableHead className="text-right">Chuyen can</TableHead>
-                      <TableHead className="text-center">Diem</TableHead>
+                      <TableHead className="text-right">Chuyên cần</TableHead>
+                      <TableHead className="text-center">Điểm</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -344,7 +344,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
           {data.length === 0 && (
             <div className="flex h-40 items-center justify-center">
               <p className="text-muted-foreground text-sm">
-                Khong co du lieu nhan vien cho khoang thoi gian nay
+                Không có dữ liệu nhân viên cho khoảng thời gian này
               </p>
             </div>
           )}

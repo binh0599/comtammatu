@@ -352,7 +352,7 @@ export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 export const RESERVATION_STATUSES = ["pending", "confirmed", "seated", "no_show", "cancelled"] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
 
-export const TABLE_SECTIONS = ["Tang 1", "Tang 2", "San vuon", "VIP", "Ngoai troi"] as const;
+export const TABLE_SECTIONS = ["Tầng 1", "Tầng 2", "Sân vườn", "VIP", "Ngoài trời"] as const;
 
 // ===== Push Notifications =====
 

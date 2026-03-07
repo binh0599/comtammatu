@@ -36,7 +36,7 @@ export function PendingOrdersClient() {
       );
       setOrders(pending);
     } catch {
-      toast.error("Khong the tai danh sach don cho");
+      toast.error("Không thể tải danh sách đơn chờ");
     } finally {
       setIsLoading(false);
     }
@@ -48,23 +48,23 @@ export function PendingOrdersClient() {
 
   async function handleSync() {
     if (!isOnline) {
-      toast.error("Khong co ket noi mang");
+      toast.error("Không có kết nối mạng");
       return;
     }
     setIsSyncing(true);
     try {
       const result = await syncPendingOrders();
       if (result.synced > 0) {
-        toast.success(`Da dong bo ${result.synced} don hang`);
+        toast.success(`Đã đồng bộ ${result.synced} đơn hàng`);
       }
       if (result.failed > 0) {
-        toast.error(`${result.failed} don khong dong bo duoc`);
+        toast.error(`${result.failed} đơn không đồng bộ được`);
       }
       if (result.synced === 0 && result.failed === 0) {
-        toast.info("Khong co don nao can dong bo");
+        toast.info("Không có đơn nào cần đồng bộ");
       }
     } catch {
-      toast.error("Loi khi dong bo");
+      toast.error("Lỗi khi đồng bộ");
     } finally {
       setIsSyncing(false);
       await loadOrders();
@@ -74,20 +74,20 @@ export function PendingOrdersClient() {
   async function handleDiscard(clientId: string) {
     try {
       await removePendingOrder(clientId);
-      toast.success("Da xoa don cho");
+      toast.success("Đã xóa đơn chờ");
       await loadOrders();
     } catch {
-      toast.error("Khong the xoa");
+      toast.error("Không thể xóa");
     }
   }
 
   async function handleClearAll() {
     try {
       await clearPendingOrders();
-      toast.success("Da xoa tat ca don cho");
+      toast.success("Đã xóa tất cả đơn chờ");
       setOrders([]);
     } catch {
-      toast.error("Khong the xoa");
+      toast.error("Không thể xóa");
     }
   }
 
@@ -103,9 +103,9 @@ export function PendingOrdersClient() {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Package className="mb-3 h-12 w-12 text-muted-foreground" />
-        <p className="text-lg font-medium">Khong co don cho dong bo</p>
+        <p className="text-lg font-medium">Không có đơn chờ đồng bộ</p>
         <p className="text-muted-foreground text-sm mt-1">
-          Tat ca don hang da duoc gui thanh cong
+          Tất cả đơn hàng đã được gửi thành công
         </p>
       </div>
     );
@@ -126,7 +126,7 @@ export function PendingOrdersClient() {
           ) : (
             <CloudUpload className="h-4 w-4" />
           )}
-          {isSyncing ? "Dang dong bo..." : `Dong bo ${orders.length} don`}
+          {isSyncing ? "Đang đồng bộ..." : `Đồng bộ ${orders.length} đơn`}
         </Button>
         <Button
           onClick={handleClearAll}
@@ -135,11 +135,11 @@ export function PendingOrdersClient() {
           className="gap-1.5 text-destructive"
         >
           <Trash2 className="h-4 w-4" />
-          Xoa tat ca
+          Xóa tất cả
         </Button>
         {!isOnline && (
           <Badge variant="destructive" className="ml-auto gap-1">
-            Ngoai tuyen
+            Ngoại tuyến
           </Badge>
         )}
       </div>
@@ -156,11 +156,11 @@ export function PendingOrdersClient() {
                 <div className="flex items-center gap-2">
                   <span className="font-medium">
                     {order.payload.type === "dine_in"
-                      ? `Tai ban #${order.payload.table_id}`
-                      : "Mang di"}
+                      ? `Tại bàn #${order.payload.table_id}`
+                      : "Mang đi"}
                   </span>
                   <Badge variant="outline" className="text-xs">
-                    {order.payload.items.length} mon
+                    {order.payload.items.length} món
                   </Badge>
                 </div>
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
@@ -173,7 +173,7 @@ export function PendingOrdersClient() {
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 text-destructive"
-                aria-label="Xoa don"
+                aria-label="Xóa đơn"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -195,7 +195,7 @@ export function PendingOrdersClient() {
                 <AlertTriangle className="h-3 w-3" />
                 {order.lastError}
                 <span className="text-muted-foreground">
-                  ({order.attempts} lan thu)
+                  ({order.attempts} lần thử)
                 </span>
               </div>
             )}

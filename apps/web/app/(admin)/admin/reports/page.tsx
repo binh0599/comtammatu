@@ -21,12 +21,12 @@ export default async function ReportsPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Bao cao" }]} />
+      <Header breadcrumbs={[{ label: "Báo cáo" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Tabs defaultValue="reports" className="w-full">
           <TabsList>
-            <TabsTrigger value="reports">Bao cao</TabsTrigger>
-            <TabsTrigger value="analytics">Phan tich chi nhanh</TabsTrigger>
+            <TabsTrigger value="reports">Báo cáo</TabsTrigger>
+            <TabsTrigger value="analytics">Phân tích chi nhánh</TabsTrigger>
           </TabsList>
           <TabsContent value="reports">
             <ReportsClient

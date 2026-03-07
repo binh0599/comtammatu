@@ -174,7 +174,7 @@ export function KdsBoard({
           {printerConfig && (
             <Badge variant="outline" className="gap-1 text-xs">
               <Printer className="size-3" />
-              {printerConfig.auto_print ? "Tu dong in" : "May in san sang"}
+              {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>
           )}
           {serialPrinter.isSupported && (
@@ -191,12 +191,12 @@ export function KdsBoard({
             >
               <Usb className="size-3.5" />
               {serialPrinter.status === "connected"
-                ? "Serial: Da ket noi"
+                ? "Serial: Đã kết nối"
                 : serialPrinter.status === "connecting"
-                  ? "Dang ket noi..."
+                  ? "Đang kết nối..."
                   : serialPrinter.status === "error"
-                    ? "Serial: Loi"
-                    : "Ket noi Serial"}
+                    ? "Serial: Lỗi"
+                    : "Kết nối Serial"}
             </Button>
           )}
           <div className="flex gap-2" aria-label="Chú thích màu">

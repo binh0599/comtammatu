@@ -76,7 +76,7 @@ async function _createCampaign(input: {
   const parsed = createCampaignSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
@@ -132,7 +132,7 @@ async function _updateCampaign(
   const parsed = updateCampaignSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
@@ -146,11 +146,11 @@ async function _updateCampaign(
     .single();
 
   if (fetchError || !existing) {
-    return { error: "Chien dich khong ton tai" };
+    return { error: "Chiến dịch không tồn tại" };
   }
 
   if (existing.status === "sent" || existing.status === "completed") {
-    return { error: "Khong the chinh sua chien dich da gui" };
+    return { error: "Không thể chỉnh sửa chiến dịch đã gửi" };
   }
 
   const updateData: Record<string, unknown> = {};
@@ -198,11 +198,11 @@ async function _deleteCampaign(id: number) {
     .single();
 
   if (fetchError || !existing) {
-    return { error: "Chien dich khong ton tai" };
+    return { error: "Chiến dịch không tồn tại" };
   }
 
   if (existing.status !== "draft") {
-    return { error: "Chi co the xoa chien dich nhap" };
+    return { error: "Chỉ có thể xóa chiến dịch nháp" };
   }
 
   const { error } = await supabase
@@ -230,14 +230,14 @@ export const deleteCampaign = withServerAction(_deleteCampaign);
 
 const scheduleCampaignSchema = z.object({
   id: entityIdSchema,
-  scheduled_at: z.string().datetime("Thoi gian khong hop le"),
+  scheduled_at: z.string().datetime("Thời gian không hợp lệ"),
 });
 
 async function _scheduleCampaign(id: number, scheduledAt: string) {
   const parsed = scheduleCampaignSchema.safeParse({ id, scheduled_at: scheduledAt });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Du lieu khong hop le" };
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
@@ -251,11 +251,11 @@ async function _scheduleCampaign(id: number, scheduledAt: string) {
     .single();
 
   if (fetchError || !existing) {
-    return { error: "Chien dich khong ton tai" };
+    return { error: "Chiến dịch không tồn tại" };
   }
 
   if (existing.status !== "draft") {
-    return { error: "Chi co the len lich chien dich nhap" };
+    return { error: "Chỉ có thể lên lịch chiến dịch nháp" };
   }
 
   const { error } = await supabase
@@ -297,11 +297,11 @@ async function _sendCampaign(id: number) {
     .single();
 
   if (fetchError || !existing) {
-    return { error: "Chien dich khong ton tai" };
+    return { error: "Chiến dịch không tồn tại" };
   }
 
   if (existing.status !== "scheduled") {
-    return { error: "Chi co the gui chien dich da len lich" };
+    return { error: "Chỉ có thể gửi chiến dịch đã lên lịch" };
   }
 
   // Count matching customers from target_segment

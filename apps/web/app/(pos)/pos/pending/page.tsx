@@ -4,9 +4,9 @@ export default function PendingOrdersPage() {
   return (
     <div className="p-4">
       <div className="mb-4">
-        <h1 className="text-2xl font-bold">Don cho dong bo</h1>
+        <h1 className="text-2xl font-bold">Đơn chờ đồng bộ</h1>
         <p className="text-muted-foreground text-sm">
-          Cac don hang duoc tao khi mat ket noi mang
+          Các đơn hàng được tạo khi mất kết nối mạng
         </p>
       </div>
       <PendingOrdersClient />

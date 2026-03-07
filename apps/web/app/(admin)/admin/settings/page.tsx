@@ -7,7 +7,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <Header breadcrumbs={[{ label: "Cai dat" }]} />
+      <Header breadcrumbs={[{ label: "Cài đặt" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
         <SettingsClient data={data} />
       </div>

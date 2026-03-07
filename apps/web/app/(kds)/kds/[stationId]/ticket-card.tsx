@@ -63,10 +63,10 @@ export function TicketCard({
         paperWidth,
       });
       await serialPrint(commands);
-      toast.success("Da in phieu bep");
+      toast.success("Đã in phiếu bếp");
     } catch (err) {
       console.error("Serial print error:", err);
-      toast.error("Loi in phieu bep qua Serial");
+      toast.error("Lỗi in phiếu bếp qua Serial");
     }
   }, [serialPrint, printerConfig, stationName, orderNumber, tableNumber, items, ticket.created_at]);
 
