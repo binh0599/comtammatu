@@ -258,7 +258,7 @@ function OrderListMode({
                                     <>
                                         <span className="text-muted-foreground">·</span>
                                         <span className="flex items-center gap-1">
-                                            <Users className="size-3" />
+                                            <Users className="size-3" aria-hidden="true" />
                                             {order.guest_count} khách
                                         </span>
                                     </>

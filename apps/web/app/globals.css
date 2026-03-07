@@ -144,8 +144,15 @@
 }
 
 @media print {
-  body > *:not(.print\:block) {
-    display: none !important;
+  body > * {
+    visibility: hidden !important;
+  }
+  .print\:block,
+  .print\:block * {
+    visibility: visible !important;
+  }
+  .print\:block {
+    display: block !important;
   }
   @page {
     margin: 0;

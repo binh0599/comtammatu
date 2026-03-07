@@ -239,7 +239,7 @@ export function MenuSelector({
     <div className="flex flex-col gap-3">
       {/* Search */}
       <div className="relative">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" aria-hidden="true" />
+        <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
         <Input
           placeholder="Tìm món..."
           value={search}

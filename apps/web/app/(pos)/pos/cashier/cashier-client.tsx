@@ -20,12 +20,18 @@ export function CashierClient({
 }) {
   const router = useRouter();
   const { config: printerConfig } = usePrinterForTerminal(session.terminal_id);
-  const [selectedOrder, setSelectedOrder] = useState<QueueOrder | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const { orders } = useCashierRealtime(initialOrders, branchId);
 
+  const selectedOrder = orders.find((o) => o.id === selectedOrderId) ?? null;
+
   function handlePaymentComplete() {
-    setSelectedOrder(null);
+    setSelectedOrderId(null);
     router.refresh();
+  }
+
+  function handleSelectOrder(order: QueueOrder) {
+    setSelectedOrderId(order.id);
   }
 
   return (
@@ -39,8 +45,8 @@ export function CashierClient({
         <div className="min-h-0 flex-1 border-b md:w-3/5 md:border-b-0 md:border-r">
           <OrderQueue
             orders={orders}
-            selectedOrderId={selectedOrder?.id ?? null}
-            onSelectOrder={setSelectedOrder}
+            selectedOrderId={selectedOrderId}
+            onSelectOrder={handleSelectOrder}
           />
         </div>
 

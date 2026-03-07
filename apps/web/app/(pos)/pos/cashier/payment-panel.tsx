@@ -357,7 +357,7 @@ export function PaymentPanel({
                 className="flex h-20 flex-col items-center gap-2"
                 onClick={() => setPaymentMethod("cash")}
               >
-                <Banknote className="size-8" />
+                <Banknote className="size-8" aria-hidden="true" />
                 <span className="text-sm font-medium">Tiền mặt</span>
               </Button>
               <Button
@@ -369,7 +369,7 @@ export function PaymentPanel({
                   handleMomoPayment();
                 }}
               >
-                <QrCode className="size-8" />
+                <QrCode className="size-8" aria-hidden="true" />
                 <span className="text-sm font-medium">Momo QR</span>
               </Button>
             </div>
@@ -531,7 +531,7 @@ export function PaymentPanel({
       {/* Auto-print receipt after successful payment */}
       {showReceipt && order && (
         <div className="mt-4 flex flex-col items-center gap-3 rounded-lg bg-green-50 p-4">
-          <CheckCircle2 className="size-8 text-green-600" />
+          <CheckCircle2 className="size-8 text-green-600" aria-hidden="true" />
           <p className="text-sm font-medium text-green-700">Thanh toán thành công!</p>
           <ReceiptPrinter
             order={{
