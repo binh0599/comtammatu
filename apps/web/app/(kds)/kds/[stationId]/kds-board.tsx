@@ -127,19 +127,21 @@ export function KdsBoard({
       <ConnectionBanner status={connectionStatus} />
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border px-6 py-3">
-        <h1 className="text-2xl font-bold text-foreground">{stationName}</h1>
-        <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-bold text-foreground sm:text-2xl">{stationName}</h1>
           <span className="text-sm text-muted-foreground" role="status">
-            {tickets.length} đơn đang chờ
+            {tickets.length} đơn
           </span>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-4">
           {printerConfig && (
-            <Badge variant="outline" className="gap-1 text-xs">
+            <Badge variant="outline" className="hidden gap-1 text-xs sm:flex">
               <Printer className="size-3" />
               {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>
           )}
-          <div className="flex gap-2" aria-label="Chú thích màu">
+          <div className="hidden gap-2 md:flex" aria-label="Chú thích màu">
             <span className="flex items-center gap-1 text-xs text-green-700">
               <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
               Bình thường
@@ -156,7 +158,7 @@ export function KdsBoard({
           <Button variant="outline" size="sm" asChild className="gap-1">
             <Link href="/kds/printer">
               <Settings className="size-3.5" />
-              Máy in
+              <span className="hidden sm:inline">Máy in</span>
             </Link>
           </Button>
           <LogoutButton className="rounded-lg border border-border px-3 py-1.5 text-sm" />

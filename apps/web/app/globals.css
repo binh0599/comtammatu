@@ -108,3 +108,13 @@
     outline-offset: 2px;
   }
 }
+
+@media print {
+  body > *:not(.print\:block) {
+    display: none !important;
+  }
+  @page {
+    margin: 0;
+    size: 80mm auto;
+  }
+}

@@ -275,19 +275,6 @@ export function ReceiptPrinter({
                 </div>
             </div>
 
-            {/* Inject print-specific styles globally to hide UI when printing */}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-        @media print {
-          body > *:not(.print\\:block) {
-            display: none !important;
-          }
-          @page {
-            margin: 0;
-            size: 80mm 297mm;
-          }
-        }
-      `}} />
         </>
     );
 }
