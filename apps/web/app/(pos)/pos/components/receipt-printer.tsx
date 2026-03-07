@@ -156,7 +156,7 @@ export function ReceiptPrinter({
                 <div onClick={() => handlePrint()}>{trigger}</div>
             ) : (
                 <Button variant="outline" onClick={() => handlePrint()} className="gap-2">
-                    <Printer className="w-4 h-4" />
+                    <Printer className="size-4" />
                     In hóa đơn
                 </Button>
             )}

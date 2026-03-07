@@ -59,7 +59,7 @@ function GuestCountStep({
     return (
       <div className="flex flex-1 flex-col items-center justify-center p-6">
         <div className="w-full max-w-xs rounded-lg border bg-yellow-50 p-6 text-center">
-          <Users className="mx-auto mb-3 h-10 w-10 text-yellow-600" aria-hidden="true" />
+          <Users className="mx-auto mb-3 size-10 text-yellow-600" aria-hidden="true" />
           <h3 className="text-lg font-semibold text-yellow-800">
             Không xác định được sức chứa bàn
           </h3>
@@ -68,7 +68,7 @@ function GuestCountStep({
           </p>
           <Link href="/pos">
             <Button variant="outline" className="mt-4">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 size-4" />
               Quay lại sơ đồ bàn
             </Button>
           </Link>
@@ -83,7 +83,7 @@ function GuestCountStep({
     <div className="flex flex-1 flex-col items-center justify-center p-6">
       <div className="w-full max-w-xs space-y-6">
         <div className="text-center">
-          <Users className="mx-auto mb-3 h-10 w-10 text-primary" aria-hidden="true" />
+          <Users className="mx-auto mb-3 size-10 text-primary" aria-hidden="true" />
           <h3 className="text-lg font-bold">Số khách</h3>
           <p className="text-muted-foreground mt-1 text-sm">
             Chọn số khách cho đơn hàng
@@ -98,7 +98,7 @@ function GuestCountStep({
             disabled={count <= 1}
             aria-label="Giảm số khách"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="size-4" />
           </Button>
           <div className="flex flex-col items-center">
             <span className="text-4xl font-bold">{count}</span>
@@ -111,7 +111,7 @@ function GuestCountStep({
             disabled={count >= maxGuests}
             aria-label="Tăng số khách"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="size-4" />
           </Button>
         </div>
 
@@ -122,7 +122,7 @@ function GuestCountStep({
               variant={count === n ? "default" : "outline"}
               size="sm"
               onClick={() => setCount(n)}
-              className="h-9 w-9"
+              className="size-9"
             >
               {n}
             </Button>
@@ -130,7 +130,7 @@ function GuestCountStep({
         </div>
 
         <Button onClick={() => onConfirm(count)} className="w-full gap-2">
-          <Users className="h-4 w-4" aria-hidden="true" />
+          <Users className="size-4" aria-hidden="true" />
           Xác nhận {count} khách — Chọn món
         </Button>
       </div>
@@ -282,7 +282,7 @@ export function NewOrderClient({
         <div className="mb-4 flex items-center gap-3">
           <Link href="/pos">
             <Button variant="ghost" size="icon" aria-label="Quay lại sơ đồ bàn">
-              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+              <ArrowLeft className="size-5" aria-hidden="true" />
             </Button>
           </Link>
           <div>
@@ -304,7 +304,7 @@ export function NewOrderClient({
       <div className="mb-4 flex items-center gap-3">
         <Link href="/pos">
           <Button variant="ghost" size="icon" aria-label="Quay lại sơ đồ bàn">
-            <ArrowLeft className="h-5 w-5" aria-hidden="true" />
+            <ArrowLeft className="size-5" aria-hidden="true" />
           </Button>
         </Link>
         <div>
@@ -315,7 +315,7 @@ export function NewOrderClient({
             Chọn món để thêm vào đơn
             {guestCount != null && (
               <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                <Users className="h-3 w-3" />
+                <Users className="size-3" />
                 {guestCount} khách
               </span>
             )}

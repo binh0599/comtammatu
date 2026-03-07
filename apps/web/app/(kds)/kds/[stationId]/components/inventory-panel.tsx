@@ -379,7 +379,7 @@ function RestockRequestDialog({
             <div className="flex items-center justify-between">
               <Label>Nguyên liệu cần mua</Label>
               <Button type="button" variant="ghost" size="sm" onClick={addItem}>
-                <Plus className="mr-1 h-3 w-3" />
+                <Plus className="mr-1 size-3" />
                 Thêm
               </Button>
             </div>
@@ -543,7 +543,7 @@ export function InventoryPanel({
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            <Package className="h-4 w-4" />
+            <Package className="size-4" />
             <span>Kho hàng</span>
             {alertCount > 0 && (
               <Badge variant="destructive" className="text-[10px] px-1.5 py-0">
@@ -551,9 +551,9 @@ export function InventoryPanel({
               </Badge>
             )}
             {isExpanded ? (
-              <ChevronUp className="h-3.5 w-3.5" />
+              <ChevronUp className="size-3.5" />
             ) : (
-              <ChevronDown className="h-3.5 w-3.5" />
+              <ChevronDown className="size-3.5" />
             )}
           </button>
 
@@ -588,7 +588,7 @@ export function InventoryPanel({
               className="h-7 gap-1 text-xs"
               onClick={() => setRestockDialogOpen(true)}
             >
-              <ShoppingCart className="h-3 w-3" />
+              <ShoppingCart className="size-3" />
               Đặt hàng gấp
             </Button>
             <Button
@@ -597,7 +597,7 @@ export function InventoryPanel({
               className="h-7 gap-1 text-xs"
               onClick={() => setWasteDialogOpen(true)}
             >
-              <Trash2 className="h-3 w-3" />
+              <Trash2 className="size-3" />
               Hao hụt
             </Button>
           </div>
@@ -610,7 +610,7 @@ export function InventoryPanel({
             {unavailableItems.length > 0 && (
               <div>
                 <h4 className="text-xs font-semibold text-red-700 uppercase mb-1.5 flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
+                  <AlertTriangle className="size-3" />
                   Đã tắt ({unavailableItems.length})
                 </h4>
                 <div className="space-y-1">

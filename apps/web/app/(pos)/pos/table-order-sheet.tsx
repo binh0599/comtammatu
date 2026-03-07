@@ -113,7 +113,7 @@ function GuestCountSelector({
         <div className="flex flex-1 flex-col items-center justify-center p-6">
             <div className="w-full max-w-xs space-y-6">
                 <div className="text-center">
-                    <Users className="mx-auto mb-3 h-10 w-10 text-primary" aria-hidden="true" />
+                    <Users className="mx-auto mb-3 size-10 text-primary" aria-hidden="true" />
                     <h3 className="text-lg font-bold">{tableLabel}</h3>
                     <p className="text-muted-foreground mt-1 text-sm">
                         Chọn số khách cho đơn hàng mới
@@ -134,7 +134,7 @@ function GuestCountSelector({
                         disabled={count <= 1}
                         aria-label="Giảm số khách"
                     >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="size-4" />
                     </Button>
                     <div className="flex flex-col items-center">
                         <span className="text-4xl font-bold">{count}</span>
@@ -147,7 +147,7 @@ function GuestCountSelector({
                         disabled={count >= maxGuests}
                         aria-label="Tăng số khách"
                     >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="size-4" />
                     </Button>
                 </div>
 
@@ -159,7 +159,7 @@ function GuestCountSelector({
                             variant={count === n ? "default" : "outline"}
                             size="sm"
                             onClick={() => setCount(n)}
-                            className="h-9 w-9"
+                            className="size-9"
                         >
                             {n}
                         </Button>
@@ -176,7 +176,7 @@ function GuestCountSelector({
                 {/* Actions */}
                 <div className="space-y-2">
                     <Button onClick={() => onConfirm(count)} className="w-full gap-2" disabled={maxGuests === 0 || count <= 0}>
-                        <Users className="h-4 w-4" aria-hidden="true" />
+                        <Users className="size-4" aria-hidden="true" />
                         {maxGuests === 0 ? "Bàn đã đầy" : `Xác nhận ${count} khách — Chọn món`}
                     </Button>
                     <Button variant="ghost" onClick={onCancel} className="w-full">
@@ -258,7 +258,7 @@ function OrderListMode({
                                     <>
                                         <span className="text-muted-foreground">·</span>
                                         <span className="flex items-center gap-1">
-                                            <Users className="h-3 w-3" />
+                                            <Users className="size-3" />
                                             {order.guest_count} khách
                                         </span>
                                     </>
@@ -278,7 +278,7 @@ function OrderListMode({
                         onClick={onCreateNew}
                         className="w-full gap-2"
                     >
-                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        <PlusCircle className="size-4" aria-hidden="true" />
                         Thêm đơn mới ({remainingSeats} chỗ trống)
                     </Button>
                 </div>
@@ -392,7 +392,7 @@ function OrderViewMode({
                             </span>
                             {order.guest_count && order.guest_count > 0 && (
                                 <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                                    <Users className="h-3.5 w-3.5" />
+                                    <Users className="size-3.5" />
                                     {order.guest_count} khách
                                 </span>
                             )}
@@ -425,7 +425,7 @@ function OrderViewMode({
                         onClick={onAddItems}
                         className="w-full gap-2"
                     >
-                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        <PlusCircle className="size-4" aria-hidden="true" />
                         Thêm món
                     </Button>
                 )}
@@ -436,7 +436,7 @@ function OrderViewMode({
                         disabled={isPending}
                         className="w-full gap-2"
                     >
-                        <Send className="h-4 w-4" aria-hidden="true" />
+                        <Send className="size-4" aria-hidden="true" />
                         Gửi bếp
                     </Button>
                 )}
@@ -446,7 +446,7 @@ function OrderViewMode({
                         disabled={isPending}
                         className="w-full gap-2"
                     >
-                        <CheckCircle className="h-4 w-4" aria-hidden="true" />
+                        <CheckCircle className="size-4" aria-hidden="true" />
                         Đã phục vụ
                     </Button>
                 )}
@@ -459,7 +459,7 @@ function OrderViewMode({
                             router.push("/pos/cashier");
                         }}
                     >
-                        <Banknote className="h-4 w-4" aria-hidden="true" />
+                        <Banknote className="size-4" aria-hidden="true" />
                         Chuyển sang thu ngân
                     </Button>
                 )}
@@ -470,7 +470,7 @@ function OrderViewMode({
                         disabled={isPending}
                         className="w-full gap-2"
                     >
-                        <XCircle className="h-4 w-4" aria-hidden="true" />
+                        <XCircle className="size-4" aria-hidden="true" />
                         Hủy đơn
                     </Button>
                 )}
@@ -482,7 +482,7 @@ function OrderViewMode({
                         onClick={onCreateNew}
                         className="w-full gap-2"
                     >
-                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        <PlusCircle className="size-4" aria-hidden="true" />
                         Thêm đơn mới ({remainingSeats} chỗ trống)
                     </Button>
                 )}
@@ -497,7 +497,7 @@ function OrderViewMode({
                     }}
                 >
                     Xem chi tiết
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    <ArrowRight className="size-4" aria-hidden="true" />
                 </Button>
 
                 {/* Back to order list (multi-order per table) */}
@@ -507,7 +507,7 @@ function OrderViewMode({
                         className="w-full gap-2"
                         onClick={onBackToList}
                     >
-                        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                        <ArrowLeft className="size-4" aria-hidden="true" />
                         Danh sách đơn trên bàn
                     </Button>
                 )}
@@ -641,7 +641,7 @@ function AddItemsMode({
         <div className="flex flex-1 flex-col overflow-hidden">
             <div className="flex items-center gap-2 px-4 pb-2">
                 <Button variant="ghost" size="icon" onClick={onBack} aria-label="Quay lại">
-                    <ArrowLeft className="h-4 w-4" />
+                    <ArrowLeft className="size-4" />
                 </Button>
                 <div>
                     <p className="text-sm font-medium">Thêm món vào {orderNumber}</p>
@@ -665,7 +665,7 @@ function AddItemsMode({
                         onClick={handleSubmit}
                         disabled={isPending}
                     >
-                        <PlusCircle className="h-4 w-4" aria-hidden="true" />
+                        <PlusCircle className="size-4" aria-hidden="true" />
                         {isPending ? "Đang thêm..." : `Thêm ${cart.reduce((s, i) => s + i.quantity, 0)} món`}
                     </Button>
                 </div>
@@ -818,7 +818,7 @@ function CreateOrderMode({
                     <p className="text-muted-foreground text-sm">{tableLabel}</p>
                     {guestCount > 0 && (
                         <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                            <Users className="h-3 w-3" />
+                            <Users className="size-3" />
                             {guestCount} khách
                         </span>
                     )}

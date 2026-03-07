@@ -239,7 +239,7 @@ export function MenuSelector({
     <div className="flex flex-col gap-3">
       {/* Search */}
       <div className="relative">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" aria-hidden="true" />
+        <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2" aria-hidden="true" />
         <Input
           placeholder="Tìm món..."
           value={search}
@@ -330,12 +330,12 @@ export function MenuSelector({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-6 w-6"
+                              className="size-6"
                               onClick={() => openNotesDialog(item.id, v.id)}
                               aria-label="Ghi chú"
                               title="Ghi chú cho bếp"
                             >
-                              <MessageSquare className={`h-3 w-3 ${vCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                              <MessageSquare className={`size-3 ${vCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
                             </Button>
                           )}
                         </div>
@@ -382,12 +382,12 @@ export function MenuSelector({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="size-8"
                     onClick={() => openNotesDialog(item.id, null)}
                     aria-label="Ghi chú"
                     title="Ghi chú cho bếp"
                   >
-                    <MessageSquare className={`h-3.5 w-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                    <MessageSquare className={`size-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
                   </Button>
                 )}
 
@@ -398,11 +398,11 @@ export function MenuSelector({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-11 w-11"
+                          className="size-11"
                           onClick={() => onRemoveItem(item.id, null)}
                           aria-label={`Bớt ${item.name}`}
                         >
-                          <Minus className="h-3 w-3" aria-hidden="true" />
+                          <Minus className="size-3" aria-hidden="true" />
                         </Button>
                         <span className="w-6 text-center text-sm font-medium">
                           {baseQty}
@@ -412,11 +412,11 @@ export function MenuSelector({
                     <Button
                       variant="outline"
                       size="icon"
-                      className="h-11 w-11"
+                      className="size-11"
                       onClick={() => handleAdd(item)}
                       aria-label={`Thêm ${item.name}`}
                     >
-                      <Plus className="h-3 w-3" aria-hidden="true" />
+                      <Plus className="size-3" aria-hidden="true" />
                     </Button>
                   </>
                 )}
@@ -494,7 +494,7 @@ export function MenuSelector({
               Không kèm
             </Button>
             <Button onClick={handleConfirmSides}>
-              <Check className="mr-1 h-4 w-4" />
+              <Check className="mr-1 size-4" />
               Xác nhận
             </Button>
           </DialogFooter>

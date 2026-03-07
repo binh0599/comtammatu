@@ -146,7 +146,7 @@ export function TableMapClient({
                             className="flex min-h-[72px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-indigo-400 bg-indigo-50 p-3 text-center text-indigo-700 transition-all hover:bg-indigo-100 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                             aria-label="Tạo đơn mang đi"
                         >
-                            <Package className="mb-1 h-6 w-6" aria-hidden="true" />
+                            <Package className="mb-1 size-6" aria-hidden="true" />
                             <span className="text-sm font-bold">Mang đi</span>
                         </button>
                     </div>

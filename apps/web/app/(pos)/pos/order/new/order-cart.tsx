@@ -55,7 +55,7 @@ export function OrderCart({
       <Drawer>
         <DrawerTrigger asChild>
           <Button className="w-full gap-2 py-6 text-base shadow-lg">
-            <ShoppingCart className="h-5 w-5" aria-hidden="true" />
+            <ShoppingCart className="size-5" aria-hidden="true" />
             <span className="flex-1 text-left">
               {totalItems} món · {formatPrice(subtotal)}
             </span>
@@ -81,7 +81,7 @@ export function OrderCart({
               className="text-red-500"
               aria-label="Xóa tất cả sản phẩm"
             >
-              <Trash2 className="mr-1 h-4 w-4" aria-hidden="true" />
+              <Trash2 className="mr-1 size-4" aria-hidden="true" />
               Xóa hết
             </Button>
           </DrawerHeader>
@@ -121,13 +121,13 @@ export function OrderCart({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-11 w-11"
+                          className="size-11"
                           onClick={() =>
                             onRemoveItem(item.menu_item_id, item.variant_id)
                           }
                           aria-label={`Bớt ${item.name}`}
                         >
-                          <Minus className="h-3 w-3" aria-hidden="true" />
+                          <Minus className="size-3" aria-hidden="true" />
                         </Button>
                         <span className="w-6 text-center text-sm font-medium">
                           {item.quantity}
@@ -135,11 +135,11 @@ export function OrderCart({
                         <Button
                           variant="outline"
                           size="icon"
-                          className="h-11 w-11"
+                          className="size-11"
                           onClick={() => onAddItem(item)}
                           aria-label={`Thêm ${item.name}`}
                         >
-                          <Plus className="h-3 w-3" aria-hidden="true" />
+                          <Plus className="size-3" aria-hidden="true" />
                         </Button>
                       </div>
                     </div>

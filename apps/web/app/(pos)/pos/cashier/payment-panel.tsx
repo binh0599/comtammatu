@@ -282,7 +282,7 @@ export function PaymentPanel({
           {voucherDiscount ? (
             <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-2">
               <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4 text-green-600" aria-hidden="true" />
+                <Tag className="size-4 text-green-600" aria-hidden="true" />
                 <span className="text-sm font-medium text-green-700">
                   {voucherDiscount.vouchers?.code ?? "Voucher"}
                 </span>
@@ -293,12 +293,12 @@ export function PaymentPanel({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                className="size-6 p-0 text-red-500 hover:text-red-700"
                 onClick={handleRemoveVoucher}
                 disabled={isVoucherPending}
                 aria-label="Xóa mã giảm giá"
               >
-                <X className="h-4 w-4" aria-hidden="true" />
+                <X className="size-4" aria-hidden="true" />
               </Button>
             </div>
           ) : (
@@ -357,7 +357,7 @@ export function PaymentPanel({
                 className="flex h-20 flex-col items-center gap-2"
                 onClick={() => setPaymentMethod("cash")}
               >
-                <Banknote className="h-8 w-8" />
+                <Banknote className="size-8" />
                 <span className="text-sm font-medium">Tiền mặt</span>
               </Button>
               <Button
@@ -369,7 +369,7 @@ export function PaymentPanel({
                   handleMomoPayment();
                 }}
               >
-                <QrCode className="h-8 w-8" />
+                <QrCode className="size-8" />
                 <span className="text-sm font-medium">Momo QR</span>
               </Button>
             </div>
@@ -387,7 +387,7 @@ export function PaymentPanel({
                 setAmountTendered("");
               }}
             >
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="mr-1 size-4" />
               Đổi phương thức
             </Button>
           )}
@@ -462,7 +462,7 @@ export function PaymentPanel({
             <div className="flex flex-col items-center gap-4">
               {isMomoPending && !momoState && (
                 <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
-                  <Loader2 className="h-8 w-8 animate-spin text-pink-500" aria-hidden="true" />
+                  <Loader2 className="size-8 animate-spin text-pink-500" aria-hidden="true" />
                   <p className="text-muted-foreground text-sm">
                     Đang tạo mã QR...
                   </p>
@@ -480,7 +480,7 @@ export function PaymentPanel({
                     />
                   </div>
                   <div className="flex items-center gap-2 text-pink-600" role="status" aria-live="polite">
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                     <span className="text-sm font-medium">
                       Đang chờ thanh toán...
                     </span>
@@ -493,7 +493,7 @@ export function PaymentPanel({
 
               {momoState && momoState.status === "completed" && (
                 <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
-                  <CheckCircle2 className="h-12 w-12 text-green-500" aria-hidden="true" />
+                  <CheckCircle2 className="size-12 text-green-500" aria-hidden="true" />
                   <p className="text-lg font-bold text-green-700">
                     Thanh toán thành công!
                   </p>
@@ -531,7 +531,7 @@ export function PaymentPanel({
       {/* Auto-print receipt after successful payment */}
       {showReceipt && order && (
         <div className="mt-4 flex flex-col items-center gap-3 rounded-lg bg-green-50 p-4">
-          <CheckCircle2 className="h-8 w-8 text-green-600" />
+          <CheckCircle2 className="size-8 text-green-600" />
           <p className="text-sm font-medium text-green-700">Thanh toán thành công!</p>
           <ReceiptPrinter
             order={{
