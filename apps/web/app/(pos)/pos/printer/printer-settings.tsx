@@ -98,9 +98,9 @@ export function PrinterSettings({
         paperWidth: 80,
       });
       await serialPrinter.print(testReceipt);
-      toast.success("Da in thu thanh cong!");
+      toast.success("Đã in thử thành công!");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Loi in thu";
+      const msg = err instanceof Error ? err.message : "Lỗi in thử";
       toast.error(msg);
     }
   }
@@ -206,7 +206,7 @@ export function PrinterSettings({
               <div className="flex-1">
                 <p className="text-sm font-medium">Web Serial (ESC/POS)</p>
                 <p className="text-xs text-muted-foreground">
-                  Ket noi may in nhiet qua cong Serial
+                  Kết nối máy in nhiệt qua cổng Serial
                 </p>
               </div>
               <Badge
@@ -219,12 +219,12 @@ export function PrinterSettings({
                 }
               >
                 {serialPrinter.status === "connected"
-                  ? "Da ket noi"
+                  ? "Đã kết nối"
                   : serialPrinter.status === "connecting"
-                    ? "Dang ket noi..."
+                    ? "Đang kết nối..."
                     : serialPrinter.status === "error"
-                      ? "Loi"
-                      : "Chua ket noi"}
+                      ? "Lỗi"
+                      : "Chưa kết nối"}
               </Badge>
               {serialPrinter.status === "connected" ? (
                 <div className="flex gap-2">
@@ -233,14 +233,14 @@ export function PrinterSettings({
                     size="sm"
                     onClick={handleSerialTestPrint}
                   >
-                    In thu
+                    In thử
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => serialPrinter.disconnect()}
                   >
-                    Ngat ket noi
+                    Ngắt kết nối
                   </Button>
                 </div>
               ) : (
@@ -250,7 +250,7 @@ export function PrinterSettings({
                   onClick={() => serialPrinter.connect()}
                   disabled={serialPrinter.status === "connecting"}
                 >
-                  Ket noi
+                  Kết nối
                 </Button>
               )}
             </div>
