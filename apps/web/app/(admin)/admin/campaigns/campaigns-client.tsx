@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import {
   Plus,
   Trash2,
@@ -218,6 +218,10 @@ function CampaignFormDialog({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (!open) setError(null);
+  }, [open]);
+
   const isEditing = !!campaign;
   const segment = (campaign?.target_segment ?? {}) as {
     loyalty_tier_ids?: number[];
@@ -300,7 +304,7 @@ function CampaignFormDialog({
             <div className="grid gap-2">
               <Label htmlFor="type">Loai</Label>
               <Select name="type" defaultValue={campaign?.type ?? "email"}>
-                <SelectTrigger>
+                <SelectTrigger id="type">
                   <SelectValue placeholder="Chon loai chien dich" />
                 </SelectTrigger>
                 <SelectContent>
@@ -379,7 +383,7 @@ function CampaignFormDialog({
                     name="gender"
                     defaultValue={segment.gender ?? "ALL"}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="gender">
                       <SelectValue placeholder="Tat ca" />
                     </SelectTrigger>
                     <SelectContent>
@@ -432,6 +436,10 @@ function ScheduleDialog({
 }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!open) setError(null);
+  }, [open]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -512,20 +520,43 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
     useState<Campaign | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
 
   async function handleDelete(id: number) {
+    const key = `delete-${id}`;
+    if (processingIds.has(key)) return;
+    setProcessingIds((prev) => new Set(prev).add(key));
     startTransition(async () => {
-      const result = await deleteCampaign(id);
-      if (result.error) setError(result.error);
-      else setError(null);
+      try {
+        const result = await deleteCampaign(id);
+        if (result.error) setError(result.error);
+        else setError(null);
+      } finally {
+        setProcessingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+      }
     });
   }
 
   async function handleSend(id: number) {
+    const key = `send-${id}`;
+    if (processingIds.has(key)) return;
+    setProcessingIds((prev) => new Set(prev).add(key));
     startTransition(async () => {
-      const result = await sendCampaign(id);
-      if (result.error) setError(result.error);
-      else setError(null);
+      try {
+        const result = await sendCampaign(id);
+        if (result.error) setError(result.error);
+        else setError(null);
+      } finally {
+        setProcessingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(key);
+          return next;
+        });
+      }
     });
   }
 
