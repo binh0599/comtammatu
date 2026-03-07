@@ -71,6 +71,16 @@ function getUrgencyBadge(days: number | null) {
 export function ForecastTab({ branches }: ForecastTabProps) {
   const [daysAhead, setDaysAhead] = useState("7");
   const [branchId, setBranchId] = useState("all");
+
+  function handleDaysChange(value: string) {
+    setDaysAhead(value);
+    setLoaded(false);
+  }
+
+  function handleBranchChange(value: string) {
+    setBranchId(value);
+    setLoaded(false);
+  }
   const [data, setData] = useState<ForecastRow[]>([]);
   const [isPending, startTransition] = useTransition();
   const [loaded, setLoaded] = useState(false);
@@ -100,7 +110,7 @@ export function ForecastTab({ branches }: ForecastTabProps) {
     <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3">
-        <Select value={daysAhead} onValueChange={setDaysAhead}>
+        <Select value={daysAhead} onValueChange={handleDaysChange}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="So ngay" />
           </SelectTrigger>
@@ -111,7 +121,7 @@ export function ForecastTab({ branches }: ForecastTabProps) {
           </SelectContent>
         </Select>
 
-        <Select value={branchId} onValueChange={setBranchId}>
+        <Select value={branchId} onValueChange={handleBranchChange}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Chi nhanh" />
           </SelectTrigger>

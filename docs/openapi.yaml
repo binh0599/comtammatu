@@ -27,13 +27,40 @@ paths:
             application/json:
               schema:
                 type: object
+                required: [status, timestamp, checks, version]
                 properties:
                   status:
                     type: string
-                    example: ok
+                    enum: [healthy, unhealthy]
+                    example: healthy
                   timestamp:
                     type: string
                     format: date-time
+                  checks:
+                    type: object
+                    properties:
+                      database:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            enum: [healthy, unhealthy]
+                          latency_ms:
+                            type: number
+                            description: Database probe latency in milliseconds (-1 if unhealthy)
+                  version:
+                    type: string
+                    example: "1.0.0"
+        "503":
+          description: Server is unhealthy (database unreachable)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: unhealthy
 
   /api/auth/callback:
     get:

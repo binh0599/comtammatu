@@ -122,7 +122,8 @@ async function _updateBranch(input: z.infer<typeof updateBranchSchema>) {
   const { error } = await supabase
     .from("branches")
     .update(updateFields)
-    .eq("id", data.branch_id);
+    .eq("id", data.branch_id)
+    .eq("tenant_id", tenantId);
 
   if (error) throw safeDbError(error, "db");
 

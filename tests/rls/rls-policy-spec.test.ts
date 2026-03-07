@@ -155,6 +155,12 @@ const TABLE_SPECS: TableRLSSpec[] = [
   { table: "system_settings", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Settings: tenant select, owner manage" },
   { table: "printer_configs", expectedPolicyCount: 2, requiredOperations: ["SELECT"], description: "Printer configs: branch isolation" },
   { table: "registered_devices", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT"], description: "Devices: tenant select, own insert, manager update" },
+
+  // Push notifications
+  { table: "push_subscriptions", expectedPolicyCount: 4, requiredOperations: ["SELECT", "INSERT", "UPDATE", "DELETE"], description: "Push subs: own CRUD, service role select/update" },
+
+  // Payroll
+  { table: "payroll_entries", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Payroll entries: HR/staff select, HR insert/update" },
 ];
 
 // ---------------------------------------------------------------------------

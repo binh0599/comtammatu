@@ -69,19 +69,23 @@ export async function GET(request: Request) {
 
     if (!customers || customers.length === 0) continue;
 
+    // Bulk-fetch latest balance for all customers in this tenant
+    const customerIds = customers.map((c) => c.id);
+    const { data: balanceRows } = await supabase
+      .rpc("get_latest_loyalty_balances", { customer_ids: customerIds });
+
+    // Build a map of customer_id → balance_after
+    const balanceMap = new Map<number, number>();
+    if (balanceRows) {
+      for (const row of balanceRows as Array<{ customer_id: number; balance_after: number }>) {
+        balanceMap.set(row.customer_id, row.balance_after);
+      }
+    }
+
     for (const customer of customers) {
       checked++;
 
-      // Get current points balance from latest transaction
-      const { data: latest } = await supabase
-        .from("loyalty_transactions")
-        .select("balance_after")
-        .eq("customer_id", customer.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      const balance = latest?.balance_after ?? 0;
+      const balance = balanceMap.get(customer.id) ?? 0;
 
       // Find best tier (tenantTiers is sorted desc by min_points)
       const bestTier = tenantTiers.find((t) => t.min_points <= balance);
