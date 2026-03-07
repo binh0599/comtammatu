@@ -16,12 +16,16 @@ export default async function MenuPage() {
 
   // Resolve branch_id for ordering (single-tenant: pick lowest-id branch deterministically)
   const supabase = await createSupabaseServer();
-  const { data: branch } = await supabase
+  const { data: branch, error } = await supabase
     .from("branches")
     .select("id")
     .order("id", { ascending: true })
     .limit(1)
-    .single();
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Failed to resolve branch: ${error.message}`);
+  }
 
   const branchId = branch?.id ?? null;
 
