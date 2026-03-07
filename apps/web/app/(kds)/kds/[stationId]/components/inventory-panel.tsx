@@ -31,6 +31,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { getWasteReasonLabel } from "@comtammatu/shared";
 import {
   toggleMenuItemAvailability,
@@ -87,16 +88,18 @@ function MenuItemRow({
 
   return (
     <div
-      className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 ${
+      className={cn(
+        "flex items-center justify-between gap-2 rounded-lg border px-3 py-2",
         isDisabled ? "border-red-300 bg-red-50" : "border-border"
-      }`}
+      )}
     >
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span
-            className={`text-sm font-medium truncate ${
+            className={cn(
+              "text-sm font-medium truncate",
               isDisabled ? "text-red-700 line-through" : "text-foreground"
-            }`}
+            )}
           >
             {item.menu_item_name}
           </span>
@@ -651,7 +654,7 @@ export function InventoryPanel({
               <h4 className="text-xs font-semibold text-muted-foreground uppercase mb-1.5">
                 Tất cả món ({portions.length})
               </h4>
-              <div className="max-h-64 overflow-y-auto space-y-1">
+              <div className="max-h-64 overflow-y-auto space-y-1 md:max-h-96">
                 {portions
                   .filter(
                     (i) =>

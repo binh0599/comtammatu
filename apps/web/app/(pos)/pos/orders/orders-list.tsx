@@ -102,7 +102,7 @@ export function OrdersList({
       </div>
 
       {/* Orders */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         {filteredOrders.map((order) => {
           const itemCount = order.order_items.reduce(
             (sum, i) => sum + i.quantity,

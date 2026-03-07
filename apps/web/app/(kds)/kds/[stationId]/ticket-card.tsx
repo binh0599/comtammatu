@@ -6,19 +6,7 @@ import { cn } from "@/lib/utils";
 import { bumpTicket } from "./actions";
 import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
-import { parseItems, type KdsTicket, type TimingRule } from "./types";
-
-function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
-  if (!rule) return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
-
-  if (rule.critical_min && elapsedMinutes >= rule.critical_min) {
-    return { border: "border-red-500", bg: "bg-red-50", label: "Trễ" };
-  }
-  if (rule.warning_min && elapsedMinutes >= rule.warning_min) {
-    return { border: "border-yellow-500", bg: "bg-yellow-50", label: "Gần trễ" };
-  }
-  return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
-}
+import { getTimingColor, parseItems, type KdsTicket, type TimingRule } from "./types";
 
 export function TicketCard({
   ticket,

@@ -41,6 +41,18 @@ export interface TimingRule {
   critical_min: number | null;
 }
 
+export function getTimingColor(elapsedMinutes: number, rule: TimingRule | null) {
+  if (!rule) return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
+
+  if (rule.critical_min && elapsedMinutes >= rule.critical_min) {
+    return { border: "border-red-500", bg: "bg-red-50", label: "Trễ" };
+  }
+  if (rule.warning_min && elapsedMinutes >= rule.warning_min) {
+    return { border: "border-yellow-500", bg: "bg-yellow-50", label: "Gần trễ" };
+  }
+  return { border: "border-green-500", bg: "bg-green-50", label: "Bình thường" };
+}
+
 export function parseItems(items: unknown): TicketItem[] {
   if (Array.isArray(items)) {
     return items as TicketItem[];

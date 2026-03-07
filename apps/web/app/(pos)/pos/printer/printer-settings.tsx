@@ -178,6 +178,7 @@ export function PrinterSettings({
               Chưa có máy in nào. Nhấn &quot;Thêm máy in&quot; để bắt đầu.
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -224,6 +225,7 @@ export function PrinterSettings({
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

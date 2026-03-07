@@ -56,7 +56,7 @@ export function OrderQueue({
 
       {/* Order list */}
       <ScrollArea className="flex-1">
-        <div className="space-y-2 p-3">
+        <div className="space-y-3 p-3">
           {filteredOrders.map((order) => {
             const itemCount = order.order_items.reduce(
               (sum, i) => sum + i.quantity,

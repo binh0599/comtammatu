@@ -27,7 +27,7 @@ function ConnectionBanner({ status }: { status: ConnectionStatus }) {
 
   return (
     <div
-      className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-1.5 text-sm font-medium text-yellow-800"
+      className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-2 text-sm font-medium text-yellow-800"
       role="alert"
     >
       <WifiOff className="h-4 w-4" />
