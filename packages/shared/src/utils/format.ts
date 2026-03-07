@@ -320,3 +320,13 @@ export const getReservationStatusLabel = createLabelMapper({
   no_show: "Không đến",
   cancelled: "Đã hủy",
 });
+
+// Push Notifications
+export const getPushNotificationTypeLabel = createLabelMapper({
+  order_status: "Trạng thái đơn hàng",
+  low_stock: "Tồn kho thấp",
+  campaign: "Chiến dịch",
+  reservation: "Đặt bàn",
+  payment: "Thanh toán",
+  system: "Hệ thống",
+});

@@ -70,13 +70,14 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Skip non-POS routes — we only cache POS-related assets
-  const isPosRoute =
+  // Skip routes outside POS/customer — we only cache app-related assets
+  const isAppRoute =
     url.pathname.startsWith("/pos") ||
+    url.pathname.startsWith("/customer") ||
     url.pathname.startsWith("/_next/") ||
     url.pathname.startsWith("/favicon");
 
-  if (!isPosRoute) {
+  if (!isAppRoute) {
     return;
   }
 
@@ -142,6 +143,62 @@ self.addEventListener("fetch", (event) => {
         status: 503,
         headers: { "Content-Type": "text/plain" },
       })))
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Push notification handler
+// ---------------------------------------------------------------------------
+
+self.addEventListener("push", (event) => {
+  if (!event.data) return;
+
+  let payload;
+  try {
+    payload = event.data.json();
+  } catch {
+    payload = { title: "Cơm tấm Má Tư", body: event.data.text() };
+  }
+
+  const { title, body, icon, url, type } = payload;
+
+  const options = {
+    body: body || "",
+    icon: icon || "/favicon.ico",
+    badge: "/favicon.ico",
+    tag: type || "general",
+    renotify: true,
+    data: { url: url || "/", type },
+    actions: url
+      ? [{ action: "open", title: "Xem chi tiết" }]
+      : [],
+  };
+
+  event.waitUntil(self.registration.showNotification(title || "Thông báo", options));
+});
+
+// ---------------------------------------------------------------------------
+// Notification click handler
+// ---------------------------------------------------------------------------
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const url = event.notification.data?.url || "/";
+
+  event.waitUntil(
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clients) => {
+        // Focus existing window if possible
+        for (const client of clients) {
+          if (client.url.includes(url) && "focus" in client) {
+            return client.focus();
+          }
+        }
+        // Open new window
+        return self.clients.openWindow(url);
+      })
   );
 });
 

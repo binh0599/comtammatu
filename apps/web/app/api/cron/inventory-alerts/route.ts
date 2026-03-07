@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendPushToTenantRole } from "@/lib/push-sender";
 
 /**
  * Inventory Alerts Cron — Vercel Cron Job
@@ -185,6 +186,19 @@ export async function GET(request: Request) {
     } catch (err) {
       console.error(`[Inventory Alerts Cron] Error processing branch ${branch.id}:`, err);
       errors.push({ branch_id: branch.id, error: String(err) });
+    }
+  }
+
+  // Send push notifications to inventory managers if new alerts were created
+  if (alertsCreated > 0) {
+    const tenantIds = [...new Set(branches.map((b) => b.tenant_id))];
+    for (const tenantId of tenantIds) {
+      void sendPushToTenantRole(tenantId, ["owner", "manager", "inventory"], {
+        title: "Cảnh báo kho hàng",
+        body: `Có ${alertsCreated} cảnh báo mới về tồn kho/hết hạn`,
+        url: "/admin/notifications",
+        type: "low_stock",
+      }, "low_stock");
     }
   }
 

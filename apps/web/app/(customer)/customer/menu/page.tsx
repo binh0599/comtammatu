@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Thực đơn - Cơm tấm Má Tư",
 };
 
+// Revalidate menu data every 5 minutes (menu doesn't change frequently)
+export const revalidate = 300;
+
 export default async function MenuPage() {
   const { items, categories } = await getPublicMenu();
 

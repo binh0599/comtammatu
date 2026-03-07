@@ -353,3 +353,18 @@ export const RESERVATION_STATUSES = ["pending", "confirmed", "seated", "no_show"
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
 
 export const TABLE_SECTIONS = ["Tang 1", "Tang 2", "San vuon", "VIP", "Ngoai troi"] as const;
+
+// ===== Push Notifications =====
+
+export const PUSH_NOTIFICATION_TYPES = [
+  "order_status",
+  "low_stock",
+  "campaign",
+  "reservation",
+  "payment",
+  "system",
+] as const;
+export type PushNotificationType = (typeof PUSH_NOTIFICATION_TYPES)[number];
+
+export const PUSH_SUBSCRIPTION_STATUSES = ["active", "expired", "unsubscribed"] as const;
+export type PushSubscriptionStatus = (typeof PUSH_SUBSCRIPTION_STATUSES)[number];

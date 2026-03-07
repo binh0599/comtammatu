@@ -1,8 +1,14 @@
+import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { getReportData } from "./actions";
 import { ReportsClient } from "./reports-client";
-import { AnalyticsTab } from "./analytics-tab";
+
+const AnalyticsTab = dynamic(
+  () => import("./analytics-tab").then((m) => ({ default: m.AnalyticsTab })),
+  { loading: () => <Skeleton className="h-[400px] w-full" /> },
+);
 
 export default async function ReportsPage() {
   const now = new Date();

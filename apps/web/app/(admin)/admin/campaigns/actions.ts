@@ -15,6 +15,7 @@ import {
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { sendPushToUser } from "@/lib/push-sender";
 
 const CAMPAIGNS_PATH = "/admin/campaigns";
 
@@ -290,7 +291,7 @@ async function _sendCampaign(id: number) {
   // Verify ownership
   const { data: existing, error: fetchError } = await supabase
     .from("campaigns")
-    .select("id, status, target_segment")
+    .select("id, status, target_segment, name, message")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -357,6 +358,46 @@ async function _sendCampaign(id: number) {
     resource_id: id,
     changes: { sent_count: sentCount },
   });
+
+  // Send push notifications to matching customers (fire-and-forget, limited to first 500)
+  if (sentCount > 0) {
+    let pushQuery = supabase
+      .from("customers")
+      .select("user_id")
+      .eq("tenant_id", tenantId)
+      .eq("is_active", true)
+      .not("user_id", "is", null)
+      .limit(500);
+
+    if (segment) {
+      if (segment.loyalty_tier_ids && segment.loyalty_tier_ids.length > 0) {
+        pushQuery = pushQuery.in("loyalty_tier_id", segment.loyalty_tier_ids);
+      }
+      if (segment.min_total_spent !== undefined && segment.min_total_spent > 0) {
+        pushQuery = pushQuery.gte("total_spent", segment.min_total_spent);
+      }
+      if (segment.min_visits !== undefined && segment.min_visits > 0) {
+        pushQuery = pushQuery.gte("visit_count", segment.min_visits);
+      }
+      if (segment.gender) {
+        pushQuery = pushQuery.eq("gender", segment.gender);
+      }
+    }
+
+    void pushQuery.then(({ data: customers }: { data: { user_id: string | null }[] | null }) => {
+      if (!customers) return;
+      for (const c of customers) {
+        if (c.user_id) {
+          void sendPushToUser(c.user_id, {
+            title: existing.name ?? "Ưu đãi mới",
+            body: (existing.message as string) ?? "Bạn có ưu đãi mới!",
+            url: "/customer",
+            type: "campaign",
+          }, "campaign");
+        }
+      }
+    });
+  }
 
   revalidatePath(CAMPAIGNS_PATH);
   return { error: null, success: true, sent_count: sentCount };
