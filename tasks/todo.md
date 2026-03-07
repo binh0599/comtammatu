@@ -306,6 +306,35 @@
 
 ---
 
+## Completed: Post-MVP Sprint 9 — Push Notifications & Performance
+
+### Web Push Notifications
+- [x] `web-push` package + VAPID key management (`lib/web-push.ts`)
+- [x] `push_subscriptions` DB migration with RLS policies
+- [x] Push subscription API route (`POST/DELETE /api/push/subscribe`)
+- [x] Service Worker push/notification-click handlers
+- [x] `usePushNotifications` client hook (subscribe/unsubscribe/permission)
+- [x] Push triggers — order status -> staff, inventory alerts -> managers, campaign send -> customers
+- [x] `PushNotificationToggle` component on customer account page
+- [x] Admin NotificationBadge upgraded to popover with push toggle
+- [x] Zod schemas, constants, labels for push notification types
+- [x] Global SW registration (root layout) for push across all routes
+
+### Performance Optimization
+- [x] Dynamic import recharts in reports analytics-tab and HR performance-tab
+- [x] `optimizePackageImports` for lucide-react, recharts, date-fns
+- [x] Image optimization config (avif/webp, cache TTL, device sizes)
+- [x] DNS prefetch + preconnect for Supabase host
+- [x] Viewport export with theme color
+- [x] `revalidate=300` for public menu page (ISR)
+- [x] React strict mode enabled
+- [x] Service Worker scope widened from `/pos` to `/` for all app routes
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+---
+
 ## Remaining Roadmap (All Priorities Complete)
 
 ### Priority 1 — Offline & Resilience (Completed)
