@@ -69,6 +69,7 @@ export async function GET(request: Request) {
   }
 
   let alertsCreated = 0;
+  const alertsPerTenant = new Map<number, number>();
   const errors: Array<{ branch_id: number; error: string }> = [];
 
   // Expiry threshold: 3 days from now
@@ -129,6 +130,7 @@ export async function GET(request: Request) {
           } else {
             existingKeys.add(dedupKey);
             alertsCreated++;
+            alertsPerTenant.set(branch.tenant_id, (alertsPerTenant.get(branch.tenant_id) ?? 0) + 1);
           }
         }
       }
@@ -180,6 +182,7 @@ export async function GET(request: Request) {
           } else {
             existingKeys.add(dedupKey);
             alertsCreated++;
+            alertsPerTenant.set(branch.tenant_id, (alertsPerTenant.get(branch.tenant_id) ?? 0) + 1);
           }
         }
       }
@@ -191,11 +194,10 @@ export async function GET(request: Request) {
 
   // Send push notifications to inventory managers if new alerts were created
   if (alertsCreated > 0) {
-    const tenantIds = [...new Set(branches.map((b) => b.tenant_id))];
-    for (const tenantId of tenantIds) {
+    for (const [tenantId, count] of alertsPerTenant) {
       void sendPushToTenantRole(tenantId, ["owner", "manager", "inventory"], {
         title: "Cảnh báo kho hàng",
-        body: `Có ${alertsCreated} cảnh báo mới về tồn kho/hết hạn`,
+        body: `Có ${count} cảnh báo mới về tồn kho/hết hạn`,
         url: "/admin/notifications",
         type: "low_stock",
       }, "low_stock");

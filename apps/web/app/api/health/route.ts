@@ -14,8 +14,14 @@ export async function GET() {
   let dbLatency = -1;
 
   try {
+    const DB_TIMEOUT_MS = 2000;
     const { duration_ms } = await measureAsync("health:db", async () => {
-      await prisma.$queryRawUnsafe("SELECT 1");
+      await Promise.race([
+        prisma.$queryRawUnsafe("SELECT 1"),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("DB probe timeout")), DB_TIMEOUT_MS),
+        ),
+      ]);
     });
     dbStatus = "healthy";
     dbLatency = duration_ms;
