@@ -25,21 +25,21 @@ CREATE INDEX idx_push_subscriptions_user_status ON push_subscriptions (user_id, 
 ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Users can manage their own subscriptions
-CREATE POLICY push_subscriptions_own_select ON push_subscriptions
+CREATE POLICY "push_subscriptions_own_select" ON push_subscriptions
   FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY push_subscriptions_own_insert ON push_subscriptions
+CREATE POLICY "push_subscriptions_own_insert" ON push_subscriptions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY push_subscriptions_own_update ON push_subscriptions
+CREATE POLICY "push_subscriptions_own_update" ON push_subscriptions
   FOR UPDATE USING (auth.uid() = user_id);
 
-CREATE POLICY push_subscriptions_own_delete ON push_subscriptions
+CREATE POLICY "push_subscriptions_own_delete" ON push_subscriptions
   FOR DELETE USING (auth.uid() = user_id);
 
 -- Service role (cron jobs, server actions) can read all subscriptions
-CREATE POLICY push_subscriptions_service_select ON push_subscriptions
+CREATE POLICY "push_subscriptions_service_select" ON push_subscriptions
   FOR SELECT TO service_role USING (true);
 
-CREATE POLICY push_subscriptions_service_update ON push_subscriptions
+CREATE POLICY "push_subscriptions_service_update" ON push_subscriptions
   FOR UPDATE TO service_role USING (true);
