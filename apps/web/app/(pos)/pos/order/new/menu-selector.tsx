@@ -495,7 +495,7 @@ export function MenuSelector({
               Không kèm
             </Button>
             <Button onClick={handleConfirmSides}>
-              <Check className="mr-1 size-4" />
+              <Check className="mr-1 size-4" aria-hidden="true" />
               Xác nhận
             </Button>
           </DialogFooter>

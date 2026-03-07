@@ -134,7 +134,7 @@ function GuestCountSelector({
                         disabled={count <= 1}
                         aria-label="Giảm số khách"
                     >
-                        <Minus className="size-4" />
+                        <Minus className="size-4" aria-hidden="true" />
                     </Button>
                     <div className="flex flex-col items-center">
                         <span className="text-4xl font-bold">{count}</span>
@@ -147,7 +147,7 @@ function GuestCountSelector({
                         disabled={count >= maxGuests}
                         aria-label="Tăng số khách"
                     >
-                        <Plus className="size-4" />
+                        <Plus className="size-4" aria-hidden="true" />
                     </Button>
                 </div>
 

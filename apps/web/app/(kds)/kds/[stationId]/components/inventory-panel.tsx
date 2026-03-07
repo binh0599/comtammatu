@@ -542,6 +542,7 @@ export function InventoryPanel({
         <div className="flex items-center justify-between">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
+            aria-expanded={isExpanded}
             className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             <Package className="size-4" />

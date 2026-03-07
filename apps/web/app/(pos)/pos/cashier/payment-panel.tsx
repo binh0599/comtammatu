@@ -293,7 +293,7 @@ export function PaymentPanel({
               <Button
                 variant="ghost"
                 size="sm"
-                className="size-6 p-0 text-red-500 hover:text-red-700"
+                className="size-8 p-0 text-red-500 hover:text-red-700"
                 onClick={handleRemoveVoucher}
                 disabled={isVoucherPending}
                 aria-label="Xóa mã giảm giá"

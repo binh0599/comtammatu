@@ -71,7 +71,7 @@ function GuestCountStep({
           </p>
           <Link href="/pos">
             <Button variant="outline" className="mt-4">
-              <ArrowLeft className="mr-2 size-4" />
+              <ArrowLeft className="mr-2 size-4" aria-hidden="true" />
               Quay lại sơ đồ bàn
             </Button>
           </Link>
@@ -101,7 +101,7 @@ function GuestCountStep({
             disabled={count <= 1}
             aria-label="Giảm số khách"
           >
-            <Minus className="size-4" />
+            <Minus className="size-4" aria-hidden="true" />
           </Button>
           <div className="flex flex-col items-center">
             <span className="text-4xl font-bold">{count}</span>
@@ -114,7 +114,7 @@ function GuestCountStep({
             disabled={count >= maxGuests}
             aria-label="Tăng số khách"
           >
-            <Plus className="size-4" />
+            <Plus className="size-4" aria-hidden="true" />
           </Button>
         </div>
 
@@ -336,7 +336,7 @@ export function NewOrderClient({
             Chọn món để thêm vào đơn
             {guestCount != null && (
               <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                <Users className="size-3" />
+                <Users className="size-3" aria-hidden="true" />
                 {guestCount} khách
               </span>
             )}

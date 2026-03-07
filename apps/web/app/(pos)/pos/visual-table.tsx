@@ -143,7 +143,7 @@ export function VisualTable({
       className={cn(
         "group relative flex flex-col items-center rounded-xl border p-2 transition-all",
         tableStatusBg[status] ?? "bg-gray-50 border-gray-300",
-        isClickable && "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        isClickable && "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         !isClickable && "cursor-default opacity-60",
       )}
     >
