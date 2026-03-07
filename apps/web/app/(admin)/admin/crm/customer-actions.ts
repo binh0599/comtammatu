@@ -245,6 +245,35 @@ async function _adjustLoyaltyPoints(input: {
 
   if (txError) return { error: txError.message };
 
+  // Auto-tier upgrade: find the highest tier the customer qualifies for
+  if (parsed.data.points > 0) {
+    const { data: tiers } = await supabase
+      .from("loyalty_tiers")
+      .select("id, min_points, name")
+      .eq("tenant_id", tenantId)
+      .lte("min_points", newBalance)
+      .order("min_points", { ascending: false })
+      .limit(1);
+
+    const bestTier = tiers?.[0];
+    if (bestTier) {
+      const { data: customer } = await supabase
+        .from("customers")
+        .select("loyalty_tier_id")
+        .eq("id", parsed.data.customer_id)
+        .eq("tenant_id", tenantId)
+        .single();
+
+      if (customer && customer.loyalty_tier_id !== bestTier.id) {
+        await supabase
+          .from("customers")
+          .update({ loyalty_tier_id: bestTier.id })
+          .eq("id", parsed.data.customer_id)
+          .eq("tenant_id", tenantId);
+      }
+    }
+  }
+
   revalidatePath("/admin/crm");
   return { success: true, balance: newBalance };
 }

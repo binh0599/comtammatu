@@ -8,16 +8,20 @@ import {
     formatPoints,
     formatDiscount,
     getOrderStatusLabel,
+    getOrderTypeLabel,
     getPaymentMethodLabel,
     getTerminalTypeLabel,
     getTableStatusLabel,
     getStockMovementTypeLabel,
     getWasteReasonLabel,
     getPoStatusLabel,
+    getPoQualityStatusLabel,
+    getStockCountStatusLabel,
     getEmploymentTypeLabel,
     getEmployeeStatusLabel,
     getLeaveTypeLabel,
     getLeaveStatusLabel,
+    getPayrollStatusLabel,
     getSeverityLabel,
     getAttendanceStatusLabel,
     getShiftAssignmentStatusLabel,
@@ -28,6 +32,15 @@ import {
     getDeletionStatusLabel,
     getPaymentStatusLabel,
     getDiscountTypeLabel,
+    getPrinterTypeLabel,
+    getPrinterTestStatusLabel,
+    getPrinterAssignedTypeLabel,
+    getItemUnavailableReasonLabel,
+    getDeviceStatusLabel,
+    getCampaignTypeLabel,
+    getCampaignStatusLabel,
+    getNotificationChannelLabel,
+    getReservationStatusLabel,
 } from "./format";
 
 // ===== Formatters =====
@@ -293,5 +306,207 @@ describe("getDiscountTypeLabel", () => {
     it("maps known types", () => {
         expect(getDiscountTypeLabel("percent")).toBe("Giảm %");
         expect(getDiscountTypeLabel("voucher")).toBe("Voucher");
+    });
+});
+
+// ===== Additional Label Mappers (extended coverage) =====
+
+describe("getOrderTypeLabel", () => {
+    it("maps known types", () => {
+        expect(getOrderTypeLabel("dine_in")).toBe("Tại chỗ");
+        expect(getOrderTypeLabel("takeaway")).toBe("Mang đi");
+        expect(getOrderTypeLabel("delivery")).toBe("Giao hàng");
+    });
+
+    it("returns key for unknown type", () => {
+        expect(getOrderTypeLabel("pickup")).toBe("pickup");
+    });
+});
+
+describe("getPoQualityStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getPoQualityStatusLabel("pending")).toBe("Chờ kiểm tra");
+        expect(getPoQualityStatusLabel("accepted")).toBe("Đạt");
+        expect(getPoQualityStatusLabel("partial")).toBe("Đạt 1 phần");
+        expect(getPoQualityStatusLabel("rejected")).toBe("Không đạt");
+    });
+
+    it("returns key for unknown status", () => {
+        expect(getPoQualityStatusLabel("unknown")).toBe("unknown");
+    });
+});
+
+describe("getStockCountStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getStockCountStatusLabel("draft")).toBe("Nháp");
+        expect(getStockCountStatusLabel("submitted")).toBe("Đã nộp");
+        expect(getStockCountStatusLabel("approved")).toBe("Đã duyệt");
+    });
+});
+
+describe("getPayrollStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getPayrollStatusLabel("draft")).toBe("Nháp");
+        expect(getPayrollStatusLabel("calculated")).toBe("Đã tính");
+        expect(getPayrollStatusLabel("approved")).toBe("Đã duyệt");
+        expect(getPayrollStatusLabel("paid")).toBe("Đã trả");
+    });
+
+    it("returns key for unknown status", () => {
+        expect(getPayrollStatusLabel("pending")).toBe("pending");
+    });
+});
+
+describe("getPrinterTypeLabel", () => {
+    it("maps known types", () => {
+        expect(getPrinterTypeLabel("thermal_usb")).toBe("Máy in USB");
+        expect(getPrinterTypeLabel("thermal_network")).toBe("Máy in mạng");
+        expect(getPrinterTypeLabel("browser")).toBe("In qua trình duyệt");
+    });
+
+    it("returns key for unknown type", () => {
+        expect(getPrinterTypeLabel("laser")).toBe("laser");
+    });
+});
+
+describe("getPrinterTestStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getPrinterTestStatusLabel("connected")).toBe("Đã kết nối");
+        expect(getPrinterTestStatusLabel("error")).toBe("Lỗi kết nối");
+        expect(getPrinterTestStatusLabel("untested")).toBe("Chưa kiểm tra");
+    });
+});
+
+describe("getPrinterAssignedTypeLabel", () => {
+    it("maps known types", () => {
+        expect(getPrinterAssignedTypeLabel("pos_terminal")).toBe("Máy thu ngân");
+        expect(getPrinterAssignedTypeLabel("kds_station")).toBe("Trạm bếp");
+    });
+});
+
+describe("getItemUnavailableReasonLabel", () => {
+    it("maps known reasons", () => {
+        expect(getItemUnavailableReasonLabel("out_of_stock")).toBe("Hết hàng");
+        expect(getItemUnavailableReasonLabel("ingredient_shortage")).toBe("Thiếu nguyên liệu");
+        expect(getItemUnavailableReasonLabel("equipment_issue")).toBe("Lỗi thiết bị");
+        expect(getItemUnavailableReasonLabel("seasonal")).toBe("Theo mùa");
+        expect(getItemUnavailableReasonLabel("other")).toBe("Lý do khác");
+    });
+
+    it("returns key for unknown reason", () => {
+        expect(getItemUnavailableReasonLabel("custom")).toBe("custom");
+    });
+});
+
+describe("getDeviceStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getDeviceStatusLabel("pending")).toBe("Chờ duyệt");
+        expect(getDeviceStatusLabel("approved")).toBe("Đã duyệt");
+        expect(getDeviceStatusLabel("rejected")).toBe("Từ chối");
+    });
+});
+
+describe("getCampaignTypeLabel", () => {
+    it("maps known types", () => {
+        expect(getCampaignTypeLabel("email")).toBe("Email");
+        expect(getCampaignTypeLabel("sms")).toBe("SMS");
+        expect(getCampaignTypeLabel("push")).toBe("Thông báo đẩy");
+    });
+
+    it("returns key for unknown type", () => {
+        expect(getCampaignTypeLabel("whatsapp")).toBe("whatsapp");
+    });
+});
+
+describe("getCampaignStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getCampaignStatusLabel("draft")).toBe("Nháp");
+        expect(getCampaignStatusLabel("scheduled")).toBe("Đã lên lịch");
+        expect(getCampaignStatusLabel("sent")).toBe("Đã gửi");
+        expect(getCampaignStatusLabel("completed")).toBe("Hoàn tất");
+    });
+});
+
+describe("getNotificationChannelLabel", () => {
+    it("maps known channels", () => {
+        expect(getNotificationChannelLabel("in_app")).toBe("Trong ứng dụng");
+        expect(getNotificationChannelLabel("push")).toBe("Thông báo đẩy");
+        expect(getNotificationChannelLabel("email")).toBe("Email");
+        expect(getNotificationChannelLabel("sms")).toBe("SMS");
+    });
+});
+
+describe("getReservationStatusLabel", () => {
+    it("maps known statuses", () => {
+        expect(getReservationStatusLabel("pending")).toBe("Chờ xác nhận");
+        expect(getReservationStatusLabel("confirmed")).toBe("Đã xác nhận");
+        expect(getReservationStatusLabel("seated")).toBe("Đã ngồi");
+        expect(getReservationStatusLabel("no_show")).toBe("Không đến");
+        expect(getReservationStatusLabel("cancelled")).toBe("Đã hủy");
+    });
+
+    it("returns key for unknown status", () => {
+        expect(getReservationStatusLabel("waitlisted")).toBe("waitlisted");
+    });
+});
+
+// ===== Additional formatter edge cases =====
+
+describe("formatPrice (extended)", () => {
+    it("formats negative amounts", () => {
+        const result = formatPrice(-45000);
+        expect(result).toContain("45.000");
+        expect(result).toContain("₫");
+    });
+
+    it("formats single digit", () => {
+        expect(formatPrice(5)).toBe("5₫");
+    });
+
+    it("formats hundreds", () => {
+        expect(formatPrice(500)).toBe("500₫");
+    });
+});
+
+describe("formatDiscount (extended)", () => {
+    it("formats voucher type as price", () => {
+        expect(formatDiscount("voucher", 20000)).toBe("20.000₫");
+    });
+
+    it("formats percent with zero", () => {
+        expect(formatDiscount("percent", 0)).toBe("0%");
+    });
+
+    it("formats fixed with zero", () => {
+        expect(formatDiscount("fixed", 0)).toBe("0₫");
+    });
+});
+
+describe("formatPoints (extended)", () => {
+    it("formats large positive points", () => {
+        const result = formatPoints(10000);
+        expect(result).toContain("+");
+        expect(result).toContain("điểm");
+    });
+
+    it("formats single point", () => {
+        expect(formatPoints(1)).toContain("+1");
+    });
+});
+
+describe("formatDate (extended)", () => {
+    it("accepts Date objects", () => {
+        const result = formatDate(new Date("2026-12-25T00:00:00Z"));
+        expect(result).toContain("25");
+        expect(result).toContain("12");
+        expect(result).toContain("2026");
+    });
+});
+
+describe("formatDateTime (extended)", () => {
+    it("includes time component", () => {
+        const result = formatDateTime("2026-06-15T08:30:00Z");
+        expect(result).toContain("15");
+        expect(result).toContain("06");
     });
 });

@@ -1,30 +1,44 @@
+import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getReportData } from "./actions";
+import { ReportsClient } from "./reports-client";
 
-export default function ReportsPage() {
+const AnalyticsTab = dynamic(
+  () => import("./analytics-tab").then((m) => ({ default: m.AnalyticsTab })),
+  { loading: () => <Skeleton className="h-[400px] w-full" /> },
+);
+
+export default async function ReportsPage() {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+    .toISOString()
+    .slice(0, 10);
+  const today = now.toISOString().slice(0, 10);
+
+  const data = await getReportData(monthStart, today);
+
   return (
     <>
-      <Header breadcrumbs={[{ label: "Báo cáo" }]} />
+      <Header breadcrumbs={[{ label: "Bao cao" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="size-5" />
-              Báo cáo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Tính năng báo cáo đang được phát triển. Vui lòng quay lại sau.
-            </p>
-          </CardContent>
-        </Card>
+        <Tabs defaultValue="reports" className="w-full">
+          <TabsList>
+            <TabsTrigger value="reports">Bao cao</TabsTrigger>
+            <TabsTrigger value="analytics">Phan tich chi nhanh</TabsTrigger>
+          </TabsList>
+          <TabsContent value="reports">
+            <ReportsClient
+              initialData={data}
+              initialStart={monthStart}
+              initialEnd={today}
+            />
+          </TabsContent>
+          <TabsContent value="analytics">
+            <AnalyticsTab />
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );

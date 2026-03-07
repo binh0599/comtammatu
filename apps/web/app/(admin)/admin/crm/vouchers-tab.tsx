@@ -211,7 +211,7 @@ function VoucherForm({
             </Select>
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="value">
               Giá trị *{" "}
@@ -252,7 +252,7 @@ function VoucherForm({
             />
           </div>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="valid_from">Từ ngày *</Label>
             <Input
@@ -439,7 +439,7 @@ export function VouchersTab({
       )}
 
       <Card>
-        <CardContent className="p-0">
+        <CardContent className="overflow-x-auto p-0">
         <Table>
           <TableHeader>
             <TableRow>

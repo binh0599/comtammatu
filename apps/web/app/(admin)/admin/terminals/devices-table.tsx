@@ -26,6 +26,7 @@ import {
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import { approveDevice, rejectDevice, deleteDevice } from "./actions";
 import { toast } from "sonner";
+import { formatDateTime } from "@comtammatu/shared";
 
 interface RegisteredDevice {
   id: number;
@@ -73,16 +74,6 @@ function getStatusBadge(status: string) {
   }
 }
 
-function formatDate(dateStr: string) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export function DevicesTable({
   initialDevices,
@@ -270,7 +261,7 @@ export function DevicesTable({
                       </span>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {formatDate(device.created_at)}
+                      {formatDateTime(device.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -360,7 +351,7 @@ export function DevicesTable({
                     </TableCell>
                     <TableCell>{getStatusBadge(device.status)}</TableCell>
                     <TableCell className="text-sm">
-                      {formatDate(device.created_at)}
+                      {formatDateTime(device.created_at)}
                     </TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>

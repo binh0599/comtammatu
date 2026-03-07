@@ -212,39 +212,158 @@
 
 ---
 
-## Remaining Roadmap
+## In Progress: Post-MVP Sprint 5 — Offline & Resilience
 
-### Priority 1 — Offline & Resilience (Next)
+### POS Offline Support
+- [x] IndexedDB utility module — pending orders, menu cache, table cache stores
+- [x] Service Worker — POS asset caching (stale-while-revalidate), navigation fallback
+- [x] Offline order queue — queue orders in IndexedDB when offline, sync on reconnect
+- [x] Online/offline detection hook — `useOnlineStatus` with `useSyncExternalStore`
+- [x] Sync-on-reconnect hook — auto-sync pending orders with toast notifications
+- [x] Offline indicator component — status badge in POS header (online/offline/syncing)
+- [x] Order creation offline path — queue to IndexedDB when offline, normal flow when online
+- [x] SW registration in POS layout + offline fallback page
+- [x] PWA manifest for POS standalone mode
+- [x] next.config.ts — SW headers (no-cache, Service-Worker-Allowed)
+- [x] Build verification — lint, build pass
+
+---
+
+## Completed: Post-MVP Sprint 6 — Growth Features (Phase 3)
+
+### Campaign Management (/admin/campaigns)
+- [x] Server Actions — CRUD, schedule, send with target segment matching
+- [x] Admin UI — campaign table, create/edit dialog, schedule dialog, stats cards
+- [x] Loading skeleton
+
+### Customer Online Ordering (/customer)
+- [x] Cart context with localStorage persistence
+- [x] Cart drawer — quantity controls, voucher code input, order type selector
+- [x] Place order action — price lookup, tax/service charge, order creation
+- [x] Order confirmation page (/customer/orders/[orderId])
+- [x] Menu browser updated with "Add to cart" buttons
+
+### Multi-Branch Analytics (/admin/reports)
+- [x] Branch analytics — revenue, orders, avg ticket per branch
+- [x] Peak hours heatmap — hourly x day-of-week order volume
+- [x] Category mix breakdown per branch
+
+### Inventory Forecasting (/admin/inventory)
+- [x] Demand forecast — 30-day historical usage -> projected need
+- [x] Days-until-stockout with color-coded urgency
+- [x] Forecast tab with days-ahead selector and branch filter
+
+### Staff Performance (/admin/hr)
+- [x] Role-specific KPIs — waiters (orders), cashiers (payments), chefs (prep time)
+- [x] Attendance rate tracking
+- [x] Performance tab with date range and role filters
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+## Completed: Post-MVP Sprint 7 — Operational Polish (Phase 4)
+
+### GDPR Retention (already existed)
+- [x] Vercel cron job `/api/cron/process-deletions` — daily 3 AM UTC
+- [x] Supabase Edge Function `process-deletion-requests` — backup processor
+- [x] 30-day grace period on deletion requests
+- [x] Anonymize PII, null order refs, delete loyalty/feedback, audit log
+
+### Auto-Tier Upgrade
+- [x] Inline upgrade in `adjustLoyaltyPoints` — after earning points, auto-promote to highest qualifying tier
+- [x] Batch cron `/api/cron/upgrade-tiers` — daily 4 AM UTC, checks all active customers against tier thresholds
+- [x] vercel.json updated with upgrade-tiers schedule
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+---
+
+## Completed: Post-MVP Sprint 8 — Inventory Alerts, Kitchen Printing, Table Management
+
+### Inventory Alerts (/admin/notifications)
+- [x] Cron job `/api/cron/inventory-alerts` — daily 5 AM UTC, low stock + expiry alerts
+- [x] Admin notification center — severity badges, color-coded rows, summary cards
+- [x] Notification bell in admin header — 24h unread count badge
+- [x] Alerts stored in `security_events` (no new tables needed)
+
+### Kitchen Printing (ESC/POS)
+- [x] ESC/POS command library — `kds/lib/escpos.ts`, KDS ticket + POS receipt templates
+- [x] Web Serial API hook — `use-serial-printer.ts`, connect/disconnect/print
+- [x] Auto-print on new KDS ticket arrival via realtime subscription
+- [x] Manual print button on each KDS ticket card
+- [x] POS printer config updated with Web Serial connection
+
+### Table Management (/admin/tables)
+- [x] Admin CRUD — create, edit, delete, status change with zone/branch filters
+- [x] Floor plan tab — visual grid grouped by zone, color-coded by status
+- [x] Table list tab — data table with inline status change
+- [x] Reservation tab — reserved table quick actions (seated/cancel/no-show)
+- [x] Zod schemas + constants (RESERVATION_STATUSES, TABLE_SECTIONS)
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+---
+
+## Completed: Post-MVP Sprint 9 — Push Notifications & Performance
+
+### Web Push Notifications
+- [x] `web-push` package + VAPID key management (`lib/web-push.ts`)
+- [x] `push_subscriptions` DB migration with RLS policies
+- [x] Push subscription API route (`POST/DELETE /api/push/subscribe`)
+- [x] Service Worker push/notification-click handlers
+- [x] `usePushNotifications` client hook (subscribe/unsubscribe/permission)
+- [x] Push triggers — order status -> staff, inventory alerts -> managers, campaign send -> customers
+- [x] `PushNotificationToggle` component on customer account page
+- [x] Admin NotificationBadge upgraded to popover with push toggle
+- [x] Zod schemas, constants, labels for push notification types
+- [x] Global SW registration (root layout) for push across all routes
+
+### Performance Optimization
+- [x] Dynamic import recharts in reports analytics-tab and HR performance-tab
+- [x] `optimizePackageImports` for lucide-react, recharts, date-fns
+- [x] Image optimization config (avif/webp, cache TTL, device sizes)
+- [x] DNS prefetch + preconnect for Supabase host
+- [x] Viewport export with theme color
+- [x] `revalidate=300` for public menu page (ISR)
+- [x] React strict mode enabled
+- [x] Service Worker scope widened from `/pos` to `/` for all app routes
+
+### Verification
+- [x] Typecheck, lint (0 errors), build all pass
+
+---
+
+## Remaining Roadmap (All Priorities Complete)
+
+### Priority 1 — Offline & Resilience (Completed)
 ```text
-- [ ] Offline support — Service Worker + IndexedDB for POS reliability
-      (critical for restaurant ops when internet drops)
+- [x] Offline support — Service Worker + IndexedDB for POS reliability
+- [x] Offline menu/table caching — useMenuCache/useTableCache hooks
+- [x] Pending orders UI — /pos/pending page (view/retry/discard)
 ```
 
-### Priority 2 — Quality & Compliance
+### Priority 2 — Quality & Compliance (Completed)
 ```text
-- [ ] RLS validation test suite (verify all policies per role)
-- [ ] API documentation (OpenAPI spec for privacy + webhook endpoints)
-- [ ] Admin reports page — build out actual report content
-- [ ] Admin settings page — build out actual settings management
+- [x] RLS validation test suite — 252 tests (tests/rls/rls-policy-spec.test.ts)
+- [x] API documentation — OpenAPI 3.1 spec (docs/openapi.yaml)
+- [x] Admin reports page — date-range revenue, payment methods, top items
+- [x] Admin settings page — tenant info, tax/service charge, branch management
 ```
 
-### Priority 3 — Growth Features
+### Priority 3 — Growth Features (Completed)
 ```text
-- [ ] Campaigns & notifications (email/SMS/push marketing)
-- [ ] Customer ordering (online menu -> place order via PWA)
-- [ ] Multi-branch reporting & analytics (beyond current comparison)
-- [ ] Inventory forecasting (based on order history)
-- [ ] Staff performance metrics
+- [x] Campaigns & notifications — admin CRUD, schedule/send, target segments
+- [x] Customer ordering — cart, checkout, place order via PWA, order confirmation
+- [x] Multi-branch analytics — branch comparison, peak hours heatmap, category mix
+- [x] Inventory forecasting — demand prediction, days-until-stockout, urgency badges
+- [x] Staff performance metrics — role-specific KPIs (waiter/cashier/chef), attendance rate
 ```
 
-### Priority 4 — Operational Polish
+### Priority 4 — Operational Polish (Completed)
 ```text
-- [ ] Retention cron jobs (auto-delete after 30-day GDPR grace period)
-- [ ] Auto-tier upgrade triggers (auto-promote on points threshold)
-- [ ] VNPay payment integration (if Momo QR insufficient)
-```
-
-### Excluded (not planned)
-```text
-- [--] VNPay — Momo QR sufficient for current operations
+- [x] Retention cron jobs — already implemented (process-deletions cron at 3 AM UTC, 30-day grace period)
+- [x] Auto-tier upgrade triggers — inline upgrade in adjustLoyaltyPoints + daily batch cron at 4 AM UTC
+- [--] VNPay — excluded, Momo QR sufficient for current operations
 ```

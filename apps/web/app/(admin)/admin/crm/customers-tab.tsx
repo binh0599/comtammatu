@@ -162,14 +162,14 @@ export function CustomersTab({
 
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle className="text-base">Danh sách khách hàng</CardTitle>
               <CardDescription>
                 {filteredCustomers.length} / {customers.length} khách hàng
               </CardDescription>
             </div>
-            <div className="relative w-64">
+            <div className="relative w-full sm:w-64">
               <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
               <Input
                 aria-label="Tìm theo tên, số điện thoại hoặc email"
@@ -181,7 +181,7 @@ export function CustomersTab({
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="overflow-x-auto p-0">
         <Table>
           <TableHeader>
             <TableRow>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { WifiOff, Printer, Settings } from "lucide-react";
+import { WifiOff, Printer, Settings, Usb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
@@ -12,9 +12,12 @@ import { getStationTickets } from "./actions";
 import { usePrinterForStation } from "@/hooks/use-printer-config";
 import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
 import { printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
+import { useSerialPrinter } from "../hooks/use-serial-printer";
+import { buildKdsTicket } from "../lib/escpos";
 import type { KdsTicket, TimingRule } from "./types";
 import { InventoryPanel } from "./components/inventory-panel";
 import type { MenuPortionInfo, IngredientOption, SupplierOption } from "./inventory-actions";
+import { parseItems } from "./types";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
   // Only show banner for actual connection problems, not initial connecting
@@ -59,16 +62,48 @@ export function KdsBoard({
     getStationTickets,
   );
   const { config: printerConfig } = usePrinterForStation(stationId);
+  const serialPrinter = useSerialPrinter();
 
   const defaultRule = timingRules[0] ?? null;
 
   // Track ticket IDs that have already been printed or queued for auto-print
   const printedTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
 
+  /** Auto-print a ticket via Web Serial if connected, otherwise fall back to WebUSB/network */
   const autoPrintTicket = useCallback(
     (ticket: KdsTicket) => {
+      const paperWidth = printerConfig?.paper_width_mm ?? 80;
+
+      // Path 1: Web Serial API is connected — use it directly
+      if (serialPrinter.status === "connected") {
+        const items = parseItems(ticket.items);
+        const serialCommands = buildKdsTicket({
+          stationName,
+          orderNumber: ticket.orders?.order_number ?? `#${ticket.order_id}`,
+          tableNumber: ticket.orders?.tables?.number?.toString() ?? null,
+          items: items.map((i) => ({
+            quantity: i.quantity,
+            name: i.menu_item_name + (i.variant_name ? ` - ${i.variant_name}` : ""),
+            notes: i.notes ?? undefined,
+            modifiers: i.modifiers,
+          })),
+          createdAt: ticket.created_at,
+          paperWidth,
+        });
+
+        const delay = printerConfig?.print_delay_ms ?? 500;
+        setTimeout(() => {
+          serialPrinter
+            .print(serialCommands)
+            .catch((err) =>
+              console.warn("KDS serial auto-print error:", err),
+            );
+        }, delay);
+        return;
+      }
+
+      // Path 2: Fall back to WebUSB / network printing (existing logic)
       if (!printerConfig) return;
-      const paperWidth = printerConfig.paper_width_mm ?? 80;
       const lineWidth = paperWidth === 58 ? 32 : 42;
       const commands = generateKitchenTicketCommands(ticket, stationName, lineWidth);
       const connConfig = printerConfig.connection_config;
@@ -101,12 +136,15 @@ export function KdsBoard({
           );
       }, printerConfig.print_delay_ms);
     },
-    [printerConfig, stationName],
+    [printerConfig, stationName, serialPrinter.status, serialPrinter.print],
   );
 
   useEffect(() => {
-    if (!printerConfig?.auto_print) return;
-    if (printerConfig.type === "browser") return;
+    // Auto-print enabled via printer config OR serial printer is connected
+    const hasAutoPrint = printerConfig?.auto_print && printerConfig.type !== "browser";
+    const hasSerialAutoPrint = serialPrinter.status === "connected";
+
+    if (!hasAutoPrint && !hasSerialAutoPrint) return;
 
     // Find new tickets that haven't been printed yet
     for (const ticket of tickets) {
@@ -119,7 +157,7 @@ export function KdsBoard({
         autoPrintTicket(ticket);
       }
     }
-  }, [tickets, printerConfig, autoPrintTicket]);
+  }, [tickets, printerConfig, autoPrintTicket, serialPrinter.status]);
 
   return (
     <div className="flex h-screen flex-col">
@@ -138,8 +176,30 @@ export function KdsBoard({
           {printerConfig && (
             <Badge variant="outline" className="hidden gap-1 text-xs sm:flex">
               <Printer className="size-3" />
-              {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
+              {printerConfig.auto_print ? "Tu dong in" : "May in san sang"}
             </Badge>
+          )}
+          {serialPrinter.isSupported && (
+            <Button
+              variant={serialPrinter.status === "connected" ? "default" : "outline"}
+              size="sm"
+              className="gap-1"
+              onClick={() =>
+                serialPrinter.status === "connected"
+                  ? serialPrinter.disconnect()
+                  : serialPrinter.connect()
+              }
+              disabled={serialPrinter.status === "connecting"}
+            >
+              <Usb className="size-3.5" />
+              {serialPrinter.status === "connected"
+                ? "Serial: Da ket noi"
+                : serialPrinter.status === "connecting"
+                  ? "Dang ket noi..."
+                  : serialPrinter.status === "error"
+                    ? "Serial: Loi"
+                    : "Ket noi Serial"}
+            </Button>
           )}
           <div className="hidden gap-2 md:flex" role="group" aria-label="Chú thích thời gian">
             <span className="flex items-center gap-1 text-xs text-green-700">
@@ -193,6 +253,11 @@ export function KdsBoard({
                 timingRule={defaultRule}
                 printerConfig={printerConfig}
                 stationName={stationName}
+                serialPrint={
+                  serialPrinter.status === "connected"
+                    ? serialPrinter.print
+                    : undefined
+                }
               />
             ))}
           </div>

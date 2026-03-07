@@ -5,6 +5,8 @@ import { BottomNav } from "@/components/pos/bottom-nav";
 import { Toaster } from "@/components/ui/sonner";
 import { RealtimeNotifications } from "@/components/pos/realtime-notifications";
 import { requireLayoutAuth } from "@/lib/layout-auth";
+import { ServiceWorkerRegister } from "./pos/components/sw-register";
+import { OfflineIndicator } from "./pos/components/offline-indicator";
 
 export default async function PosLayout({
   children,
@@ -49,10 +51,14 @@ export default async function PosLayout({
 
   return (
     <div data-route-group="pos" className="bg-background min-h-screen pb-16">
+      <ServiceWorkerRegister />
       {profile.branch_id && (
         <RealtimeNotifications branchId={profile.branch_id} />
       )}
-      <main id="main-content">{children}</main>
+      <div className="fixed top-2 right-2 z-50">
+        <OfflineIndicator />
+      </div>
+      <main id="main-content" className="animate-page-in">{children}</main>
       <BottomNav />
       <Toaster position="top-center" />
     </div>

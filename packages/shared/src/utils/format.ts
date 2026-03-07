@@ -290,3 +290,43 @@ export const getDeviceStatusLabel = createLabelMapper({
   approved: "Đã duyệt",
   rejected: "Từ chối",
 });
+
+// ===== Campaigns =====
+export const getCampaignTypeLabel = createLabelMapper({
+  email: "Email",
+  sms: "SMS",
+  push: "Thông báo đẩy",
+});
+
+export const getCampaignStatusLabel = createLabelMapper({
+  draft: "Nháp",
+  scheduled: "Đã lên lịch",
+  sent: "Đã gửi",
+  completed: "Hoàn tất",
+});
+
+export const getNotificationChannelLabel = createLabelMapper({
+  in_app: "Trong ứng dụng",
+  push: "Thông báo đẩy",
+  email: "Email",
+  sms: "SMS",
+});
+
+// ===== Reservations =====
+export const getReservationStatusLabel = createLabelMapper({
+  pending: "Chờ xác nhận",
+  confirmed: "Đã xác nhận",
+  seated: "Đã ngồi",
+  no_show: "Không đến",
+  cancelled: "Đã hủy",
+});
+
+// Push Notifications
+export const getPushNotificationTypeLabel = createLabelMapper({
+  order_status: "Trạng thái đơn hàng",
+  low_stock: "Tồn kho thấp",
+  campaign: "Chiến dịch",
+  reservation: "Đặt bàn",
+  payment: "Thanh toán",
+  system: "Hệ thống",
+});
