@@ -46,13 +46,19 @@ async function _processPayment(data: {
   }
 
   // Verify terminal is cashier_station
-  const { data: terminal } = await supabase
+  const { data: terminal, error: terminalError } = await supabase
     .from("pos_terminals")
     .select("type")
     .eq("id", session.terminal_id)
     .single();
 
-  if (terminal?.type !== "cashier_station") {
+  if (terminalError) {
+    return safeDbErrorResult(terminalError, "terminal");
+  }
+  if (!terminal) {
+    return { error: "Không tìm thấy thiết bị POS. Thiết bị có thể đã bị xóa." };
+  }
+  if (terminal.type !== "cashier_station") {
     return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
   }
 
