@@ -33,7 +33,7 @@ function ConnectionBanner({ status }: { status: ConnectionStatus }) {
       className="flex items-center justify-center gap-2 bg-yellow-100 border-b border-yellow-300 py-2 text-sm font-medium text-yellow-800"
       role="alert"
     >
-      <WifiOff className="size-4" />
+      <WifiOff className="size-4" aria-hidden="true" />
       {messages[status]}
     </div>
   );
@@ -175,7 +175,7 @@ export function KdsBoard({
         <div className="flex items-center gap-2 sm:gap-4">
           {printerConfig && (
             <Badge variant="outline" className="hidden gap-1 text-xs sm:flex">
-              <Printer className="size-3" />
+              <Printer className="size-3" aria-hidden="true" />
               {printerConfig.auto_print ? "Tự động in" : "Máy in sẵn sàng"}
             </Badge>
           )}
@@ -191,7 +191,7 @@ export function KdsBoard({
               }
               disabled={serialPrinter.status === "connecting"}
             >
-              <Usb className="size-3.5" />
+              <Usb className="size-3.5" aria-hidden="true" />
               {serialPrinter.status === "connected"
                 ? "Serial: Đã kết nối"
                 : serialPrinter.status === "connecting"
