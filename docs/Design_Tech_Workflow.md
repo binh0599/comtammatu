@@ -591,28 +591,85 @@ Supabase DB         Supabase DB          CRM (chỉ đọc)
 | **Figma** | UI/UX Design chính | Industry standard, real-time collaboration, Dev Mode cho handoff |
 | **Figma Variables** | Design Tokens (colors, spacing, typography) | Đồng bộ trực tiếp với code tokens, single source of truth cho visual design |
 | **Figma Auto Layout** | Responsive design | Map 1:1 với Flutter Row/Column/Flex |
+| **v0.app (by Vercel)** | AI Design Assistant — rapid prototyping & UI exploration | Tạo nhanh UI prototype từ prompt, export code tham khảo layout/spacing, tăng tốc exploration phase |
 | **Widgetbook (Flutter)** | Component Library documentation | Designer review components trực tiếp trên device/web, đảm bảo design-code parity |
+
+#### v0.app — Vai Trò Trong Design Workflow
+
+> **v0.app** là AI-powered UI generation tool, đóng vai trò **trợ lý** cho Designer — KHÔNG thay thế Figma.
+
+```
+Vai trò v0.app trong quy trình:
+
+┌─────────────────────────────────────────────────────────────────────┐
+│  DESIGNER WORKFLOW (có v0.app hỗ trợ)                              │
+│                                                                     │
+│  ① EXPLORATION (Tuần 1-2)                                          │
+│  ┌──────────────┐     ┌──────────────┐     ┌──────────────┐       │
+│  │ v0.app        │────►│ Designer     │────►│ Figma        │       │
+│  │ Rapid         │     │ Evaluate &   │     │ Final        │       │
+│  │ Prototyping   │     │ Cherry-pick  │     │ Design       │       │
+│  │               │     │ best ideas   │     │              │       │
+│  │ "Loyalty app  │     │              │     │ (Polished,   │       │
+│  │  home screen  │     │ Kết hợp      │     │  branded,    │       │
+│  │  with points  │     │ ideas vào    │     │  production  │       │
+│  │  + tier badge │     │ Figma design │     │  ready)      │       │
+│  │  Vietnamese"  │     │              │     │              │       │
+│  └──────────────┘     └──────────────┘     └──────────────┘       │
+│                                                                     │
+│  ② COMPONENT VARIANTS (Tuần 3-4)                                   │
+│  v0.app generate nhanh 3-5 variants cho mỗi component              │
+│  → Designer chọn hướng tốt nhất → refine trong Figma               │
+│                                                                     │
+│  ③ MICRO-COPY & LAYOUT (Ongoing)                                   │
+│  v0.app suggest layout alternatives khi Designer bí ý tưởng        │
+│  → Tăng tốc iteration, giảm "blank canvas" syndrome                │
+│                                                                     │
+│  ④ RESPONSIVE PREVIEW (Ongoing)                                    │
+│  v0.app preview nhanh trên nhiều screen sizes                       │
+│  → Xác nhận layout trước khi đưa vào Figma chi tiết               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Quy tắc sử dụng v0.app:**
+
+| Quy tắc | Chi tiết |
+|---------|---------|
+| **v0 = Exploration, Figma = Production** | Mọi design cuối cùng phải ở Figma. v0 chỉ dùng để brainstorm nhanh |
+| **Không ship trực tiếp code từ v0** | Code từ v0 là React/Tailwind — chỉ tham khảo layout/spacing, KHÔNG copy-paste vào Flutter |
+| **Designer curate output** | v0 generate nhiều options → Designer chọn + adapt vào brand guidelines Cơm Tấm Má Tư |
+| **Save v0 generations** | Lưu link v0 generations vào Notion để team reference lại khi cần |
+| **Time-box v0 sessions** | Tối đa 30 phút/session trên v0 → chuyển sang Figma refine. Tránh over-explore |
+
+**Use cases cụ thể cho Cơm Tấm Má Tư:**
+
+| Use case | Prompt ví dụ trên v0.app | Output kỳ vọng |
+|----------|------------------------|----------------|
+| Home screen exploration | "Vietnamese food loyalty app home screen, warm orange theme, points display, QR check-in button, promotion cards" | 3-5 layout options để Designer evaluate |
+| Check-in success state | "Check-in success celebration screen, confetti, points earned badge, restaurant name, Vietnamese text" | Animation layout reference cho Rive |
+| Tier upgrade modal | "Loyalty tier upgrade modal, gold to diamond, celebration, benefits list, Vietnamese" | Layout structure cho Figma |
+| Empty states | "Empty state illustration for no transactions, friendly Vietnamese food theme" | Empty state design direction |
+| Onboarding slides | "Food loyalty app onboarding, 3 steps: scan QR, earn points, get rewards" | Slide layout + copy suggestions |
 
 #### Quy trình Design-to-Code (Design Handoff Pipeline)
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐
-│  1. DESIGN   │     │  2. TOKENS    │     │  3. BUILD      │     │  4. REVIEW    │
-│              │     │              │     │               │     │              │
-│ Figma        │────►│ Figma        │────►│ Front-End     │────►│ Designer     │
-│ Components   │     │ Variables    │     │ implements    │     │ reviews on   │
-│ + Prototype  │     │ exported as  │     │ components    │     │ Widgetbook + │
-│              │     │ JSON tokens  │     │ in Flutter    │     │ Device       │
-│              │     │              │     │ (Dart)        │     │              │
-└─────────────┘     └──────────────┘     └───────────────┘     └──────────────┘
-       │                    │                     │                     │
-       │                    │                     │                     │
-       ▼                    ▼                     ▼                     ▼
-  Figma File           tokens.json          Component         Approved ✓
-  (Auto Layout,        (colors,             Library           hoặc
-   Components,          spacing,             (Widgetbook)      Feedback →
-   Variants)            typography,                            Iterate
-                        border-radius)
+┌─────────────┐     ┌─────────────┐     ┌──────────────┐     ┌───────────────┐     ┌──────────────┐
+│  0. EXPLORE  │     │  1. DESIGN   │     │  2. TOKENS    │     │  3. BUILD      │     │  4. REVIEW    │
+│  (Optional)  │     │              │     │              │     │               │     │              │
+│ v0.app       │────►│ Figma        │────►│ Figma        │────►│ Front-End     │────►│ Designer     │
+│ AI rapid     │     │ Components   │     │ Variables    │     │ implements    │     │ reviews on   │
+│ prototyping  │     │ + Prototype  │     │ exported as  │     │ components    │     │ Widgetbook + │
+│              │     │ (Production) │     │ JSON tokens  │     │ in Flutter    │     │ Device       │
+│              │     │              │     │              │     │ (Dart)        │     │              │
+└─────────────┘     └─────────────┘     └──────────────┘     └───────────────┘     └──────────────┘
+       │                    │                    │                     │                     │
+       ▼                    ▼                    ▼                     ▼                     ▼
+  Layout ideas         Figma File           tokens.json          Component         Approved ✓
+  (tham khảo,          (Auto Layout,        (colors,             Library           hoặc
+   KHÔNG ship           Components,          spacing,             (Widgetbook)      Feedback →
+   trực tiếp)           Variants)            typography,                            Iterate
+                                             border-radius)
 ```
 
 #### Design Tokens — Cấu Trúc
@@ -1182,6 +1239,7 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 |----------|--------|----------|
 | User Research: Phỏng vấn 5-10 khách hàng thường xuyên | Research Report (insights, pain points, jobs-to-be-done) | Tuần 1 |
 | Competitive Analysis: Phân tích 5 loyalty apps phổ biến tại Việt Nam (The Coffee House, Phúc Long, GrabFood, ShopeeFood, MoMo) | Competitive Matrix + Key Takeaways | Tuần 1 |
+| **v0.app Exploration Sprint:** Generate 10-15 screen concepts trên v0.app (home, check-in, loyalty dashboard, onboarding) | v0 Generation Links (lưu Notion) + Screenshot best concepts | Tuần 1-2 |
 | User Persona & Journey Map: Tạo 3 personas (Khách mới, Khách trung thành, Khách VIP) | Persona Cards + Journey Maps trên Figma | Tuần 2 |
 | Information Architecture: Sơ đồ cấu trúc app, luồng navigation | IA Diagram + User Flows | Tuần 2 |
 
@@ -1190,6 +1248,7 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 | Nhiệm vụ | Output | Deadline |
 |----------|--------|----------|
 | Xây dựng Design Tokens trên Figma Variables | Color, Typography, Spacing, Border Radius tokens | Tuần 3 |
+| **v0.app Component Variants:** Generate 3-5 variants cho mỗi core component (Button, Card, PointsBadge, TierBadge) → chọn hướng tốt nhất | v0 Links + Selected direction notes | Tuần 3 |
 | Component Library trên Figma | Atoms: Button, Input, Badge, Card, Icon... Molecules: ListItem, TabBar, Header, PointsDisplay... | Tuần 3-4 |
 | Wireframes cho tất cả màn hình chính | Low-fi wireframes (15-20 screens) | Tuần 3 |
 | Hi-fi Design cho Sprint 1 screens | Home, Login, Check-in Flow, Profile | Tuần 4 |
@@ -1387,7 +1446,8 @@ Designer                           Front-End Developer
 | **GitHub** | Code repository, PRs, CI/CD |
 | **Slack** | Daily communication, alerts, integrations |
 | **Figma** | Design files, prototypes, handoff |
-| **Notion** | Documentation, meeting notes, decisions log |
+| **v0.app** | AI rapid prototyping, UI exploration (trợ lý Designer) |
+| **Notion** | Documentation, meeting notes, decisions log (+ lưu v0 generation links) |
 
 ### 4.6 Milestone & Deliverables
 
