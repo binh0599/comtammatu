@@ -1,0 +1,106 @@
+---
+title: "Cơm Tấm Má Tư — Kiến Trúc Hệ Thống Tổng Thể"
+---
+graph TB
+    subgraph MOBILE["📱 MOBILE APP LAYER — Flutter 3.x + Impeller"]
+        direction TB
+        subgraph UI_LAYER["UI Layer"]
+            WIDGETS["Flutter Widgets<br/>+ Design System<br/>(Material 3 + Custom Theme)"]
+        end
+        subgraph STATE_LAYER["State Management"]
+            RIVERPOD["Riverpod 2"]
+            DIO["Dio (HTTP Client)"]
+        end
+        subgraph OFFLINE_LAYER["Offline Layer"]
+            DRIFT["Drift — SQLite wrapper<br/>(offline-first data)"]
+        end
+        subgraph NATIVE_LAYER["Platform Features"]
+            RIVE["Rive + Impeller<br/>(60fps animations)"]
+            CAMERA["mobile_scanner<br/>(ML Kit / Vision)"]
+            MAPS["google_maps_flutter"]
+            GEO["geolocator<br/>(geofencing)"]
+            FCM["firebase_messaging<br/>(push notifications)"]
+        end
+        WIDGETS --> RIVERPOD
+        RIVERPOD --> DIO
+        RIVERPOD --> DRIFT
+        WIDGETS --> RIVE
+        WIDGETS --> CAMERA
+        WIDGETS --> MAPS
+    end
+
+    DIO -->|"HTTPS / WSS"| SUPABASE_GW
+
+    subgraph BACKEND["☁️ BACKEND / API LAYER — Supabase Platform"]
+        SUPABASE_GW["API Gateway"]
+        subgraph SUPABASE_SERVICES["Supabase Services"]
+            AUTH["Supabase Auth<br/>(JWT-based)"]
+            EDGE["Edge Functions<br/>(Deno/TypeScript)"]
+            REALTIME["Realtime<br/>(WebSocket)"]
+        end
+        subgraph DATABASE["Database"]
+            PG[("PostgreSQL<br/>+ RLS Policies<br/>(project: zrlriuednoaqrsvnjjyo)")]
+        end
+        subgraph STORAGE_SVC["Storage"]
+            STORAGE["Supabase Storage<br/>(avatars, QR, banners)"]
+        end
+        subgraph BACKGROUND["Background Jobs"]
+            PGCRON["pg_cron<br/>(mỗi 30 giây)"]
+            PGNOTIFY["pg_notify<br/>(event bus)"]
+        end
+
+        SUPABASE_GW --> AUTH
+        SUPABASE_GW --> EDGE
+        AUTH --> PG
+        EDGE --> PG
+        PG --> REALTIME
+        PG --> PGNOTIFY
+        PGCRON --> EDGE
+    end
+
+    REALTIME -->|"WebSocket<br/>live updates"| RIVERPOD
+    FCM -.->|"push notifications"| WIDGETS
+
+    subgraph CRM_LAYER["🏢 CRM INTEGRATION LAYER"]
+        subgraph SYNC_SVC["Sync Service"]
+            CRM_SYNC["Edge Function: crm-sync<br/>• Webhook listener<br/>• Event queue (pg_notify)<br/>• Retry with exp. backoff<br/>• Conflict resolution"]
+        end
+        subgraph CRM_SYSTEM["Cơm Tấm Má Tư CRM"]
+            CRM[("CRM Database<br/>• Khách hàng<br/>• Giao dịch<br/>• Điểm thưởng<br/>• Hạng thành viên")]
+        end
+        subgraph OUTBOX["Outbox Pattern"]
+            SYNC_OUTBOX[("sync_outbox table<br/>pending → processing<br/>→ completed / failed")]
+        end
+    end
+
+    PG -->|"Database Webhooks"| CRM_SYNC
+    PGNOTIFY -->|"events"| CRM_SYNC
+    SYNC_OUTBOX --> CRM_SYNC
+    CRM_SYNC -->|"REST API"| CRM
+    CRM -->|"Webhook"| CRM_SYNC
+    PG -.->|"insert events"| SYNC_OUTBOX
+
+    subgraph DEVOPS["🔧 DevOps & Monitoring"]
+        GHA["GitHub Actions<br/>(CI/CD)"]
+        FASTLANE["Fastlane<br/>(build & deploy)"]
+        SENTRY["Sentry<br/>(crash reporting)"]
+        SHOREBIRD["Shorebird.dev<br/>(OTA code push)"]
+        FIREBASE_DIST["Firebase App Dist.<br/>(beta testing)"]
+    end
+
+    SENTRY -.->|"crash reports"| MOBILE
+    SHOREBIRD -.->|"OTA updates"| MOBILE
+    GHA --> FASTLANE
+    FASTLANE --> FIREBASE_DIST
+
+    classDef mobile fill:#E3F2FD,stroke:#1565C0,stroke-width:2px,color:#0D47A1
+    classDef backend fill:#FFF3E0,stroke:#E65100,stroke-width:2px,color:#BF360C
+    classDef crm fill:#F3E5F5,stroke:#6A1B9A,stroke-width:2px,color:#4A148C
+    classDef db fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px,color:#1B5E20
+    classDef devops fill:#ECEFF1,stroke:#546E7A,stroke-width:1px,color:#37474F
+
+    class WIDGETS,RIVERPOD,DIO,DRIFT,RIVE,CAMERA,MAPS,GEO,FCM mobile
+    class AUTH,EDGE,REALTIME,SUPABASE_GW,PGCRON,PGNOTIFY,STORAGE backend
+    class CRM_SYNC,CRM crm
+    class PG,SYNC_OUTBOX db
+    class GHA,FASTLANE,SENTRY,SHOREBIRD,FIREBASE_DIST devops

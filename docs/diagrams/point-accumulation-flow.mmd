@@ -1,0 +1,117 @@
+---
+title: "Luồng Tích Điểm Khi Mua Hàng (Point Accumulation Flow)"
+---
+sequenceDiagram
+    actor KH as 👤 Khách hàng
+    participant POS as 🖥️ Cashier App / POS
+    participant EF as ⚡ Edge Function<br/>process-payment
+    participant DB as 🗄️ PostgreSQL<br/>(Source of Truth)
+    participant RT as 📡 Supabase Realtime
+    participant APP as 📱 Mobile App<br/>(Flutter)
+    participant OUTBOX as 📦 sync_outbox
+    participant WORKER as ⏰ crm-sync-worker<br/>(pg_cron 30s)
+    participant CRM as 🏢 CRM API
+
+    Note over KH,CRM: ═══════════ LUỒNG CHÍNH: TÍCH ĐIỂM ═══════════
+
+    KH ->> POS: Thanh toán tại quầy<br/>(VD: 150,000đ)
+    activate POS
+    POS ->> EF: POST /process-payment<br/>{ order_id, member_id, amount }
+    deactivate POS
+
+    activate EF
+    Note over EF: Xác thực JWT + RLS
+
+    rect rgb(232, 245, 233)
+        Note over EF,DB: 🔒 BEGIN TRANSACTION (atomic)
+
+        EF ->> DB: ① INSERT payment_transactions<br/>{ amount: 150000, status: 'completed' }
+        DB -->> EF: payment_id = 1234
+
+        Note over EF: ② Tính điểm:<br/>points = floor(150000 / 10000) = 15<br/>× tier_multiplier (VD: Gold = 1.5x)<br/>= 22 điểm
+
+        EF ->> DB: ③ INSERT point_transactions<br/>{ type: 'earn', points: 22,<br/>  balance_after: 2472,<br/>  idempotency_key: 'payment-1234' }
+        DB -->> EF: ✅
+
+        EF ->> DB: ④ UPDATE loyalty_members SET<br/>available_points += 22,<br/>total_points += 22,<br/>lifetime_points += 22<br/>WHERE id = $id AND version = $v<br/>(optimistic locking)
+        DB -->> EF: ✅ version = v + 1
+
+        Note over EF: ⑤ Kiểm tra nâng hạng:<br/>lifetime_points >= tier.min_points?
+
+        alt Đủ điều kiện nâng hạng (VD: Gold → Diamond)
+            EF ->> DB: UPDATE loyalty_members<br/>SET tier_id = 'diamond'
+            DB -->> EF: ✅ tier_updated
+        end
+
+        EF ->> DB: ⑥ INSERT sync_outbox<br/>{ event_type: 'point_earned',<br/>  payload: { member_id, points: 22,<br/>  payment_id: 1234, new_tier },<br/>  status: 'pending' }
+        DB -->> EF: ✅
+
+        Note over EF,DB: COMMIT ✅
+    end
+
+    par Realtime notification (song song)
+        DB ->> RT: pg_notify('point_earned',<br/>{ member_id, points: 22 })
+        RT ->> APP: WebSocket push<br/>{ event: 'point_earned',<br/>  points: 22, balance: 2472 }
+        activate APP
+        Note over APP: 🎉 Cập nhật UI:<br/>• Points badge: 2,472 pts<br/>• Rive celebration animation<br/>• Haptic feedback (success)
+        deactivate APP
+    and Response cho POS (song song)
+        EF -->> POS: 200 OK<br/>{ points_earned: 22,<br/>  new_balance: 2472,<br/>  tier: 'diamond',<br/>  tier_upgraded: true }
+        deactivate EF
+        POS ->> KH: "Tích 22 điểm thành công!<br/>Chúc mừng nâng hạng Kim Cương 💎"
+    end
+
+    Note over KH,CRM: ═══════════ ĐỒNG BỘ CRM (ASYNC) ═══════════
+
+    rect rgb(243, 229, 245)
+        Note over WORKER,CRM: 🔄 crm-sync-worker (pg_cron mỗi 30s)
+
+        WORKER ->> DB: SELECT * FROM sync_outbox<br/>WHERE status IN ('pending','failed')<br/>AND next_retry_at <= now()<br/>ORDER BY created_at ASC<br/>LIMIT 50<br/>FOR UPDATE SKIP LOCKED
+        DB -->> WORKER: [event: point_earned, ...]
+
+        alt CRM Online (Normal Flow)
+            WORKER ->> CRM: POST /api/points<br/>{ member_id, points: 22 }
+            CRM -->> WORKER: 200 OK
+            WORKER ->> CRM: POST /api/transactions<br/>{ payment_id: 1234, amount: 150000 }
+            CRM -->> WORKER: 200 OK
+
+            alt Có nâng hạng
+                WORKER ->> CRM: PUT /api/members/{id}/tier<br/>{ tier: 'diamond' }
+                CRM -->> WORKER: 200 OK
+            end
+
+            WORKER ->> DB: UPDATE sync_outbox<br/>SET status = 'completed',<br/>processed_at = now()
+            Note over WORKER: ✅ Sync hoàn tất < 5 giây
+        else CRM Down (Degraded Flow)
+            WORKER ->> CRM: POST /api/points
+            CRM --x WORKER: ❌ 503 / Timeout
+
+            WORKER ->> DB: UPDATE sync_outbox SET<br/>status = 'failed',<br/>retry_count += 1,<br/>next_retry_at = now() + backoff,<br/>error_message = '503'
+
+            Note over WORKER: Exponential backoff:<br/>30s → 1m → 2m → 5m → 15m
+
+            alt retry_count >= max_retries (5)
+                WORKER -->> WORKER: 🚨 Alert Admin<br/>via Slack / Email
+                Note over WORKER: "CRM sync failed permanently:<br/>point_earned #1234"
+            end
+
+            Note over APP: 📱 App hoạt động<br/>BÌNH THƯỜNG<br/>User không biết CRM down
+        end
+    end
+
+    Note over KH,CRM: ═══════════ CRM RECOVERY (khi CRM online lại) ═══════════
+
+    rect rgb(255, 243, 224)
+        Note over WORKER: CRM online trở lại
+
+        WORKER ->> DB: SELECT * FROM sync_outbox<br/>WHERE status = 'failed'<br/>ORDER BY created_at ASC
+        DB -->> WORKER: [queued events theo thứ tự]
+
+        loop Xử lý từng event theo thứ tự thời gian
+            WORKER ->> CRM: POST /api/{event_type}<br/>{ payload }
+            CRM -->> WORKER: 200 OK
+            WORKER ->> DB: SET status = 'completed'
+        end
+
+        Note over WORKER,CRM: ✅ Tất cả events đã sync<br/>Data nhất quán giữa DB ↔ CRM
+    end

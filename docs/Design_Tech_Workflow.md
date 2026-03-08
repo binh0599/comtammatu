@@ -405,6 +405,8 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 
 ### 1.1 Mô Hình Kiến Trúc Tổng Thể (High-Level Architecture)
 
+> 📊 **Mermaid diagram:** [`diagrams/architecture.mmd`](diagrams/architecture.mmd) — Render trên GitHub hoặc Mermaid Live Editor
+
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        MOBILE APP LAYER                             │
@@ -473,6 +475,9 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 ### 1.2 Luồng Dữ Liệu (Data Flow)
 
 #### A. Luồng Tích Điểm Khi Mua Hàng (Point Accumulation Flow)
+
+> 📊 **Mermaid sequence diagram:** [`diagrams/point-accumulation-flow.mmd`](diagrams/point-accumulation-flow.mmd)
+> Bao gồm: Tích điểm → Nâng hạng → Realtime UI update → CRM sync (normal + degraded + recovery)
 
 ```
 Khách hàng thanh toán tại quầy
