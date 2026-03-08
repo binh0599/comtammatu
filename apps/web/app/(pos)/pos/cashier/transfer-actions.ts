@@ -1,6 +1,7 @@
 "use server";
 
 import "@/lib/server-bootstrap";
+import { z } from "zod";
 import {
   getActionContext,
   requireBranch,
@@ -8,15 +9,26 @@ import {
   withServerAction,
   safeDbErrorResult,
   CASHIER_ROLES,
+  entityIdSchema,
   paymentMethodsConfigSchema,
-  type PaymentMethodsConfig,
 } from "@comtammatu/shared";
+
+// ---------------------------------------------------------------------------
+// Schemas
+// ---------------------------------------------------------------------------
+
+const confirmTransferPaymentSchema = z.object({
+  paymentId: entityIdSchema,
+  referenceNo: z.string().max(100).optional(),
+});
 
 // ---------------------------------------------------------------------------
 // createTransferPayment — generates VietQR code for bank transfer
 // ---------------------------------------------------------------------------
 
 async function _createTransferPayment(orderId: number) {
+  const parsedOrderId = entityIdSchema.parse(orderId);
+
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
@@ -40,10 +52,10 @@ async function _createTransferPayment(orderId: number) {
     .single();
 
   if (terminalError) {
+    if (terminalError.code === "PGRST116") {
+      return { error: "Không tìm thấy thiết bị POS. Thiết bị có thể đã bị xóa." };
+    }
     return safeDbErrorResult(terminalError, "terminal");
-  }
-  if (!terminal) {
-    return { error: "Không tìm thấy thiết bị POS. Thiết bị có thể đã bị xóa." };
   }
   if (terminal.type !== "cashier_station") {
     return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
@@ -53,7 +65,7 @@ async function _createTransferPayment(orderId: number) {
   const { data: order } = await supabase
     .from("orders")
     .select("id, order_number, total, status")
-    .eq("id", orderId)
+    .eq("id", parsedOrderId)
     .eq("branch_id", branchId)
     .single();
 
@@ -140,10 +152,11 @@ export const createTransferPayment = withServerAction(_createTransferPayment);
 // confirmTransferPayment — cashier manually confirms bank transfer received
 // ---------------------------------------------------------------------------
 
-async function _confirmTransferPayment(input: {
-  paymentId: number;
-  referenceNo?: string;
-}) {
+async function _confirmTransferPayment(
+  input: z.infer<typeof confirmTransferPaymentSchema>,
+) {
+  const data = confirmTransferPaymentSchema.parse(input);
+
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
@@ -153,7 +166,7 @@ async function _confirmTransferPayment(input: {
   const { data: payment } = await supabase
     .from("payments")
     .select("id, status, method, order_id")
-    .eq("id", input.paymentId)
+    .eq("id", data.paymentId)
     .single();
 
   if (!payment) return { error: "Không tìm thấy giao dịch" };
@@ -177,7 +190,7 @@ async function _confirmTransferPayment(input: {
     .update({
       status: "completed",
       paid_at: new Date().toISOString(),
-      reference_no: input.referenceNo || null,
+      reference_no: data.referenceNo || null,
     })
     .eq("id", payment.id);
 

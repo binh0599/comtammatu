@@ -123,7 +123,7 @@ function BranchCard({
             {branch.code}
           </CardTitle>
           <Badge variant={branch.is_active ? "default" : "secondary"}>
-            {branch.is_active ? "Hoạt động" : "Ngưng"}
+            {branch.is_active ? "Hoạt động" : "Ngừng"}
           </Badge>
         </div>
       </CardHeader>
@@ -189,13 +189,20 @@ const BANKS = [
   { id: "EIB", name: "Eximbank" },
   { id: "VIB", name: "VIB" },
   { id: "LPB", name: "LienVietPostBank" },
-  { id: "BAB", name: "Bac A Bank" },
+  { id: "BAB", name: "Bắc Á Bank" },
   { id: "SCB", name: "SCB" },
 ] as const;
 
 const DEFAULT_CONFIG: PaymentMethodsConfig = {
   enabled_methods: ["cash"],
 };
+
+function sanitizeAccountName(name: string): string {
+  return name
+    .trim()
+    .replace(/[\x00-\x1f]/g, "")
+    .replace(/\s{2,}/g, " ");
+}
 
 function PaymentMethodsCard({
   config,
@@ -237,7 +244,7 @@ function PaymentMethodsCard({
               bank_transfer: {
                 bank_id: bankId,
                 account_no: accountNo,
-                account_name: accountName,
+                account_name: sanitizeAccountName(accountName),
                 template: template as BankTransferConfig["template"],
               },
             }
@@ -248,15 +255,16 @@ function PaymentMethodsCard({
       if (result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Da cap nhat phuong thuc thanh toan");
+        toast.success("Đã cập nhật phương thức thanh toán");
       }
     });
   }
 
   // Build QR preview URL
+  const sanitizedName = sanitizeAccountName(accountName);
   const previewUrl =
-    transferEnabled && bankId && accountNo
-      ? `https://img.vietqr.io/image/${bankId}-${accountNo}-${template}.png?amount=50000&addInfo=DH1234&accountName=${encodeURIComponent(accountName)}`
+    transferEnabled && bankId && accountNo && sanitizedName
+      ? `https://img.vietqr.io/image/${bankId}-${accountNo}-${template}.png?amount=50000&addInfo=DH1234&accountName=${encodeURIComponent(sanitizedName)}`
       : null;
 
   return (
@@ -264,10 +272,10 @@ function PaymentMethodsCard({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <CreditCard className="h-5 w-5" />
-          Phuong thuc thanh toan
+          Phương thức thanh toán
         </CardTitle>
         <CardDescription>
-          Bat/tat phuong thuc thanh toan va cau hinh tai khoan ngan hang
+          Bật/tắt phương thức thanh toán và cấu hình tài khoản ngân hàng
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -276,7 +284,7 @@ function PaymentMethodsCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Banknote className="h-4 w-4" />
-              <Label>Tien mat</Label>
+              <Label>Tiền mặt</Label>
             </div>
             <Switch
               checked={enabledMethods.includes("cash")}
@@ -298,7 +306,7 @@ function PaymentMethodsCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Landmark className="h-4 w-4" />
-              <Label>Chuyen khoan ngan hang (VietQR)</Label>
+              <Label>Chuyển khoản ngân hàng (VietQR)</Label>
             </div>
             <Switch
               checked={transferEnabled}
@@ -310,13 +318,13 @@ function PaymentMethodsCard({
         {/* Bank transfer config — shown when transfer is enabled */}
         {transferEnabled && (
           <div className="rounded-lg border p-4 space-y-4">
-            <h4 className="text-sm font-medium">Cau hinh tai khoan ngan hang</h4>
+            <h4 className="text-sm font-medium">Cấu hình tài khoản ngân hàng</h4>
 
             <div className="space-y-1.5">
-              <Label htmlFor="bank-id">Ngan hang</Label>
+              <Label htmlFor="bank-id">Ngân hàng</Label>
               <Select value={bankId} onValueChange={setBankId}>
                 <SelectTrigger id="bank-id">
-                  <SelectValue placeholder="Chon ngan hang" />
+                  <SelectValue placeholder="Chọn ngân hàng" />
                 </SelectTrigger>
                 <SelectContent>
                   {BANKS.map((bank) => (
@@ -329,7 +337,7 @@ function PaymentMethodsCard({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="account-no">So tai khoan</Label>
+              <Label htmlFor="account-no">Số tài khoản</Label>
               <Input
                 id="account-no"
                 value={accountNo}
@@ -339,7 +347,7 @@ function PaymentMethodsCard({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="account-name">Ten chu tai khoan</Label>
+              <Label htmlFor="account-name">Tên chủ tài khoản</Label>
               <Input
                 id="account-name"
                 value={accountName}
@@ -349,7 +357,7 @@ function PaymentMethodsCard({
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="qr-template">Mau QR</Label>
+              <Label htmlFor="qr-template">Mẫu QR</Label>
               <Select value={template} onValueChange={setTemplate}>
                 <SelectTrigger id="qr-template">
                   <SelectValue />
@@ -357,8 +365,8 @@ function PaymentMethodsCard({
                 <SelectContent>
                   <SelectItem value="compact">Compact</SelectItem>
                   <SelectItem value="compact2">Compact 2</SelectItem>
-                  <SelectItem value="qr_only">Chi QR</SelectItem>
-                  <SelectItem value="print">In an</SelectItem>
+                  <SelectItem value="qr_only">Chỉ QR</SelectItem>
+                  <SelectItem value="print">In ấn</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -366,7 +374,7 @@ function PaymentMethodsCard({
             {/* QR Preview */}
             {previewUrl && (
               <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs">Xem truoc (50,000d - DH1234)</Label>
+                <Label className="text-muted-foreground text-xs">Xem trước (50,000đ - DH1234)</Label>
                 <div className="rounded-lg border bg-white p-2 w-fit">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
@@ -387,7 +395,7 @@ function PaymentMethodsCard({
           className="gap-1"
         >
           <Save className="h-3.5 w-3.5" />
-          {isPending ? "Dang luu..." : "Luu cau hinh thanh toan"}
+          {isPending ? "Đang lưu..." : "Lưu cấu hình thanh toán"}
         </Button>
       </CardContent>
     </Card>
