@@ -91,7 +91,6 @@ async function _toggleMenuItemAvailability(
 
   revalidatePath("/kds");
   revalidatePath("/pos/orders");
-  revalidatePath("/customer/menu");
   return { error: null };
 }
 

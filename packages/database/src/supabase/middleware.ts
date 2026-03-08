@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/api/health", "/api/auth", "/customer", "/api/privacy", "/api/webhooks"];
+  const publicRoutes = ["/login", "/api/health", "/api/auth", "/api/privacy", "/api/webhooks"];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),
   );
@@ -115,7 +115,7 @@ export async function updateSession(request: NextRequest) {
         url.pathname = "/admin/hr";
         break;
       default:
-        url.pathname = "/customer";
+        url.pathname = "/login";
         break;
     }
 
