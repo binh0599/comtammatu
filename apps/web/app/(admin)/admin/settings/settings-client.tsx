@@ -358,7 +358,7 @@ function PaymentMethodsCard({
 
             <div className="space-y-1.5">
               <Label htmlFor="qr-template">Mẫu QR</Label>
-              <Select value={template} onValueChange={setTemplate}>
+              <Select value={template} onValueChange={(v) => setTemplate(v as BankTransferConfig["template"])}>
                 <SelectTrigger id="qr-template">
                   <SelectValue />
                 </SelectTrigger>
