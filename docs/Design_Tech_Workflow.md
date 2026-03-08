@@ -2,7 +2,7 @@
 
 > **Lead Technology Document**
 > Đội ngũ: 1 Senior UI/UX Designer · 1 Senior Front-End Developer (Mobile) · 1 Back-End Developer
-> Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 (v1.1 — Framework Evaluation + Delivery & Đặt Bàn)
+> Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 (v1.2 — Real-World Benchmarks + Memory/Battery Data + Architecture Update)
 
 ---
 
@@ -50,37 +50,46 @@ Trước khi so sánh framework, cần xác định **chính xác chỗ nào** h
 
 #### A. Cold Start Time (Thời gian khởi động lạnh)
 
+> **Nguồn:** React Native 0.79 Release Blog, Shopify Production Data, Flutter Impeller Docs, iOS App Launch Time Benchmark (Shawn Baek), Multiple 2025-2026 Benchmarks
+
 ```
 Thời gian từ tap icon → màn hình đầu tiên interactive
-Thiết bị test baseline: iPhone 13 / Samsung Galaxy S22
+Thiết bị baseline: Flagship iOS / Mid-range Android
 
-Native (SwiftUI)     ████████░░░░░░░░░░░░  ~350-500ms
-Native (Compose)     █████████░░░░░░░░░░░  ~400-550ms
-Flutter (Impeller)   ██████████░░░░░░░░░░  ~500-700ms   (+150-200ms Dart VM init)
-React Native (New)   ███████████░░░░░░░░░  ~600-900ms   (+250-400ms JS engine init)
-React Native (Expo)  ████████████░░░░░░░░  ~700-1100ms  (+100-200ms Expo runtime)
+Native (SwiftUI)     ████████░░░░░░░░░░░░░░  ~800-1200ms
+Native (Compose)     █████████░░░░░░░░░░░░░  ~1000-1500ms
+Flutter (Impeller)   ██████████░░░░░░░░░░░░  ~1000-1400ms (iOS) / ~1500-2000ms (Android)
+React Native (New)   ████████████░░░░░░░░░░  ~1200-1500ms (iOS) / ~1800-2500ms (Android)
 
-                     0ms       500ms      1000ms     1500ms
+                     0ms       500ms     1000ms    1500ms    2000ms    2500ms
 ```
 
-| Framework | iPhone 13 | Galaxy S22 | Budget Android (2GB RAM) | Ghi chú |
-|-----------|-----------|-----------|--------------------------|---------|
-| **Native** | ~400ms | ~500ms | ~800-1000ms | Baseline tốt nhất |
-| **Flutter** | ~550ms | ~650ms | ~1000-1300ms | Dart VM init, nhưng ổn định |
-| **React Native (New Arch)** | ~700ms | ~850ms | ~1300-1800ms | Hermes engine giúp giảm đáng kể |
-| **React Native (Expo)** | ~800ms | ~1000ms | ~1500-2200ms | Expo runtime overhead |
+| Framework | Flagship iOS | Flagship Android | Budget Android (2-3GB RAM) | Ghi chú |
+|-----------|-------------|-----------------|--------------------------|---------|
+| **Native Swift/SwiftUI** | ~800-1200ms | N/A | N/A | Nhanh nhất iOS; StdDev variance ~55ms |
+| **Native Kotlin/Compose** | N/A | ~1000-1500ms | ~1500-2000ms | Direct OS optimizations |
+| **Flutter (Impeller)** | ~1000-1400ms | ~1500-2000ms | ~2000-2500ms | AOT compilation, TTFF ~10-17ms, **rất nhất quán** |
+| **React Native 0.79+ (New Arch)** | ~1200-1500ms | ~1800-2500ms | ~2500-3500ms | 43% improvement vs old arch (RN team data) |
 
-**Kết luận Cold Start:** Trên flagship devices, cả 4 đều < 1.5 giây — chấp nhận được. Trên **budget Android** (phổ biến tại Việt Nam), React Native + Expo có thể vượt 2 giây — **đây là rủi ro thực tế**.
+**Dữ liệu thực tế đáng chú ý:**
+- **RN 0.79**: Uncompressed APK bundles + Metro 0.82 deferred hashing giảm ~400ms cold start (Discord's finding)
+- **Shopify**: Đạt sub-500ms P75 screen loads trong production với RN New Architecture
+- **Flutter TTFF** (Time To First Frame): ~10-17ms — **nhất quán nhất** trong tất cả framework, kể cả native iOS (iOS có variance cao hơn dự kiến)
+
+**Kết luận Cold Start:** Trên flagship, tất cả đều sub-2.5s — chấp nhận được. Trên **budget Android VN (2-3GB RAM)**, RN có thể vượt 3 giây — **rủi ro thực tế**. Flutter ổn định hơn RN ~500-700ms trên mọi thiết bị.
 
 #### B. Camera QR Launch (Thời gian mở camera)
 
-| Framework | Cách tiếp cận | Thời gian | Ghi chú |
-|-----------|--------------|-----------|---------|
-| **Native** | AVCaptureSession / CameraX trực tiếp | ~200-300ms | Nhanh nhất, control hoàn toàn |
-| **Flutter** | `camera` plugin + `mobile_scanner` | ~300-500ms | Plugin gọi native, overhead nhỏ |
-| **React Native** | `expo-camera` / `react-native-vision-camera` | ~400-700ms | JS bridge + native camera init |
+> **Lưu ý:** Không có framework nào publish standardized camera-launch benchmarks. Số liệu ước tính dựa trên architectural differences và production reports.
 
-**Ghi chú quan trọng:** `react-native-vision-camera` v4 (by Marc Rousavy) sử dụng JSI trực tiếp, gần như ngang native (~300-400ms). Nhưng **expo-camera** (managed) chậm hơn đáng kể (~500-700ms).
+| Framework | Camera Init Time | QR Decode Speed | Best Library | Ghi chú |
+|-----------|-----------------|-----------------|-------------|---------|
+| **Native Swift** | ~200-400ms | <40ms | AVFoundation + Vision | Nhanh nhất, full control |
+| **Native Kotlin** | ~200-400ms | <40ms | CameraX + ML Kit | Nhanh nhất Android |
+| **Flutter** | ~300-600ms | <40ms | `mobile_scanner` (dùng ML Kit/Vision bên dưới) | Overhead nhỏ |
+| **React Native** | ~400-800ms | <40ms | `react-native-vision-camera` v4 (dùng ML Kit/Vision) | JSI giảm bridge overhead |
+
+**Phát hiện quan trọng:** QR decode speed **giống hệt nhau** giữa tất cả framework — vì tất cả đều delegate xuống **ML Kit** (Android) và **Apple Vision** (iOS). Sự khác biệt chỉ ở **camera initialization overhead**. Commercial SDKs như Scanbot claim <40ms decode time bất kể framework.
 
 **Kỹ thuật Pre-warm Camera (áp dụng cho mọi framework):**
 ```
@@ -90,43 +99,69 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 
 #### C. Animation Performance (60fps Test)
 
-| Loại animation | Native | Flutter | React Native |
+| Loại animation | Native | Flutter (Impeller) | React Native (Reanimated 3) |
 |---------------|--------|---------|-------------|
-| **Page transitions** | 60fps ✅ | 60fps ✅ | 60fps ✅ (Reanimated 3 trên UI thread) |
-| **Scroll + header collapse** | 60fps ✅ | 60fps ✅ | 55-60fps ⚠️ (phụ thuộc implementation) |
-| **Lottie animations** | 60fps ✅ | 60fps ✅ (rive tốt hơn) | 55-60fps ⚠️ (lottie-react-native qua bridge) |
-| **Particle effects** (check-in celebration) | 60fps ✅ | 60fps ✅ (Impeller xuất sắc) | 40-55fps ⚠️ (cần Skia via react-native-skia) |
-| **Animated counter** (điểm tăng) | 60fps ✅ | 60fps ✅ | 60fps ✅ (Reanimated shared values) |
-| **Map marker animation** | 60fps ✅ | 55-60fps ⚠️ (platform view) | 55-60fps ⚠️ (native map view) |
+| **Page transitions** | 60fps ✅ | 60fps ✅ | 60fps ✅ |
+| **Scroll + header collapse** | 60fps ✅ | 60fps ✅ | 55-60fps ⚠️ |
+| **Particle effects** (check-in celebration) | 60-120fps ✅ | 60-120fps ✅ (Impeller xuất sắc) | 45-55fps ⚠️ (cần Skia) |
+| **Animated counter** (điểm tăng) | 60fps ✅ | 60fps ✅ | 60fps ✅ |
+| **Map marker animation** | 60fps ✅ | 55-60fps ⚠️ (platform view) | 55-60fps ⚠️ |
 | **Glassmorphism/Blur** | 60fps ✅ | 50-55fps ⚠️ (BackdropFilter tốn GPU) | 55-60fps ⚠️ |
 
+##### Lottie vs Rive — DỮ LIỆU QUAN TRỌNG (Callstack Benchmark)
+
+> **Nguồn:** Callstack "Lottie vs Rive: Optimizing Mobile App Animation" (2025)
+
+| Animation Engine | React Native FPS | Flutter FPS | File Size |
+|---|---|---|---|
+| **Lottie** | **17-40 FPS** trên Android tầm thấp ⛔ | 50-60 FPS | ~20-50KB |
+| **Rive** | ~60 FPS ✅ (GPU-rendered, bypass JS) | ~60 FPS ✅ | ~2KB (10-12x nhỏ hơn Lottie) |
+
+**Phát hiện nghiêm trọng:** Trên Sony Xperia Z3, Rive chạy **~60 FPS** trong khi Lottie chạy **17 FPS** trong React Native. Trên iOS, Lottie cũng drop dưới 30 FPS trong một số trường hợp. Đã phát hiện performance regression giữa Lottie versions (v5.1.3 → 60fps, v5.1.4 → 40fps).
+
+**Kết luận cho Cơm Tấm Má Tư:** Celebration animations (confetti check-in, stamp fill, streak counter, tier upgrade) là **core UX** của loyalty app:
+- **Flutter + Impeller:** Render natively tại 60fps, Impeller pre-compile tất cả shaders lúc build → **loại bỏ hoàn toàn shader jank** (giảm 50% thời gian rasterization vs Skia cũ)
+- **React Native:** BẮT BUỘC dùng **Rive** thay Lottie + Reanimated worklets (không dùng JS thread cho animations)
+- **Native:** Tốt nhất, full GPU access
+
 **Kết luận Animation:**
-- **Native** luôn 60fps — không bàn cãi
-- **Flutter** 60fps hầu hết case, Impeller engine xử lý particle/complex animation tốt hơn RN
-- **React Native** 60fps cho basic animations (Reanimated 3), nhưng **particle effects và complex compositions thường drop frame**
+- **Native** luôn 60-120fps — không bàn cãi
+- **Flutter + Impeller** 60fps nhất quán, **shader jank đã bị loại bỏ hoàn toàn** nhờ pre-compilation
+- **React Native** 60fps cho basic animations (Reanimated 3), nhưng **Lottie trên Android tầm thấp là thảm họa** — phải dùng Rive
 
 #### D. Binary Size (Kích thước cài đặt)
 
-| Framework | Minimum app size | App Cơm Tấm Má Tư (ước tính) | Ghi chú |
-|-----------|-----------------|-------------------------------|---------|
-| **Native iOS** | ~3-5MB | ~15-25MB | Nhỏ nhất |
-| **Native Android** | ~3-5MB | ~12-20MB | Nhỏ nhất |
-| **Flutter** | ~15-18MB | ~30-45MB | Dart runtime + Skia engine |
-| **React Native** | ~10-12MB | ~25-40MB | Hermes engine + native modules |
-| **React Native + Expo** | ~15-20MB | ~35-55MB | Expo runtime + prebuild modules |
+> **Nguồn:** Expo App Size Docs, Medium "How to Reduce App Bundle Size in RN and Flutter" (2026)
 
-**Context Việt Nam:** Nhiều khách hàng dùng Android giá rẻ (32-64GB storage). App 50MB+ có thể bị cân nhắc trước khi cài. App < 30MB là lý tưởng.
+| Framework | Minimum (per-arch) | Medium App (Android APK) | Medium App (iOS IPA) | Ghi chú |
+|-----------|-------------------|-------------------------|---------------------|---------|
+| **Native Kotlin** | ~2-4MB | ~8-15MB | N/A | Nhỏ nhất |
+| **Native Swift** | ~1-3MB | N/A | ~6-12MB | Nhỏ nhất |
+| **Flutter** | ~5MB (APK) / ~8-10MB (IPA) | ~25-35MB | ~30-40MB | Bundle entire Impeller engine (fixed overhead) |
+| **React Native** | ~7MB (AAB ~7.3MB download) | ~20-30MB | ~15-25MB | AAB format giảm ~70% download size |
+
+**Tại sao Flutter lớn hơn:** Bundle toàn bộ rendering engine (Impeller) — nhưng đây là **fixed overhead**, không tăng nhiều theo app complexity.
+
+**Tại sao RN có thể bất ngờ lớn:** Universal APK chứa Hermes binaries cho nhiều architectures. Dùng AAB format giảm đáng kể.
+
+**Context Việt Nam:** App loyalty ước tính ~20-35MB với camera, maps, animations, assets. Chênh lệch 5-10MB giữa Flutter và RN là **không đáng kể** trên mạng hiện đại. Native nhỏ hơn 10-15MB.
 
 #### E. Supabase SDK & Ecosystem
 
-| Framework | SDK | Mức độ trưởng thành | Realtime | Auth |
-|-----------|-----|---------------------|----------|------|
-| **React Native** | `@supabase/supabase-js` (JS SDK) | ⭐⭐⭐⭐⭐ Rất trưởng thành | ✅ Đầy đủ | ✅ Token-based |
-| **Flutter** | `supabase_flutter` (Dart SDK) | ⭐⭐⭐⭐ Trưởng thành, ít edge case hơn JS | ✅ Đầy đủ | ✅ Token-based |
-| **Native iOS** | `supabase-swift` | ⭐⭐⭐ Đủ dùng, community nhỏ hơn | ✅ Có | ✅ Có |
-| **Native Android** | `supabase-kt` | ⭐⭐⭐ Đủ dùng, community nhỏ hơn | ✅ Có | ✅ Có |
+> **Nguồn:** Supabase Client Libraries V2 Blog, GitHub repos chính thức
 
-**Ghi chú:** Supabase JS SDK là SDK chính thức, có features đầy đủ nhất và được support tốt nhất. Dart SDK đứng thứ 2. Swift/Kotlin SDK ít mature hơn.
+| Framework | SDK | Version | Maintainer | Mức độ trưởng thành | Features |
+|-----------|-----|---------|-----------|---------------------|----------|
+| **React Native** | `@supabase/supabase-js` | v2+ | **Supabase (official)** | ⭐⭐⭐⭐⭐ Reference implementation | DB, Auth, Storage, Realtime, Edge Functions, pgvector |
+| **Flutter** | `supabase_flutter` | v2+ | **Supabase (official)** | ⭐⭐⭐⭐ Close second | Full feature set + Dart 3 integration |
+| **Native iOS** | `supabase-swift` | v2+ | **Supabase (official)** | ⭐⭐⭐⭐ Stable | iOS/macOS/tvOS/watchOS/visionOS |
+| **Native Android** | `supabase-kt` | v3+ | **Community** ⚠️ | ⭐⭐⭐ Well-featured | Compose integrations, auth UI components |
+
+**Phát hiện quan trọng:**
+- **supabase-kt (Kotlin) là community-maintained** — KHÔNG phải Supabase team chính thức. Có rủi ro slower updates nếu maintainer inactive.
+- JS SDK có nhiều Stack Overflow answers, tutorials, và edge-case documentation nhất.
+- Dart SDK là **officially maintained** với dedicated `supabase_flutter` wrapper cho auth deep links & session management.
+- **Kết luận:** Nếu dùng Supabase, JS SDK (RN) và Dart SDK (Flutter) có **ít rủi ro tích hợp nhất**. Kotlin SDK cần đánh giá thêm.
 
 #### F. Khả Năng Tích Hợp Bản Đồ (Map — cho Delivery & Đặt Bàn)
 
@@ -135,6 +170,53 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 | **Native** | Apple MapKit / Google Maps SDK | 60fps, tốt nhất | Full native API |
 | **Flutter** | `google_maps_flutter` (platform view) | 50-60fps, occasional jank khi scroll | Platform view overhead |
 | **React Native** | `react-native-maps` | 50-60fps, tương tự Flutter | Native map view qua bridge |
+
+#### G. Memory Usage (Sử dụng bộ nhớ)
+
+> **Nguồn:** React Native vs Flutter Performance: Real App Benchmark (Jan 2026, Medium)
+
+| Framework | Baseline (idle) | Medium-Complexity App | Dưới Animation Load | Ổn định |
+|-----------|----------------|----------------------|---------------------|---------|
+| **Native** | ~8-12 MB | ~60-90 MB | ~80-110 MB | Ổn định nhất |
+| **Flutter** | ~15-17 MB | ~120 MB | Stable, **không có spikes** | Rất ổn định |
+| **React Native** | ~8-23 MB (biến động) | ~145 MB | **Spikes đáng kể** ⚠️ | Không ổn định |
+
+**Phát hiện nghiêm trọng (Jan 2026 benchmark):**
+- Flutter memory profile **thấp hơn RN 20-25 MB** cho apps tương đương, và **không spike** dưới load
+- React Native có **memory + CPU spikes đáng kể** khi scrolling và animation restart
+- Đã có **crash reports trên iPhone cũ** do memory spikes trong React Native
+- Flutter **không có hiện tượng spike** tương tự
+
+**Ý nghĩa cho Cơm Tấm Má Tư:** Với **budget Android phổ biến tại VN (2-3GB RAM)**, Flutter có lợi thế rõ rệt về memory stability. Trên modern phones (4GB+ RAM), cả hai đều đủ dùng.
+
+#### H. Geofencing Battery Impact (Tiêu thụ pin khi geofencing)
+
+> **Tất cả framework đều dùng cùng OS-level APIs** — battery impact phụ thuộc vào **implementation strategy**, KHÔNG phải framework.
+
+| Approach | Battery Impact | Giới hạn Geofence | Framework Support |
+|----------|---------------|-------------------|-------------------|
+| **Native OS Geofencing** | Thấp nhất (OS-managed) | iOS: 20, Android: 100 | Tất cả |
+| **Transistorsoft Background Geolocation** | Thấp (motion-detection based) | Unlimited (proximity queries) | RN, Flutter, Native |
+| **Continuous GPS polling** | Cao ⛔ | Unlimited | Mọi framework (KHÔNG NÊN DÙNG) |
+
+**Thông tin quan trọng:**
+- iOS giới hạn **20 geofences đồng thời**, Android giới hạn **100**. Với chuỗi nhà hàng nhiều chi nhánh → cần library quản lý limits qua proximity-based rotation
+- **Transistorsoft** là gold standard cho cả RN và Flutter: dùng accelerometer/gyroscope detect motion, chỉ bật GPS khi di chuyển
+- Bán kính geofence tối thiểu đáng tin cậy: **200 mét**
+- `locationAuthorizationRequest: Always` bắt buộc cho background geofencing
+
+**Kết luận:** **Không có khác biệt** giữa các framework. Cùng native APIs, cùng Transistorsoft library. Framework choice **không ảnh hưởng** battery performance.
+
+#### I. Haptic Feedback (Phản hồi xúc giác)
+
+| Framework | Built-in API | Custom Patterns | Ghi chú |
+|-----------|-------------|----------------|---------|
+| **Native Swift** | `UIImpactFeedbackGenerator` + `CHHapticEngine` | Full waveform design (intensities, durations, transient/continuous) | Tốt nhất cho custom haptics |
+| **Native Kotlin** | `HapticFeedbackConstants` + `VibrationEffect` | `createWaveform()` with amplitude (API 26+) | Tốt |
+| **Flutter** | `HapticFeedback` class (5 presets) | Giới hạn — cần platform channels cho custom waveforms | Cơ bản |
+| **React Native** | `react-native-haptic-feedback` (7 types) | `react-native-haptic-patterns`: record/playback | Khá tốt |
+
+**Ý nghĩa cho loyalty app:** Standard haptic presets (success tap khi check-in, notification khi đạt reward) cover **90% nhu cầu**. Custom haptic sequences (celebration pattern khi hit milestone) chỉ cần thiết nếu muốn "ultra-premium feel" — trong trường hợp đó native Swift tốt nhất.
 
 ### 0.4 Ma Trận Đánh Giá Tổng Hợp
 
@@ -342,29 +424,27 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        MOBILE APP LAYER                             │
-│  ┌──────────────────┐  ┌──────────────────┐                        │
-│  │   iOS App         │  │   Android App     │                        │
-│  │ React Native +    │  │ React Native +    │                        │
-│  │ Expo              │  │ Expo              │                        │
-│  │                   │  │                   │                        │
-│  │ ┌───────────────┐ │  │ ┌───────────────┐ │                        │
-│  │ │ UI Layer      │ │  │ │ UI Layer      │ │  ← Design System       │
-│  │ │ (React Native │ │  │ │ (React Native │ │    Components          │
-│  │ │  Components)  │ │  │ │  Components)  │ │                        │
-│  │ ├───────────────┤ │  │ ├───────────────┤ │                        │
-│  │ │ State Mgmt    │ │  │ │ State Mgmt    │ │  ← Zustand + React    │
-│  │ │ (Zustand +    │ │  │ │ (Zustand +    │ │    Query               │
-│  │ │  TanStack     │ │  │ │  TanStack     │ │                        │
-│  │ │  Query)       │ │  │ │  Query)       │ │                        │
-│  │ ├───────────────┤ │  │ ├───────────────┤ │                        │
-│  │ │ Offline Layer │ │  │ │ Offline Layer │ │  ← WatermelonDB        │
-│  │ │ (WatermelonDB)│ │  │ │ (WatermelonDB)│ │                        │
-│  │ └───────────────┘ │  │ └───────────────┘ │                        │
-│  └────────┬─────────┘  └────────┬─────────┘                        │
-│           │                      │                                   │
-│           └──────────┬───────────┘                                   │
-│                      │                                               │
-└──────────────────────┼───────────────────────────────────────────────┘
+│               (Flutter 3.x + Impeller — Khuyến Nghị #1)            │
+│  ┌──────────────────────────────────────────────┐                   │
+│  │   iOS + Android (Single Codebase — Dart)      │                   │
+│  │                                                │                   │
+│  │ ┌──────────────────────────────────────────┐   │                   │
+│  │ │ UI Layer                                  │   │  ← Material 3    │
+│  │ │ (Flutter Widgets + Design System)         │   │    + Custom Theme │
+│  │ ├──────────────────────────────────────────┤   │                   │
+│  │ │ State Mgmt                                │   │  ← Riverpod 2    │
+│  │ │ (Riverpod 2 + Dio)                        │   │    + Dio          │
+│  │ ├──────────────────────────────────────────┤   │                   │
+│  │ │ Offline Layer                             │   │  ← Drift (SQLite) │
+│  │ │ (Drift — SQLite wrapper for Dart)         │   │                   │
+│  │ ├──────────────────────────────────────────┤   │                   │
+│  │ │ Animations: Rive + Impeller               │   │  ← 60fps nhất    │
+│  │ │ Camera: mobile_scanner (ML Kit/Vision)    │   │    quán, no jank  │
+│  │ │ Maps: google_maps_flutter                 │   │                   │
+│  │ └──────────────────────────────────────────┘   │                   │
+│  └────────────────────────┬──────────────────────┘                   │
+│                           │                                          │
+└───────────────────────────┼──────────────────────────────────────────┘
                        │ HTTPS / WSS
                        ▼
 ┌──────────────────────────────────────────────────────────────────────┐
@@ -1870,6 +1950,29 @@ Khách đã đặt bàn đến quán
 
 ---
 
+## Phụ Lục C: Nguồn Benchmark & Research
+
+| # | Nguồn | Nội dung |
+|---|-------|---------|
+| 1 | [React Native 0.79 Release Blog](https://reactnative.dev/blog/2025/04/08/react-native-0.79) | Cold start improvements, uncompressed bundles |
+| 2 | [RN New Architecture Performance (GitHub Discussion #123)](https://github.com/reactwg/react-native-new-architecture/discussions/123) | 43% improvement data |
+| 3 | [iOS App Launch Time - RN Sample (Shawn Baek)](https://shawnbaek.com/2025/04/05/ios-app-launch-time-react-native-sample-project/) | iOS cold start measurements |
+| 4 | [Flutter vs RN vs Native: 2025 Benchmark (SynergyBoat)](https://www.synergyboat.com/blog/flutter-vs-react-native-vs-native-performance-benchmark-2025) | Comprehensive benchmark comparison |
+| 5 | [Flutter vs RN: Performance Deep Dive 2025 (Vibe Studio)](https://vibe-studio.ai/insights/benchmarking-flutter-vs-react-native-performance-deep-dive-2025) | Detailed performance metrics |
+| 6 | [Impeller Transforming Flutter UI 2026 (Dev.to)](https://dev.to/eira-wexford/how-impeller-is-transforming-flutter-ui-rendering-in-2026-3dpd) | Impeller shader pre-compilation data |
+| 7 | [Flutter Impeller Docs](https://docs.flutter.dev/perf/impeller) | Official Impeller documentation |
+| 8 | [RN vs Flutter 2026: Benchmarks (Adevs)](https://adevs.com/blog/react-native-vs-flutter/) | 2026 real-world benchmarks |
+| 9 | [RN vs Flutter: Real App Benchmark Jan 2026 (Medium)](https://medium.com/@baheer224/react-native-vs-flutter-performance-real-app-benchmark-9191e7122e11) | Memory spikes, crash reports data |
+| 10 | [Lottie vs Rive: Optimizing Mobile Animation (Callstack)](https://www.callstack.com/blog/lottie-vs-rive-optimizing-mobile-app-animation) | 17 FPS Lottie finding, Rive comparison |
+| 11 | [Transistorsoft RN Background Geolocation (GitHub)](https://github.com/transistorsoft/react-native-background-geolocation) | Geofencing implementation details |
+| 12 | [Supabase Client Libraries V2 Blog](https://supabase.com/blog/client-libraries-v2) | SDK maturity comparison |
+| 13 | [Supabase Kotlin SDK (GitHub)](https://github.com/supabase-community/supabase-kt) | Community-maintained status |
+| 14 | [Expo App Size Documentation](https://docs.expo.dev/distribution/app-size/) | Binary size data |
+| 15 | [How to Reduce Bundle Size in RN & Flutter 2026 (Medium)](https://medium.com/@expertappdevs/how-to-reduce-app-bundle-size-in-react-native-and-flutter-without-losing-features-2026-guide-018a4062a1b4) | Size optimization strategies |
+
+---
+
 *Tài liệu này là living document, sẽ được cập nhật theo tiến trình dự án.*
-*Phiên bản: 1.1 · Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 · Lead Technology Review*
+*Phiên bản: 1.2 · Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 · Lead Technology Review*
+*Thay đổi v1.2: Cập nhật benchmarks với real-world data (2025-2026 sources), thêm Memory Usage, Geofencing Battery, Haptic Feedback, Lottie vs Rive comparison, Supabase SDK maintainer info, Architecture diagram update, Research sources appendix*
 *Thay đổi v1.1: Thêm Section 0 (Framework Evaluation), Section 5 (Delivery & Đặt Bàn), cập nhật timeline 16→22 tuần*
