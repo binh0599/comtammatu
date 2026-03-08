@@ -32,11 +32,15 @@ function generateApprovalCode(): string {
 }
 
 function getRoleRedirectPath(role: string): string {
-  if (role === "owner" || role === "manager") return "/admin";
-  if (role === "cashier" || role === "waiter") return "/pos";
-  if (role === "chef") return "/kds";
-  if (role === "hr") return "/admin/hr";
-  return "/login";
+  const routes: Record<string, string> = {
+    owner: "/admin",
+    manager: "/admin",
+    cashier: "/pos",
+    waiter: "/pos",
+    chef: "/kds",
+    hr: "/admin/hr",
+  };
+  return routes[role] ?? "/";
 }
 
 const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {
@@ -97,9 +101,16 @@ async function _login(formData: FormData) {
     .eq("id", authData.user.id)
     .single();
 
-  const role = profile?.role ?? "customer";
+  const role = profile?.role;
 
-  // Owner, manager, hr, customer: skip device check, redirect directly
+  if (!role) {
+    throw new ActionError(
+      "Tài khoản chưa được gán vai trò. Vui lòng liên hệ quản lý.",
+      "UNAUTHORIZED",
+    );
+  }
+
+  // Owner, manager, hr: skip device check, redirect directly
   if (
     !DEVICE_CHECK_ROLES.includes(
       role as (typeof DEVICE_CHECK_ROLES)[number],
