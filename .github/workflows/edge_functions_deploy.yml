@@ -1,0 +1,70 @@
+name: Deploy Edge Functions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Get changed functions
+        id: changed
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            calculate-delivery-fee:
+              - 'supabase/functions/calculate-delivery-fee/**'
+            process-payment:
+              - 'supabase/functions/process-payment/**'
+            send-notification:
+              - 'supabase/functions/send-notification/**'
+            sync-menu:
+              - 'supabase/functions/sync-menu/**'
+            generate-receipt:
+              - 'supabase/functions/generate-receipt/**'
+
+      - name: Deploy calculate-delivery-fee
+        if: steps.changed.outputs.calculate-delivery-fee == 'true' || github.event_name == 'workflow_dispatch'
+        run: supabase functions deploy calculate-delivery-fee --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy process-payment
+        if: steps.changed.outputs.process-payment == 'true' || github.event_name == 'workflow_dispatch'
+        run: supabase functions deploy process-payment --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy send-notification
+        if: steps.changed.outputs.send-notification == 'true' || github.event_name == 'workflow_dispatch'
+        run: supabase functions deploy send-notification --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy sync-menu
+        if: steps.changed.outputs.sync-menu == 'true' || github.event_name == 'workflow_dispatch'
+        run: supabase functions deploy sync-menu --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Deploy generate-receipt
+        if: steps.changed.outputs.generate-receipt == 'true' || github.event_name == 'workflow_dispatch'
+        run: supabase functions deploy generate-receipt --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
