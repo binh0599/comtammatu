@@ -197,6 +197,7 @@ const DEFAULT_CONFIG: PaymentMethodsConfig = {
   enabled_methods: ["cash"],
 };
 
+// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matching control characters
 function sanitizeAccountName(name: string): string {
   return name
     .trim()
@@ -237,14 +238,17 @@ function PaymentMethodsCard({
 
   function handleSave() {
     startTransition(async () => {
+      const trimmedAccountNo = accountNo.trim();
+      const trimmedAccountName = sanitizeAccountName(accountName);
+
       const payload: PaymentMethodsConfig = {
         enabled_methods: enabledMethods as PaymentMethodsConfig["enabled_methods"],
-        ...(transferEnabled && bankId && accountNo && accountName
+        ...(transferEnabled && bankId && trimmedAccountNo && trimmedAccountName
           ? {
               bank_transfer: {
                 bank_id: bankId,
-                account_no: accountNo,
-                account_name: sanitizeAccountName(accountName),
+                account_no: trimmedAccountNo,
+                account_name: trimmedAccountName,
                 template: template as BankTransferConfig["template"],
               },
             }
@@ -262,9 +266,10 @@ function PaymentMethodsCard({
 
   // Build QR preview URL
   const sanitizedName = sanitizeAccountName(accountName);
+  const sanitizedAccountNo = accountNo.trim();
   const previewUrl =
-    transferEnabled && bankId && accountNo && sanitizedName
-      ? `https://img.vietqr.io/image/${bankId}-${accountNo}-${template}.png?amount=50000&addInfo=DH1234&accountName=${encodeURIComponent(sanitizedName)}`
+    transferEnabled && bankId && sanitizedAccountNo && sanitizedName
+      ? `https://img.vietqr.io/image/${encodeURIComponent(bankId)}-${encodeURIComponent(sanitizedAccountNo)}-${template}.png?amount=50000&addInfo=DH1234&accountName=${encodeURIComponent(sanitizedName)}`
       : null;
 
   return (
@@ -284,9 +289,10 @@ function PaymentMethodsCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Banknote className="h-4 w-4" />
-              <Label>Tiền mặt</Label>
+              <Label htmlFor="method-cash">Tiền mặt</Label>
             </div>
             <Switch
+              id="method-cash"
               checked={enabledMethods.includes("cash")}
               onCheckedChange={() => toggleMethod("cash")}
             />
@@ -295,9 +301,10 @@ function PaymentMethodsCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <QrCode className="h-4 w-4" />
-              <Label>QR (Momo)</Label>
+              <Label htmlFor="method-qr">QR (Momo)</Label>
             </div>
             <Switch
+              id="method-qr"
               checked={enabledMethods.includes("qr")}
               onCheckedChange={() => toggleMethod("qr")}
             />
@@ -306,9 +313,10 @@ function PaymentMethodsCard({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Landmark className="h-4 w-4" />
-              <Label>Chuyển khoản ngân hàng (VietQR)</Label>
+              <Label htmlFor="method-transfer">Chuyển khoản ngân hàng (VietQR)</Label>
             </div>
             <Switch
+              id="method-transfer"
               checked={transferEnabled}
               onCheckedChange={() => toggleMethod("transfer")}
             />
