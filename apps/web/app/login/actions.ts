@@ -36,7 +36,7 @@ function getRoleRedirectPath(role: string): string {
   if (role === "cashier" || role === "waiter") return "/pos";
   if (role === "chef") return "/kds";
   if (role === "hr") return "/admin/hr";
-  return "/customer";
+  return "/login";
 }
 
 const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {

@@ -308,10 +308,6 @@ export type {
   RespondFeedbackInput,
 } from "./schemas/feedback";
 
-// Week 7-8: Privacy
-export { deletionRequestSchema } from "./schemas/privacy";
-export type { DeletionRequestInput } from "./schemas/privacy";
-
 // Device Registration
 export {
   registerDeviceSchema,
@@ -360,8 +356,6 @@ export type { DashboardLimitInput, DashboardDaysInput } from "./schemas/dashboar
 export {
   createCampaignSchema,
   updateCampaignSchema,
-  customerPlaceOrderSchema,
-  customerOrderItemSchema,
   analyticsQuerySchema,
   forecastQuerySchema,
   staffPerformanceQuerySchema,
@@ -369,7 +363,6 @@ export {
 export type {
   CreateCampaignInput,
   UpdateCampaignInput,
-  CustomerPlaceOrderInput,
   AnalyticsQueryInput,
   ForecastQueryInput,
   StaffPerformanceQueryInput,
@@ -481,13 +474,12 @@ export {
   getActionContext,
   getAdminContext,
   getKdsBranchContext,
-  getCustomerContext,
   getBranchesForTenant,
   getBranchIdsForTenant,
   verifyEntityOwnership,
   configureActionContext,
   requireBranch,
 } from "./server/action-context";
-export type { ActionContext, KdsContext, CustomerContext } from "./server/action-context";
+export type { ActionContext, KdsContext } from "./server/action-context";
 
 export { withServerAction, withServerQuery } from "./server/with-server-action";

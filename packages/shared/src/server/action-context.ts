@@ -211,49 +211,6 @@ export async function getKdsBranchContext(
 }
 
 /**
- * Context for customer-facing actions — authenticated user + customer record.
- */
-export interface CustomerContext {
-    supabase: SupabaseClient;
-    user: { id: string; email: string };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    customer: any;
-}
-
-/**
- * Get customer action context. Validates the user is authenticated and
- * has a matching customer record. Replaces the duplicated `getCustomerAuth()` helper.
- */
-export async function getCustomerContext(): Promise<CustomerContext> {
-    if (!_createSupabaseServer) {
-        throw new Error(
-            "getCustomerContext: must call configureActionContext(createSupabaseServer) first",
-        );
-    }
-
-    const supabase = await _createSupabaseServer();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-        throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
-    }
-
-    const { data: customer } = await supabase
-        .from("customers")
-        .select("*")
-        .eq("email", user.email ?? "")
-        .single();
-
-    if (!customer) {
-        throw new ActionError("Khách hàng không tồn tại", "NOT_FOUND", 404);
-    }
-
-    return { supabase, user: { id: user.id, email: user.email ?? "" }, customer };
-}
-
-/**
  * Verify that an entity (accessed via a join through branches) belongs to the caller's tenant.
  * Works for tables like `pos_terminals` and `kds_stations` that have a `branch_id` FK
  * with the branch itself having `tenant_id`.

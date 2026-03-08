@@ -70,10 +70,9 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Skip routes outside POS/customer — we only cache app-related assets
+  // Skip routes outside POS — we only cache app-related assets
   const isAppRoute =
     url.pathname.startsWith("/pos") ||
-    url.pathname.startsWith("/customer") ||
     url.pathname.startsWith("/_next/") ||
     url.pathname.startsWith("/favicon");
 
