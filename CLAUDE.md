@@ -113,4 +113,23 @@ Failure Conditions:
 
 ---
 
+---
+
+## VII. TEAM-AGENTS (6 Người)
+
+> Mobile app team mở rộng. Gọi agent bằng tên skill để nhận tư vấn/code từ góc nhìn chuyên môn.
+
+| Agent Skill | Vai trò | Chuyên môn |
+|-------------|---------|------------|
+| `sr-ux-designer` | Senior UI/UX Designer | Design System, Figma, v0.app, Widgetbook, micro-interactions |
+| `sr-flutter-dev` | Senior FE (Mobile) + Tech Lead | Flutter architecture, Riverpod, Component Library, Offline mode |
+| `mid-flutter-dev` | Mid FE (Mobile) | Delivery screens, Đặt Bàn, Maps, Push notification UI |
+| `backend-dev` | Back-End Developer | Supabase Edge Functions, PostgreSQL, CRM sync, Security |
+| `qa-engineer` | QA Engineer | Test strategy, E2E (Patrol), Load testing (k6), Bug tracking |
+| `devops-engineer` | DevOps Engineer | CI/CD, Fastlane, Sentry, Shorebird, Monitoring |
+
+Chi tiết: `docs/Team_Hiring_Proposal.md`
+
+---
+
 *Full reference: `docs/REFERENCE.md` — dependencies, DB conventions, full file tree, skills map, migration path.*
