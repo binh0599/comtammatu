@@ -50,7 +50,7 @@ async function _processPayment(data: {
     .from("pos_terminals")
     .select("type")
     .eq("id", session.terminal_id)
-    .single();
+    .maybeSingle();
 
   if (terminalError) {
     return safeDbErrorResult(terminalError, "terminal");

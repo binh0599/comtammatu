@@ -49,13 +49,13 @@ async function _createTransferPayment(orderId: number) {
     .from("pos_terminals")
     .select("type")
     .eq("id", session.terminal_id)
-    .single();
+    .maybeSingle();
 
   if (terminalError) {
-    if (terminalError.code === "PGRST116") {
-      return { error: "Không tìm thấy thiết bị POS. Thiết bị có thể đã bị xóa." };
-    }
     return safeDbErrorResult(terminalError, "terminal");
+  }
+  if (!terminal) {
+    return { error: "Không tìm thấy thiết bị POS. Thiết bị có thể đã bị xóa." };
   }
   if (terminal.type !== "cashier_station") {
     return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
