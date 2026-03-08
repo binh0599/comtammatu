@@ -72,7 +72,7 @@ export default async function LoginPage() {
       // Non-staff roles: redirect directly
       if (role === "owner" || role === "manager") redirect("/admin");
       else if (role === "hr") redirect("/admin/hr");
-      else redirect("/customer");
+      else redirect("/login");
     }
   }
 
