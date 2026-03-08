@@ -26,6 +26,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
+import { PAYMENT_METHOD_LABELS } from "@comtammatu/shared";
 import { getReportData, type ReportSummary } from "./actions";
 
 function formatVND(value: number): string {
@@ -35,12 +36,6 @@ function formatVND(value: number): string {
     maximumFractionDigits: 0,
   }).format(value);
 }
-
-const METHOD_LABELS: Record<string, string> = {
-  cash: "Tiền mặt",
-  qr: "QR / Chuyển khoản",
-  momo: "Momo",
-};
 
 export function ReportsClient({
   initialData,
@@ -187,7 +182,7 @@ export function ReportsClient({
               <TableBody>
                 {data.paymentMethods.map((pm) => (
                   <TableRow key={pm.method}>
-                    <TableCell>{METHOD_LABELS[pm.method] ?? pm.method}</TableCell>
+                    <TableCell>{PAYMENT_METHOD_LABELS[pm.method as keyof typeof PAYMENT_METHOD_LABELS] ?? pm.method}</TableCell>
                     <TableCell className="text-right">{pm.count}</TableCell>
                     <TableCell className="text-right">{formatVND(pm.total)}</TableCell>
                   </TableRow>

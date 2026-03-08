@@ -24,8 +24,16 @@ export type OrderItemStatus = (typeof ORDER_ITEM_STATUSES)[number];
 export const ORDER_TYPES = ["dine_in", "takeaway", "delivery"] as const;
 export type OrderType = (typeof ORDER_TYPES)[number];
 
-export const PAYMENT_METHODS = ["cash", "card", "ewallet", "qr"] as const;
+export const PAYMENT_METHODS = ["cash", "card", "ewallet", "qr", "transfer"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
+
+export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: "Tiền mặt",
+  card: "Thẻ",
+  ewallet: "Ví điện tử",
+  qr: "QR (Momo)",
+  transfer: "Chuyển khoản",
+};
 
 export const PAYMENT_STATUSES = [
   "pending",

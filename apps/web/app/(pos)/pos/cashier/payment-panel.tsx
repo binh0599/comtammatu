@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tag, X, Banknote, QrCode, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
+import { Tag, X, Banknote, QrCode, Loader2, CheckCircle2, ArrowLeft, Landmark } from "lucide-react";
 import {
   formatPrice,
   getOrderStatusLabel,
@@ -27,6 +27,10 @@ import {
   createMomoPayment,
   checkPaymentStatus,
 } from "./actions";
+import {
+  createTransferPayment,
+  confirmTransferPayment,
+} from "./transfer-actions";
 import type { QueueOrder } from "./types";
 
 export function PaymentPanel({
@@ -44,12 +48,24 @@ export function PaymentPanel({
   const [voucherCode, setVoucherCode] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isVoucherPending, startVoucherTransition] = useTransition();
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "momo" | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "momo" | "transfer" | null>(null);
   const [momoState, setMomoState] = useState<{
     qrUrl: string;
     paymentId: number;
     status: string;
   } | null>(null);
+  const [transferState, setTransferState] = useState<{
+    qrUrl: string;
+    paymentId: number;
+    bankName: string;
+    accountNo: string;
+    accountName: string;
+    amount: number;
+    addInfo: string;
+    status: "pending" | "confirmed";
+  } | null>(null);
+  const [isTransferPending, startTransferTransition] = useTransition();
+  const [referenceNo, setReferenceNo] = useState("");
   const [showReceipt, setShowReceipt] = useState(false);
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [isMomoPending, startMomoTransition] = useTransition();
@@ -62,7 +78,9 @@ export function PaymentPanel({
     prevOrderIdRef.current = currentOrderId;
     if (paymentMethod !== null) setPaymentMethod(null);
     if (momoState !== null) setMomoState(null);
+    if (transferState !== null) setTransferState(null);
     if (amountTendered !== "") setAmountTendered("");
+    if (referenceNo !== "") setReferenceNo("");
     if (showReceipt) setShowReceipt(false);
     if (paidAmount !== 0) setPaidAmount(0);
   }
@@ -181,6 +199,53 @@ export function PaymentPanel({
         paymentId: data.paymentId,
         status: "pending",
       });
+    });
+  }
+
+  function handleTransferPayment() {
+    startTransferTransition(async () => {
+      const result = await createTransferPayment(order!.id);
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      const data = result as {
+        qrUrl: string;
+        paymentId: number;
+        bankName: string;
+        accountNo: string;
+        accountName: string;
+        amount: number;
+        addInfo: string;
+      };
+      setTransferState({
+        ...data,
+        status: "pending",
+      });
+    });
+  }
+
+  function handleConfirmTransfer() {
+    if (!transferState) return;
+
+    startTransferTransition(async () => {
+      const result = await confirmTransferPayment({
+        paymentId: transferState.paymentId,
+        referenceNo: referenceNo || undefined,
+      });
+
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      setTransferState((prev) =>
+        prev ? { ...prev, status: "confirmed" } : null,
+      );
+      toast.success("Xác nhận chuyển khoản thành công!");
+      onPaymentComplete();
     });
   }
 
@@ -350,7 +415,7 @@ export function PaymentPanel({
         <>
           {/* Payment Method Selector */}
           {paymentMethod === null && (
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-3 gap-3">
               <Button
                 variant="outline"
                 size="lg"
@@ -372,6 +437,18 @@ export function PaymentPanel({
                 <QrCode className="size-8" aria-hidden="true" />
                 <span className="text-sm font-medium">Momo QR</span>
               </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex h-20 flex-col items-center gap-2 border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                onClick={() => {
+                  setPaymentMethod("transfer");
+                  handleTransferPayment();
+                }}
+              >
+                <Landmark className="h-8 w-8" />
+                <span className="text-sm font-medium">Chuyển khoản</span>
+              </Button>
             </div>
           )}
 
@@ -384,7 +461,9 @@ export function PaymentPanel({
               onClick={() => {
                 setPaymentMethod(null);
                 setMomoState(null);
+                setTransferState(null);
                 setAmountTendered("");
+                setReferenceNo("");
               }}
             >
               <ArrowLeft className="mr-1 size-4" />
@@ -515,6 +594,96 @@ export function PaymentPanel({
                   >
                     Thử lại
                   </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Bank Transfer (VietQR) Payment Flow */}
+          {paymentMethod === "transfer" && (
+            <div className="flex flex-col items-center gap-4">
+              {isTransferPending && !transferState && (
+                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" aria-hidden="true" />
+                  <p className="text-muted-foreground text-sm">
+                    Đang tạo mã QR chuyển khoản...
+                  </p>
+                </div>
+              )}
+
+              {transferState && transferState.status === "pending" && (
+                <>
+                  <div className="rounded-lg border-2 border-blue-200 bg-white p-2">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={transferState.qrUrl}
+                      alt="VietQR"
+                      className="mx-auto h-52 w-auto"
+                    />
+                  </div>
+                  <div className="w-full space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Ngân hàng</span>
+                      <span className="font-medium">{transferState.bankName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Số TK</span>
+                      <span className="font-mono font-medium">{transferState.accountNo}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Chủ TK</span>
+                      <span className="font-medium">{transferState.accountName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Số tiền</span>
+                      <span className="font-bold text-blue-600">{formatPrice(transferState.amount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Nội dung CK</span>
+                      <span className="font-mono font-medium">{transferState.addInfo}</span>
+                    </div>
+                  </div>
+
+                  <div className="w-full space-y-2 border-t pt-3">
+                    <Label htmlFor="ref-no" className="text-sm">
+                      Mã giao dịch (không bắt buộc)
+                    </Label>
+                    <Input
+                      id="ref-no"
+                      value={referenceNo}
+                      onChange={(e) => setReferenceNo(e.target.value)}
+                      placeholder="Nhập mã GD ngân hàng"
+                      className="text-sm"
+                    />
+                  </div>
+
+                  <Button
+                    size="lg"
+                    className="w-full bg-blue-600 text-lg hover:bg-blue-700"
+                    onClick={handleConfirmTransfer}
+                    disabled={isTransferPending}
+                  >
+                    {isTransferPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang xác nhận...
+                      </>
+                    ) : (
+                      "Xác nhận đã nhận chuyển khoản"
+                    )}
+                  </Button>
+                  <p className="text-muted-foreground text-xs text-center">
+                    Khách quét mã QR bằng app ngân hàng. Xác nhận sau khi nhận được tiền.
+                  </p>
+                </>
+              )}
+
+              {transferState && transferState.status === "confirmed" && (
+                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                  <CheckCircle2 className="h-12 w-12 text-green-500" aria-hidden="true" />
+                  <p className="text-lg font-bold text-green-700">
+                    Xác nhận chuyển khoản thành công!
+                  </p>
                 </div>
               )}
             </div>

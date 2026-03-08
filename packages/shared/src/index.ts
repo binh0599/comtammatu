@@ -4,6 +4,7 @@ export {
   ORDER_ITEM_STATUSES,
   ORDER_TYPES,
   PAYMENT_METHODS,
+  PAYMENT_METHOD_LABELS,
   PAYMENT_STATUSES,
   TERMINAL_TYPES,
   SESSION_STATUSES,
@@ -169,8 +170,16 @@ export type {
   CloseSessionInput,
 } from "./schemas/pos";
 
-export { processPaymentSchema } from "./schemas/payment";
-export type { ProcessPaymentInput } from "./schemas/payment";
+export {
+  processPaymentSchema,
+  bankTransferConfigSchema,
+  paymentMethodsConfigSchema,
+} from "./schemas/payment";
+export type {
+  ProcessPaymentInput,
+  BankTransferConfig,
+  PaymentMethodsConfig,
+} from "./schemas/payment";
 
 export {
   createKdsStationSchema,

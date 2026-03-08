@@ -102,6 +102,7 @@ export const getPaymentMethodLabel = createLabelMapper({
   card: "Thẻ",
   ewallet: "Ví điện tử",
   qr: "QR Code",
+  transfer: "Chuyển khoản",
 });
 
 export const getTerminalTypeLabel = createLabelMapper({

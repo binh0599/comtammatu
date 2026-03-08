@@ -16,7 +16,7 @@ import { maybeReleaseTable } from "../orders/helpers";
 
 async function _processPayment(data: {
   order_id: number;
-  method: "cash" | "qr";
+  method: "cash" | "qr" | "transfer";
   amount_tendered?: number;
   tip?: number;
 }) {
@@ -46,13 +46,19 @@ async function _processPayment(data: {
   }
 
   // Verify terminal is cashier_station
-  const { data: terminal } = await supabase
+  const { data: terminal, error: terminalError } = await supabase
     .from("pos_terminals")
     .select("type")
     .eq("id", session.terminal_id)
-    .single();
+    .maybeSingle();
 
-  if (terminal?.type !== "cashier_station") {
+  if (terminalError) {
+    return safeDbErrorResult(terminalError, "terminal");
+  }
+  if (!terminal) {
+    return { error: "Không tìm thấy thiết bị POS. Thiết bị có thể đã bị xóa." };
+  }
+  if (terminal.type !== "cashier_station") {
     return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
   }
 
@@ -98,11 +104,11 @@ async function _processPayment(data: {
     order_id: order.id,
     pos_session_id: session.id,
     terminal_id: session.terminal_id,
-    method: parsed.data.method === "cash" ? "cash" : "qr",
-    provider: parsed.data.method === "qr" ? "momo" : null,
+    method: parsed.data.method,
+    provider: parsed.data.method === "qr" ? "momo" : parsed.data.method === "transfer" ? "vietqr" : null,
     amount: order.total,
     tip,
-    status: parsed.data.method === "cash" ? "completed" : "pending",
+    status: parsed.data.method === "cash" ? "completed" : "pending",  // qr + transfer start as pending
     paid_at: parsed.data.method === "cash" ? new Date().toISOString() : null,
     idempotency_key: idempotencyKey,
   });
