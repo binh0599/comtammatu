@@ -391,7 +391,6 @@ async function _sendCampaign(id: number) {
           void sendPushToUser(c.user_id, {
             title: existing.name ?? "Ưu đãi mới",
             body: (existing.message as string) ?? "Bạn có ưu đãi mới!",
-            url: "/customer",
             type: "campaign",
           }, "campaign");
         }
