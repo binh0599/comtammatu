@@ -1223,6 +1223,8 @@ async function processSyncOutbox() {
 
 ## 4. Task Delegation & Workflow — Phân Bổ Công Việc & Quy Trình
 
+> 📋 **Đề xuất mở rộng team:** Xem [`Team_Hiring_Proposal.md`](Team_Hiring_Proposal.md) — Phân tích bottleneck, đề xuất tuyển thêm 3 vị trí (Mid Flutter Dev, QA Engineer, DevOps Engineer), task delegation mới cho team 6 người.
+
 ### 4.1 Sprint Overview (16 Tuần)
 
 ```
