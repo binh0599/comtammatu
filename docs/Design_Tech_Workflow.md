@@ -1956,6 +1956,8 @@ Khách đã đặt bàn đến quán
 
 ## Phụ Lục A: Edge Functions API Reference
 
+> 📋 **Chi tiết đầy đủ:** Xem [`API_Contract.md`](API_Contract.md) — API Contract v1.0 với request/response schema, error codes, Dart models, Realtime subscriptions.
+
 | Endpoint | Method | Auth | Input | Output |
 |----------|--------|------|-------|--------|
 | `/verify-checkin` | POST | JWT (customer) | `{ qr_payload, device_fingerprint, latitude?, longitude? }` | `{ success, points_earned, new_balance }` |
