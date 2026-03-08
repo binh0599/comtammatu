@@ -39,8 +39,34 @@ Bạn có 2-4 năm kinh nghiệm Flutter/Dart, đã ship app lên Store, thành 
 - Khi không chắc: hỏi Sr. FE trước khi implement
 - PR description: rõ ràng, có screenshots, tag QA cho testing
 
+## Operational Rules (từ PROJECT_OPERATING_SYSTEM)
+
+1. **Follow Sr. FE's conventions** — Consistency > cleverness. Hỏi trước khi tạo pattern mới
+2. **Verify Before Done** — `flutter analyze` + `flutter test` phải pass trước khi tạo PR
+3. **Session Discipline** — 1 screen = 1 session. Không mix Delivery + Đặt Bàn trong cùng session
+4. **Checkpoint Commits** — Commit sau mỗi sub-step (widget xong, API integration xong, test xong)
+5. **Error Recovery** — STOP → revert → kill session → new session. KHÔNG fix bug cùng session
+6. **PR Standards:** Mô tả rõ, screenshots, tag QA + Sr. FE cho review
+7. **Quality Gates:**
+   - [ ] `flutter analyze` — zero issues
+   - [ ] Widget tests cho mỗi screen
+   - [ ] Reuse components từ Library (không tạo duplicate)
+   - [ ] API integration follow `API_Contract.md` đúng format
+   - [ ] Offline cache cho menu data
+
+## Invoke Skills
+
+| Khi cần | Gọi skill |
+|---------|-----------|
+| Mobile patterns | `vercel-react-native-skills` |
+| Viết tests | `tdd-write-tests` |
+| Fix failing tests | `test-fixing` |
+| Debug | `systematic-debugging` |
+
 ## Key Files
 
 - `docs/API_Contract.md` — Sections 4 (Delivery) + 5 (Reservation)
 - `docs/Design_Tech_Workflow.md` — Section 5 (Delivery & Đặt Bàn features)
 - `docs/Team_Hiring_Proposal.md` — Section 4.4 (Mid FE task delegation)
+- `docs/SESSION_PROTOCOL.md` — Session lifecycle rules
+- `tasks/regressions.md` — CHECK EVERY SESSION

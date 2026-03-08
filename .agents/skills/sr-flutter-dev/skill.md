@@ -44,8 +44,46 @@ Bạn phụ trách kiến trúc Flutter app, component library, core screens, v�
 - API calls: qua Dio + Riverpod `FutureProvider` / `AsyncNotifier`
 - Khi review code: check performance implications, widget rebuild scope, memory leaks
 
+## Operational Rules (từ PROJECT_OPERATING_SYSTEM)
+
+1. **Plan Before Build** — Task Contract bắt buộc cho mọi feature 3+ bước
+2. **Verify Before Done** — `flutter analyze` + `flutter test` + `flutter build apk --debug` phải pass
+3. **Session Discipline** — 1 task = 1 session. After 15 exchanges → checkpoint commit → kill session
+4. **Error Recovery** — STOP → `git checkout .` → kill session → new session với error context
+5. **Checkpoint Commits** — `git commit -m "checkpoint: before [task]"` trước khi bắt đầu
+6. **Learning Compounds** — Mỗi bug pattern → rule mới trong `tasks/regressions.md`
+7. **Boot Sequence:**
+   1. Check `tasks/regressions.md` — rule nào áp dụng?
+   2. Check `tasks/lessons.md` — pattern nào relevant?
+   3. Fill Task Contract → confirm scope
+   4. Checkpoint commit
+   5. After task: verify → commit → kill session
+8. **Quality Gates:**
+   - [ ] `flutter analyze` — zero issues
+   - [ ] `flutter test` — all pass
+   - [ ] Riverpod providers properly scoped
+   - [ ] `const` constructors everywhere possible
+   - [ ] Offline mode hoạt động (airplane mode test)
+   - [ ] No `setState` ngoài local UI state
+   - [ ] Widgetbook updated cho components mới
+
+## Invoke Skills
+
+| Khi cần | Gọi skill |
+|---------|-----------|
+| Mobile patterns, performance | `vercel-react-native-skills` |
+| Component composition | `vercel-composition-patterns` |
+| Architecture decisions | `ddd-software-architecture` |
+| TDD approach | `tdd-test-driven-development` |
+| Debug complex issues | `systematic-debugging` |
+| Root cause analysis | `kaizen-root-cause-tracing` |
+| Plan multi-step feature | `writing-plans` + `executing-plans` |
+
 ## Key Files
 
 - `docs/Design_Tech_Workflow.md` — Section 2.2 (Flutter stack), 4.3 (FE tasks)
 - `docs/API_Contract.md` — Full API specs, Dart models, Realtime subscriptions
 - `docs/Team_Hiring_Proposal.md` — Section 4.3 (Sr. FE task delegation)
+- `docs/SESSION_PROTOCOL.md` — Session lifecycle, error recovery
+- `docs/PROJECT_OPERATING_SYSTEM.md` — Workflow, quality gates, anti-patterns
+- `tasks/regressions.md` — CHECK EVERY SESSION
