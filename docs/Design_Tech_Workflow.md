@@ -2,7 +2,7 @@
 
 > **Lead Technology Document**
 > Đội ngũ: 1 Senior UI/UX Designer · 1 Senior Front-End Developer (Mobile) · 1 Back-End Developer
-> Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 (v1.2 — Real-World Benchmarks + Memory/Battery Data + Architecture Update)
+> Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 (v1.3 — CHỐT Flutter 3.x + Impeller)
 
 ---
 
@@ -330,90 +330,74 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 
 **Kết luận KMP:** Phù hợp nếu team có strong Kotlin background. Với team hiện tại (React/TS web), learning curve quá cao.
 
-### 0.6 Khuyến Nghị Cuối Cùng — Theo Thứ Tự Ưu Tiên
+### 0.6 Quyết Định Cuối Cùng — CHỐT: Flutter 3.x + Impeller
 
-#### 🥇 Khuyến Nghị #1: Flutter 3.x + Impeller (Nếu Ưu Tiên Performance + UX)
+> **QUYẾT ĐỊNH CHÍNH THỨC (2026-03-08):** Chọn **Phương án A: Flutter 3.x + Impeller** làm framework chính thức cho Cơm Tấm Má Tư Mobile App.
 
-**Lý do cốt lõi:** Flutter cho hiệu năng gần native nhất trong các cross-platform framework, đặc biệt:
-- Impeller engine: animation celebration khi check-in, tier upgrade sẽ **luôn 60fps**
-- Cold start nhanh hơn RN ~200ms — quan trọng khi khách mở app tại quầy
-- QR scanning nhanh hơn RN ~150ms
-- Widget system cho phép custom UI pixel-perfect — Designer kiểm soát hoàn toàn
-- Dart có null safety, type system mạnh, cú pháp gần TypeScript
+#### Lý Do Chốt Flutter
 
-**Trade-off chấp nhận được:**
-- Team mất 2-3 tuần học Dart (nhưng Dart syntax ~70% giống TypeScript)
-- Không share code trực tiếp với web CRM (nhưng share Design Tokens, API contracts)
-- Binary size ~35-45MB (chấp nhận được cho loyalty app)
+**Performance & UX — yếu tố quyết định:**
+- **Impeller engine:** Pre-compile tất cả shaders lúc build → **loại bỏ hoàn toàn shader jank**, animation celebration 60fps nhất quán
+- **Cold start nhanh hơn RN ~500-700ms** trên mọi thiết bị — quan trọng khi khách mở app tại quầy xếp hàng
+- **Memory stable:** Thấp hơn RN 20-25MB, không spike — an toàn cho budget Android VN (2-3GB RAM)
+- **QR scanning:** `mobile_scanner` nhanh hơn RN camera init ~100-200ms
+- **Lottie/Rive:** Flutter render natively tại 60fps, trong khi RN Lottie drop xuống 17 FPS trên Android tầm thấp
+- Widget system pixel-perfect → Designer kiểm soát hoàn toàn UI
 
-**Chiến lược giảm thiểu rủi ro:**
-- Tuần 1-2: FE Developer tập trung học Dart + Flutter qua project nhỏ
-- Dùng `supabase_flutter` SDK (đủ mature cho use case này)
-- Dùng Rive thay Lottie (native Flutter, performance tốt hơn)
+**Khả thi với team:**
+- 1 codebase → 2 platform (phù hợp team 1 FE dev)
+- Dart syntax ~70% giống TypeScript → learning curve 2-3 tuần
+- `supabase_flutter` SDK officially maintained, đủ mature cho use case
 
-#### 🥈 Khuyến Nghị #2: React Native 0.79+ Bare (KHÔNG Expo) (Nếu Ưu Tiên Ecosystem + Tốc Độ Dev)
+**Trade-off đã chấp nhận:**
+- Team mất 2-3 tuần học Dart (Sprint 0)
+- Không share code trực tiếp với web CRM (share Design Tokens + API contracts thay thế)
+- Binary size ~25-35MB (chấp nhận được)
+- OTA update qua Shorebird.dev (thay vì CodePush)
+- Ecosystem nhỏ hơn React nhưng đủ cho loyalty app
 
-**Khi nào chọn RN thay Flutter:**
-- FE Developer đã có kinh nghiệm React Native
-- Muốn share Zod schemas, types, utilities với web CRM
-- Cần OTA updates (CodePush) — rất hữu ích cho fix nhanh sau release
-- Supabase JS SDK là critical requirement
+#### Chiến Lược Triển Khai
 
-**Bắt buộc nếu chọn RN (để đảm bảo perf):**
-- ✅ Bật New Architecture (Fabric + JSI) — **không optional**
-- ✅ Dùng `react-native-vision-camera` v4 (KHÔNG dùng expo-camera)
-- ✅ Dùng `react-native-reanimated` v3 cho MỌI animation
-- ✅ Dùng `react-native-skia` cho particle effects (check-in celebration)
-- ✅ Dùng `FlashList` thay `FlatList` cho danh sách dài
-- ✅ Dùng Hermes engine (đã default từ RN 0.79)
-- ❌ KHÔNG dùng Expo managed workflow (overhead quá lớn cho perf-focused app)
+| Giai đoạn | Hành động | Timeline |
+|-----------|----------|----------|
+| **Sprint 0** | FE Developer học Dart + Flutter qua mini project (clone 1 screen) | Tuần 1-2 |
+| **Sprint 0** | Setup Flutter project + Supabase Flutter SDK + CI/CD | Tuần 2 |
+| **Sprint 1** | Build Design System components (Material 3 + custom theme) | Tuần 3-4 |
+| **Ongoing** | Dùng Rive cho tất cả celebration animations (KHÔNG dùng Lottie) | Tuần 5+ |
+| **Pre-release** | Setup Shorebird.dev cho OTA code push | Tuần 14 |
 
-#### ❌ Không Khuyến Nghị: React Native + Expo Managed
+#### Các Phương Án Đã Loại Bỏ (Lưu Hồ Sơ)
 
-**Lý do loại bỏ (so với bản v1.0 trước đó):**
+| Phương án | Lý do loại |
+|-----------|-----------|
+| **React Native + Expo** | Cold start chậm, Lottie 17fps Android, memory spikes, Expo runtime overhead |
+| **React Native Bare** | Animation particle drop frame, memory không ổn định, cold start chậm hơn Flutter |
+| **Native (Swift + Kotlin)** | Cần 2 developer, 2x codebase, Kotlin Supabase SDK community-maintained |
+| **KMP** | Learning curve quá cao, tooling chưa mature, team không có Kotlin background |
 
-| Vấn đề | Chi tiết | Ảnh hưởng UX |
-|--------|---------|-------------|
-| Cold start | +200-400ms so với RN Bare | Khách chờ lâu hơn khi mở app tại quầy |
-| Camera | expo-camera chậm hơn vision-camera ~200ms | Check-in không đạt "zero-friction" |
-| Binary size | 35-55MB (Expo runtime overhead) | Budget Android e ngại cài đặt |
-| Animation ceiling | Không access trực tiếp react-native-skia | Particle effects celebration kém |
-| Native module control | Giới hạn bởi Expo SDK | Không custom được haptic patterns |
+### 0.7 Tech Stack Chính Thức — Flutter
 
-**Expo phù hợp cho:** MVP nhanh, prototype, app không yêu cầu performance cao. **Không phù hợp** khi "tối ưu hiệu năng và UX là chính".
-
-### 0.7 Cập Nhật Tech Stack Theo Khuyến Nghị
-
-#### Nếu Chọn Flutter (Khuyến Nghị #1):
-
-| Thành phần | Lựa chọn | Thay thế cho |
-|-----------|----------|-------------|
-| **Framework** | Flutter 3.x + Impeller | React Native + Expo |
-| **Navigation** | GoRouter (declarative) | Expo Router |
-| **State Management** | Riverpod 2 + Dio | Zustand + TanStack Query |
-| **UI Framework** | Material 3 + custom theme từ Design Tokens | NativeWind |
-| **Offline Database** | Drift (SQLite wrapper cho Dart) | WatermelonDB |
-| **Animations** | Rive + Flutter implicit/explicit animations | Reanimated 3 |
-| **QR Scanner** | `mobile_scanner` | expo-camera |
-| **Geolocation** | `geolocator` + `flutter_background_geolocation` | expo-location |
-| **Map** | `google_maps_flutter` + `flutter_polyline_points` | react-native-maps |
-| **Push** | `firebase_messaging` | expo-notifications |
-| **Testing** | Flutter test + integration_test + Patrol (E2E) | Jest + Detox |
-| **CI/CD** | Fastlane + GitHub Actions + Firebase App Distribution | EAS Build |
-| **Code Push** | Shorebird.dev (OTA updates cho Flutter) | Expo OTA |
-
-#### Nếu Chọn React Native Bare (Khuyến Nghị #2):
-
-| Thành phần | Lựa chọn | Thay đổi so với v1.0 |
-|-----------|----------|---------------------|
-| **Framework** | React Native 0.79+ (New Arch ON) | Bỏ Expo managed |
-| **Camera** | `react-native-vision-camera` v4 | Thay expo-camera |
-| **Animation** | Reanimated 3 + `react-native-skia` | Thêm Skia cho particle |
-| **List** | `@shopify/flash-list` | Thay FlatList |
-| **Map** | `react-native-maps` + `@mapbox/polyline` | Mới (cho delivery) |
-| **Code Push** | `react-native-code-push` (AppCenter) | Thay Expo OTA |
-| **Build** | Fastlane + GitHub Actions | Thay EAS Build |
-| Còn lại | Giữ nguyên (Zustand, TanStack Query, WatermelonDB) | — |
+| Thành phần | Lựa chọn | Ghi chú |
+|-----------|----------|---------|
+| **Framework** | Flutter 3.x + Impeller | AOT compilation, 60fps animations |
+| **Language** | Dart 3.x | Null safety, pattern matching, ~70% giống TS |
+| **Navigation** | GoRouter (declarative) | Deep linking, redirect guards |
+| **State Management** | Riverpod 2 | Compile-safe, code generation support |
+| **HTTP Client** | Dio | Interceptors, retry, cancel tokens |
+| **UI Framework** | Material 3 + custom theme từ Design Tokens | Pixel-perfect control |
+| **Offline Database** | Drift (SQLite wrapper cho Dart) | Type-safe queries, migrations |
+| **Backend SDK** | `supabase_flutter` v2+ (official) | Auth, DB, Realtime, Storage, Edge Functions |
+| **Animations** | Rive + Flutter implicit/explicit animations | 60fps, 10-12x nhỏ hơn Lottie |
+| **QR Scanner** | `mobile_scanner` | ML Kit/Vision underneath, ~300-600ms init |
+| **Geolocation** | `geolocator` + `flutter_background_geolocation` (Transistorsoft) | Background geofencing, motion detection |
+| **Map** | `google_maps_flutter` + `flutter_polyline_points` | Delivery tracking |
+| **Push** | `firebase_messaging` | FCM + APNs |
+| **Haptics** | `HapticFeedback` class (5 presets) | Đủ cho check-in success feedback |
+| **Testing** | Flutter test + integration_test + Patrol (E2E) | Unit → Integration → E2E |
+| **CI/CD** | Fastlane + GitHub Actions + Firebase App Distribution | Cloud builds iOS + Android |
+| **Code Push** | Shorebird.dev (OTA updates cho Flutter) | Hot fix không qua App Store |
+| **Monitoring** | Sentry (Flutter) | Crash reporting, performance monitoring |
+| **Analytics** | PostHog (Flutter SDK) | Product analytics, feature flags |
 
 ---
 
@@ -424,7 +408,7 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        MOBILE APP LAYER                             │
-│               (Flutter 3.x + Impeller — Khuyến Nghị #1)            │
+│               (Flutter 3.x + Impeller — CHỐT)                      │
 │  ┌──────────────────────────────────────────────┐                   │
 │  │   iOS + Android (Single Codebase — Dart)      │                   │
 │  │                                                │                   │
@@ -606,8 +590,8 @@ Supabase DB         Supabase DB          CRM (chỉ đọc)
 |---------|---------|-------------|
 | **Figma** | UI/UX Design chính | Industry standard, real-time collaboration, Dev Mode cho handoff |
 | **Figma Variables** | Design Tokens (colors, spacing, typography) | Đồng bộ trực tiếp với code tokens, single source of truth cho visual design |
-| **Figma Auto Layout** | Responsive design | Map 1:1 với Flexbox trong React Native |
-| **Storybook (React Native Web)** | Component Library documentation | Designer review components trực tiếp trên browser, đảm bảo design-code parity |
+| **Figma Auto Layout** | Responsive design | Map 1:1 với Flutter Row/Column/Flex |
+| **Widgetbook (Flutter)** | Component Library documentation | Designer review components trực tiếp trên device/web, đảm bảo design-code parity |
 
 #### Quy trình Design-to-Code (Design Handoff Pipeline)
 
@@ -617,16 +601,16 @@ Supabase DB         Supabase DB          CRM (chỉ đọc)
 │              │     │              │     │               │     │              │
 │ Figma        │────►│ Figma        │────►│ Front-End     │────►│ Designer     │
 │ Components   │     │ Variables    │     │ implements    │     │ reviews on   │
-│ + Prototype  │     │ exported as  │     │ components    │     │ Storybook +  │
-│              │     │ JSON tokens  │     │ in React      │     │ Device       │
-│              │     │              │     │ Native        │     │              │
+│ + Prototype  │     │ exported as  │     │ components    │     │ Widgetbook + │
+│              │     │ JSON tokens  │     │ in Flutter    │     │ Device       │
+│              │     │              │     │ (Dart)        │     │              │
 └─────────────┘     └──────────────┘     └───────────────┘     └──────────────┘
        │                    │                     │                     │
        │                    │                     │                     │
        ▼                    ▼                     ▼                     ▼
   Figma File           tokens.json          Component         Approved ✓
   (Auto Layout,        (colors,             Library           hoặc
-   Components,          spacing,             (Storybook)       Feedback →
+   Components,          spacing,             (Widgetbook)      Feedback →
    Variants)            typography,                            Iterate
                         border-radius)
 ```
@@ -681,35 +665,39 @@ Supabase DB         Supabase DB          CRM (chỉ đọc)
 }
 ```
 
-### 2.2 Front-End (Mobile)
+### 2.2 Front-End (Mobile) — Flutter 3.x + Impeller
 
 | Thành phần | Lựa chọn | Lý do |
 |-----------|----------|-------|
-| **Framework** | **React Native 0.79 + Expo SDK 52** | 1 codebase cho iOS + Android, phù hợp team có 1 Senior FE. Expo giảm cấu hình native. Hệ sinh thái React quen thuộc nếu team đã dùng React web |
-| **Navigation** | Expo Router (file-based) | Tương tự Next.js App Router mà team đã quen |
-| **State Management** | Zustand + TanStack Query v5 | Zustand cho client state, TanStack Query cho server state + caching |
-| **UI Framework** | Tamagui hoặc NativeWind (Tailwind cho RN) | Đồng bộ Design Tokens dễ dàng. NativeWind nếu team thích Tailwind (đã dùng trong web) |
-| **Offline Database** | WatermelonDB | Hiệu suất cao cho offline-first, lazy loading, sync primitives tích hợp |
-| **Animations** | React Native Reanimated 3 | Animations mượt chạy trên UI thread (check-in celebration, tier upgrade) |
-| **QR Scanner** | expo-camera + expo-barcode-scanner | Tích hợp sẵn trong Expo, không cần native module bên ngoài |
-| **Geolocation** | expo-location | Geofencing cho check-in tại quán |
-| **Push Notifications** | expo-notifications + FCM/APNs | Managed workflow, Expo Push Service đơn giản hóa setup |
-| **Testing** | Jest + React Native Testing Library + Detox (E2E) | Đầy đủ unit → integration → E2E |
+| **Framework** | **Flutter 3.x + Impeller** | 1 codebase cho iOS + Android, hiệu năng gần native, animation 60fps nhất quán, memory ổn định |
+| **Language** | Dart 3.x | Null safety, pattern matching, sealed classes, cú pháp ~70% giống TypeScript |
+| **Navigation** | GoRouter (declarative) | Deep linking, redirect guards, type-safe routing |
+| **State Management** | Riverpod 2 + Dio | Riverpod: compile-safe state. Dio: HTTP client với interceptors, retry |
+| **UI Framework** | Material 3 + custom ThemeData từ Design Tokens | Pixel-perfect control, mọi pixel do Flutter render |
+| **Offline Database** | Drift (SQLite wrapper cho Dart) | Type-safe SQL queries, auto-generate code, migration support |
+| **Animations** | Rive + Flutter implicit/explicit animations | 60fps, file size 10-12x nhỏ hơn Lottie, no shader jank nhờ Impeller |
+| **QR Scanner** | `mobile_scanner` | Dùng ML Kit (Android) / Vision (iOS), camera init ~300-600ms |
+| **Geolocation** | `geolocator` + `flutter_background_geolocation` (Transistorsoft) | Background geofencing, motion-detection based, tiết kiệm pin |
+| **Map** | `google_maps_flutter` + `flutter_polyline_points` | Delivery tracking, route display |
+| **Push Notifications** | `firebase_messaging` + FCM/APNs | Reliable push, topic-based, deep linking |
+| **Backend SDK** | `supabase_flutter` v2+ (official Supabase) | Auth, DB, Realtime, Storage, Edge Functions — officially maintained |
+| **Testing** | Flutter test + integration_test + Patrol (E2E) | Unit → Widget → Integration → E2E |
+| **Monitoring** | Sentry (Flutter SDK) | Crash reporting, performance monitoring, release tracking |
 
-#### Lý Do Chọn React Native Thay Vì Native (Swift/Kotlin)
+#### Lý Do Chọn Flutter Thay Vì Các Phương Án Khác
 
-Dựa trên team composition (1 Senior FE developer cho cả 2 platform):
+| Tiêu chí | Flutter 3.x | React Native | Native (Swift + Kotlin) |
+|----------|------------|-------------|------------------------|
+| Developer cần | 1 | 1 | Tối thiểu 2 |
+| Code sharing | ~95% shared | ~85-90% shared | 0% |
+| Animation 60fps | Nhất quán (Impeller) | Drop frame particle effects | Tốt nhất |
+| Memory stability | Ổn định, không spike | Spike khi scroll/animation | Ổn định nhất |
+| Cold start (budget Android) | ~2000-2500ms | ~2500-3500ms | ~1500-2000ms |
+| Supabase SDK | Official (Dart) | Official (JS) — tốt nhất | Community (Kotlin) ⚠️ |
+| OTA updates | Shorebird.dev | CodePush | Không có |
+| Learning curve | 2-3 tuần Dart | 0 (nếu biết React) | Cao (2 ngôn ngữ) |
 
-| Tiêu chí | React Native + Expo | Native (Swift + Kotlin) |
-|----------|--------------------|-----------------------|
-| Số lượng developer cần | 1 | Tối thiểu 2 (1 iOS + 1 Android) |
-| Code sharing | ~85-90% shared | 0% (ngoại trừ backend) |
-| Design System implementation | 1 lần | 2 lần |
-| Time-to-market | Nhanh hơn ~40% | Chậm hơn |
-| Performance | Đủ tốt cho loyalty app | Tối ưu nhất |
-| Offline support | WatermelonDB (tốt) | Core Data/Room (tốt nhất) |
-
-**Kết luận:** Với đội 3 người và 1 FE developer, React Native + Expo là lựa chọn tối ưu. App loyalty không yêu cầu performance cực cao (không phải game hay video editing).
+**Kết luận:** Flutter cho hiệu năng gần native nhất với 1 developer, animation celebration mượt mà trên mọi thiết bị kể cả budget Android VN.
 
 ### 2.3 Back-End & Database
 
@@ -833,27 +821,27 @@ ALTER TABLE sync_outbox ENABLE ROW LEVEL SECURITY;
 
 | Thành phần | Lựa chọn | Chi tiết |
 |-----------|----------|---------|
-| **Cloud** | Supabase (managed) + Expo EAS | Supabase cho backend, EAS cho build & distribute mobile |
-| **CI/CD** | GitHub Actions | Đã có sẵn trong monorepo hiện tại |
-| **Mobile Build** | EAS Build | Cloud builds cho iOS + Android, không cần local Xcode/Android Studio |
-| **Mobile Deploy** | EAS Submit + OTA Updates | App Store/Play Store submit + over-the-air JS bundle updates |
-| **Monitoring** | Sentry (React Native) | Crash reporting, performance monitoring, release tracking |
+| **Cloud** | Supabase (managed) + Firebase App Distribution | Supabase cho backend, Firebase cho build distribution |
+| **CI/CD** | GitHub Actions + Fastlane | Automated build, test, deploy pipeline |
+| **Mobile Build** | Fastlane + GitHub Actions | Cloud builds cho iOS + Android |
+| **Mobile Deploy** | Fastlane (App Store/Play Store) + Shorebird.dev (OTA) | Store submit + over-the-air Dart code updates |
+| **Monitoring** | Sentry (Flutter) | Crash reporting, performance monitoring, release tracking |
 | **Analytics** | PostHog (self-hosted hoặc cloud) | Product analytics, feature flags, session replay |
 
 #### CI/CD Pipeline
 
 ```
 ┌─────────┐     ┌───────────┐     ┌────────────┐     ┌───────────┐
-│  Push    │────►│  Lint +    │────►│  Unit +     │────►│  EAS       │
-│  to PR   │     │  TypeCheck │     │  Integration│     │  Build     │
+│  Push    │────►│  Lint +    │────►│  Unit +     │────►│  Fastlane  │
+│  to PR   │     │  Dart      │     │  Integration│     │  Build     │
 │          │     │            │     │  Tests      │     │  (Preview) │
 └─────────┘     └───────────┘     └────────────┘     └─────┬─────┘
                                                            │
                                                            ▼
 ┌─────────┐     ┌───────────┐     ┌────────────┐     ┌───────────┐
 │  Release │◄───│  Store     │◄───│  E2E Tests  │◄───│  Internal  │
-│  to      │     │  Submit    │     │  (Detox)    │     │  TestFlight│
-│  Public  │     │  (EAS)     │     │             │     │  / Firebase│
+│  to      │     │  Submit    │     │  (Patrol)   │     │  TestFlight│
+│  Public  │     │  (Fastlane)│     │             │     │  / Firebase│
 └─────────┘     └───────────┘     └────────────┘     └───────────┘
 ```
 
@@ -1024,17 +1012,20 @@ async function verifyCheckin(request: CheckinRequest): Promise<CheckinResult> {
 
 **C. Device Integrity (Phát hiện Emulator/Root)**
 
-```typescript
-// Client-side (React Native)
-import { isEmulator } from 'react-native-device-info';
-import { attestKey } from 'expo-attestation'; // iOS App Attest / Android Play Integrity
+```dart
+// Client-side (Flutter)
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:app_attest/app_attest.dart'; // iOS App Attest / Android Play Integrity
 
-async function getDeviceIntegrity(): Promise<DeviceAttestation> {
-  return {
-    is_emulator: await isEmulator(),
-    attestation_token: await attestKey(), // Server verify token
-    device_id: await getUniqueId(),
-  };
+Future<DeviceAttestation> getDeviceIntegrity() async {
+  final deviceInfo = DeviceInfoPlugin();
+  final isPhysical = (await deviceInfo.deviceInfo).data['isPhysicalDevice'] ?? false;
+
+  return DeviceAttestation(
+    isEmulator: !isPhysical,
+    attestationToken: await AppAttest.attestKey(), // Server verify token
+    deviceId: await getUniqueDeviceId(),
+  );
 }
 ```
 
@@ -1207,7 +1198,7 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 
 | Nhiệm vụ | Tần suất | Chi tiết |
 |----------|---------|---------|
-| Sprint Design Review | Mỗi 2 tuần | Review components đã build trên Storybook, feedback |
+| Sprint Design Review | Mỗi 2 tuần | Review components đã build trên Widgetbook, feedback |
 | Thiết kế màn hình cho sprint tiếp theo | Liên tục | Luôn đi trước FE 1 sprint |
 | Micro-interactions & Animations | Khi cần | Check-in celebration, tier upgrade animation, point counter |
 | Usability Testing | Tuần 10, 14 | Test với 3-5 khách hàng thật, iterate |
@@ -1251,12 +1242,13 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 
 | Nhiệm vụ | Chi tiết | Phối hợp |
 |----------|---------|----------|
-| Khởi tạo Expo project trong monorepo | `apps/mobile/` với Expo SDK 52, TypeScript strict | Solo |
-| Thiết lập Design Token pipeline | Figma Variables → JSON export → `theme.ts` trong RN | Với Designer |
-| Build Component Library (Atoms) | Button, Input, Badge, Card... theo Design System | Với Designer (review trên Storybook) |
-| Thiết lập Storybook React Native Web | Để Designer review components trên browser | Solo |
-| Cấu hình Navigation (Expo Router) | Tab navigation, stack screens, deep linking | Solo |
-| Tích hợp Supabase client | Auth flow, realtime subscription setup | Với Back-End |
+| Học Dart + Flutter (Sprint 0) | Mini project clone 1 screen, làm quen Dart syntax, Widget tree | Solo |
+| Khởi tạo Flutter project trong monorepo | `apps/mobile/` với Flutter 3.x, Dart strict mode | Solo |
+| Thiết lập Design Token pipeline | Figma Variables → JSON export → `theme.dart` (ThemeData) | Với Designer |
+| Build Component Library (Atoms) | Button, Input, Badge, Card... theo Design System (Flutter Widgets) | Với Designer (review trên Widgetbook) |
+| Thiết lập Widgetbook | Để Designer review components trên device/web | Solo |
+| Cấu hình Navigation (GoRouter) | Tab navigation, stack screens, deep linking, redirect guards | Solo |
+| Tích hợp Supabase Flutter client | `supabase_flutter` auth flow, realtime subscription setup | Với Back-End |
 
 #### Phase 2: Core Screens (Tuần 5-8)
 
@@ -1273,17 +1265,17 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 |----------|---------|----------|
 | Cashback & Promotions | Active promotions list, cashback history, redeem flow | Với Back-End (cashback APIs) |
 | Profile & Settings | Profile edit, notification preferences, privacy | Solo |
-| Offline Support | WatermelonDB setup, sync queue, offline check-in | Với Back-End (sync protocol) |
-| Push Notifications | expo-notifications setup, notification center UI | Với Back-End (push infra) |
+| Offline Support | Drift (SQLite) setup, sync queue, offline check-in | Với Back-End (sync protocol) |
+| Push Notifications | `firebase_messaging` setup, notification center UI | Với Back-End (push infra) |
 
 #### Phase 4: Polish & Release (Tuần 13-16)
 
 | Nhiệm vụ | Chi tiết | Phối hợp |
 |----------|---------|----------|
-| Performance Optimization | FlatList optimization, image caching, bundle size | Solo |
+| Performance Optimization | ListView optimization, image caching, tree shaking, bundle size | Solo |
 | Accessibility | VoiceOver/TalkBack support, contrast ratios | Với Designer |
-| E2E Tests (Detox) | Happy paths: onboarding, check-in, view points | Solo |
-| App Store Preparation | EAS Submit config, app metadata, screenshots | Với Designer (assets) |
+| E2E Tests (Patrol) | Happy paths: onboarding, check-in, view points | Solo |
+| App Store Preparation | Fastlane config, app metadata, screenshots | Với Designer (assets) |
 
 #### Quy Trình Phối Hợp FE ↔ Designer (Component Library Build)
 
@@ -1293,10 +1285,10 @@ Designer                           Front-End Developer
    │  1. Thiết kế Component trên Figma    │
    │  (với variants, states, tokens)      │
    │─────────────────────────────────────►│
-   │                                      │  2. Build component trong RN
+   │                                      │  2. Build Widget trong Flutter
    │                                      │     theo Design Tokens
-   │                                      │  3. Publish lên Storybook
-   │  4. Review trên Storybook            │◄─────────────────────────────
+   │                                      │  3. Publish lên Widgetbook
+   │  4. Review trên Widgetbook            │◄─────────────────────────────
    │     (pixel-perfect check)            │
    │                                      │
    │  ┌─ Approved ✅ ──────────────────── │ → Merge vào Component Library
@@ -1307,7 +1299,7 @@ Designer                           Front-End Developer
    │                                      │
 ```
 
-**Quy tắc:** Designer review trên Storybook trước khi component được dùng trong màn hình thật. Tối đa 2 vòng feedback per component.
+**Quy tắc:** Designer review trên Widgetbook trước khi widget được dùng trong màn hình thật. Tối đa 2 vòng feedback per component.
 
 ### 4.4 Back-End Developer — Trọng Tâm Công Việc
 
@@ -1338,7 +1330,7 @@ Designer                           Front-End Developer
 |----------|---------|----------|
 | CRM Sync Worker | pg_cron job, exponential backoff, alert on persistent failure | Solo |
 | Push Notification Infra | FCM/APNs setup, Edge Function triggers, token management | Với FE (device token registration) |
-| Offline Sync Protocol | Define sync handshake, conflict resolution rules, batch sync endpoint | Với FE (WatermelonDB sync) |
+| Offline Sync Protocol | Define sync handshake, conflict resolution rules, batch sync endpoint | Với FE (Drift sync) |
 | Rate Limiting & Security | Per-user rate limits, abuse detection, IP blocking | Solo |
 
 #### Phase 4: Monitoring & Release (Tuần 13-16)
@@ -1368,8 +1360,8 @@ Designer                           Front-End Developer
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
 │   Designer    │     │  Front-End   │     │  Back-End    │
 │              │     │              │     │              │
-│ Figma        │────►│ Storybook    │◄────│ API Docs     │
-│ (Design)     │     │ (Components) │     │ (OpenAPI)    │
+│ Figma        │────►│ Widgetbook   │◄────│ API Docs     │
+│ (Design)     │     │ (Widgets)    │     │ (OpenAPI)    │
 │              │     │              │     │              │
 │ Figjam       │────►│              │     │              │
 │ (Wireframes) │     │              │     │              │
@@ -1401,7 +1393,7 @@ Designer                           Front-End Developer
 
 | Milestone | Tuần | Deliverable | Acceptance Criteria |
 |-----------|------|-------------|---------------------|
-| **M0: Setup Complete** | 2 | Repo setup, Design System v0, API contracts drafted | App builds, Storybook runs, Figma file structured |
+| **M0: Setup Complete** | 2 | Repo setup, Design System v0, API contracts drafted | App builds, Widgetbook runs, Figma file structured |
 | **M1: Đăng Nhập + Home** | 4 | User login, home screen với mock data | Đăng nhập bằng phone/email, hiển thị points + tier |
 | **M2: Check-in MVP** | 6 | QR check-in hoạt động end-to-end | Quét QR → verify → cộng điểm → hiển thị thành công |
 | **M3: Loyalty Full** | 8 | Tier system, points history, tier upgrade | Xem hạng, lịch sử điểm, nâng hạng khi đủ điểm |
@@ -1944,7 +1936,7 @@ Khách đã đặt bàn đến quán
 - [ ] AppHeader (back button + title + optional right action)
 - [ ] BottomTabBar (Home, Check-in, Rewards, Profile)
 - [ ] LoyaltyCard (glass-morphism card showing tier + points + QR)
-- [ ] TransactionList (FlatList with date grouping)
+- [ ] TransactionList (ListView.builder with date grouping)
 - [ ] QRScanner (camera view + overlay + instructions)
 - [ ] CheckinSuccessSheet (animation + points earned + CTA)
 
@@ -1973,6 +1965,7 @@ Khách đã đặt bàn đến quán
 ---
 
 *Tài liệu này là living document, sẽ được cập nhật theo tiến trình dự án.*
-*Phiên bản: 1.2 · Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 · Lead Technology Review*
+*Phiên bản: 1.3 · Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 · Lead Technology Review*
+*Thay đổi v1.3: CHỐT Flutter 3.x + Impeller. Cập nhật toàn bộ tech stack, architecture, CI/CD, task delegation, component library sang Flutter ecosystem (GoRouter, Riverpod, Drift, Rive, Patrol, Widgetbook, Fastlane, Shorebird)*
 *Thay đổi v1.2: Cập nhật benchmarks với real-world data (2025-2026 sources), thêm Memory Usage, Geofencing Battery, Haptic Feedback, Lottie vs Rive comparison, Supabase SDK maintainer info, Architecture diagram update, Research sources appendix*
 *Thay đổi v1.1: Thêm Section 0 (Framework Evaluation), Section 5 (Delivery & Đặt Bàn), cập nhật timeline 16→22 tuần*
