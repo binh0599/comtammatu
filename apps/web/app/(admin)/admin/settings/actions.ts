@@ -8,6 +8,8 @@ import {
   withServerAction,
   safeDbError,
   ADMIN_ROLES,
+  paymentMethodsConfigSchema,
+  type PaymentMethodsConfig,
 } from "@comtammatu/shared";
 import { z } from "zod";
 
@@ -51,6 +53,7 @@ export interface SettingsData {
     is_active: boolean;
   }[];
   settings: { key: string; value: string | null }[];
+  paymentMethodsConfig: PaymentMethodsConfig | null;
 }
 
 async function _getSettings(): Promise<SettingsData> {
@@ -77,13 +80,24 @@ async function _getSettings(): Promise<SettingsData> {
   if (branchRes.error) throw safeDbError(branchRes.error, "db");
   if (settingsRes.error) throw safeDbError(settingsRes.error, "db");
 
+  const allSettings = settingsRes.data ?? [];
+  const paymentConfigRaw = allSettings.find(
+    (s: { key: string }) => s.key === "payment_methods_config",
+  );
+  let paymentMethodsConfig: PaymentMethodsConfig | null = null;
+  if (paymentConfigRaw?.value) {
+    const parsed = paymentMethodsConfigSchema.safeParse(paymentConfigRaw.value);
+    if (parsed.success) paymentMethodsConfig = parsed.data;
+  }
+
   return {
     tenant: tenantRes.data,
     branches: branchRes.data ?? [],
-    settings: (settingsRes.data ?? []).map((s: { key: string; value: unknown }) => ({
+    settings: allSettings.map((s: { key: string; value: unknown }) => ({
       key: s.key,
       value: s.value != null ? String(s.value) : null,
     })),
+    paymentMethodsConfig,
   };
 }
 
@@ -158,3 +172,42 @@ async function _updateSystemSetting(input: z.infer<typeof updateSettingSchema>) 
 }
 
 export const updateSystemSetting = withServerAction(_updateSystemSetting);
+
+// ---------------------------------------------------------------------------
+// updatePaymentMethodsConfig
+// ---------------------------------------------------------------------------
+
+async function _updatePaymentMethodsConfig(input: PaymentMethodsConfig) {
+  const data = paymentMethodsConfigSchema.parse(input);
+  const { supabase, tenantId, userId } = await getAdminContext(["owner"]);
+
+  // Validate: if transfer is enabled, bank_transfer config must be present
+  if (data.enabled_methods.includes("transfer") && !data.bank_transfer) {
+    return { error: "Cần cấu hình tài khoản ngân hàng khi bật chuyển khoản" };
+  }
+
+  // Must have at least one method enabled
+  if (data.enabled_methods.length === 0) {
+    return { error: "Phải bật ít nhất một phương thức thanh toán" };
+  }
+
+  const { error } = await supabase
+    .from("system_settings")
+    .upsert(
+      {
+        tenant_id: tenantId,
+        key: "payment_methods_config",
+        value: data,
+        updated_by: userId,
+      },
+      { onConflict: "tenant_id,key" },
+    );
+
+  if (error) throw safeDbError(error, "db");
+
+  return { error: null };
+}
+
+export const updatePaymentMethodsConfig = withServerAction(
+  _updatePaymentMethodsConfig,
+);

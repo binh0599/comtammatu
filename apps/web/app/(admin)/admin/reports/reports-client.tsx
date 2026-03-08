@@ -38,8 +38,9 @@ function formatVND(value: number): string {
 
 const METHOD_LABELS: Record<string, string> = {
   cash: "Tiền mặt",
-  qr: "QR / Chuyển khoản",
+  qr: "QR (Momo)",
   momo: "Momo",
+  transfer: "Chuyển khoản",
 };
 
 export function ReportsClient({

@@ -15,4 +15,9 @@ export {
   checkPaymentStatus,
 } from "./momo-actions";
 
+export {
+  createTransferPayment,
+  confirmTransferPayment,
+} from "./transfer-actions";
+
 export { getCashierOrders } from "./cashier-queries";
