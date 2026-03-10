@@ -53,6 +53,7 @@ export {
   // Device Registration
   DEVICE_STATUSES,
   DEVICE_CHECK_ROLES,
+  ROLE_REDIRECT_MAP,
   DEVICE_TERMINAL_TYPES,
   // Payroll
   PAYROLL_STATUSES,

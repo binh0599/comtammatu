@@ -9,6 +9,7 @@ import {
   handleServerActionError,
   entityIdSchema,
   DEVICE_CHECK_ROLES,
+  ROLE_REDIRECT_MAP,
   type DeviceTerminalType,
 } from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
@@ -32,15 +33,7 @@ function generateApprovalCode(): string {
 }
 
 function getRoleRedirectPath(role: string): string {
-  const routes: Record<string, string> = {
-    owner: "/admin",
-    manager: "/admin",
-    cashier: "/pos",
-    waiter: "/pos",
-    chef: "/kds",
-    hr: "/admin/hr",
-  };
-  return routes[role] ?? "/";
+  return ROLE_REDIRECT_MAP[role] ?? "/";
 }
 
 const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {
@@ -110,7 +103,7 @@ async function _login(formData: FormData) {
     );
   }
 
-  // Owner, manager, hr: skip device check, redirect directly
+  // Non-device roles (owner, manager, hr): skip device check, redirect directly
   if (
     !DEVICE_CHECK_ROLES.includes(
       role as (typeof DEVICE_CHECK_ROLES)[number],
