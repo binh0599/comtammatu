@@ -30,11 +30,12 @@ export default async function LoginPage() {
       .eq("id", user.id)
       .single();
 
-    const role = data?.role ?? "customer";
+    const role = data?.role;
 
     // Staff roles: check device approval before redirecting.
     // Fail-closed: if tenant_id is missing, show login form (incomplete profile).
     if (
+      role &&
       DEVICE_CHECK_ROLES.includes(
         role as (typeof DEVICE_CHECK_ROLES)[number],
       )
@@ -68,11 +69,11 @@ export default async function LoginPage() {
         // Don't redirect — let staff re-register
       }
       // If tenant_id missing: fall through to show login form
-    } else {
+    } else if (role) {
       // Non-staff roles: redirect directly
       if (role === "owner" || role === "manager") redirect("/admin");
       else if (role === "hr") redirect("/admin/hr");
-      else redirect("/login");
+      // Unknown roles: fall through to show login form
     }
   }
 
