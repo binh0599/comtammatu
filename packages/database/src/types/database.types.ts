@@ -185,8 +185,11 @@ export type Database = {
           address: string
           code: string
           created_at: string
+          delivery_radius_km: number | null
           id: number
           is_active: boolean
+          latitude: number | null
+          longitude: number | null
           name: string
           operating_hours: Json | null
           phone: string
@@ -198,8 +201,11 @@ export type Database = {
           address: string
           code: string
           created_at?: string
+          delivery_radius_km?: number | null
           id?: never
           is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
           name: string
           operating_hours?: Json | null
           phone: string
@@ -211,8 +217,11 @@ export type Database = {
           address?: string
           code?: string
           created_at?: string
+          delivery_radius_km?: number | null
           id?: never
           is_active?: boolean
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           operating_hours?: Json | null
           phone?: string
@@ -270,6 +279,130 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_campaigns_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checkins: {
+        Row: {
+          branch_id: number
+          checked_in_at: string
+          created_at: string
+          customer_id: number
+          device_fingerprint: string | null
+          id: number
+          latitude: number | null
+          longitude: number | null
+          method: string
+          points_earned: number
+          tenant_id: number
+        }
+        Insert: {
+          branch_id: number
+          checked_in_at?: string
+          created_at?: string
+          customer_id: number
+          device_fingerprint?: string | null
+          id?: never
+          latitude?: number | null
+          longitude?: number | null
+          method: string
+          points_earned?: number
+          tenant_id: number
+        }
+        Update: {
+          branch_id?: number
+          checked_in_at?: string
+          created_at?: string
+          customer_id?: number
+          device_fingerprint?: string | null
+          id?: never
+          latitude?: number | null
+          longitude?: number | null
+          method?: string
+          points_earned?: number
+          tenant_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      customer_addresses: {
+        Row: {
+          created_at: string
+          customer_id: number
+          full_address: string
+          id: number
+          is_default: boolean
+          label: string
+          latitude: number
+          longitude: number
+          note: string | null
+          phone: string | null
+          tenant_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: number
+          full_address: string
+          id?: never
+          is_default?: boolean
+          label?: string
+          latitude: number
+          longitude: number
+          note?: string | null
+          phone?: string | null
+          tenant_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: number
+          full_address?: string
+          id?: never
+          is_default?: boolean
+          label?: string
+          latitude?: number
+          longitude?: number
+          note?: string | null
+          phone?: string | null
+          tenant_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_addresses_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "customer_addresses_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -344,6 +477,9 @@ export type Database = {
       }
       customers: {
         Row: {
+          auth_user_id: string | null
+          available_points: number
+          avatar_url: string | null
           birthday: string | null
           created_at: string
           email: string | null
@@ -352,17 +488,25 @@ export type Database = {
           gender: string | null
           id: number
           is_active: boolean
+          last_checkin_date: string | null
           last_visit: string | null
+          lifetime_points: number
           loyalty_tier_id: number | null
           notes: string | null
           phone: string
           source: string | null
+          streak_days: number
           tenant_id: number
+          total_points: number
           total_spent: number
           total_visits: number
           updated_at: string
+          version: number
         }
         Insert: {
+          auth_user_id?: string | null
+          available_points?: number
+          avatar_url?: string | null
           birthday?: string | null
           created_at?: string
           email?: string | null
@@ -371,17 +515,25 @@ export type Database = {
           gender?: string | null
           id?: never
           is_active?: boolean
+          last_checkin_date?: string | null
           last_visit?: string | null
+          lifetime_points?: number
           loyalty_tier_id?: number | null
           notes?: string | null
           phone: string
           source?: string | null
+          streak_days?: number
           tenant_id: number
+          total_points?: number
           total_spent?: number
           total_visits?: number
           updated_at?: string
+          version?: number
         }
         Update: {
+          auth_user_id?: string | null
+          available_points?: number
+          avatar_url?: string | null
           birthday?: string | null
           created_at?: string
           email?: string | null
@@ -390,15 +542,20 @@ export type Database = {
           gender?: string | null
           id?: never
           is_active?: boolean
+          last_checkin_date?: string | null
           last_visit?: string | null
+          lifetime_points?: number
           loyalty_tier_id?: number | null
           notes?: string | null
           phone?: string
           source?: string | null
+          streak_days?: number
           tenant_id?: number
+          total_points?: number
           total_spent?: number
           total_visits?: number
           updated_at?: string
+          version?: number
         }
         Relationships: [
           {
@@ -451,6 +608,85 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      delivery_orders: {
+        Row: {
+          address_id: number | null
+          cancel_reason: string | null
+          cancelled_at: string | null
+          created_at: string
+          delivered_at: string | null
+          delivery_address: Json | null
+          delivery_fee: number
+          driver_id: string | null
+          driver_latitude: number | null
+          driver_longitude: number | null
+          estimated_delivery_at: string | null
+          id: number
+          order_id: number
+          status: string
+          tenant_id: number
+          updated_at: string
+        }
+        Insert: {
+          address_id?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: Json | null
+          delivery_fee?: number
+          driver_id?: string | null
+          driver_latitude?: number | null
+          driver_longitude?: number | null
+          estimated_delivery_at?: string | null
+          id?: never
+          order_id: number
+          status?: string
+          tenant_id: number
+          updated_at?: string
+        }
+        Update: {
+          address_id?: number | null
+          cancel_reason?: string | null
+          cancelled_at?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          delivery_address?: Json | null
+          delivery_fee?: number
+          driver_id?: string | null
+          driver_latitude?: number | null
+          driver_longitude?: number | null
+          estimated_delivery_at?: string | null
+          id?: never
+          order_id?: number
+          status?: string
+          tenant_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_orders_address_id_fkey"
+            columns: ["address_id"]
+            isOneToOne: false
+            referencedRelation: "customer_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -527,6 +763,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      idempotency_keys: {
+        Row: {
+          created_at: string
+          id: number
+          key: string
+          response_body: Json | null
+          response_status: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          key: string
+          response_body?: Json | null
+          response_status?: number | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          key?: string
+          response_body?: Json | null
+          response_status?: number | null
+          status?: string
+        }
+        Relationships: []
       }
       ingredients: {
         Row: {
@@ -802,33 +1065,42 @@ export type Database = {
       loyalty_tiers: {
         Row: {
           benefits: Json | null
+          cashback_percent: number
           created_at: string
           discount_pct: number | null
           id: number
           min_points: number
           name: string
+          point_multiplier: number
           sort_order: number | null
           tenant_id: number
+          tier_code: string | null
         }
         Insert: {
           benefits?: Json | null
+          cashback_percent?: number
           created_at?: string
           discount_pct?: number | null
           id?: never
           min_points?: number
           name: string
+          point_multiplier?: number
           sort_order?: number | null
           tenant_id: number
+          tier_code?: string | null
         }
         Update: {
           benefits?: Json | null
+          cashback_percent?: number
           created_at?: string
           discount_pct?: number | null
           id?: never
           min_points?: number
           name?: string
+          point_multiplier?: number
           sort_order?: number | null
           tenant_id?: number
+          tier_code?: string | null
         }
         Relationships: [
           {
@@ -845,33 +1117,39 @@ export type Database = {
           balance_after: number | null
           created_at: string
           customer_id: number
+          description: string | null
           expires_at: string | null
           id: number
           points: number
           reference_id: number | null
           reference_type: string | null
+          tenant_id: number | null
           type: string
         }
         Insert: {
           balance_after?: number | null
           created_at?: string
           customer_id: number
+          description?: string | null
           expires_at?: string | null
           id?: never
           points: number
           reference_id?: number | null
           reference_type?: string | null
+          tenant_id?: number | null
           type: string
         }
         Update: {
           balance_after?: number | null
           created_at?: string
           customer_id?: number
+          description?: string | null
           expires_at?: string | null
           id?: never
           points?: number
           reference_id?: number | null
           reference_type?: string | null
+          tenant_id?: number | null
           type?: string
         }
         Relationships: [
@@ -880,6 +1158,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_transactions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -2288,6 +2573,64 @@ export type Database = {
           },
         ]
       }
+      redemptions: {
+        Row: {
+          created_at: string
+          customer_id: number
+          expires_at: string | null
+          id: number
+          points_deducted: number
+          reward_id: number
+          status: string
+          tenant_id: number
+          voucher_code: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: number
+          expires_at?: string | null
+          id?: never
+          points_deducted: number
+          reward_id: number
+          status?: string
+          tenant_id: number
+          voucher_code: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: number
+          expires_at?: string | null
+          id?: never
+          points_deducted?: number
+          reward_id?: number
+          status?: string
+          tenant_id?: number
+          voucher_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "redemptions_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "redemptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       registered_devices: {
         Row: {
           approval_code: string
@@ -2390,6 +2733,66 @@ export type Database = {
           },
           {
             foreignKeyName: "registered_devices_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rewards: {
+        Row: {
+          created_at: string
+          description: string | null
+          expires_at: string | null
+          id: number
+          image_url: string | null
+          is_active: boolean
+          min_tier_id: number | null
+          name: string
+          points_required: number
+          stock: number | null
+          tenant_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: never
+          image_url?: string | null
+          is_active?: boolean
+          min_tier_id?: number | null
+          name: string
+          points_required: number
+          stock?: number | null
+          tenant_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          expires_at?: string | null
+          id?: never
+          image_url?: string | null
+          is_active?: boolean
+          min_tier_id?: number | null
+          name?: string
+          points_required?: number
+          stock?: number | null
+          tenant_id?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rewards_min_tier_id_fkey"
+            columns: ["min_tier_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rewards_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"

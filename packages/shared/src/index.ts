@@ -55,6 +55,9 @@ export {
   DEVICE_CHECK_ROLES,
   ROLE_REDIRECT_MAP,
   DEVICE_TERMINAL_TYPES,
+  DEVICE_TYPES,
+  ROLE_DEVICE_TYPE_MAP,
+  ROLE_TERMINAL_TYPE_MAP,
   // Payroll
   PAYROLL_STATUSES,
   VALID_PAYROLL_TRANSITIONS,
@@ -116,6 +119,7 @@ export type {
   // Device Registration
   DeviceStatus,
   DeviceTerminalType,
+  DeviceType,
   // Payroll
   PayrollStatus,
   // KDS Inventory
@@ -314,11 +318,13 @@ export {
   registerDeviceSchema,
   approveDeviceSchema,
   rejectDeviceSchema,
+  updateDeviceCategoriesSchema,
 } from "./schemas/device";
 export type {
   RegisterDeviceInput,
   ApproveDeviceInput,
   RejectDeviceInput,
+  UpdateDeviceCategoriesInput,
 } from "./schemas/device";
 
 // Payroll

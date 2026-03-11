@@ -272,6 +272,23 @@ export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
 export const DEVICE_STATUSES = ["pending", "approved", "rejected"] as const;
 export type DeviceStatus = (typeof DEVICE_STATUSES)[number];
 
+export const DEVICE_TYPES = ["pos", "kds"] as const;
+export type DeviceType = (typeof DEVICE_TYPES)[number];
+
+/** Map user role → device type (pos or kds) */
+export const ROLE_DEVICE_TYPE_MAP: Record<string, DeviceType> = {
+  waiter: "pos",
+  cashier: "pos",
+  chef: "kds",
+};
+
+/** Map user role → terminal type for POS devices */
+export const ROLE_TERMINAL_TYPE_MAP: Record<string, "mobile_order" | "cashier_station" | null> = {
+  waiter: "mobile_order",
+  cashier: "cashier_station",
+  chef: null,
+};
+
 // ===== Printing =====
 
 export const PRINTER_TYPES = [
@@ -294,6 +311,7 @@ export type PrinterTestStatus = (typeof PRINTER_TEST_STATUSES)[number];
 export const PRINTER_ASSIGNED_TYPES = [
   "pos_terminal",
   "kds_station",
+  "registered_device",
 ] as const;
 export type PrinterAssignedType = (typeof PRINTER_ASSIGNED_TYPES)[number];
 

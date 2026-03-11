@@ -6,41 +6,18 @@ import {
   ADMIN_ROLES,
   getAdminContext,
   getBranchesForTenant,
-  verifyEntityOwnership,
   entityIdSchema,
   safeDbErrorResult,
+  updateDeviceCategoriesSchema,
   withServerAction,
   withServerQuery,
 } from "@comtammatu/shared";
-import { z } from "zod";
-
-const terminalSchema = z.object({
-  name: z.string().min(1, "Tên thiết bị không được để trống"),
-  type: z.enum(["mobile_order", "cashier_station"]),
-  branch_id: z.coerce.number().positive(),
-  device_fingerprint: z.string().min(1, "Mã thiết bị không được để trống"),
-});
 
 const validateId = (id: number) => entityIdSchema.parse(id);
 
 // =====================
 // Queries
 // =====================
-
-async function _getTerminals() {
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const { data, error } = await supabase
-    .from("pos_terminals")
-    .select("*, branches!inner(tenant_id, name)")
-    .eq("branches.tenant_id", tenantId)
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
-  return data ?? [];
-}
-
-export const getTerminals = withServerQuery(_getTerminals);
 
 async function _getBranches() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
@@ -49,7 +26,7 @@ async function _getBranches() {
 
 export const getBranches = withServerQuery(_getBranches);
 
-async function _getPendingDevices() {
+async function _getDevices() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const { data, error } = await supabase
@@ -62,143 +39,7 @@ async function _getPendingDevices() {
   return data ?? [];
 }
 
-export const getPendingDevices = withServerQuery(_getPendingDevices);
-
-// =====================
-// Mutations
-// =====================
-
-async function _createTerminal(formData: FormData) {
-  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
-
-  const parsed = terminalSchema.safeParse({
-    name: formData.get("name"),
-    type: formData.get("type"),
-    branch_id: formData.get("branch_id"),
-    device_fingerprint: formData.get("device_fingerprint"),
-  });
-
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
-  }
-
-  // Verify branch belongs to caller's tenant
-  const { data: branch } = await supabase
-    .from("branches")
-    .select("id")
-    .eq("id", parsed.data.branch_id)
-    .eq("tenant_id", tenantId)
-    .single();
-
-  if (!branch) {
-    return { error: "Chi nhánh không hợp lệ hoặc không thuộc đơn vị của bạn" };
-  }
-
-  const { error } = await supabase.from("pos_terminals").insert({
-    name: parsed.data.name,
-    type: parsed.data.type,
-    branch_id: parsed.data.branch_id,
-    device_fingerprint: parsed.data.device_fingerprint,
-    registered_by: userId,
-    is_active: true,
-    approved_by: userId,
-    approved_at: new Date().toISOString(),
-  });
-
-  if (error) {
-    if (error.code === "23505") {
-      return { error: "Mã thiết bị đã tồn tại" };
-    }
-    return safeDbErrorResult(error, "db");
-  }
-
-  revalidatePath("/admin/terminals");
-  return { error: null };
-}
-
-export const createTerminal = withServerAction(_createTerminal);
-
-async function _approveTerminal(id: number) {
-  validateId(id);
-  const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
-
-  const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
-  if (ownership.error) return { error: ownership.error };
-
-  // Check if already approved — idempotent guard
-  const { data: existing } = await supabase
-    .from("pos_terminals")
-    .select("approved_at")
-    .eq("id", id)
-    .single();
-
-  if (existing?.approved_at) {
-    return { error: "Thiết bị đã được phê duyệt trước đó" };
-  }
-
-  const { error } = await supabase
-    .from("pos_terminals")
-    .update({
-      approved_by: userId,
-      approved_at: new Date().toISOString(),
-    })
-    .eq("id", id);
-
-  if (error) return safeDbErrorResult(error, "db");
-
-  revalidatePath("/admin/terminals");
-  return { error: null };
-}
-
-export const approveTerminal = withServerAction(_approveTerminal);
-
-async function _toggleTerminal(id: number) {
-  validateId(id);
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
-  if (ownership.error) return { error: ownership.error };
-
-  const { data: terminal, error: fetchError } = await supabase
-    .from("pos_terminals")
-    .select("is_active")
-    .eq("id", id)
-    .single();
-
-  if (fetchError) return { error: fetchError.message };
-
-  const { error } = await supabase
-    .from("pos_terminals")
-    .update({ is_active: !terminal.is_active })
-    .eq("id", id);
-
-  if (error) return safeDbErrorResult(error, "db");
-
-  revalidatePath("/admin/terminals");
-  return { error: null };
-}
-
-export const toggleTerminal = withServerAction(_toggleTerminal);
-
-async function _deleteTerminal(id: number) {
-  validateId(id);
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-
-  const ownership = await verifyEntityOwnership(supabase, "pos_terminals", id, tenantId);
-  if (ownership.error) return { error: ownership.error };
-
-  const { error } = await supabase
-    .from("pos_terminals")
-    .update({ is_active: false })
-    .eq("id", id);
-
-  if (error) return safeDbErrorResult(error, "db");
-
-  revalidatePath("/admin/terminals");
-  return { error: null };
-}
-
-export const deleteTerminal = withServerAction(_deleteTerminal);
+export const getDevices = withServerQuery(_getDevices);
 
 // =====================
 // Device Approval
@@ -211,7 +52,7 @@ async function _approveDevice(id: number) {
   // Verify device belongs to caller's tenant
   const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
-    .select("id, status, tenant_id, branch_id, device_fingerprint, device_name, terminal_type, registered_by")
+    .select("id, status, tenant_id, branch_id, device_name, device_type, approval_code")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -231,127 +72,50 @@ async function _approveDevice(id: number) {
     return { error: "Thiết bị đã được duyệt trước đó" };
   }
 
-  // Auto-create linked terminal or KDS station based on terminal_type
-  let linkedTerminalId: number | null = null;
+  // For KDS devices: auto-create a kds_station and link it
   let linkedStationId: number | null = null;
 
-  if (device.terminal_type === "mobile_order" || device.terminal_type === "cashier_station") {
-    const { data: terminal, error: termError } = await supabase
-      .from("pos_terminals")
+  if (device.device_type === "kds") {
+    const stationName = device.device_name || `KDS-${device.approval_code}`;
+
+    const { data: station, error: stationError } = await supabase
+      .from("kds_stations")
       .insert({
-        name: device.device_name || `${device.terminal_type === "cashier_station" ? "Thu ngân" : "Gọi món"} - ${device.device_fingerprint.slice(0, 8)}`,
-        type: device.terminal_type,
         branch_id: device.branch_id,
-        device_fingerprint: device.device_fingerprint,
-        registered_by: device.registered_by,
-        approved_by: userId,
-        approved_at: new Date().toISOString(),
+        name: stationName,
         is_active: true,
       })
       .select("id")
       .single();
 
-    if (termError) {
-      if (termError.code === "23505") {
-        // Fingerprint already exists — find and reuse the existing terminal (tenant-scoped)
-        const { data: existing, error: lookupError } = await supabase
-          .from("pos_terminals")
-          .select("id, branch_id, type, is_active, branches!inner(tenant_id)")
-          .eq("device_fingerprint", device.device_fingerprint)
-          .eq("branches.tenant_id", tenantId)
-          .single();
-        if (lookupError || !existing) {
-          return lookupError
-            ? safeDbErrorResult(lookupError, "db")
-            : { error: "Không tìm thấy terminal trùng fingerprint." };
-        }
-        if (
-          existing.branch_id === device.branch_id &&
-          existing.type === device.terminal_type
-        ) {
-          // Reactivate if deactivated (e.g., device was deleted then re-registered)
-          if (!existing.is_active) {
-            const { error: reactivateError } = await supabase
-              .from("pos_terminals")
-              .update({
-                is_active: true,
-                approved_by: userId,
-                approved_at: new Date().toISOString(),
-                registered_by: device.registered_by,
-              })
-              .eq("id", existing.id);
-            if (reactivateError) return safeDbErrorResult(reactivateError, "db");
-          }
-          linkedTerminalId = existing.id;
-        } else {
-          // Branch or type mismatch — update the terminal to match new registration
-          const { error: updateError } = await supabase
-            .from("pos_terminals")
-            .update({
-              branch_id: device.branch_id,
-              type: device.terminal_type,
-              name: device.device_name || `${device.terminal_type === "cashier_station" ? "Thu ngân" : "Gọi món"} - ${device.device_fingerprint.slice(0, 8)}`,
-              is_active: true,
-              approved_by: userId,
-              approved_at: new Date().toISOString(),
-              registered_by: device.registered_by,
-            })
-            .eq("id", existing.id);
-          if (updateError) return safeDbErrorResult(updateError, "db");
-          linkedTerminalId = existing.id;
-        }
-      } else {
-        return safeDbErrorResult(termError, "db");
-      }
-    } else if (terminal) {
-      linkedTerminalId = terminal.id;
-    }
-  } else if (device.terminal_type === "kds_station") {
-    // Check if there's already a KDS station for this branch; if so, link to the first one
-    const { data: existingStations, error: stationLookupError } = await supabase
-      .from("kds_stations")
-      .select("id")
-      .eq("branch_id", device.branch_id)
-      .eq("is_active", true)
-      .order("id", { ascending: true })
-      .limit(1);
+    if (stationError) return safeDbErrorResult(stationError, "createKdsStation");
 
-    if (stationLookupError) return safeDbErrorResult(stationLookupError, "db");
+    linkedStationId = station.id;
 
-    if (existingStations && existingStations.length >= 1 && existingStations[0]) {
-      linkedStationId = existingStations[0].id;
-    } else {
-      // No active station — create one
-      const { data: station, error: stationError } = await supabase
-        .from("kds_stations")
-        .insert({
-          name: device.device_name || `KDS - ${device.device_fingerprint.slice(0, 8)}`,
-          branch_id: device.branch_id,
-          is_active: true,
-        })
-        .select("id")
-        .single();
+    // Assign ALL menu categories to this station (default)
+    const { data: categories } = await supabase
+      .from("menu_categories")
+      .select("id, menus!inner(branch_id)")
+      .eq("menus.branch_id", device.branch_id);
 
-      if (stationError) return safeDbErrorResult(stationError, "db");
-      if (station) linkedStationId = station.id;
+    if (categories && categories.length > 0) {
+      const stationCategories = categories.map((c: { id: number }) => ({
+        station_id: station.id,
+        category_id: c.id,
+      }));
+
+      await supabase.from("kds_station_categories").insert(stationCategories);
     }
   }
 
-  // Only approve if the required link was successfully established
-  const needsTerminal = device.terminal_type === "mobile_order" || device.terminal_type === "cashier_station";
-  const needsStation = device.terminal_type === "kds_station";
-  if ((needsTerminal && !linkedTerminalId) || (needsStation && !linkedStationId)) {
-    return { error: "Không thể tạo liên kết terminal/station. Vui lòng thử lại." };
-  }
-
+  // Approve the device
   const { error } = await supabase
     .from("registered_devices")
     .update({
       status: "approved",
       approved_by: userId,
       approved_at: new Date().toISOString(),
-      linked_terminal_id: linkedTerminalId,
-      linked_station_id: linkedStationId,
+      ...(linkedStationId != null ? { linked_station_id: linkedStationId } : {}),
     })
     .eq("id", id);
 
@@ -408,7 +172,7 @@ async function _deleteDevice(id: number) {
 
   const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
-    .select("id, tenant_id, linked_terminal_id, linked_station_id")
+    .select("id, tenant_id, linked_station_id")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -424,24 +188,12 @@ async function _deleteDevice(id: number) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
   }
 
-  // Deactivate linked terminal/station — abort delete if either fails
-  if (device.linked_terminal_id) {
-    const { error: termDeactivateError } = await supabase
-      .from("pos_terminals")
-      .update({ is_active: false })
-      .eq("id", device.linked_terminal_id);
-    if (termDeactivateError) {
-      return safeDbErrorResult(termDeactivateError, "db");
-    }
-  }
+  // Soft-delete linked KDS station if exists
   if (device.linked_station_id) {
-    const { error: stationDeactivateError } = await supabase
+    await supabase
       .from("kds_stations")
       .update({ is_active: false })
       .eq("id", device.linked_station_id);
-    if (stationDeactivateError) {
-      return safeDbErrorResult(stationDeactivateError, "db");
-    }
   }
 
   const { error } = await supabase
@@ -457,3 +209,58 @@ async function _deleteDevice(id: number) {
 }
 
 export const deleteDevice = withServerAction(_deleteDevice);
+
+// =====================
+// KDS Category Management
+// =====================
+
+async function _updateDeviceCategories(formData: FormData) {
+  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
+
+  const parsed = updateDeviceCategoriesSchema.safeParse({
+    device_id: Number(formData.get("device_id")),
+    category_ids: JSON.parse(formData.get("category_ids") as string || "[]"),
+  });
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+  }
+
+  // Verify device belongs to tenant and has a linked station
+  const { data: device } = await supabase
+    .from("registered_devices")
+    .select("id, linked_station_id, tenant_id")
+    .eq("id", parsed.data.device_id)
+    .eq("tenant_id", tenantId)
+    .single();
+
+  if (!device) {
+    return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
+  }
+
+  if (!device.linked_station_id) {
+    return { error: "Thiết bị này không phải KDS hoặc chưa có trạm bếp liên kết" };
+  }
+
+  // Delete existing categories and re-insert
+  await supabase
+    .from("kds_station_categories")
+    .delete()
+    .eq("station_id", device.linked_station_id);
+
+  const stationCategories = parsed.data.category_ids.map((categoryId) => ({
+    station_id: device.linked_station_id!,
+    category_id: categoryId,
+  }));
+
+  const { error } = await supabase
+    .from("kds_station_categories")
+    .insert(stationCategories);
+
+  if (error) return safeDbErrorResult(error, "db");
+
+  revalidatePath("/admin/terminals");
+  return { error: null };
+}
+
+export const updateDeviceCategories = withServerAction(_updateDeviceCategories);

@@ -57,6 +57,10 @@ packages/
   shared/src/constants.ts          ← All enums, status arrays, valid transitions
   shared/src/schemas/              ← All Zod schemas (11 files)
 
+docs/
+  SESSION_PROTOCOL.md  ← Session workflow and rules — CHECK EVERY SESSION
+  TASK_TEMPLATES.md    ← Templates for contract — CHECK EVERY SESSION
+
 tasks/
   regressions.md  ← Rules from past failures — CHECK EVERY SESSION
   lessons.md      ← Patterns + prevention — CHECK EVERY SESSION
@@ -91,12 +95,14 @@ Failure Conditions:
 ---
 
 ## V. BOOT SEQUENCE
-```
-1. Check tasks/regressions.md — any rule that applies?
-2. Check tasks/lessons.md — any relevant pattern?
-3. Fill Task Contract Template → confirm scope before coding
-4. git commit checkpoint BEFORE starting work
-5. After task: typecheck + lint + build → commit → kill session
+```text
+1. Check docs/SESSION_PROTOCOL.md — strictly follow session lifecycle & rules
+2. Check docs/TASK_TEMPLATES.md — read the templates before coding
+3. Check tasks/regressions.md — any rule that applies?
+4. Check tasks/lessons.md — any relevant pattern?
+5. Fill Task Contract Template → confirm scope before coding
+6. git commit checkpoint BEFORE starting work
+7. After task: typecheck + lint + build → commit → kill session
 ```
 
 ---

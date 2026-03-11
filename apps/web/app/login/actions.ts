@@ -10,6 +10,8 @@ import {
   entityIdSchema,
   DEVICE_CHECK_ROLES,
   ROLE_REDIRECT_MAP,
+  ROLE_DEVICE_TYPE_MAP,
+  ROLE_TERMINAL_TYPE_MAP,
   type DeviceTerminalType,
 } from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
@@ -122,21 +124,34 @@ async function _login(formData: FormData) {
     );
   }
 
+  // Derive device_type and terminal_type from role
+  const deviceType = ROLE_DEVICE_TYPE_MAP[role] ?? null;
+  const terminalType = ROLE_TERMINAL_TYPE_MAP[role] ?? null;
+
   // Check if device is already registered — scope by tenant (unique per tenant)
   const { data: existingDevice } = await supabase
     .from("registered_devices")
-    .select("id, status, approval_code, branch_id, registered_by")
+    .select("id, status, approval_code, branch_id, device_type, registered_by")
     .eq("device_fingerprint", fingerprint)
     .eq("tenant_id", profile.tenant_id)
     .maybeSingle();
 
   if (existingDevice) {
-    // Device approved for THIS user at same branch — go straight through
-    if (
-      existingDevice.status === "approved" &&
-      existingDevice.registered_by === authData.user.id &&
-      existingDevice.branch_id === profile.branch_id
-    ) {
+    if (existingDevice.status === "approved") {
+      if (existingDevice.branch_id !== profile.branch_id) {
+        throw new ActionError(
+          "Thiết bị đã được duyệt ở chi nhánh khác. Liên hệ quản lý để chuyển.",
+          "VALIDATION_ERROR",
+        );
+      }
+      // Backfill device_type for legacy approved devices
+      if (!existingDevice.device_type && deviceType) {
+        await supabase
+          .from("registered_devices")
+          .update({ device_type: deviceType, terminal_type: terminalType })
+          .eq("id", existingDevice.id);
+      }
+      // Device approved at same branch — go straight through
       redirect(getRoleRedirectPath(role));
     }
 
@@ -170,9 +185,9 @@ async function _login(formData: FormData) {
         approved_by: null,
         approved_at: null,
         rejected_at: null,
-        linked_terminal_id: null,
-        linked_station_id: null,
+        device_type: deviceType,
         terminal_type: reregTerminalType,
+        linked_station_id: null,
       })
       .eq("id", existingDevice.id);
 
@@ -199,7 +214,7 @@ async function _login(formData: FormData) {
 
   // New device — register it
   const approvalCode = generateApprovalCode();
-  const terminalType = getTerminalTypeForRole(role);
+  const newTerminalType = getTerminalTypeForRole(role);
   const { data: newDevice, error: insertError } = await supabase
     .from("registered_devices")
     .insert({
@@ -212,7 +227,8 @@ async function _login(formData: FormData) {
       user_agent: headersList.get("user-agent")?.slice(0, 500) ?? "",
       registered_by: authData.user.id,
       status: "pending",
-      terminal_type: terminalType,
+      device_type: deviceType,
+      terminal_type: newTerminalType,
     })
     .select("id")
     .single();

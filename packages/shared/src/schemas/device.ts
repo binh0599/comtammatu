@@ -25,3 +25,12 @@ export const rejectDeviceSchema = z.object({
 });
 
 export type RejectDeviceInput = z.infer<typeof rejectDeviceSchema>;
+
+// ===== Update Device KDS Categories (admin action) =====
+
+export const updateDeviceCategoriesSchema = z.object({
+  device_id: z.number().int().positive(),
+  category_ids: z.array(z.number().int().positive()).min(1, "Phải chọn ít nhất 1 danh mục"),
+});
+
+export type UpdateDeviceCategoriesInput = z.infer<typeof updateDeviceCategoriesSchema>;
