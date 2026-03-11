@@ -170,3 +170,77 @@ export async function createMomoPaymentRequest({
     requestId: data.requestId,
   };
 }
+
+// ===== Transaction Query (fallback when webhook is lost) =====
+
+interface MomoQueryResponse {
+  partnerCode: string;
+  orderId: string;
+  requestId: string;
+  extraData: string;
+  amount: number;
+  transId: number;
+  resultCode: number;
+  message: string;
+  responseTime: number;
+  payType: string;
+}
+
+/**
+ * Query Momo for transaction status — used as fallback when IPN webhook is lost.
+ * Returns resultCode: 0 = success, 1000 = pending, others = failed/cancelled.
+ */
+export async function queryMomoTransaction({
+  orderId,
+  requestId,
+}: {
+  orderId: string;
+  requestId: string;
+}): Promise<{
+  resultCode: number;
+  message: string;
+  transId: number;
+  amount: number;
+}> {
+  const { partnerCode, accessKey, secretKey } = MOMO_CONFIG;
+
+  if (!partnerCode || !accessKey || !secretKey) {
+    throw new Error("Momo payment credentials are not configured");
+  }
+
+  const rawSignature = buildRawSignature({
+    accessKey,
+    orderId,
+    partnerCode,
+    requestId,
+  });
+
+  const signature = createMomoSignature(rawSignature, secretKey);
+
+  const body = {
+    partnerCode,
+    requestId,
+    orderId,
+    lang: "vi",
+    signature,
+  };
+
+  const response = await fetch(`${MOMO_ENDPOINT}/v2/gateway/api/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Momo query API error: ${response.status}`);
+  }
+
+  const data: MomoQueryResponse = await response.json();
+
+  return {
+    resultCode: data.resultCode,
+    message: data.message,
+    transId: data.transId,
+    amount: data.amount,
+  };
+}

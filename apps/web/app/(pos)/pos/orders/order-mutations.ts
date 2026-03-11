@@ -6,6 +6,11 @@ import {
   createOrderSchema,
   updateOrderStatusSchema,
   addOrderItemsSchema,
+  removeOrderItemSchema,
+  updateOrderItemSchema,
+  transferOrderTableSchema,
+  updateGuestCountSchema,
+  updateOrderNotesSchema,
   type OrderStatus,
   ActionError,
   getActionContext,
@@ -55,6 +60,7 @@ async function _createOrder(data: {
   notes?: string;
   guest_count?: number | null;
   terminal_id: number;
+  idempotency_key?: string;
   items: {
     menu_item_id: number;
     variant_id?: number | null;
@@ -340,8 +346,8 @@ async function _createOrder(data: {
     throw safeDbError(numError, "db");
   }
 
-  // Generate idempotency key
-  const idempotencyKey = crypto.randomUUID();
+  // Use client-provided idempotency key (offline sync dedup) or generate one
+  const idempotencyKey = parsed.data.idempotency_key ?? crypto.randomUUID();
 
   // Insert order
   const { data: order, error: orderError } = await supabase
@@ -367,6 +373,18 @@ async function _createOrder(data: {
     .single();
 
   if (orderError) {
+    // Idempotency: if duplicate key, return existing order (offline retry dedup)
+    if (orderError.code === "23505" && parsed.data.idempotency_key) {
+      const { data: existing } = await supabase
+        .from("orders")
+        .select("id, order_number")
+        .eq("idempotency_key", idempotencyKey)
+        .single();
+
+      if (existing) {
+        return { error: null, orderId: existing.id, orderNumber: existing.order_number };
+      }
+    }
     throw safeDbError(orderError, "db");
   }
 
@@ -905,3 +923,566 @@ async function _addOrderItems(data: {
 }
 
 export const addOrderItems = withServerAction(_addOrderItems);
+
+// ---------------------------------------------------------------------------
+// removeOrderItem
+// ---------------------------------------------------------------------------
+
+async function _removeOrderItem(data: {
+  order_id: number;
+  item_id: number;
+}) {
+  const parsed = removeOrderItemSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  const { order_id, item_id } = parsed.data;
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
+  const tenantId = ctx.tenantId;
+
+  // Fetch order + verify branch ownership
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("id, status, branch_id, table_id")
+    .eq("id", order_id)
+    .eq("branch_id", branchId)
+    .single();
+
+  if (orderError || !order) {
+    throw new ActionError(
+      "Đơn hàng không tồn tại hoặc không thuộc chi nhánh của bạn",
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  // Only allow removal on draft/confirmed orders
+  if (!["draft", "confirmed"].includes(order.status)) {
+    throw new ActionError(
+      "Chỉ có thể xoá món ở đơn nháp hoặc đã xác nhận",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  // Fetch the item — must be pending (not yet sent to KDS)
+  const { data: item, error: itemError } = await supabase
+    .from("order_items")
+    .select("id, status, parent_item_id")
+    .eq("id", item_id)
+    .eq("order_id", order_id)
+    .single();
+
+  if (itemError || !item) {
+    throw new ActionError("Món không tồn tại trong đơn hàng", "NOT_FOUND", 404);
+  }
+
+  if (item.status !== "pending") {
+    throw new ActionError(
+      "Không thể xoá món đã gửi đến bếp",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  // Don't allow removing a side item directly — remove via parent
+  if (item.parent_item_id) {
+    throw new ActionError(
+      "Không thể xoá món phụ trực tiếp. Hãy xoá món chính.",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  // Delete child side items first
+  const { error: sideDeleteError } = await supabase
+    .from("order_items")
+    .delete()
+    .eq("parent_item_id", item_id)
+    .eq("order_id", order_id);
+
+  if (sideDeleteError) {
+    throw safeDbError(sideDeleteError, "db");
+  }
+
+  // Delete the item itself
+  const { error: deleteError } = await supabase
+    .from("order_items")
+    .delete()
+    .eq("id", item_id)
+    .eq("order_id", order_id);
+
+  if (deleteError) {
+    throw safeDbError(deleteError, "db");
+  }
+
+  // Check if this was the last item — if so, cancel the order
+  const { count: remainingCount } = await supabase
+    .from("order_items")
+    .select("id", { count: "exact", head: true })
+    .eq("order_id", order_id)
+    .is("parent_item_id", null);
+
+  if (!remainingCount || remainingCount === 0) {
+    // No items left — cancel the order
+    const { error: cancelError } = await supabase
+      .from("orders")
+      .update({ status: "cancelled" })
+      .eq("id", order_id);
+
+    if (cancelError) {
+      throw safeDbError(cancelError, "db");
+    }
+
+    // Release table if applicable
+    if (order.table_id) {
+      await maybeReleaseTable(supabase, order.table_id, branchId, order_id);
+    }
+
+    revalidatePath("/pos/orders");
+    revalidatePath(`/pos/order/${order_id}`);
+    return { error: null, cancelled: true };
+  }
+
+  // Recalculate order totals
+  const { data: allItems } = await supabase
+    .from("order_items")
+    .select("unit_price, quantity")
+    .eq("order_id", order_id);
+
+  if (allItems) {
+    const { taxRate, serviceChargeRate } = await getTaxSettings(
+      supabase,
+      tenantId
+    );
+    const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
+
+    const { error: updateError } = await supabase
+      .from("orders")
+      .update({
+        subtotal: totals.subtotal,
+        tax: totals.tax,
+        service_charge: totals.serviceCharge,
+        total: totals.total,
+      })
+      .eq("id", order_id);
+
+    if (updateError) {
+      throw safeDbError(updateError, "db");
+    }
+  }
+
+  revalidatePath("/pos/orders");
+  revalidatePath(`/pos/order/${order_id}`);
+
+  return { error: null, cancelled: false };
+}
+
+export const removeOrderItem = withServerAction(_removeOrderItem);
+
+// ---------------------------------------------------------------------------
+// updateOrderItem (quantity)
+// ---------------------------------------------------------------------------
+
+async function _updateOrderItem(data: {
+  order_id: number;
+  item_id: number;
+  quantity: number;
+}) {
+  const parsed = updateOrderItemSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  const { order_id, item_id, quantity } = parsed.data;
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
+  const tenantId = ctx.tenantId;
+
+  // Fetch order + verify branch ownership
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("id, status, branch_id")
+    .eq("id", order_id)
+    .eq("branch_id", branchId)
+    .single();
+
+  if (orderError || !order) {
+    throw new ActionError(
+      "Đơn hàng không tồn tại hoặc không thuộc chi nhánh của bạn",
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  // Only allow update on draft/confirmed orders
+  if (!["draft", "confirmed"].includes(order.status)) {
+    throw new ActionError(
+      "Chỉ có thể cập nhật số lượng ở đơn nháp hoặc đã xác nhận",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  // Fetch the item — must be pending
+  const { data: item, error: itemError } = await supabase
+    .from("order_items")
+    .select("id, status, unit_price, parent_item_id")
+    .eq("id", item_id)
+    .eq("order_id", order_id)
+    .single();
+
+  if (itemError || !item) {
+    throw new ActionError("Món không tồn tại trong đơn hàng", "NOT_FOUND", 404);
+  }
+
+  if (item.status !== "pending") {
+    throw new ActionError(
+      "Không thể cập nhật món đã gửi đến bếp",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  // Update item quantity and recalculate item_total
+  const newItemTotal = item.unit_price * quantity;
+
+  const { error: updateItemError } = await supabase
+    .from("order_items")
+    .update({
+      quantity,
+      item_total: newItemTotal,
+    })
+    .eq("id", item_id)
+    .eq("order_id", order_id);
+
+  if (updateItemError) {
+    throw safeDbError(updateItemError, "db");
+  }
+
+  // Recalculate order totals
+  const { data: allItems } = await supabase
+    .from("order_items")
+    .select("unit_price, quantity")
+    .eq("order_id", order_id);
+
+  if (allItems) {
+    const { taxRate, serviceChargeRate } = await getTaxSettings(
+      supabase,
+      tenantId
+    );
+    const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
+
+    const { error: updateError } = await supabase
+      .from("orders")
+      .update({
+        subtotal: totals.subtotal,
+        tax: totals.tax,
+        service_charge: totals.serviceCharge,
+        total: totals.total,
+      })
+      .eq("id", order_id);
+
+    if (updateError) {
+      throw safeDbError(updateError, "db");
+    }
+  }
+
+  revalidatePath("/pos/orders");
+  revalidatePath(`/pos/order/${order_id}`);
+
+  return { error: null };
+}
+
+export const updateOrderItem = withServerAction(_updateOrderItem);
+
+// ---------------------------------------------------------------------------
+// transferOrderTable
+// ---------------------------------------------------------------------------
+
+async function _transferOrderTable(data: {
+  order_id: number;
+  new_table_id: number;
+}) {
+  const parsed = transferOrderTableSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  const { order_id, new_table_id } = parsed.data;
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
+
+  // Fetch order + verify branch
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("id, status, branch_id, table_id, guest_count")
+    .eq("id", order_id)
+    .eq("branch_id", branchId)
+    .single();
+
+  if (orderError || !order) {
+    throw new ActionError(
+      "Đơn hàng không tồn tại hoặc không thuộc chi nhánh của bạn",
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  // Only active orders can be transferred
+  const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
+  if (!activeStatuses.includes(order.status)) {
+    throw new ActionError(
+      "Không thể chuyển bàn cho đơn đã hoàn tất hoặc đã huỷ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  if (order.table_id === new_table_id) {
+    throw new ActionError("Đơn đã ở bàn này", "VALIDATION_ERROR", 400);
+  }
+
+  // Validate new table belongs to same branch and has capacity
+  if (order.guest_count != null) {
+    const { data: capacityCheck } = await supabase.rpc(
+      "validate_table_capacity",
+      {
+        p_table_id: new_table_id,
+        p_branch_id: branchId,
+        p_guest_count: order.guest_count,
+      },
+    );
+
+    const result = capacityCheck as {
+      ok: boolean;
+      error?: string;
+      capacity?: number;
+      remaining?: number;
+    } | null;
+
+    if (!result || !result.ok) {
+      if (result?.error === "TABLE_NOT_FOUND") {
+        throw new ActionError("Bàn mới không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
+      }
+      throw new ActionError(
+        `Bàn mới chỉ còn ${result?.remaining ?? 0} chỗ trống`,
+        "VALIDATION_ERROR",
+      );
+    }
+  } else {
+    // Just check table exists in branch
+    const { data: newTable } = await supabase
+      .from("tables")
+      .select("id")
+      .eq("id", new_table_id)
+      .eq("branch_id", branchId)
+      .single();
+
+    if (!newTable) {
+      throw new ActionError("Bàn mới không tồn tại hoặc không thuộc chi nhánh", "NOT_FOUND", 404);
+    }
+  }
+
+  const oldTableId = order.table_id;
+
+  // Update order to new table
+  const { error: updateError } = await supabase
+    .from("orders")
+    .update({ table_id: new_table_id })
+    .eq("id", order_id);
+
+  if (updateError) {
+    throw safeDbError(updateError, "db");
+  }
+
+  // Mark new table as occupied
+  await supabase
+    .from("tables")
+    .update({ status: "occupied" })
+    .eq("id", new_table_id)
+    .eq("branch_id", branchId);
+
+  // Release old table if no other active orders
+  if (oldTableId) {
+    await maybeReleaseTable(supabase, oldTableId, branchId, order_id);
+  }
+
+  revalidatePath("/pos/orders");
+  revalidatePath(`/pos/order/${order_id}`);
+
+  return { error: null };
+}
+
+export const transferOrderTable = withServerAction(_transferOrderTable);
+
+// ---------------------------------------------------------------------------
+// updateGuestCount
+// ---------------------------------------------------------------------------
+
+async function _updateGuestCount(data: {
+  order_id: number;
+  guest_count: number;
+}) {
+  const parsed = updateGuestCountSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  const { order_id, guest_count } = parsed.data;
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
+
+  // Fetch order + verify branch
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("id, status, branch_id, table_id")
+    .eq("id", order_id)
+    .eq("branch_id", branchId)
+    .single();
+
+  if (orderError || !order) {
+    throw new ActionError(
+      "Đơn hàng không tồn tại hoặc không thuộc chi nhánh của bạn",
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  // Only active orders
+  const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
+  if (!activeStatuses.includes(order.status)) {
+    throw new ActionError(
+      "Không thể cập nhật số khách cho đơn đã hoàn tất hoặc đã huỷ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  // Validate capacity if table assigned
+  if (order.table_id) {
+    const { data: capacityCheck } = await supabase.rpc(
+      "validate_table_capacity",
+      {
+        p_table_id: order.table_id,
+        p_branch_id: branchId,
+        p_guest_count: guest_count,
+      },
+    );
+
+    const result = capacityCheck as {
+      ok: boolean;
+      remaining?: number;
+    } | null;
+
+    if (!result || !result.ok) {
+      throw new ActionError(
+        `Bàn không đủ chỗ cho ${guest_count} khách`,
+        "VALIDATION_ERROR",
+      );
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from("orders")
+    .update({ guest_count })
+    .eq("id", order_id);
+
+  if (updateError) {
+    throw safeDbError(updateError, "db");
+  }
+
+  revalidatePath("/pos/orders");
+  revalidatePath(`/pos/order/${order_id}`);
+
+  return { error: null };
+}
+
+export const updateGuestCount = withServerAction(_updateGuestCount);
+
+// ---------------------------------------------------------------------------
+// updateOrderNotes
+// ---------------------------------------------------------------------------
+
+async function _updateOrderNotes(data: {
+  order_id: number;
+  notes?: string | null;
+}) {
+  const parsed = updateOrderNotesSchema.safeParse(data);
+  if (!parsed.success) {
+    throw new ActionError(
+      parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  const { order_id, notes } = parsed.data;
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  const { supabase } = ctx;
+
+  // Fetch order + verify branch
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("id, status, branch_id")
+    .eq("id", order_id)
+    .eq("branch_id", branchId)
+    .single();
+
+  if (orderError || !order) {
+    throw new ActionError(
+      "Đơn hàng không tồn tại hoặc không thuộc chi nhánh của bạn",
+      "NOT_FOUND",
+      404
+    );
+  }
+
+  // Only active orders
+  const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
+  if (!activeStatuses.includes(order.status)) {
+    throw new ActionError(
+      "Không thể cập nhật ghi chú cho đơn đã hoàn tất hoặc đã huỷ",
+      "VALIDATION_ERROR",
+      400
+    );
+  }
+
+  const { error: updateError } = await supabase
+    .from("orders")
+    .update({ notes: notes ?? null })
+    .eq("id", order_id);
+
+  if (updateError) {
+    throw safeDbError(updateError, "db");
+  }
+
+  revalidatePath("/pos/orders");
+  revalidatePath(`/pos/order/${order_id}`);
+
+  return { error: null };
+}
+
+export const updateOrderNotes = withServerAction(_updateOrderNotes);

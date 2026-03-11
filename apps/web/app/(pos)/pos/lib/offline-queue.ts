@@ -67,7 +67,10 @@ export async function syncPendingOrders(): Promise<SyncResult> {
     }
 
     try {
-      const createResult = await createOrder(order.payload);
+      const createResult = await createOrder({
+        ...order.payload,
+        idempotency_key: order.clientId,
+      });
 
       if (createResult.error !== null) {
         // Server rejected the order — mark as failed, don't retry

@@ -153,3 +153,90 @@ async function _checkPaymentStatus(paymentId: number) {
 }
 
 export const checkPaymentStatus = withServerAction(_checkPaymentStatus);
+
+// ---------------------------------------------------------------------------
+// queryMomoPaymentStatus — fallback when webhook is lost
+// ---------------------------------------------------------------------------
+
+async function _queryMomoPaymentStatus(paymentId: number) {
+  const ctx = await getActionContext();
+  const branchId = requireBranch(ctx);
+  requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
+  const { supabase } = ctx;
+
+  // Fetch payment with idempotency_key (used as Momo requestId)
+  const { data: payment } = await supabase
+    .from("payments")
+    .select("id, status, order_id, idempotency_key, provider")
+    .eq("id", paymentId)
+    .single();
+
+  if (!payment) return { error: "Không tìm thấy giao dịch" };
+  if (payment.provider !== "momo") return { error: "Giao dịch không phải Momo" };
+  if (payment.status !== "pending") {
+    return { error: null, status: payment.status, changed: false };
+  }
+
+  // Validate payment belongs to user's branch via order
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, order_number")
+    .eq("id", payment.order_id)
+    .eq("branch_id", branchId)
+    .single();
+
+  if (!order) return { error: "Không tìm thấy đơn hàng" };
+
+  // Query Momo API
+  try {
+    const { queryMomoTransaction } = await import("@/lib/momo");
+    const momoOrderId = `ORDER-${order.id}-${payment.idempotency_key.slice(0, 8)}`;
+
+    const result = await queryMomoTransaction({
+      orderId: momoOrderId,
+      requestId: payment.idempotency_key,
+    });
+
+    // resultCode 0 = success, 1000 = pending, others = failed
+    if (result.resultCode === 0) {
+      // Mark as completed + update order
+      const { error: updateErr } = await supabase
+        .from("payments")
+        .update({
+          status: "completed",
+          reference_no: String(result.transId),
+          paid_at: new Date().toISOString(),
+        })
+        .eq("id", paymentId)
+        .eq("status", "pending"); // Race guard
+
+      if (updateErr) return safeDbErrorResult(updateErr, "db");
+
+      // Update order status to completed
+      await supabase
+        .from("orders")
+        .update({ status: "completed" })
+        .eq("id", order.id);
+
+      return { error: null, status: "completed", changed: true };
+    } else if (result.resultCode === 1000) {
+      // Still pending
+      return { error: null, status: "pending", changed: false };
+    } else {
+      // Failed — mark payment as failed
+      await supabase
+        .from("payments")
+        .update({ status: "failed" })
+        .eq("id", paymentId)
+        .eq("status", "pending");
+
+      return { error: null, status: "failed", changed: true };
+    }
+  } catch (err) {
+    return {
+      error: err instanceof Error ? err.message : "Lỗi kiểm tra trạng thái Momo",
+    };
+  }
+}
+
+export const queryMomoPaymentStatus = withServerAction(_queryMomoPaymentStatus);

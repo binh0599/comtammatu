@@ -13,6 +13,7 @@ export {
 export {
   createMomoPayment,
   checkPaymentStatus,
+  queryMomoPaymentStatus,
 } from "./momo-actions";
 
 export {

@@ -12,7 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tag, X, Banknote, QrCode, Loader2, CheckCircle2, ArrowLeft, Landmark } from "lucide-react";
+import { Tag, X, Banknote, QrCode, Loader2, CheckCircle2, ArrowLeft, Landmark, RefreshCw, AlertTriangle } from "lucide-react";
 import {
   formatPrice,
   getOrderStatusLabel,
@@ -26,6 +26,7 @@ import {
   removeVoucherFromOrder,
   createMomoPayment,
   checkPaymentStatus,
+  queryMomoPaymentStatus,
 } from "./actions";
 import {
   createTransferPayment,
@@ -69,7 +70,10 @@ export function PaymentPanel({
   const [showReceipt, setShowReceipt] = useState(false);
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [isMomoPending, startMomoTransition] = useTransition();
+  const [isQueryPending, startQueryTransition] = useTransition();
+  const [momoElapsed, setMomoElapsed] = useState(0);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const momoTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevOrderIdRef = useRef<number | undefined>(undefined);
 
   // Reset state when order changes (via ref comparison, not useEffect)
@@ -78,6 +82,7 @@ export function PaymentPanel({
     prevOrderIdRef.current = currentOrderId;
     if (paymentMethod !== null) setPaymentMethod(null);
     if (momoState !== null) setMomoState(null);
+    if (momoElapsed !== 0) setMomoElapsed(0);
     if (transferState !== null) setTransferState(null);
     if (amountTendered !== "") setAmountTendered("");
     if (referenceNo !== "") setReferenceNo("");
@@ -92,8 +97,18 @@ export function PaymentPanel({
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
       }
+      if (momoTimerRef.current) {
+        clearInterval(momoTimerRef.current);
+        momoTimerRef.current = null;
+      }
       return;
     }
+
+    // Elapsed time counter (updates every second)
+    setMomoElapsed(0);
+    momoTimerRef.current = setInterval(() => {
+      setMomoElapsed((prev) => prev + 1);
+    }, 1000);
 
     pollIntervalRef.current = setInterval(async () => {
       const result = await checkPaymentStatus(momoState.paymentId);
@@ -111,6 +126,11 @@ export function PaymentPanel({
           prev ? { ...prev, status: "failed" } : null,
         );
         toast.error("Thanh toán Momo thất bại");
+      } else if (data.status === "expired") {
+        setMomoState((prev) =>
+          prev ? { ...prev, status: "expired" } : null,
+        );
+        toast.error("Giao dịch Momo đã hết hạn");
       }
     }, 3000);
 
@@ -118,6 +138,10 @@ export function PaymentPanel({
       if (pollIntervalRef.current) {
         clearInterval(pollIntervalRef.current);
         pollIntervalRef.current = null;
+      }
+      if (momoTimerRef.current) {
+        clearInterval(momoTimerRef.current);
+        momoTimerRef.current = null;
       }
     };
   }, [momoState, onPaymentComplete]);
@@ -182,6 +206,29 @@ export function PaymentPanel({
   function handlePrintComplete() {
     setShowReceipt(false);
     onPaymentComplete();
+  }
+
+  function handleQueryMomo() {
+    if (!momoState) return;
+    startQueryTransition(async () => {
+      const result = await queryMomoPaymentStatus(momoState.paymentId);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+
+      const data = result as { status: string; changed: boolean };
+      if (data.status === "completed") {
+        setMomoState((prev) => (prev ? { ...prev, status: "completed" } : null));
+        toast.success("Thanh toán Momo thành công!");
+        onPaymentComplete();
+      } else if (data.status === "failed") {
+        setMomoState((prev) => (prev ? { ...prev, status: "failed" } : null));
+        toast.error("Thanh toán Momo thất bại");
+      } else {
+        toast.info("Vẫn đang chờ thanh toán...");
+      }
+    });
   }
 
   function handleMomoPayment() {
@@ -561,12 +608,38 @@ export function PaymentPanel({
                   <div className="flex items-center gap-2 text-pink-600" role="status" aria-live="polite">
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                     <span className="text-sm font-medium">
-                      Đang chờ thanh toán...
+                      Đang chờ thanh toán... ({Math.floor(momoElapsed / 60)}:{String(momoElapsed % 60).padStart(2, "0")})
                     </span>
                   </div>
-                  <p className="text-muted-foreground text-xs text-center">
-                    Quét mã QR bằng ứng dụng Momo để thanh toán
-                  </p>
+                  {momoElapsed < 300 ? (
+                    <p className="text-muted-foreground text-xs text-center">
+                      Quét mã QR bằng ứng dụng Momo để thanh toán
+                    </p>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 rounded-lg bg-yellow-50 p-3">
+                      <div className="flex items-center gap-1.5 text-yellow-700">
+                        <AlertTriangle className="size-4" aria-hidden="true" />
+                        <span className="text-sm font-medium">Chờ lâu quá?</span>
+                      </div>
+                      <p className="text-xs text-yellow-600 text-center">
+                        Nếu khách đã thanh toán nhưng chưa cập nhật, bấm kiểm tra.
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
+                        onClick={handleQueryMomo}
+                        disabled={isQueryPending}
+                      >
+                        {isQueryPending ? (
+                          <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+                        ) : (
+                          <RefreshCw className="mr-1.5 size-3.5" />
+                        )}
+                        Kiểm tra trạng thái
+                      </Button>
+                    </div>
+                  )}
                 </>
               )}
 
@@ -593,6 +666,26 @@ export function PaymentPanel({
                     className="border-pink-200 text-pink-600"
                   >
                     Thử lại
+                  </Button>
+                </div>
+              )}
+
+              {momoState && momoState.status === "expired" && (
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <AlertTriangle className="size-10 text-yellow-500" aria-hidden="true" />
+                  <p className="text-sm font-medium text-yellow-700">
+                    Giao dịch đã hết hạn (quá 30 phút)
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setMomoState(null);
+                      setMomoElapsed(0);
+                      handleMomoPayment();
+                    }}
+                    className="border-pink-200 text-pink-600"
+                  >
+                    Tạo giao dịch mới
                   </Button>
                 </div>
               )}

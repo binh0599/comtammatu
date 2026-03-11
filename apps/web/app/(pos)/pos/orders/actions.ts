@@ -7,6 +7,11 @@ export {
   confirmOrder,
   updateOrderStatus,
   addOrderItems,
+  removeOrderItem,
+  updateOrderItem,
+  transferOrderTable,
+  updateGuestCount,
+  updateOrderNotes,
 } from "./order-mutations";
 
 export {
