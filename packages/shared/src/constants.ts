@@ -282,11 +282,11 @@ export const ROLE_DEVICE_TYPE_MAP: Record<string, DeviceType> = {
   chef: "kds",
 };
 
-/** Map user role → terminal type for POS devices */
-export const ROLE_TERMINAL_TYPE_MAP: Record<string, "mobile_order" | "cashier_station" | null> = {
+/** Map user role → terminal type for registered devices */
+export const ROLE_TERMINAL_TYPE_MAP: Record<string, DeviceTerminalType | null> = {
   waiter: "mobile_order",
   cashier: "cashier_station",
-  chef: null,
+  chef: "kds_station",
 };
 
 // ===== Printing =====

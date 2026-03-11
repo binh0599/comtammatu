@@ -45,7 +45,7 @@ async function _processPayment(data: {
     return { error: "Chưa mở ca. Vui lòng mở ca trước khi thanh toán." };
   }
 
-  // Verify terminal is cashier_station (skip if no terminal_id — new device flow)
+  // Verify terminal is cashier_station
   if (session.terminal_id != null) {
     const { data: terminal } = await supabase
       .from("pos_terminals")
@@ -54,6 +54,20 @@ async function _processPayment(data: {
       .single();
 
     if (terminal?.type !== "cashier_station") {
+      return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
+    }
+  } else {
+    // New device flow: verify user has an approved cashier_station device
+    const { data: device } = await supabase
+      .from("registered_devices")
+      .select("terminal_type")
+      .eq("registered_by", userId)
+      .eq("status", "approved")
+      .eq("terminal_type", "cashier_station")
+      .limit(1)
+      .maybeSingle();
+
+    if (!device) {
       return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
     }
   }

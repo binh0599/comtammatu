@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { Header } from "@/components/admin/header";
 import { createSupabaseServer } from "@comtammatu/database";
-import { getDevices, getBranches } from "./actions";
+import { getDevices } from "./actions";
 import { DevicesTable } from "./devices-table";
 
 export default async function TerminalsPage() {

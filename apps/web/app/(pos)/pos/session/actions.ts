@@ -174,7 +174,7 @@ export async function openSession(formData: FormData) {
 
 export async function closeSession(formData: FormData) {
   const ctx = await getActionContext();
-  requireBranch(ctx);
+  const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
   const { supabase, userId } = ctx;
 
@@ -188,11 +188,12 @@ export async function closeSession(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  // Verify session belongs to this cashier and is open
+  // Verify session belongs to this cashier, same branch, and is open
   const { data: session, error: sessionError } = await supabase
     .from("pos_sessions")
-    .select("id, opening_amount, cashier_id, status")
+    .select("id, opening_amount, cashier_id, status, branch_id")
     .eq("id", parsed.data.session_id)
+    .eq("branch_id", branchId)
     .single();
 
   if (sessionError || !session) {
@@ -245,9 +246,22 @@ export async function closeSession(formData: FormData) {
 
 async function _getSessionSummary(sessionId: number) {
   const ctx = await getActionContext();
-  requireBranch(ctx);
+  const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
-  const { supabase } = ctx;
+  const { supabase, userId } = ctx;
+
+  // Verify session belongs to this cashier and branch
+  const { data: session } = await supabase
+    .from("pos_sessions")
+    .select("id")
+    .eq("id", sessionId)
+    .eq("cashier_id", userId)
+    .eq("branch_id", branchId)
+    .maybeSingle();
+
+  if (!session) {
+    return { totalPayments: 0, cashTotal: 0, transactionCount: 0 };
+  }
 
   // Get payments for this session
   const { data: payments } = await supabase

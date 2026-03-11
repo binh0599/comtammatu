@@ -5,7 +5,6 @@ import { revalidatePath } from "next/cache";
 import {
   ADMIN_ROLES,
   getAdminContext,
-  getBranchesForTenant,
   entityIdSchema,
   safeDbErrorResult,
   updateDeviceCategoriesSchema,
@@ -18,13 +17,6 @@ const validateId = (id: number) => entityIdSchema.parse(id);
 // =====================
 // Queries
 // =====================
-
-async function _getBranches() {
-  const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
-  return getBranchesForTenant(supabase, tenantId);
-}
-
-export const getBranches = withServerQuery(_getBranches);
 
 async function _getDevices() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
@@ -52,7 +44,7 @@ async function _approveDevice(id: number) {
   // Verify device belongs to caller's tenant
   const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
-    .select("id, status, tenant_id, branch_id, device_name, device_type, approval_code")
+    .select("id, status, tenant_id, branch_id, device_name, device_type, terminal_type, approval_code")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -72,9 +64,10 @@ async function _approveDevice(id: number) {
     return { error: "Thiết bị đã được duyệt trước đó" };
   }
 
-  // For KDS devices: auto-create a kds_station and link it
   let linkedStationId: number | null = null;
+  let linkedTerminalId: number | null = null;
 
+  // For KDS devices: auto-create a kds_station and link it
   if (device.device_type === "kds") {
     const stationName = device.device_name || `KDS-${device.approval_code}`;
 
@@ -104,11 +97,36 @@ async function _approveDevice(id: number) {
         category_id: c.id,
       }));
 
-      await supabase.from("kds_station_categories").insert(stationCategories);
+      const { error: catError } = await supabase
+        .from("kds_station_categories")
+        .insert(stationCategories);
+
+      if (catError) return safeDbErrorResult(catError, "assignKdsCategories");
     }
   }
 
-  // Approve the device
+  // For POS devices: auto-create a pos_terminal and link it
+  if (device.device_type === "pos" && device.terminal_type) {
+    const terminalName = device.device_name || `POS-${device.approval_code}`;
+
+    const { data: terminal, error: terminalError } = await supabase
+      .from("pos_terminals")
+      .insert({
+        branch_id: device.branch_id,
+        name: terminalName,
+        type: device.terminal_type,
+        is_active: true,
+        approved_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+
+    if (terminalError) return safeDbErrorResult(terminalError, "createPosTerminal");
+
+    linkedTerminalId = terminal.id;
+  }
+
+  // Approve the device (scoped by tenant_id for defense-in-depth)
   const { error } = await supabase
     .from("registered_devices")
     .update({
@@ -116,8 +134,10 @@ async function _approveDevice(id: number) {
       approved_by: userId,
       approved_at: new Date().toISOString(),
       ...(linkedStationId != null ? { linked_station_id: linkedStationId } : {}),
+      ...(linkedTerminalId != null ? { linked_terminal_id: linkedTerminalId } : {}),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return safeDbErrorResult(error, "db");
 
@@ -150,13 +170,22 @@ async function _rejectDevice(id: number) {
     return { error: "Thiết bị không tồn tại hoặc không thuộc đơn vị của bạn" };
   }
 
+  if (device.status === "approved") {
+    return { error: "Không thể từ chối thiết bị đã được duyệt. Hãy xóa thiết bị thay thế." };
+  }
+
+  if (device.status === "rejected") {
+    return { error: "Thiết bị đã bị từ chối trước đó" };
+  }
+
   const { error } = await supabase
     .from("registered_devices")
     .update({
       status: "rejected",
       rejected_at: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return safeDbErrorResult(error, "db");
 
@@ -172,7 +201,7 @@ async function _deleteDevice(id: number) {
 
   const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
-    .select("id, tenant_id, linked_station_id")
+    .select("id, tenant_id, linked_station_id, linked_terminal_id")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -196,10 +225,19 @@ async function _deleteDevice(id: number) {
       .eq("id", device.linked_station_id);
   }
 
+  // Soft-delete linked POS terminal if exists
+  if (device.linked_terminal_id) {
+    await supabase
+      .from("pos_terminals")
+      .update({ is_active: false })
+      .eq("id", device.linked_terminal_id);
+  }
+
   const { error } = await supabase
     .from("registered_devices")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("tenant_id", tenantId);
 
   if (error) return safeDbErrorResult(error, "db");
 
@@ -217,9 +255,16 @@ export const deleteDevice = withServerAction(_deleteDevice);
 async function _updateDeviceCategories(formData: FormData) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
+  let categoryIds: unknown;
+  try {
+    categoryIds = JSON.parse(formData.get("category_ids") as string || "[]");
+  } catch {
+    return { error: "Dữ liệu danh mục không hợp lệ" };
+  }
+
   const parsed = updateDeviceCategoriesSchema.safeParse({
     device_id: Number(formData.get("device_id")),
-    category_ids: JSON.parse(formData.get("category_ids") as string || "[]"),
+    category_ids: categoryIds,
   });
 
   if (!parsed.success) {
@@ -243,10 +288,12 @@ async function _updateDeviceCategories(formData: FormData) {
   }
 
   // Delete existing categories and re-insert
-  await supabase
+  const { error: deleteError } = await supabase
     .from("kds_station_categories")
     .delete()
     .eq("station_id", device.linked_station_id);
+
+  if (deleteError) return safeDbErrorResult(deleteError, "deleteCategories");
 
   const stationCategories = parsed.data.category_ids.map((categoryId) => ({
     station_id: device.linked_station_id!,

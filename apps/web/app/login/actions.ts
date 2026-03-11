@@ -38,14 +38,8 @@ function getRoleRedirectPath(role: string): string {
   return ROLE_REDIRECT_MAP[role] ?? "/";
 }
 
-const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {
-  waiter: "mobile_order",
-  cashier: "cashier_station",
-  chef: "kds_station",
-};
-
 function getTerminalTypeForRole(role: string): DeviceTerminalType | null {
-  return ROLE_TO_TERMINAL[role] ?? null;
+  return ROLE_TERMINAL_TYPE_MAP[role] ?? null;
 }
 
 async function _login(formData: FormData) {

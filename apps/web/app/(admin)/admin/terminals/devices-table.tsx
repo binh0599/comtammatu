@@ -38,6 +38,7 @@ interface RegisteredDevice {
   ip_address: string | null;
   user_agent: string | null;
   status: string;
+  device_type: string | null;
   terminal_type: string | null;
   registered_by: string;
   approved_by: string | null;
