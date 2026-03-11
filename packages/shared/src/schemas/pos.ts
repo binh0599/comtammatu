@@ -1,17 +1,5 @@
 import { z } from "zod";
 
-// ===== Register Terminal =====
-
-export const registerTerminalSchema = z.object({
-  branch_id: z.number().int().positive(),
-  name: z.string().min(1, "Tên thiết bị không được để trống").max(100),
-  type: z.enum(["mobile_order", "cashier_station"]),
-  device_fingerprint: z.string().min(1).max(255),
-  peripheral_config: z.record(z.string(), z.unknown()).optional(),
-});
-
-export type RegisterTerminalInput = z.infer<typeof registerTerminalSchema>;
-
 // ===== Open POS Session =====
 
 export const openSessionSchema = z.object({

@@ -211,13 +211,6 @@ export async function getKdsBranchContext(
 }
 
 /**
- * Verify that an entity (accessed via a join through branches) belongs to the caller's tenant.
- * Works for tables like `pos_terminals` and `kds_stations` that have a `branch_id` FK
- * with the branch itself having `tenant_id`.
- *
- * @returns The entity data on success, or `{ error: string }` on failure
- */
-/**
  * Context for customer-facing actions — authenticated user linked to a customer record.
  */
 export interface CustomerContext {
@@ -266,6 +259,13 @@ export async function getCustomerContext(): Promise<CustomerContext> {
     return { supabase, customer };
 }
 
+/**
+ * Verify that an entity (accessed via a join through branches) belongs to the caller's tenant.
+ * Works for tables like `pos_terminals` and `kds_stations` that have a `branch_id` FK
+ * with the branch itself having `tenant_id`.
+ *
+ * @returns The entity data on success, or `{ error: string }` on failure
+ */
 export async function verifyEntityOwnership<T extends Record<string, unknown>>(
     supabase: SupabaseClient,
     table: string,

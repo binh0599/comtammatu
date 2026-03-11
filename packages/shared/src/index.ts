@@ -165,12 +165,10 @@ export type {
 } from "./schemas/menu";
 
 export {
-  registerTerminalSchema,
   openSessionSchema,
   closeSessionSchema,
 } from "./schemas/pos";
 export type {
-  RegisterTerminalInput,
   OpenSessionInput,
   CloseSessionInput,
 } from "./schemas/pos";
