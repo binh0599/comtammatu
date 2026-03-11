@@ -23,24 +23,6 @@ export type CreateCampaignInput = z.infer<typeof createCampaignSchema>;
 export const updateCampaignSchema = createCampaignSchema.partial();
 export type UpdateCampaignInput = z.infer<typeof updateCampaignSchema>;
 
-export const customerOrderItemSchema = z.object({
-  menu_item_id: z.coerce.number().int().positive(),
-  quantity: z.coerce.number().int().min(1).max(99),
-  variant_id: z.coerce.number().int().positive().optional(),
-  modifiers: z.array(z.coerce.number().int().positive()).optional(),
-  notes: z.string().max(200).optional().or(z.literal("")),
-});
-
-export const customerPlaceOrderSchema = z.object({
-  branch_id: z.coerce.number().int().positive(),
-  type: z.enum(["dine_in", "takeaway"]),
-  table_id: z.coerce.number().int().positive().optional(),
-  items: z.array(customerOrderItemSchema).min(1, "Phải có ít nhất 1 món"),
-  notes: z.string().max(500).optional().or(z.literal("")),
-  voucher_code: z.string().optional().or(z.literal("")),
-});
-export type CustomerPlaceOrderInput = z.infer<typeof customerPlaceOrderSchema>;
-
 export const analyticsQuerySchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),

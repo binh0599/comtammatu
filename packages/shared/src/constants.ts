@@ -89,6 +89,16 @@ export const KDS_ROLES = ["chef", "manager", "owner"] as const;
 /** Roles that require device approval before accessing POS/KDS */
 export const DEVICE_CHECK_ROLES = ["cashier", "waiter", "chef"] as const;
 
+/** Mapping from staff role to post-login redirect path */
+export const ROLE_REDIRECT_MAP: Record<string, string> = {
+  owner: "/admin",
+  manager: "/admin",
+  cashier: "/pos",
+  waiter: "/pos",
+  chef: "/kds",
+  hr: "/admin/hr",
+};
+
 // ===== Valid Order Status Transitions =====
 
 export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {

@@ -45,7 +45,7 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/api/health", "/api/auth", "/customer", "/api/privacy", "/api/webhooks"];
+  const publicRoutes = ["/login", "/api/health", "/api/auth", "/api/webhooks"];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),
   );
@@ -65,7 +65,12 @@ export async function updateSession(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    const role = data?.role ?? "customer";
+    const role = data?.role;
+
+    // No recognised staff role — stay on login (avoid redirect loop)
+    if (!role) {
+      return supabaseResponse;
+    }
 
     // Staff roles (cashier/waiter/chef) require device approval before redirect.
     // Without this check, refreshing /login after signIn bypasses device registration.
@@ -97,28 +102,24 @@ export async function updateSession(request: NextRequest) {
       }
     }
 
-    const url = request.nextUrl.clone();
+    // Map role → target path
+    const roleRedirects: Record<string, string> = {
+      owner: "/admin",
+      manager: "/admin",
+      cashier: "/pos",
+      waiter: "/pos",
+      chef: "/kds",
+      hr: "/admin/hr",
+    };
 
-    switch (role) {
-      case "owner":
-      case "manager":
-        url.pathname = "/admin";
-        break;
-      case "cashier":
-      case "waiter":
-        url.pathname = "/pos";
-        break;
-      case "chef":
-        url.pathname = "/kds";
-        break;
-      case "hr":
-        url.pathname = "/admin/hr";
-        break;
-      default:
-        url.pathname = "/customer";
-        break;
+    const target = roleRedirects[role];
+    if (!target) {
+      // Unknown role — stay on login to avoid redirect loop
+      return supabaseResponse;
     }
 
+    const url = request.nextUrl.clone();
+    url.pathname = target;
     return NextResponse.redirect(url);
   }
 

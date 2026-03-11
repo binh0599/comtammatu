@@ -9,6 +9,7 @@ import {
   handleServerActionError,
   entityIdSchema,
   DEVICE_CHECK_ROLES,
+  ROLE_REDIRECT_MAP,
   type DeviceTerminalType,
 } from "@comtammatu/shared";
 import { authLimiter } from "@comtammatu/security";
@@ -32,11 +33,7 @@ function generateApprovalCode(): string {
 }
 
 function getRoleRedirectPath(role: string): string {
-  if (role === "owner" || role === "manager") return "/admin";
-  if (role === "cashier" || role === "waiter") return "/pos";
-  if (role === "chef") return "/kds";
-  if (role === "hr") return "/admin/hr";
-  return "/customer";
+  return ROLE_REDIRECT_MAP[role] ?? "/";
 }
 
 const ROLE_TO_TERMINAL: Record<string, DeviceTerminalType> = {
@@ -97,9 +94,16 @@ async function _login(formData: FormData) {
     .eq("id", authData.user.id)
     .single();
 
-  const role = profile?.role ?? "customer";
+  const role = profile?.role;
 
-  // Owner, manager, hr, customer: skip device check, redirect directly
+  if (!role) {
+    throw new ActionError(
+      "Tài khoản chưa được gán vai trò. Vui lòng liên hệ quản lý.",
+      "UNAUTHORIZED",
+    );
+  }
+
+  // Non-device roles (owner, manager, hr): skip device check, redirect directly
   if (
     !DEVICE_CHECK_ROLES.includes(
       role as (typeof DEVICE_CHECK_ROLES)[number],

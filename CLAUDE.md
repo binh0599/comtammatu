@@ -50,8 +50,6 @@ apps/web/app/
   (pos)/pos/orders/actions.ts ← Order lifecycle (createOrder, updateStatus)
   (pos)/pos/cashier/actions.ts← Payment processing
   (kds)/kds/[stationId]/      ← KDS realtime board
-  (customer)/customer/        ← Customer PWA (6 pages)
-  api/privacy/                ← GDPR endpoints
 
 packages/
   database/src/supabase/client.ts  ← Client components ONLY import from here
