@@ -217,6 +217,55 @@ export async function getKdsBranchContext(
  *
  * @returns The entity data on success, or `{ error: string }` on failure
  */
+/**
+ * Context for customer-facing actions — authenticated user linked to a customer record.
+ */
+export interface CustomerContext {
+    supabase: SupabaseClient;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    customer: any; // customers row
+}
+
+/**
+ * Get the authenticated customer context for customer-facing Server Actions.
+ * Resolves the auth user → profiles → customers link.
+ *
+ * @throws ActionError("UNAUTHORIZED") if not authenticated or no customer record
+ */
+export async function getCustomerContext(): Promise<CustomerContext> {
+    if (!_createSupabaseServer) {
+        throw new Error(
+            "getCustomerContext: must call configureActionContext(createSupabaseServer) first",
+        );
+    }
+
+    const supabase = await _createSupabaseServer();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
+    }
+
+    // Resolve customer record via profile user_id → customers.user_id
+    const { data: customer, error } = await supabase
+        .from("customers")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
+
+    if (error || !customer) {
+        throw new ActionError(
+            "Không tìm thấy hồ sơ khách hàng",
+            "UNAUTHORIZED",
+            403,
+        );
+    }
+
+    return { supabase, customer };
+}
+
 export async function verifyEntityOwnership<T extends Record<string, unknown>>(
     supabase: SupabaseClient,
     table: string,

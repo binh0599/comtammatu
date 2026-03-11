@@ -313,6 +313,10 @@ export type {
   RespondFeedbackInput,
 } from "./schemas/feedback";
 
+// Privacy / GDPR
+export { deletionRequestSchema } from "./schemas/privacy";
+export type { DeletionRequestInput } from "./schemas/privacy";
+
 // Device Registration
 export {
   registerDeviceSchema,
@@ -481,12 +485,13 @@ export {
   getActionContext,
   getAdminContext,
   getKdsBranchContext,
+  getCustomerContext,
   getBranchesForTenant,
   getBranchIdsForTenant,
   verifyEntityOwnership,
   configureActionContext,
   requireBranch,
 } from "./server/action-context";
-export type { ActionContext, KdsContext } from "./server/action-context";
+export type { ActionContext, KdsContext, CustomerContext } from "./server/action-context";
 
 export { withServerAction, withServerQuery } from "./server/with-server-action";
