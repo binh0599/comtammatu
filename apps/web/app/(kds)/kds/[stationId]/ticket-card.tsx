@@ -17,6 +17,7 @@ export function TicketCard({
   printerConfig,
   stationName,
   serialPrint,
+  onBumpReady,
 }: {
   ticket: KdsTicket;
   timingRule: TimingRule | null;
@@ -24,13 +25,26 @@ export function TicketCard({
   stationName?: string;
   /** If provided, Web Serial printing is available for this ticket */
   serialPrint?: (data: Uint8Array) => Promise<void>;
+  /** Called after bump to "ready" — parent shows recall toast */
+  onBumpReady?: (ticketId: number, orderNumber: string) => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const [elapsed, setElapsed] = useState(0);
+  const [isNew, setIsNew] = useState(false);
 
   const items = parseItems(ticket.items);
   const orderNumber = ticket.orders?.order_number ?? `#${ticket.order_id}`;
   const tableNumber = ticket.orders?.tables?.number;
+
+  // Flash animation for new tickets
+  useEffect(() => {
+    const age = Date.now() - new Date(ticket.created_at).getTime();
+    if (age < 5_000) {
+      setIsNew(true);
+      const timer = setTimeout(() => setIsNew(false), 2_000);
+      return () => clearTimeout(timer);
+    }
+  }, [ticket.created_at]);
 
   /** Print this ticket via Web Serial API */
   const handleSerialPrint = useCallback(async () => {
@@ -73,9 +87,16 @@ export function TicketCard({
 
   const colors = getTimingColor(elapsed, timingRule);
 
-  function handleBump() {
+  function handleBump(status: "preparing" | "ready") {
     startTransition(async () => {
-      await bumpTicket(ticket.id, "ready");
+      const result = await bumpTicket(ticket.id, status);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      if (status === "ready" && onBumpReady) {
+        onBumpReady(ticket.id, orderNumber);
+      }
     });
   }
 
@@ -85,7 +106,8 @@ export function TicketCard({
       className={cn(
         "flex flex-col rounded-xl border-2 p-4 transition-all",
         colors.border,
-        colors.bg
+        colors.bg,
+        isNew && "animate-pulse ring-2 ring-blue-400",
       )}
     >
       {/* Header */}
@@ -97,6 +119,13 @@ export function TicketCard({
               <p className="text-sm text-muted-foreground">Bàn {tableNumber}</p>
             )}
           </div>
+          {/* Status badge for preparing */}
+          {ticket.status === "preparing" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-medium text-orange-700">
+              <span className="size-1.5 rounded-full bg-orange-500 animate-pulse" />
+              Đang làm
+            </span>
+          )}
           {(ticket.status === "pending" || ticket.status === "preparing") && (
             <>
               <KitchenTicketPrinter
@@ -177,16 +206,32 @@ export function TicketCard({
         ))}
       </div>
 
-      {/* Bump button — single action: mark as ready */}
-      <Button
-        onClick={handleBump}
-        disabled={isPending}
-        size="lg"
-        aria-label={`Đã ra món ${orderNumber}`}
-        className="mt-4 min-h-[64px] w-full bg-green-600 text-lg font-bold hover:bg-green-700"
-      >
-        {isPending ? "ĐANG CẬP NHẬT..." : "ĐÃ RA MÓN"}
-      </Button>
+      {/* Action buttons — preparing + ready */}
+      <div className="mt-4 flex gap-2">
+        {ticket.status === "pending" && (
+          <Button
+            onClick={() => handleBump("preparing")}
+            disabled={isPending}
+            size="lg"
+            aria-label={`Đang làm ${orderNumber}`}
+            className="min-h-[56px] flex-1 bg-orange-500 text-base font-bold hover:bg-orange-600"
+          >
+            {isPending ? "..." : "ĐANG LÀM"}
+          </Button>
+        )}
+        <Button
+          onClick={() => handleBump("ready")}
+          disabled={isPending}
+          size="lg"
+          aria-label={`Đã ra món ${orderNumber}`}
+          className={cn(
+            "min-h-[56px] bg-green-600 text-base font-bold hover:bg-green-700",
+            ticket.status === "pending" ? "flex-1" : "w-full",
+          )}
+        >
+          {isPending ? "ĐANG CẬP NHẬT..." : "ĐÃ RA MÓN"}
+        </Button>
+      </div>
     </article>
   );
 }

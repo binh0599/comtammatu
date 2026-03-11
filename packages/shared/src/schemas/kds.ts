@@ -33,3 +33,11 @@ export const bumpTicketSchema = z.object({
 });
 
 export type BumpTicketInput = z.infer<typeof bumpTicketSchema>;
+
+// ===== Recall KDS Ticket (undo bump to ready) =====
+
+export const recallTicketSchema = z.object({
+  ticket_id: z.number().int().positive(),
+});
+
+export type RecallTicketInput = z.infer<typeof recallTicketSchema>;

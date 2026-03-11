@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import Link from "next/link";
-import { WifiOff, Printer, Settings, Usb } from "lucide-react";
+import { WifiOff, Printer, Settings, Usb, Volume2, VolumeOff, Clock, ChefHat, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
 import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
-import { getStationTickets } from "./actions";
+import { getStationTickets, recallTicket } from "./actions";
 import { usePrinterForStation } from "@/hooks/use-printer-config";
 import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
 import { printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
@@ -18,6 +18,7 @@ import type { KdsTicket, TimingRule } from "./types";
 import { InventoryPanel } from "./components/inventory-panel";
 import type { MenuPortionInfo, IngredientOption, SupplierOption } from "./inventory-actions";
 import { parseItems } from "./types";
+import { toast } from "sonner";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
   // Only show banner for actual connection problems, not initial connecting
@@ -38,6 +39,59 @@ function ConnectionBanner({ status }: { status: ConnectionStatus }) {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Stats bar — computed from current tickets
+// ---------------------------------------------------------------------------
+
+function StatsBar({ tickets }: { tickets: KdsTicket[] }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 10_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const pendingCount = tickets.filter((t) => t.status === "pending").length;
+  const preparingCount = tickets.filter((t) => t.status === "preparing").length;
+
+  // Average wait time in minutes for all current tickets
+  const avgWaitMin =
+    tickets.length > 0
+      ? Math.round(
+          tickets.reduce(
+            (sum, t) => sum + (now - new Date(t.created_at).getTime()) / 60_000,
+            0,
+          ) / tickets.length,
+        )
+      : 0;
+
+  if (tickets.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-4 border-b border-border bg-muted/40 px-4 py-2 text-sm sm:gap-6 sm:px-6">
+      <div className="flex items-center gap-1.5">
+        <span className="size-2 rounded-full bg-yellow-500" />
+        <span className="text-muted-foreground">Chờ:</span>
+        <span className="font-bold">{pendingCount}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="size-2 rounded-full bg-orange-500 animate-pulse" />
+        <span className="text-muted-foreground">Đang làm:</span>
+        <span className="font-bold">{preparingCount}</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Clock className="size-3.5 text-muted-foreground" aria-hidden="true" />
+        <span className="text-muted-foreground">TB chờ:</span>
+        <span className="font-bold">{avgWaitMin}p</span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main KDS Board
+// ---------------------------------------------------------------------------
 
 export function KdsBoard({
   stationId,
@@ -68,6 +122,79 @@ export function KdsBoard({
 
   // Track ticket IDs that have already been printed or queued for auto-print
   const printedTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
+
+  // --- Sound notification ---
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("kds-muted") === "true";
+  });
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Track IDs that have already triggered sound
+  const soundedTicketIds = useRef(new Set(initialTickets.map((t) => t.id)));
+
+  function toggleMute() {
+    setIsMuted((prev) => {
+      const next = !prev;
+      localStorage.setItem("kds-muted", String(next));
+      return next;
+    });
+  }
+
+  // Lazy-init audio element
+  useEffect(() => {
+    audioRef.current = new Audio("/sounds/new-order.wav");
+    audioRef.current.volume = 0.8;
+  }, []);
+
+  // Detect new tickets → play sound (separate from auto-print to always play)
+  useEffect(() => {
+    if (isMuted) return;
+
+    let hasNew = false;
+    for (const ticket of tickets) {
+      if (
+        ticket.status === "pending" &&
+        !soundedTicketIds.current.has(ticket.id)
+      ) {
+        soundedTicketIds.current.add(ticket.id);
+        hasNew = true;
+      }
+    }
+
+    if (hasNew && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {
+        // Browser may block autoplay — ignore
+      });
+    }
+  }, [tickets, isMuted]);
+
+  // --- Recall toast handler ---
+  const handleRecall = useCallback(
+    async (ticketId: number, orderNumber: string) => {
+      const result = await recallTicket(ticketId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(`Đã hoàn tác ${orderNumber}`);
+      }
+    },
+    [],
+  );
+
+  const onBumpReady = useCallback(
+    (ticketId: number, orderNumber: string) => {
+      // Show recall toast for 10 seconds
+      toast(`${orderNumber} đã ra món`, {
+        duration: 10_000,
+        action: {
+          label: "Hoàn tác",
+          onClick: () => handleRecall(ticketId, orderNumber),
+        },
+      });
+    },
+    [handleRecall],
+  );
 
   /** Auto-print a ticket via Web Serial if connected, otherwise fall back to WebUSB/network */
   const autoPrintTicket = useCallback(
@@ -167,12 +294,28 @@ export function KdsBoard({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
+          <ChefHat className="size-6 text-primary hidden sm:block" aria-hidden="true" />
           <h1 className="text-lg font-bold text-foreground sm:text-2xl">{stationName}</h1>
           <span className="text-sm text-muted-foreground" role="status">
             {tickets.length} đơn
           </span>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
+          {/* Sound toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleMute}
+            className="gap-1"
+            aria-label={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+          >
+            {isMuted ? (
+              <VolumeOff className="size-4 text-muted-foreground" />
+            ) : (
+              <Volume2 className="size-4 text-green-600" />
+            )}
+          </Button>
+
           {printerConfig && (
             <Badge variant="outline" className="gap-1 text-xs">
               <Printer className="size-3" aria-hidden="true" />
@@ -225,6 +368,9 @@ export function KdsBoard({
         </div>
       </div>
 
+      {/* Stats bar */}
+      <StatsBar tickets={tickets} />
+
       {/* Inventory Panel */}
       <InventoryPanel
         initialPortions={initialPortions}
@@ -258,6 +404,7 @@ export function KdsBoard({
                     ? serialPrinter.print
                     : undefined
                 }
+                onBumpReady={onBumpReady}
               />
             ))}
           </div>

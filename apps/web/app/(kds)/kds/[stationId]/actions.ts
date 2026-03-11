@@ -12,6 +12,7 @@ import {
   safeDbError,
   safeDbErrorResult,
   bumpTicketSchema,
+  recallTicketSchema,
 } from "@comtammatu/shared";
 
 // --- Data fetching (consumed by RSC — throw on error) ---
@@ -231,6 +232,91 @@ export async function bumpTicket(
 
   try {
     return await _bumpTicket(parsed.data.ticket_id, parsed.data.status);
+  } catch (error) {
+    if (error instanceof Error && "digest" in error) throw error;
+    return handleServerActionError(error);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// recallTicket — undo accidental bump to ready (within 30s window)
+// ---------------------------------------------------------------------------
+
+const RECALL_WINDOW_SECONDS = 30;
+
+async function _recallTicket(ticketId: number) {
+  const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
+
+  // Fetch ticket with station + order info
+  const { data: ticket, error: fetchError } = await supabase
+    .from("kds_tickets")
+    .select("id, status, station_id, order_id, completed_at, kds_stations(branch_id)")
+    .eq("id", ticketId)
+    .single();
+
+  if (fetchError || !ticket) {
+    return { error: "Ticket không tồn tại" };
+  }
+
+  // Verify branch ownership
+  const stationBranch = (ticket as Record<string, unknown>).kds_stations as
+    | { branch_id: number }
+    | null;
+  if (stationBranch?.branch_id !== profile.branch_id) {
+    return { error: "Ticket không thuộc chi nhánh của bạn" };
+  }
+
+  // Only allow recall from "ready" status
+  if (ticket.status !== "ready") {
+    return { error: "Chỉ có thể hoàn tác ticket đã ra món" };
+  }
+
+  // Check time window — only within RECALL_WINDOW_SECONDS of completion
+  if (ticket.completed_at) {
+    const completedAt = new Date(ticket.completed_at).getTime();
+    const elapsed = (Date.now() - completedAt) / 1000;
+    if (elapsed > RECALL_WINDOW_SECONDS) {
+      return { error: `Đã quá ${RECALL_WINDOW_SECONDS} giây — không thể hoàn tác` };
+    }
+  }
+
+  // Set ticket back to "preparing"
+  const { error: updateError } = await supabase
+    .from("kds_tickets")
+    .update({ status: "preparing", completed_at: null })
+    .eq("id", ticketId)
+    .eq("status", "ready"); // Race-condition guard
+
+  if (updateError) return safeDbErrorResult(updateError, "db");
+
+  // Also revert order status back to "preparing" if it was auto-set to "ready"
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, status")
+    .eq("id", ticket.order_id)
+    .single();
+
+  if (order && order.status === "ready") {
+    await supabase
+      .from("orders")
+      .update({ status: "preparing" })
+      .eq("id", order.id)
+      .eq("status", "ready"); // Race-condition guard
+  }
+
+  revalidatePath("/kds");
+  revalidatePath("/pos/orders");
+  return { error: null };
+}
+
+export async function recallTicket(ticketId: number) {
+  const parsed = recallTicketSchema.safeParse({ ticket_id: ticketId });
+  if (!parsed.success) {
+    return { error: "Dữ liệu không hợp lệ" };
+  }
+
+  try {
+    return await _recallTicket(parsed.data.ticket_id);
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
     return handleServerActionError(error);

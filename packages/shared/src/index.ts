@@ -197,11 +197,13 @@ export {
   createKdsStationSchema,
   updateKdsStationSchema,
   bumpTicketSchema,
+  recallTicketSchema,
 } from "./schemas/kds";
 export type {
   CreateKdsStationInput,
   UpdateKdsStationInput,
   BumpTicketInput,
+  RecallTicketInput,
 } from "./schemas/kds";
 
 // Week 5-6: Inventory
