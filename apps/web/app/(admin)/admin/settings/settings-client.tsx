@@ -197,11 +197,12 @@ const DEFAULT_CONFIG: PaymentMethodsConfig = {
   enabled_methods: ["cash"],
 };
 
-// biome-ignore lint/suspicious/noControlCharactersInRegex: intentionally matching control characters
 function sanitizeAccountName(name: string): string {
+  // eslint-disable-next-line no-control-regex -- intentionally stripping control characters
+  const controlChars = /[\x00-\x1f]/g;
   return name
     .trim()
-    .replace(/[\x00-\x1f]/g, "")
+    .replace(controlChars, "")
     .replace(/\s{2,}/g, " ");
 }
 

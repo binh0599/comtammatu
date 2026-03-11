@@ -44,12 +44,13 @@ describe("Status enum arrays", () => {
         expect(ORDER_TYPES).toEqual(["dine_in", "takeaway", "delivery"]);
     });
 
-    it("PAYMENT_METHODS has 4 items", () => {
-        expect(PAYMENT_METHODS).toEqual(["cash", "card", "ewallet", "qr"]);
+    it("PAYMENT_METHODS has 5 items", () => {
+        expect(PAYMENT_METHODS).toEqual(["cash", "card", "ewallet", "qr", "transfer"]);
     });
 
-    it("PAYMENT_STATUSES has 4 items", () => {
-        expect(PAYMENT_STATUSES.length).toBe(4);
+    it("PAYMENT_STATUSES has 5 items", () => {
+        expect(PAYMENT_STATUSES.length).toBe(5);
+        expect(PAYMENT_STATUSES).toContain("expired");
     });
 
     it("TABLE_STATUSES has 4 items", () => {
