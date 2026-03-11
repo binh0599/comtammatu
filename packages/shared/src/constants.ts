@@ -40,6 +40,7 @@ export const PAYMENT_STATUSES = [
   "completed",
   "failed",
   "refunded",
+  "expired",
 ] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 

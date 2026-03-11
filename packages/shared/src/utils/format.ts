@@ -242,6 +242,7 @@ export const getPaymentStatusLabel = createLabelMapper({
   completed: "Thành công",
   failed: "Thất bại",
   refunded: "Đã hoàn tiền",
+  expired: "Hết hạn",
 });
 
 export const getOrderTypeLabel = createLabelMapper({

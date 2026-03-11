@@ -143,11 +143,20 @@ export {
   createOrderSchema,
   updateOrderStatusSchema,
   addOrderItemsSchema,
+  removeOrderItemSchema,
+  updateOrderItemSchema,
+  transferOrderTableSchema,
+  updateGuestCountSchema,
+  updateOrderNotesSchema,
 } from "./schemas/order";
 export type {
   CreateOrderInput,
   UpdateOrderStatusInput,
   AddOrderItemsInput,
+  RemoveOrderItemInput,
+  UpdateOrderItemInput,
+  TransferOrderTableInput,
+  UpdateGuestCountInput,
 } from "./schemas/order";
 
 export {

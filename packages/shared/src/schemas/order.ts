@@ -37,6 +37,7 @@ export const createOrderSchema = z
     items: z
       .array(orderItemInput)
       .min(1, "Đơn hàng phải có ít nhất 1 món"),
+    idempotency_key: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.type === "dine_in") {
@@ -86,3 +87,47 @@ export const addOrderItemsSchema = z.object({
 });
 
 export type AddOrderItemsInput = z.infer<typeof addOrderItemsSchema>;
+
+// ===== Remove Order Item =====
+
+export const removeOrderItemSchema = z.object({
+  order_id: z.number().int().positive(),
+  item_id: z.number().int().positive(),
+});
+
+export type RemoveOrderItemInput = z.infer<typeof removeOrderItemSchema>;
+
+// ===== Update Order Item Quantity =====
+
+export const updateOrderItemSchema = z.object({
+  order_id: z.number().int().positive(),
+  item_id: z.number().int().positive(),
+  quantity: z.number().int().positive().max(99),
+});
+
+export type UpdateOrderItemInput = z.infer<typeof updateOrderItemSchema>;
+
+// ===== Transfer Order to Another Table =====
+
+export const transferOrderTableSchema = z.object({
+  order_id: z.number().int().positive(),
+  new_table_id: z.number().int().positive(),
+});
+
+export type TransferOrderTableInput = z.infer<typeof transferOrderTableSchema>;
+
+// ===== Update Guest Count =====
+
+export const updateGuestCountSchema = z.object({
+  order_id: z.number().int().positive(),
+  guest_count: z.number().int().positive().max(20),
+});
+
+export type UpdateGuestCountInput = z.infer<typeof updateGuestCountSchema>;
+
+// ===== Update Order Notes =====
+
+export const updateOrderNotesSchema = z.object({
+  order_id: z.number().int().positive(),
+  notes: z.string().max(500).nullish(),
+});
