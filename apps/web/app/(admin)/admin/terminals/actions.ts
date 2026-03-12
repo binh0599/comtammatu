@@ -44,7 +44,7 @@ async function _approveDevice(id: number) {
   // Verify device belongs to caller's tenant
   const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
-    .select("id, status, tenant_id, branch_id, device_name, device_type, terminal_type, approval_code")
+    .select("id, status, tenant_id, branch_id, device_name, device_type, terminal_type, approval_code, device_fingerprint")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -115,6 +115,7 @@ async function _approveDevice(id: number) {
         branch_id: device.branch_id,
         name: terminalName,
         type: device.terminal_type,
+        device_fingerprint: device.device_fingerprint,
         is_active: true,
         approved_at: new Date().toISOString(),
       })
