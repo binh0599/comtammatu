@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Pencil, Trash2, Star } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -41,7 +41,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { createSupplier, updateSupplier, deleteSupplier } from "./actions";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { formatPrice } from "@comtammatu/shared";
+import {
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
+  getSupplierAnalytics,
+} from "./actions";
+import type { SupplierAnalytic } from "./actions";
 
 interface Supplier {
   id: number;
@@ -398,6 +411,125 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
           </TableBody>
         </Table>
       </div>
+
+      {/* Supplier Analytics */}
+      <SupplierAnalyticsSection />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SupplierAnalyticsSection — lazy-loaded analytics
+// ---------------------------------------------------------------------------
+
+function SupplierAnalyticsSection() {
+  const [analytics, setAnalytics] = useState<SupplierAnalytic[] | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleLoad() {
+    startTransition(async () => {
+      const data = await getSupplierAnalytics();
+      setAnalytics(data);
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Phân tích hiệu suất NCC</h3>
+          <p className="text-muted-foreground text-sm">
+            Thống kê đơn hàng, chi tiêu, thời gian giao hàng
+          </p>
+        </div>
+        <Button variant="outline" onClick={handleLoad} disabled={isPending}>
+          <BarChart3 className="mr-2 h-4 w-4" />
+          {isPending ? "Đang tải..." : analytics ? "Làm mới" : "Xem phân tích"}
+        </Button>
+      </div>
+
+      {analytics && analytics.length > 0 && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Tổng NCC</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{analytics.length}</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Tổng chi tiêu</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {formatPrice(analytics.reduce((s, a) => s + a.total_spent, 0))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">NCC hàng đầu</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold truncate">
+                  {analytics[0]?.supplier_name ?? "-"}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Nhà cung cấp</TableHead>
+                  <TableHead scope="col" className="text-right">Số ĐH</TableHead>
+                  <TableHead scope="col" className="text-right">Chi tiêu</TableHead>
+                  <TableHead scope="col" className="text-right">TB giao (ngày)</TableHead>
+                  <TableHead scope="col" className="text-right">Đúng hạn</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {analytics.map((a) => (
+                  <TableRow key={a.supplier_id}>
+                    <TableCell className="font-medium">{a.supplier_name}</TableCell>
+                    <TableCell className="text-right">{a.total_pos}</TableCell>
+                    <TableCell className="text-right">
+                      {formatPrice(a.total_spent)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {a.avg_delivery_days > 0 ? `${a.avg_delivery_days}` : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Badge
+                        variant="outline"
+                        className={
+                          a.on_time_pct >= 90
+                            ? "bg-green-100 text-green-700 border-green-200"
+                            : a.on_time_pct >= 70
+                              ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                              : "bg-red-100 text-red-700 border-red-200"
+                        }
+                      >
+                        {a.on_time_pct}%
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
+
+      {analytics && analytics.length === 0 && (
+        <p className="text-muted-foreground text-sm text-center py-6">
+          Chưa có dữ liệu đơn hàng để phân tích
+        </p>
+      )}
     </div>
   );
 }

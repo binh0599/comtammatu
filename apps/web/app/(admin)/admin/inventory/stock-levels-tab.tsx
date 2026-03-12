@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus } from "lucide-react";
+import { Plus, AlertTriangle, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -30,7 +30,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { initStockLevel } from "./actions";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { initStockLevel, getReorderSuggestions } from "./actions";
+import type { ReorderSuggestion } from "./actions";
 
 interface StockLevel {
   id: number;
@@ -263,6 +270,105 @@ export function StockLevelsTab({
           </TableBody>
         </Table>
       </div>
+
+      {/* Reorder Suggestions */}
+      <ReorderSuggestionsSection />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ReorderSuggestionsSection
+// ---------------------------------------------------------------------------
+
+function ReorderSuggestionsSection() {
+  const [suggestions, setSuggestions] = useState<ReorderSuggestion[] | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function handleLoad() {
+    startTransition(async () => {
+      const data = await getReorderSuggestions();
+      setSuggestions(data);
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold">Gợi ý đặt hàng</h3>
+          <p className="text-muted-foreground text-sm">
+            Nguyên liệu dưới mức tồn kho tối thiểu
+          </p>
+        </div>
+        <Button variant="outline" onClick={handleLoad} disabled={isPending}>
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          {isPending ? "Đang tải..." : suggestions ? "Làm mới" : "Kiểm tra"}
+        </Button>
+      </div>
+
+      {suggestions && suggestions.length > 0 && (
+        <>
+          <Card className="border-yellow-200 bg-yellow-50">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-yellow-800">
+                <AlertTriangle className="h-4 w-4" />
+                {suggestions.length} nguyên liệu cần đặt hàng bổ sung
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-yellow-700 text-sm">
+                Các nguyên liệu dưới đây đang ở mức tồn kho thấp hơn hoặc bằng mức tối thiểu.
+              </p>
+            </CardContent>
+          </Card>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead scope="col">Nguyên liệu</TableHead>
+                  <TableHead scope="col">Chi nhánh</TableHead>
+                  <TableHead scope="col" className="text-right">Hiện tại</TableHead>
+                  <TableHead scope="col" className="text-right">Tối thiểu</TableHead>
+                  <TableHead scope="col" className="text-right">Tối đa</TableHead>
+                  <TableHead scope="col" className="text-right">Đề xuất đặt</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {suggestions.map((s) => (
+                  <TableRow key={`${s.ingredient_id}-${s.branch_id}`}>
+                    <TableCell className="font-medium">
+                      {s.ingredient_name} ({s.unit})
+                    </TableCell>
+                    <TableCell>{s.branch_name}</TableCell>
+                    <TableCell className="text-right text-red-600 font-medium">
+                      {s.current_qty}
+                    </TableCell>
+                    <TableCell className="text-right">{s.min_stock}</TableCell>
+                    <TableCell className="text-right">
+                      {s.max_stock > 0 ? s.max_stock : "-"}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-blue-600">
+                      +{s.suggested_qty}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </>
+      )}
+
+      {suggestions && suggestions.length === 0 && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="py-6 text-center">
+            <p className="text-green-700 text-sm">
+              Tất cả nguyên liệu đều đủ tồn kho. Không cần đặt hàng bổ sung.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

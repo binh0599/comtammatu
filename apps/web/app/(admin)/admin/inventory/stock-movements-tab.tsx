@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ArrowRightLeft, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -36,7 +36,7 @@ import {
   getStockMovementTypeLabel,
   STOCK_MOVEMENT_TYPES,
 } from "@comtammatu/shared";
-import { createStockMovement } from "./actions";
+import { createStockMovement, createBranchTransfer } from "./actions";
 
 interface StockMovement {
   id: number;
@@ -72,6 +72,11 @@ interface Branch {
   name: string;
 }
 
+interface TransferItem {
+  ingredient_id: number;
+  quantity: number;
+}
+
 const TYPE_BADGE_VARIANTS: Record<
   string,
   { className: string }
@@ -93,8 +98,17 @@ export function StockMovementsTab({
   branches: Branch[];
 }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+
+  // Transfer dialog state
+  const [transferFromBranch, setTransferFromBranch] = useState("");
+  const [transferToBranch, setTransferToBranch] = useState("");
+  const [transferItems, setTransferItems] = useState<TransferItem[]>([
+    { ingredient_id: 0, quantity: 0 },
+  ]);
+  const [transferNotes, setTransferNotes] = useState("");
 
   function handleCreate(formData: FormData) {
     setError(null);
@@ -126,6 +140,72 @@ export function StockMovementsTab({
     });
   }
 
+  function resetTransferForm() {
+    setTransferFromBranch("");
+    setTransferToBranch("");
+    setTransferItems([{ ingredient_id: 0, quantity: 0 }]);
+    setTransferNotes("");
+    setError(null);
+  }
+
+  function handleTransfer() {
+    setError(null);
+    const fromId = Number(transferFromBranch);
+    const toId = Number(transferToBranch);
+
+    if (!fromId || !toId) {
+      setError("Vui lòng chọn chi nhánh xuất và nhận");
+      return;
+    }
+    if (fromId === toId) {
+      setError("Chi nhánh xuất và nhận phải khác nhau");
+      return;
+    }
+
+    const validItems = transferItems.filter(
+      (i) => i.ingredient_id > 0 && i.quantity > 0
+    );
+    if (validItems.length === 0) {
+      setError("Vui lòng thêm ít nhất 1 nguyên liệu");
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await createBranchTransfer({
+        from_branch_id: fromId,
+        to_branch_id: toId,
+        items: validItems,
+        notes: transferNotes || undefined,
+      });
+      if (result && "error" in result && result.error) {
+        setError(result.error);
+      } else {
+        setIsTransferOpen(false);
+        resetTransferForm();
+      }
+    });
+  }
+
+  function addTransferItem() {
+    setTransferItems((prev) => [...prev, { ingredient_id: 0, quantity: 0 }]);
+  }
+
+  function removeTransferItem(index: number) {
+    setTransferItems((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateTransferItem(
+    index: number,
+    field: keyof TransferItem,
+    value: number
+  ) {
+    setTransferItems((prev) =>
+      prev.map((item, i) =>
+        i === index ? { ...item, [field]: value } : item
+      )
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -135,120 +215,278 @@ export function StockMovementsTab({
             Lịch sử nhập, xuất, điều chỉnh tồn kho
           </p>
         </div>
-        <Dialog
-          open={isCreateOpen}
-          onOpenChange={(open) => {
-            setIsCreateOpen(open);
-            if (open) setError(null);
-          }}
-        >
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Tạo phiếu
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <form action={handleCreate}>
+        <div className="flex gap-2">
+          {/* Transfer dialog */}
+          <Dialog
+            open={isTransferOpen}
+            onOpenChange={(open) => {
+              setIsTransferOpen(open);
+              if (open) resetTransferForm();
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <ArrowRightLeft className="mr-2 h-4 w-4" />
+                Chuyển kho
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Tạo phiếu nhập/xuất</DialogTitle>
+                <DialogTitle>Chuyển kho giữa chi nhánh</DialogTitle>
                 <DialogDescription>
-                  Ghi nhận biến động tồn kho
+                  Chuyển nguyên liệu từ chi nhánh này sang chi nhánh khác
                 </DialogDescription>
               </DialogHeader>
-              {error && (
+              {error && isTransferOpen && (
                 <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
                   {error}
                 </div>
               )}
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="ingredient_id">Nguyên liệu</Label>
-                  <Select name="ingredient_id" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn nguyên liệu" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ingredients.map((ing) => (
-                        <SelectItem key={ing.id} value={String(ing.id)}>
-                          {ing.name} ({ing.unit})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="branch_id">Chi nhánh</Label>
-                  <Select name="branch_id" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn chi nhánh" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {branches.map((branch) => (
-                        <SelectItem key={branch.id} value={String(branch.id)}>
-                          {branch.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
-                    <Label htmlFor="type">Loại phiếu</Label>
-                    <Select name="type" required>
+                    <Label>Chi nhánh xuất</Label>
+                    <Select
+                      value={transferFromBranch}
+                      onValueChange={setTransferFromBranch}
+                    >
                       <SelectTrigger>
-                        <SelectValue placeholder="Chọn loại" />
+                        <SelectValue placeholder="Chọn chi nhánh" />
                       </SelectTrigger>
                       <SelectContent>
-                        {STOCK_MOVEMENT_TYPES.map((t) => (
-                          <SelectItem key={t} value={t}>
-                            {getStockMovementTypeLabel(t)}
+                        {branches.map((b) => (
+                          <SelectItem key={b.id} value={String(b.id)}>
+                            {b.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="quantity">Số lượng</Label>
-                    <Input
-                      id="quantity"
-                      name="quantity"
-                      type="number"
-                      step="0.01"
-                      min="0.01"
-                      required
-                      placeholder="0"
-                    />
+                    <Label>Chi nhánh nhận</Label>
+                    <Select
+                      value={transferToBranch}
+                      onValueChange={setTransferToBranch}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn chi nhánh" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {branches.map((b) => (
+                          <SelectItem key={b.id} value={String(b.id)}>
+                            {b.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
+
                 <div className="grid gap-2">
-                  <Label htmlFor="notes">Ghi chú</Label>
+                  <div className="flex items-center justify-between">
+                    <Label>Nguyên liệu chuyển</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={addTransferItem}
+                    >
+                      <Plus className="mr-1 h-3 w-3" />
+                      Thêm dòng
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {transferItems.map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <Select
+                          value={item.ingredient_id ? String(item.ingredient_id) : ""}
+                          onValueChange={(v) =>
+                            updateTransferItem(idx, "ingredient_id", Number(v))
+                          }
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Chọn nguyên liệu" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ingredients.map((ing) => (
+                              <SelectItem key={ing.id} value={String(ing.id)}>
+                                {ing.name} ({ing.unit})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          className="w-24"
+                          placeholder="Số lượng"
+                          value={item.quantity || ""}
+                          onChange={(e) =>
+                            updateTransferItem(
+                              idx,
+                              "quantity",
+                              Number(e.target.value)
+                            )
+                          }
+                        />
+                        {transferItems.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-8 shrink-0"
+                            onClick={() => removeTransferItem(idx)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Ghi chú</Label>
                   <Textarea
-                    id="notes"
-                    name="notes"
-                    placeholder="VD: Nhập hàng từ nhà cung cấp ABC"
-                    rows={3}
+                    placeholder="VD: Chuyển hàng phục vụ sự kiện"
+                    rows={2}
+                    value={transferNotes}
+                    onChange={(e) => setTransferNotes(e.target.value)}
+                    maxLength={500}
                   />
                 </div>
               </div>
               <DialogFooter>
                 <Button
-                  type="button"
                   variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
+                  onClick={() => setIsTransferOpen(false)}
                 >
                   Hủy
                 </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Đang tạo..." : "Tạo phiếu"}
+                <Button onClick={handleTransfer} disabled={isPending}>
+                  {isPending ? "Đang xử lý..." : "Xác nhận chuyển kho"}
                 </Button>
               </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+
+          {/* Create movement dialog */}
+          <Dialog
+            open={isCreateOpen}
+            onOpenChange={(open) => {
+              setIsCreateOpen(open);
+              if (open) setError(null);
+            }}
+          >
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Tạo phiếu
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <form action={handleCreate}>
+                <DialogHeader>
+                  <DialogTitle>Tạo phiếu nhập/xuất</DialogTitle>
+                  <DialogDescription>
+                    Ghi nhận biến động tồn kho
+                  </DialogDescription>
+                </DialogHeader>
+                {error && isCreateOpen && (
+                  <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+                    {error}
+                  </div>
+                )}
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="ingredient_id">Nguyên liệu</Label>
+                    <Select name="ingredient_id" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn nguyên liệu" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ingredients.map((ing) => (
+                          <SelectItem key={ing.id} value={String(ing.id)}>
+                            {ing.name} ({ing.unit})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="branch_id">Chi nhánh</Label>
+                    <Select name="branch_id" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn chi nhánh" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {branches.map((branch) => (
+                          <SelectItem key={branch.id} value={String(branch.id)}>
+                            {branch.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="type">Loại phiếu</Label>
+                      <Select name="type" required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn loại" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STOCK_MOVEMENT_TYPES.map((t) => (
+                            <SelectItem key={t} value={t}>
+                              {getStockMovementTypeLabel(t)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="quantity">Số lượng</Label>
+                      <Input
+                        id="quantity"
+                        name="quantity"
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        required
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="notes">Ghi chú</Label>
+                    <Textarea
+                      id="notes"
+                      name="notes"
+                      placeholder="VD: Nhập hàng từ nhà cung cấp ABC"
+                      rows={3}
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsCreateOpen(false)}
+                  >
+                    Hủy
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Đang tạo..." : "Tạo phiếu"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {error && !isCreateOpen && (
+      {error && !isCreateOpen && !isTransferOpen && (
         <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
           {error}
         </div>

@@ -99,6 +99,26 @@ export const approveStockCountSchema = z.object({
 });
 export type ApproveStockCountInput = z.infer<typeof approveStockCountSchema>;
 
+// ===== Branch Transfer =====
+
+export const branchTransferSchema = z.object({
+  from_branch_id: z.coerce.number().int().positive("Chọn chi nhánh xuất"),
+  to_branch_id: z.coerce.number().int().positive("Chọn chi nhánh nhận"),
+  items: z
+    .array(
+      z.object({
+        ingredient_id: z.coerce.number().int().positive(),
+        quantity: z.coerce.number().positive("Số lượng phải lớn hơn 0"),
+      })
+    )
+    .min(1, "Phải chuyển ít nhất 1 nguyên liệu"),
+  notes: z.string().max(500).optional().or(z.literal("")),
+}).refine(
+  (data) => data.from_branch_id !== data.to_branch_id,
+  { message: "Chi nhánh xuất và nhận phải khác nhau", path: ["to_branch_id"] },
+);
+export type BranchTransferInput = z.infer<typeof branchTransferSchema>;
+
 // ===== Urgent Restock Request (from KDS) =====
 
 export const urgentRestockRequestSchema = z.object({

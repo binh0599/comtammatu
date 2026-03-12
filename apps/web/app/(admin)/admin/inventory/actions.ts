@@ -15,6 +15,7 @@ export {
   initStockLevel,
   getStockMovements,
   createStockMovement,
+  createBranchTransfer,
 } from "./stock-actions";
 
 export {
@@ -29,7 +30,10 @@ export {
   createSupplier,
   updateSupplier,
   deleteSupplier,
+  getSupplierAnalytics,
+  getReorderSuggestions,
 } from "./supplier-actions";
+export type { SupplierAnalytic, ReorderSuggestion } from "./supplier-actions";
 
 export {
   getPurchaseOrders,
