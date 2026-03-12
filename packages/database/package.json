@@ -4,6 +4,19 @@
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./supabase": "./src/supabase/index.ts",
+    "./supabase/client": "./src/supabase/client.ts",
+    "./supabase/server": "./src/supabase/server.ts",
+    "./supabase/middleware": "./src/supabase/middleware.ts",
+    "./types": "./src/types/database.types.ts",
+    "./src/supabase": "./src/supabase/index.ts",
+    "./src/supabase/client": "./src/supabase/client.ts",
+    "./src/supabase/server": "./src/supabase/server.ts",
+    "./src/supabase/middleware": "./src/supabase/middleware.ts",
+    "./src/types/database.types": "./src/types/database.types.ts"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "prisma generate",

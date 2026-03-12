@@ -1,0 +1,56 @@
+"use server";
+
+import "@/lib/server-bootstrap";
+import {
+  getActionContext,
+  withServerAction,
+  withServerQuery,
+  respondFeedbackSchema,
+  safeDbError,
+  safeDbErrorResult,
+} from "@comtammatu/shared";
+import { revalidatePath } from "next/cache";
+
+// =====================
+// Feedback
+// =====================
+
+async function _getFeedback() {
+  const { supabase, tenantId } = await getActionContext();
+
+  const { data, error } = await supabase
+    .from("customer_feedback")
+    .select("*, customers(full_name, tenant_id), orders(order_number), branches(name)")
+    .eq("branches.tenant_id", tenantId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw safeDbError(error, "db");
+  return data ?? [];
+}
+
+export const getFeedback = withServerQuery(_getFeedback);
+
+async function _respondToFeedback(id: number, input: { response: string }) {
+  const parsed = respondFeedbackSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+  }
+
+  const { supabase, userId } = await getActionContext();
+
+  const { error } = await supabase
+    .from("customer_feedback")
+    .update({
+      response: parsed.data.response,
+      responded_by: userId,
+    })
+    .eq("id", id);
+
+  if (error) return safeDbErrorResult(error, "db");
+
+  revalidatePath("/admin/crm");
+  return { error: null, success: true };
+}
+
+export const respondToFeedback = withServerAction(_respondToFeedback);
