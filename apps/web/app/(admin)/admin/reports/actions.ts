@@ -27,6 +27,18 @@ export interface PaymentMethodBreakdown {
   total: number;
 }
 
+export interface OrderTypeMixRow {
+  type: string;
+  count: number;
+  revenue: number;
+}
+
+export interface GrowthVsPrev {
+  revenuePct: number;
+  ordersPct: number;
+  avgTicketPct: number;
+}
+
 export interface ReportSummary {
   totalRevenue: number;
   totalOrders: number;
@@ -35,6 +47,8 @@ export interface ReportSummary {
   paymentMethods: PaymentMethodBreakdown[];
   dailyData: RevenueReportRow[];
   topItems: { name: string; qty: number; revenue: number }[];
+  orderTypeMix: OrderTypeMixRow[];
+  growthVsPrev: GrowthVsPrev | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -58,6 +72,8 @@ async function _getReportData(
       paymentMethods: [],
       dailyData: [],
       topItems: [],
+      orderTypeMix: [],
+      growthVsPrev: null,
     };
   }
 
@@ -69,7 +85,7 @@ async function _getReportData(
   // Fetch completed orders in range
   const { data: orders, error: ordersErr } = await supabase
     .from("orders")
-    .select("id, branch_id, total, created_at, status")
+    .select("id, branch_id, total, type, created_at, status")
     .in("branch_id", branchIds)
     .eq("status", "completed")
     .gte("created_at", start.toISOString())
@@ -85,6 +101,8 @@ async function _getReportData(
       paymentMethods: [],
       dailyData: [],
       topItems: [],
+      orderTypeMix: [],
+      growthVsPrev: null,
     };
   }
 
@@ -186,6 +204,62 @@ async function _getReportData(
     .sort((a, b) => b.qty - a.qty)
     .slice(0, 15);
 
+  // --- Order type mix ---
+  const typeMap = new Map<string, { count: number; revenue: number }>();
+  for (const order of orders) {
+    const t = (order as Record<string, unknown>).type as string ?? "dine_in";
+    const entry = typeMap.get(t) ?? { count: 0, revenue: 0 };
+    entry.count++;
+    entry.revenue += Number(order.total);
+    typeMap.set(t, entry);
+  }
+  const orderTypeMix = Array.from(typeMap.entries())
+    .map(([type, data]) => ({ type, ...data }))
+    .sort((a, b) => b.count - a.count);
+
+  // --- Growth vs previous period ---
+  const periodMs = end.getTime() - start.getTime();
+  const prevStart = new Date(start.getTime() - periodMs - 1);
+  const prevEnd = new Date(start.getTime() - 1);
+
+  let growthVsPrev: GrowthVsPrev | null = null;
+
+  const { data: prevOrders } = await supabase
+    .from("orders")
+    .select("id, total")
+    .in("branch_id", branchIds)
+    .eq("status", "completed")
+    .gte("created_at", prevStart.toISOString())
+    .lte("created_at", prevEnd.toISOString());
+
+  if (prevOrders && prevOrders.length > 0) {
+    const prevOrderIds = prevOrders.map((o: { id: number }) => o.id);
+    const { data: prevPayments } = await supabase
+      .from("payments")
+      .select("amount, tip")
+      .in("order_id", prevOrderIds)
+      .eq("status", "completed")
+      .not("paid_at", "is", null);
+
+    let prevRevenue = 0;
+    for (const p of prevPayments ?? []) {
+      prevRevenue += Number(p.amount) + Number(p.tip);
+    }
+    const prevAvgTicket = prevOrders.length > 0 ? prevRevenue / prevOrders.length : 0;
+
+    const pctChange = (curr: number, prev: number) =>
+      prev > 0 ? ((curr - prev) / prev) * 100 : curr > 0 ? 100 : 0;
+
+    growthVsPrev = {
+      revenuePct: pctChange(totalRevenue, prevRevenue),
+      ordersPct: pctChange(orders.length, prevOrders.length),
+      avgTicketPct: pctChange(
+        orders.length > 0 ? totalRevenue / orders.length : 0,
+        prevAvgTicket,
+      ),
+    };
+  }
+
   return {
     totalRevenue,
     totalOrders: orders.length,
@@ -194,6 +268,8 @@ async function _getReportData(
     paymentMethods,
     dailyData,
     topItems,
+    orderTypeMix,
+    growthVsPrev,
   };
 }
 
