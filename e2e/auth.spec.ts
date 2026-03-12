@@ -38,20 +38,15 @@ test.describe("Authentication", () => {
     await loginAs("owner");
     await expect(page).toHaveURL(/\/admin/);
 
-    // Try direct logout button first, fall back to user menu dropdown
-    const logoutButton = page.getByRole("button", { name: /đăng xuất|logout/i });
-    const userMenu = page.getByRole("button", { name: /menu|user|avatar/i });
+    // Click the user menu at the bottom of the sidebar (shows user name + chevron)
+    const userMenu = page.getByRole("button", { name: /Test|Owner|owner/i });
+    await expect(userMenu).toBeVisible({ timeout: 5_000 });
+    await userMenu.click();
 
-    if (await logoutButton.isVisible({ timeout: 5_000 }).catch(() => false)) {
-      await expect(logoutButton).toBeVisible();
-      await logoutButton.click();
-    } else {
-      await expect(userMenu).toBeVisible({ timeout: 5_000 });
-      await userMenu.click();
-      const menuItem = page.getByRole("menuitem", { name: /đăng xuất|logout/i });
-      await expect(menuItem).toBeVisible({ timeout: 5_000 });
-      await menuItem.click();
-    }
+    // Click logout in the dropdown
+    const logoutItem = page.getByText(/đăng xuất|logout/i);
+    await expect(logoutItem).toBeVisible({ timeout: 5_000 });
+    await logoutItem.click();
 
     await expect(page).toHaveURL(/\/login/, { timeout: 10_000 });
   });

@@ -6,27 +6,27 @@ import { test as base, expect, type Page } from "@playwright/test";
  */
 export const TEST_ACCOUNTS = {
   owner: {
-    email: process.env.E2E_OWNER_EMAIL ?? "owner@test.comtammatu.vn",
+    email: process.env.E2E_OWNER_EMAIL ?? "owner@comtammatu.vn",
     password: process.env.E2E_OWNER_PASSWORD ?? "Test1234!",
   },
   manager: {
-    email: process.env.E2E_MANAGER_EMAIL ?? "manager@test.comtammatu.vn",
+    email: process.env.E2E_MANAGER_EMAIL ?? "manager@comtammatu.vn",
     password: process.env.E2E_MANAGER_PASSWORD ?? "Test1234!",
   },
   cashier: {
-    email: process.env.E2E_CASHIER_EMAIL ?? "cashier@test.comtammatu.vn",
+    email: process.env.E2E_CASHIER_EMAIL ?? "cashier@comtammatu.vn",
     password: process.env.E2E_CASHIER_PASSWORD ?? "Test1234!",
   },
   waiter: {
-    email: process.env.E2E_WAITER_EMAIL ?? "waiter@test.comtammatu.vn",
+    email: process.env.E2E_WAITER_EMAIL ?? "waiter@comtammatu.vn",
     password: process.env.E2E_WAITER_PASSWORD ?? "Test1234!",
   },
   chef: {
-    email: process.env.E2E_CHEF_EMAIL ?? "chef@test.comtammatu.vn",
+    email: process.env.E2E_CHEF_EMAIL ?? "chef@comtammatu.vn",
     password: process.env.E2E_CHEF_PASSWORD ?? "Test1234!",
   },
   customer: {
-    email: process.env.E2E_CUSTOMER_EMAIL ?? "customer@test.comtammatu.vn",
+    email: process.env.E2E_CUSTOMER_EMAIL ?? "customer@comtammatu.vn",
     password: process.env.E2E_CUSTOMER_PASSWORD ?? "Test1234!",
   },
 } as const;
