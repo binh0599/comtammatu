@@ -11,6 +11,7 @@ import {
   FileText,
   Clock,
   CheckCircle2,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,7 +59,9 @@ import {
   deleteCampaign,
   scheduleCampaign,
   sendCampaign,
+  getCampaignAnalytics,
 } from "./actions";
+import type { CampaignAnalytics } from "./actions";
 
 // =====================
 // Types
@@ -521,6 +524,9 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [analyticsData, setAnalyticsData] = useState<CampaignAnalytics | null>(null);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
 
   async function handleDelete(id: number) {
     const key = `delete-${id}`;
@@ -558,6 +564,20 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
         });
       }
     });
+  }
+
+  async function handleShowAnalytics(campaignId: number) {
+    setAnalyticsLoading(true);
+    setAnalyticsOpen(true);
+    setAnalyticsData(null);
+    try {
+      const data = await getCampaignAnalytics(campaignId);
+      setAnalyticsData(data);
+    } catch {
+      setError("Không thể tải dữ liệu phân tích");
+    } finally {
+      setAnalyticsLoading(false);
+    }
   }
 
   return (
@@ -705,6 +725,23 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                         </AlertDialog>
                       )}
 
+                      {/* Analytics — only sent/completed */}
+                      {(campaign.status === "sent" ||
+                        campaign.status === "completed") && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleShowAnalytics(campaign.id)}
+                          disabled={isPending}
+                          aria-label="Xem phân tích"
+                        >
+                          <BarChart3
+                            className="h-4 w-4"
+                            aria-hidden="true"
+                          />
+                        </Button>
+                      )}
+
                       {/* Delete — only draft */}
                       {campaign.status === "draft" && (
                         <AlertDialog>
@@ -775,6 +812,60 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
           }}
         />
       )}
+
+      {/* Analytics Dialog */}
+      <Dialog open={analyticsOpen} onOpenChange={setAnalyticsOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Phân tích chiến dịch</DialogTitle>
+            <DialogDescription>
+              Thống kê hiệu quả gửi và chuyển đổi
+            </DialogDescription>
+          </DialogHeader>
+          {analyticsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <p className="text-muted-foreground text-sm">Đang tải...</p>
+            </div>
+          ) : analyticsData ? (
+            <div className="grid grid-cols-2 gap-4">
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-muted-foreground text-xs">Đã gửi</p>
+                  <p className="text-2xl font-bold">{analyticsData.total_sent}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-muted-foreground text-xs">Đã mở</p>
+                  <p className="text-2xl font-bold">{analyticsData.total_opened}</p>
+                  <p className="text-muted-foreground text-xs">{analyticsData.open_rate}%</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-muted-foreground text-xs">Chuyển đổi</p>
+                  <p className="text-2xl font-bold">{analyticsData.total_converted}</p>
+                  <p className="text-muted-foreground text-xs">{analyticsData.conversion_rate}%</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 text-center">
+                  <p className="text-muted-foreground text-xs">Doanh thu</p>
+                  <p className="text-2xl font-bold">
+                    {analyticsData.conversion_revenue.toLocaleString("vi-VN")}đ
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="text-muted-foreground text-sm">
+                Chưa có dữ liệu phân tích
+              </p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

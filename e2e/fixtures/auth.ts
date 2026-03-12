@@ -25,6 +25,10 @@ export const TEST_ACCOUNTS = {
     email: process.env.E2E_CHEF_EMAIL ?? "chef@test.comtammatu.vn",
     password: process.env.E2E_CHEF_PASSWORD ?? "Test1234!",
   },
+  customer: {
+    email: process.env.E2E_CUSTOMER_EMAIL ?? "customer@test.comtammatu.vn",
+    password: process.env.E2E_CUSTOMER_PASSWORD ?? "Test1234!",
+  },
 } as const;
 
 type Role = keyof typeof TEST_ACCOUNTS;

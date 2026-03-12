@@ -220,6 +220,7 @@ export {
   expiringBatchesQuerySchema,
   foodCostQuerySchema,
   urgentRestockRequestSchema,
+  branchTransferSchema,
 } from "./schemas/inventory";
 export type {
   CreateIngredientInput,
@@ -234,6 +235,7 @@ export type {
   ExpiringBatchesQueryInput,
   FoodCostQueryInput,
   UrgentRestockRequestInput,
+  BranchTransferInput,
 } from "./schemas/inventory";
 
 // Week 5-6: Supplier
@@ -288,6 +290,7 @@ export {
   updateCustomerSchema,
   createLoyaltyTierSchema,
   updateLoyaltyTierSchema,
+  createEarnRuleSchema,
   adjustLoyaltyPointsSchema,
 } from "./schemas/crm";
 export type {
@@ -295,6 +298,7 @@ export type {
   UpdateCustomerInput,
   CreateLoyaltyTierInput,
   UpdateLoyaltyTierInput,
+  CreateEarnRuleInput,
   AdjustLoyaltyPointsInput,
 } from "./schemas/crm";
 

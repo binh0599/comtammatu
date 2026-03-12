@@ -1,6 +1,6 @@
 import { Header } from "@/components/admin/header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Crown, Ticket, MessageCircle } from "lucide-react";
+import { Users, Crown, Ticket, MessageCircle, Zap } from "lucide-react";
 import {
   getCustomers,
   getLoyaltyTiers,
@@ -9,14 +9,16 @@ import {
   getBranches,
   getCrmStats,
 } from "./actions";
+import { getEarnRules } from "./earn-rule-actions";
 import { CrmStatsCards } from "./crm-stats-cards";
 import { CustomersTab } from "./customers-tab";
 import { LoyaltyTiersTab } from "./loyalty-tiers-tab";
 import { VouchersTab } from "./vouchers-tab";
 import { FeedbackTab } from "./feedback-tab";
+import { EarnRulesTab } from "./earn-rules-tab";
 
 export default async function CrmPage() {
-  const [customers, loyaltyTiers, vouchers, feedback, branches, stats] =
+  const [customers, loyaltyTiers, vouchers, feedback, branches, stats, earnRules] =
     await Promise.all([
       getCustomers(),
       getLoyaltyTiers(),
@@ -24,6 +26,7 @@ export default async function CrmPage() {
       getFeedback(),
       getBranches(),
       getCrmStats(),
+      getEarnRules(),
     ]);
 
   return (
@@ -33,7 +36,7 @@ export default async function CrmPage() {
         <CrmStatsCards stats={stats} />
 
         <Tabs defaultValue="customers" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 h-auto">
             <TabsTrigger value="customers" className="gap-2">
               <Users className="hidden size-4 sm:inline-block" />
               Khách hàng
@@ -41,6 +44,10 @@ export default async function CrmPage() {
             <TabsTrigger value="loyalty" className="gap-2">
               <Crown className="hidden size-4 sm:inline-block" />
               Hạng thành viên
+            </TabsTrigger>
+            <TabsTrigger value="earn-rules" className="gap-2">
+              <Zap className="hidden size-4 sm:inline-block" />
+              Tích điểm
             </TabsTrigger>
             <TabsTrigger value="vouchers" className="gap-2">
               <Ticket className="hidden size-4 sm:inline-block" />
@@ -59,6 +66,9 @@ export default async function CrmPage() {
           </TabsContent>
           <TabsContent value="loyalty">
             <LoyaltyTiersTab loyaltyTiers={loyaltyTiers} />
+          </TabsContent>
+          <TabsContent value="earn-rules">
+            <EarnRulesTab earnRules={earnRules} />
           </TabsContent>
           <TabsContent value="vouchers">
             <VouchersTab vouchers={vouchers} branches={branches} />

@@ -47,6 +47,15 @@ export type CreateLoyaltyTierInput = z.infer<typeof createLoyaltyTierSchema>;
 export const updateLoyaltyTierSchema = createLoyaltyTierSchema.partial();
 export type UpdateLoyaltyTierInput = z.infer<typeof updateLoyaltyTierSchema>;
 
+export const createEarnRuleSchema = z.object({
+  name: z.string().min(1, "Tên quy tắc không được để trống").max(200),
+  points_per_unit: z.coerce.number().positive("Điểm phải lớn hơn 0"),
+  unit_amount: z.coerce.number().positive("Mức chi tiêu phải lớn hơn 0"),
+  min_order_total: z.coerce.number().min(0).optional(),
+  is_active: z.boolean().default(true),
+});
+export type CreateEarnRuleInput = z.infer<typeof createEarnRuleSchema>;
+
 export const adjustLoyaltyPointsSchema = z.object({
   customer_id: z.coerce.number().int().positive(),
   points: z.coerce
