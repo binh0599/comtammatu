@@ -45,7 +45,8 @@ interface PrinterConfigRow {
   id: number;
   name: string;
   type: string;
-  connection_config: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  connection_config: any;
   paper_width_mm: number;
   assigned_to_type: string | null;
   assigned_to_id: number | null;

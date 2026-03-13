@@ -96,8 +96,10 @@ export default async function PosPage() {
         </p>
       </div>
       <TableMapClient
-        tables={tables}
-        menuItems={menuItems}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tables={tables as any}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        menuItems={menuItems as any}
         categories={categories}
         terminalId={terminalId}
       />

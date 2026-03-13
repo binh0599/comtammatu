@@ -14,9 +14,10 @@
 | UI | shadcn/ui (new-york) + Tailwind CSS v4.2 + Lucide React |
 | Monorepo | Turborepo 2.8 + pnpm 9.15.0 workspaces |
 | Hosting | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI |
-| Shared packages | `@comtammatu/database`, `@comtammatu/shared` (Zod schemas), `@comtammatu/security` (stub), `@comtammatu/ui` (stub) |
+| State | React Query + Zustand |
+| Shared packages | `@comtammatu/database`, `@comtammatu/shared` (Zod schemas + logging), `@comtammatu/security` (rate limiting + lockout), `@comtammatu/ui` (26 shadcn components) |
 
-**Phase:** Post-MVP Sprint 3 (Menu & Devices). ~180 source files, 30+ routes, `main` branch.
+**Phase:** Production-ready. All sprints + refactoring waves completed. ~300+ source files, 40+ routes, `main` branch.
 
 ---
 
@@ -45,7 +46,7 @@
 apps/web/app/
   login/actions.ts            ← Auth: login(), logout()
   (admin)/layout.tsx          ← RBAC guard (owner/manager only)
-  (admin)/admin/              ← All admin routes + actions.ts per route
+  (admin)/admin/              ← All admin routes + actions/ directories (split sub-modules)
   (pos)/layout.tsx            ← POS auth guard
   (pos)/pos/orders/actions.ts ← Order lifecycle (createOrder, updateStatus)
   (pos)/pos/cashier/actions.ts← Payment processing
@@ -55,7 +56,10 @@ packages/
   database/src/supabase/client.ts  ← Client components ONLY import from here
   database/src/supabase/server.ts  ← RSC/Actions import from here
   shared/src/constants.ts          ← All enums, status arrays, valid transitions
-  shared/src/schemas/              ← All Zod schemas (11 files)
+  shared/src/schemas/              ← All Zod schemas (16 files)
+  shared/src/server/               ← Structured logger + error reporter
+  ui/src/                          ← 26 shadcn/ui components (barrel export)
+  security/src/                    ← Rate limiters + account lockout
 
 docs/
   SESSION_PROTOCOL.md  ← Session workflow and rules — CHECK EVERY SESSION
@@ -118,3 +122,22 @@ Failure Conditions:
 ---
 
 *Full reference: `docs/REFERENCE.md` — dependencies, DB conventions, full file tree, skills map, migration path.*
+
+---
+
+## VII. GSTACK
+
+**Web browsing:** Always use the `/browse` skill from gstack for all web browsing. Never use `mcp__Claude_in_Chrome__*` tools.
+
+**Available skills:**
+
+| Skill | Purpose |
+| ----- | ------- |
+| `/browse` | Headless browser for navigating URLs, interacting with elements, taking screenshots, QA testing |
+| `/plan-ceo-review` | CEO-level plan review |
+| `/plan-eng-review` | Engineering plan review |
+| `/review` | Code review |
+| `/ship` | Ship/deploy workflow |
+| `/qa` | QA testing workflow |
+| `/setup-browser-cookies` | Configure browser cookies for authenticated browsing |
+| `/retro` | Retrospective workflow |

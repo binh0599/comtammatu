@@ -21,7 +21,7 @@ interface ExpiringBatch {
   id: number;
   ingredient_id: number;
   quantity: number;
-  expiry_date: string;
+  expiry_date: string | null;
   po_id?: number | null;
   ingredients: { name: string; unit: string } | null;
 }
@@ -147,8 +147,8 @@ export function ExpiryTab({
                   <TableCell className="text-right">
                     {Number(batch.quantity).toFixed(2)}
                   </TableCell>
-                  <TableCell>{formatDate(batch.expiry_date)}</TableCell>
-                  <TableCell>{getExpiryBadge(batch.expiry_date)}</TableCell>
+                  <TableCell>{batch.expiry_date ? formatDate(batch.expiry_date) : "-"}</TableCell>
+                  <TableCell>{batch.expiry_date ? getExpiryBadge(batch.expiry_date) : "-"}</TableCell>
                   <TableCell>
                     {batch.po_id ? `PO #${batch.po_id}` : "-"}
                   </TableCell>

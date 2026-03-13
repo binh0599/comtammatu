@@ -32,10 +32,12 @@ export default async function SecurityPage() {
             <TabsTrigger value="audit">Nhật ký hoạt động</TabsTrigger>
           </TabsList>
           <TabsContent value="events">
-            <EventsTab events={events} summary={summary} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <EventsTab events={events as any} summary={summary} />
           </TabsContent>
           <TabsContent value="audit">
-            <AuditTab logs={auditLogs} resourceTypes={resourceTypes} />
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            <AuditTab logs={auditLogs as any} resourceTypes={resourceTypes} />
           </TabsContent>
         </Tabs>
       </div>

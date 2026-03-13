@@ -70,7 +70,7 @@ async function _getFoodCostReport(input: {
   const result = Array.isArray(data) ? data[0] : data;
   return {
     error: null,
-    data: result as {
+    data: result as unknown as {
       total_revenue: number;
       total_ingredient_cost: number;
       food_cost_pct: number;

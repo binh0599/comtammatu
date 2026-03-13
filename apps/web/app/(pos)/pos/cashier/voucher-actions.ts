@@ -12,6 +12,7 @@ import {
   auditLog,
   safeDbErrorResult,
   CASHIER_ROLES,
+  getTaxRates,
 } from "@comtammatu/shared";
 
 // ---------------------------------------------------------------------------
@@ -186,20 +187,7 @@ async function _applyVoucherToOrder(data: {
   if (discountError) return safeDbErrorResult(discountError, "db");
 
   // Recalculate order totals (tax/service on discounted subtotal)
-  const { data: settings } = await supabase
-    .from("system_settings")
-    .select("key, value")
-    .eq("tenant_id", tenantId)
-    .in("key", ["tax_rate", "service_charge"]);
-
-  const taxRate =
-    Number(
-      settings?.find((s: { key: string; value: string | null }) => s.key === "tax_rate")?.value ?? 10,
-    ) / 100;
-  const serviceChargeRate =
-    Number(
-      settings?.find((s: { key: string; value: string | null }) => s.key === "service_charge")?.value ?? 5,
-    ) / 100;
+  const { taxRate, serviceChargeRate } = await getTaxRates(supabase, tenantId);
 
   const discountedSubtotal = order.subtotal - discountAmount;
   const newTax = Math.round(discountedSubtotal * taxRate);
@@ -287,23 +275,10 @@ async function _removeVoucherFromOrder(orderId: number) {
   if (deleteError) return safeDbErrorResult(deleteError, "db");
 
   // Recalculate totals without discount
-  const { data: settings } = await supabase
-    .from("system_settings")
-    .select("key, value")
-    .eq("tenant_id", tenantId)
-    .in("key", ["tax_rate", "service_charge"]);
+  const rates = await getTaxRates(supabase, tenantId);
 
-  const taxRate =
-    Number(
-      settings?.find((s: { key: string; value: string | null }) => s.key === "tax_rate")?.value ?? 10,
-    ) / 100;
-  const serviceChargeRate =
-    Number(
-      settings?.find((s: { key: string; value: string | null }) => s.key === "service_charge")?.value ?? 5,
-    ) / 100;
-
-  const newTax = Math.round(order.subtotal * taxRate);
-  const newServiceCharge = Math.round(order.subtotal * serviceChargeRate);
+  const newTax = Math.round(order.subtotal * rates.taxRate);
+  const newServiceCharge = Math.round(order.subtotal * rates.serviceChargeRate);
   const newTotal = order.subtotal + newTax + newServiceCharge;
 
   await supabase

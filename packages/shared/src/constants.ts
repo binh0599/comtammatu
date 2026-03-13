@@ -405,3 +405,22 @@ export type PushNotificationType = (typeof PUSH_NOTIFICATION_TYPES)[number];
 
 export const PUSH_SUBSCRIPTION_STATUSES = ["active", "expired", "unsubscribed"] as const;
 export type PushSubscriptionStatus = (typeof PUSH_SUBSCRIPTION_STATUSES)[number];
+
+// ===== System Settings Keys =====
+
+export const SYSTEM_SETTINGS_KEYS = {
+  TAX_RATE: "tax_rate",
+  SERVICE_CHARGE: "service_charge",
+  CURRENCY: "currency",
+  TIMEZONE: "timezone",
+  RECEIPT_HEADER: "receipt_header",
+  RECEIPT_FOOTER: "receipt_footer",
+  PAYMENT_METHODS_CONFIG: "payment_methods_config",
+} as const;
+export type SystemSettingsKey = (typeof SYSTEM_SETTINGS_KEYS)[keyof typeof SYSTEM_SETTINGS_KEYS];
+
+/** Default values for numeric system settings */
+export const SYSTEM_SETTINGS_DEFAULTS = {
+  [SYSTEM_SETTINGS_KEYS.TAX_RATE]: 10,
+  [SYSTEM_SETTINGS_KEYS.SERVICE_CHARGE]: 5,
+} as const;

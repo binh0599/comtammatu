@@ -151,6 +151,7 @@ async function _getKdsPerformance(
     const acceptedAt = ticket.accepted_at
       ? new Date(ticket.accepted_at).getTime()
       : createdAt;
+    if (!ticket.completed_at) continue;
     const completedAt = new Date(ticket.completed_at).getTime();
 
     const prepMin = (completedAt - acceptedAt) / 60_000;

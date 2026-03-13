@@ -5,7 +5,7 @@
  * IMPORTANT: Only import in server-side code. Never in "use client" files.
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "./action-context";
 
 export interface AuditLogEntry {
   tenant_id: number;
@@ -31,11 +31,11 @@ export async function auditLog(
       user_id: entry.user_id,
       action: entry.action,
       resource_type: entry.resource_type,
-      resource_id: String(entry.resource_id),
-      changes: entry.changes
-        ? JSON.stringify(entry.changes, (_key, value) =>
+      resource_id: typeof entry.resource_id === "string" ? Number(entry.resource_id) : entry.resource_id,
+      new_value: entry.changes
+        ? JSON.parse(JSON.stringify(entry.changes, (_key, value) =>
             typeof value === "bigint" ? value.toString() : value,
-          )
+          ))
         : null,
       ip_address: entry.ip_address ?? null,
     });

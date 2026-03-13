@@ -6,17 +6,9 @@ import Link from "next/link";
 
 import { createMenu, updateMenu, deleteMenu } from "./actions";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
   Badge,
   Button,
+  ConfirmDialog,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -315,33 +307,17 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                       </Dialog>
 
                       {/* Delete Dialog */}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
+                      <ConfirmDialog
+                        title="Xóa thực đơn?"
+                        description={`Thực đơn "${menu.name}" và tất cả danh mục, món ăn bên trong sẽ bị xóa vĩnh viễn.`}
+                        onConfirm={() => handleDelete(menu.id)}
+                        isPending={isPending}
+                        trigger={
                           <Button variant="ghost" size="icon" aria-label="Xóa thực đơn">
                             <Trash2 className="h-4 w-4 text-red-500" aria-hidden="true" />
                           </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Xóa thực đơn?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Thực đơn &quot;{menu.name}&quot; và tất cả danh
-                              mục, món ăn bên trong sẽ bị xóa vĩnh viễn.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(menu.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              {isPending ? "Đang xóa..." : "Xóa"}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                        }
+                      />
                     </div>
                   </TableCell>
                 </TableRow>

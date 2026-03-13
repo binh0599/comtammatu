@@ -288,7 +288,7 @@ async function _getPrepList(targetPortions?: number): Promise<PrepListItem[]> {
   });
 
   if (error) throw safeDbError(error, "db");
-  return (data ?? []) as PrepListItem[];
+  return (data ?? []) as unknown as PrepListItem[];
 }
 
 export async function getPrepList(

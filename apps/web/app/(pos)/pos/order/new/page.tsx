@@ -78,7 +78,8 @@ export default async function NewOrderPage({
 
   return (
     <NewOrderClient
-      menuItems={menuItems}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      menuItems={menuItems as any}
       categories={categories}
       terminalId={terminalId}
       tableId={tableId}

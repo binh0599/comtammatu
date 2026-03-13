@@ -76,6 +76,9 @@ export {
   // Push Notifications
   PUSH_NOTIFICATION_TYPES,
   PUSH_SUBSCRIPTION_STATUSES,
+  // System Settings
+  SYSTEM_SETTINGS_KEYS,
+  SYSTEM_SETTINGS_DEFAULTS,
 } from "./constants";
 
 export type {
@@ -136,6 +139,8 @@ export type {
   // Push Notifications
   PushNotificationType,
   PushSubscriptionStatus,
+  // System Settings
+  SystemSettingsKey,
 } from "./constants";
 
 // ===== Zod Schemas =====
@@ -505,9 +510,11 @@ export {
   configureActionContext,
   requireBranch,
 } from "./server/action-context";
-export type { ActionContext, KdsContext, CustomerContext } from "./server/action-context";
+export type { ActionContext, KdsContext, CustomerContext, SupabaseClient } from "./server/action-context";
 
 export { withServerAction, withServerQuery } from "./server/with-server-action";
+
+export { getTaxSettings, getTaxRates } from "./server/tax-settings";
 
 // ===== Logging & Error Reporting =====
 export { createLogger, logger } from "./server/logger";

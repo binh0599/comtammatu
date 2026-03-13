@@ -13,3 +13,5 @@
 [2026-03-13] CLIENT_EXPORT_NAME — `@comtammatu/database/src/supabase/client` exports `createClient`, not `createBrowserClient`. The internal `@supabase/ssr` function is wrapped and renamed.
 [2026-03-13] CSP_UNSAFE_EVAL_DEV_ONLY — `unsafe-eval` in CSP must only be enabled in development (needed for HMR/React DevTools). Production CSP must NOT include `unsafe-eval`. Check `next.config.ts` `buildCsp()`.
 [2026-03-13] RATE_LIMIT_BEFORE_AUTH — Rate limiting and account lockout checks must run BEFORE calling `supabase.auth.signInWithPassword()` to prevent wasting auth API calls on locked accounts.
+[2026-03-13] DELETE_OLD_AFTER_SPLIT — When splitting a monolithic file (e.g., `actions.ts`) into a directory (`actions/index.ts` + sub-modules), ALWAYS delete the original file. Node.js resolves `file.ts` before `file/index.ts`, so the old file silently takes precedence.
+[2026-03-13] MV_REFRESH_AFTER_SCHEMA — After adding/modifying materialized views, ensure the refresh cron job includes the new MVs. Check `refresh_materialized_views()` RPC and `/api/cron/refresh-views`.

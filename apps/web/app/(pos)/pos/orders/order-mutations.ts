@@ -17,6 +17,7 @@ import {
   requireBranch,
   withServerAction,
   safeDbError,
+  getTaxSettings,
 } from "@comtammatu/shared";
 import { orderLimiter } from "@comtammatu/security";
 import {
@@ -25,31 +26,6 @@ import {
   maybeReleaseTable,
 } from "./helpers";
 import { sendPushToBranchRole } from "@/lib/push-sender";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function getTaxSettings(supabase: any, tenantId: number) {
-  const { data: settings } = await supabase
-    .from("system_settings")
-    .select("key, value")
-    .eq("tenant_id", tenantId)
-    .in("key", ["tax_rate", "service_charge"]);
-
-  let taxRate = 10; // default 10%
-  let serviceChargeRate = 5; // default 5%
-
-  if (settings) {
-    for (const s of settings) {
-      if (s.key === "tax_rate" && s.value !== null) {
-        taxRate = Number(s.value);
-      }
-      if (s.key === "service_charge" && s.value !== null) {
-        serviceChargeRate = Number(s.value);
-      }
-    }
-  }
-
-  return { taxRate, serviceChargeRate };
-}
 
 // ---------------------------------------------------------------------------
 // createOrder

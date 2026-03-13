@@ -47,7 +47,7 @@ import {
 interface Payment {
   id: number;
   order_id: number;
-  terminal_id: number;
+  terminal_id: number | null;
   method: string;
   provider: string | null;
   amount: number;

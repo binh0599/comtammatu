@@ -5,10 +5,8 @@ import { formatPrice, getOrderStatusLabel } from "@comtammatu/shared";
 import type { DashboardStats } from "./actions";
 import {
   Badge,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
+  StatCard,
+  StatCardGrid,
 } from "@comtammatu/ui";
 
 interface DashboardCardsProps {
@@ -35,52 +33,46 @@ const metricCards = (stats: DashboardStats) => [
     value: formatPrice(stats.todayRevenue),
     sub: `Trung bình ${formatPrice(stats.avgOrderValue)}/đơn`,
     icon: DollarSign,
-    iconClass: "bg-emerald-100 text-emerald-700",
+    iconClassName: "bg-emerald-100 text-emerald-700",
   },
   {
     title: "Đơn hàng hôm nay",
     value: String(stats.todayOrders),
     sub: "đơn hàng",
     icon: ShoppingCart,
-    iconClass: "bg-blue-100 text-blue-700",
+    iconClassName: "bg-blue-100 text-blue-700",
   },
   {
     title: "Doanh thu tuần",
     value: formatPrice(stats.weekRevenue),
     sub: "tuần này",
     icon: TrendingUp,
-    iconClass: "bg-violet-100 text-violet-700",
+    iconClassName: "bg-violet-100 text-violet-700",
   },
   {
     title: "Doanh thu tháng",
     value: formatPrice(stats.monthRevenue),
     sub: "tháng này",
     icon: Calendar,
-    iconClass: "bg-amber-100 text-amber-700",
+    iconClassName: "bg-amber-100 text-amber-700",
   },
 ] as const;
 
 export function DashboardCards({ stats, statusCounts }: DashboardCardsProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <StatCardGrid columns={4}>
         {metricCards(stats).map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {card.title}
-              </CardTitle>
-              <div className={`flex size-8 items-center justify-center rounded-lg ${card.iconClass}`}>
-                <card.icon className="size-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{card.value}</div>
-              <p className="text-muted-foreground text-xs mt-1">{card.sub}</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            sub={card.sub}
+            icon={card.icon}
+            iconClassName={card.iconClassName}
+          />
         ))}
-      </div>
+      </StatCardGrid>
 
       {Object.keys(statusCounts).length > 0 && (
         <div className="flex flex-wrap items-center gap-2">

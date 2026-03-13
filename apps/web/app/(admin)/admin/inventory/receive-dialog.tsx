@@ -55,7 +55,7 @@ export function ReceiveDialog({
         received_qty: String(item.received_qty != null && item.received_qty > 0 ? item.received_qty : item.quantity),
         reject_qty: String(item.reject_qty ?? 0),
         reject_reason: item.reject_reason ?? "",
-        quality_status: item.quality_status ?? "accepted",
+        quality_status: (item.quality_status ?? "accepted") as "accepted" | "partial" | "rejected",
         expiry_date: "",
       };
     }

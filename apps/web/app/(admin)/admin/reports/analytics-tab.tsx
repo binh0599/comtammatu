@@ -232,8 +232,8 @@ export function AnalyticsTab() {
                             tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
                           />
                           <Tooltip
-                            formatter={(value: number | undefined) => [
-                              formatVND(value ?? 0),
+                            formatter={(value) => [
+                              formatVND((value as number) ?? 0),
                               "Doanh thu",
                             ]}
                             contentStyle={{
@@ -351,8 +351,8 @@ export function AnalyticsTab() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number | undefined) => [
-                          formatVND(value ?? 0),
+                        formatter={(value) => [
+                          formatVND((value as number) ?? 0),
                           "Doanh thu",
                         ]}
                         contentStyle={{

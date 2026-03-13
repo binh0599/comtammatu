@@ -28,7 +28,8 @@ export default async function MenuDetailPage({ params }: Props) {
 
   // Fetch items for all categories
   const categoriesWithItems = await Promise.all(
-    categories.map(async (cat: { id: number; [key: string]: unknown }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    categories.map(async (cat: any) => {
       const items = await getMenuItems(cat.id);
       return { ...cat, items };
     }),

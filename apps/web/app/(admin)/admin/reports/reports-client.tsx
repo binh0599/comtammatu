@@ -336,8 +336,8 @@ export function ReportsClient({
                   tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
-                  formatter={(value: number | undefined) => [
-                    formatVND(value ?? 0),
+                  formatter={(value) => [
+                    formatVND((value as number) ?? 0),
                     "Doanh thu",
                   ]}
                   labelFormatter={(label) => `Ngày ${String(label)}`}
@@ -381,8 +381,8 @@ export function ReportsClient({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number | undefined) => [
-                      formatVND(value ?? 0),
+                    formatter={(value) => [
+                      formatVND((value as number) ?? 0),
                       "Tổng tiền",
                     ]}
                     contentStyle={TOOLTIP_STYLE}
@@ -450,8 +450,8 @@ export function ReportsClient({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number | undefined, _name: string | undefined, props: { payload?: { revenue?: number } }) => [
-                      `${value ?? 0} đơn (${formatVND(props?.payload?.revenue ?? 0)})`,
+                    formatter={(value, _name, props) => [
+                      `${(value as number) ?? 0} đơn (${formatVND((props as { payload?: { revenue?: number } })?.payload?.revenue ?? 0)})`,
                       "Số lượng",
                     ]}
                     contentStyle={TOOLTIP_STYLE}
@@ -540,9 +540,9 @@ export function ReportsClient({
                       tick={{ fontSize: 11 }}
                     />
                     <Tooltip
-                      formatter={(value: number | undefined, _name: string | undefined, props: { payload?: { fullName?: string; revenue?: number } }) => [
-                        `${value ?? 0} phần (${formatVND(props?.payload?.revenue ?? 0)})`,
-                        props?.payload?.fullName ?? "",
+                      formatter={(value, _name, props) => [
+                        `${(value as number) ?? 0} phần (${formatVND((props as { payload?: { fullName?: string; revenue?: number } })?.payload?.revenue ?? 0)})`,
+                        (props as { payload?: { fullName?: string } })?.payload?.fullName ?? "",
                       ]}
                       contentStyle={TOOLTIP_STYLE}
                     />

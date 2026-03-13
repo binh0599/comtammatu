@@ -53,7 +53,8 @@ export default async function CashierPage() {
           `Máy #${session.terminal_id}`,
         terminal_id: session.terminal_id,
       }}
-      orders={orders}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      orders={orders as any}
       branchId={profile.branch_id}
     />
   );

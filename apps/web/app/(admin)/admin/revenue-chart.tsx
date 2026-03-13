@@ -37,8 +37,8 @@ export function RevenueChart({ data }: { data: RevenueData[] }) {
           tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
         />
         <Tooltip
-          formatter={(value: number | undefined) => [
-            formatPrice(value ?? 0),
+          formatter={(value) => [
+            formatPrice((value as number) ?? 0),
             "Doanh thu",
           ]}
           labelFormatter={(label) => `Ngày ${label}`}

@@ -47,8 +47,7 @@ export const getBranches = withServerQuery(_getBranches);
 async function _getPrinterConfigs() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("printer_configs")
     .select("*, branches!inner(tenant_id, name)")
     .eq("branches.tenant_id", tenantId)
@@ -63,8 +62,7 @@ export const getPrinterConfigs = withServerQuery(_getPrinterConfigs);
 async function _getPrinterForTerminal(terminalId: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("printer_configs")
     .select("*, branches!inner(tenant_id)")
     .eq("branches.tenant_id", tenantId)
@@ -82,8 +80,7 @@ export const getPrinterForTerminal = withServerQuery(_getPrinterForTerminal);
 async function _getPrinterForStation(stationId: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("printer_configs")
     .select("*, branches!inner(tenant_id)")
     .eq("branches.tenant_id", tenantId)
@@ -155,10 +152,10 @@ async function _createPrinterConfig(formData: FormData) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: created, error } = await (supabase as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: created, error } = await supabase
     .from("printer_configs")
-    .insert({ ...parsed.data })
+    .insert({ ...parsed.data } as any)
     .select("id");
 
   if (error) {
@@ -208,8 +205,7 @@ async function _updatePrinterConfig(formData: FormData) {
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   // Scope update to tenant via branch join — works for all admin roles
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from("printer_configs")
     .select("id, branch_id, branches!inner(tenant_id)")
     .eq("id", id)
@@ -218,10 +214,10 @@ async function _updatePrinterConfig(formData: FormData) {
 
   if (!existing) return { error: "Không tìm thấy cấu hình máy in" };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: updated, error } = await (supabase as any)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: updated, error } = await supabase
     .from("printer_configs")
-    .update(parsed.data)
+    .update(parsed.data as any)
     .eq("id", id)
     .eq("branch_id", existing.branch_id)
     .select("id");
@@ -250,8 +246,7 @@ async function _deletePrinterConfig(formData: FormData) {
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   // Verify printer belongs to caller's tenant via branch join
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from("printer_configs")
     .select("id, branch_id, branches!inner(tenant_id)")
     .eq("id", id)
@@ -260,8 +255,7 @@ async function _deletePrinterConfig(formData: FormData) {
 
   if (!existing) return { error: "Không tìm thấy cấu hình máy in" };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: deleted, error } = await (supabase as any)
+  const { data: deleted, error } = await supabase
     .from("printer_configs")
     .delete()
     .eq("id", id)
@@ -299,8 +293,7 @@ async function _assignPrinter(formData: FormData) {
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
   // Verify the printer belongs to caller's tenant and get its branch_id
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: printer } = await (supabase as any)
+  const { data: printer } = await supabase
     .from("printer_configs")
     .select("id, branch_id, branches!inner(tenant_id)")
     .eq("id", parsed.data.printer_config_id)
@@ -327,8 +320,7 @@ async function _assignPrinter(formData: FormData) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data: updated, error } = await (supabase as any)
+  const { data: updated, error } = await supabase
     .from("printer_configs")
     .update({
       assigned_to_type: parsed.data.assigned_to_type,

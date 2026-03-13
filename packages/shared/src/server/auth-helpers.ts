@@ -6,7 +6,7 @@
  * Never import in "use client" files.
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "./action-context";
 import { ActionError } from "../utils/errors";
 import type { StaffRole } from "../constants";
 
@@ -62,7 +62,8 @@ export async function verifyBranchOwnership(
   entityId: number,
   userBranchId: number,
 ): Promise<void> {
-  const { data, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table helper
+  const { data, error } = await (supabase as any)
     .from(table)
     .select("branch_id")
     .eq("id", entityId)
@@ -76,7 +77,7 @@ export async function verifyBranchOwnership(
     );
   }
 
-  if (data.branch_id !== userBranchId) {
+  if ((data as { branch_id: number }).branch_id !== userBranchId) {
     throw new ActionError(
       "Dữ liệu không thuộc chi nhánh của bạn",
       "UNAUTHORIZED",
@@ -100,7 +101,8 @@ export async function verifyTenantOwnership(
   entityId: number,
   userTenantId: number,
 ): Promise<void> {
-  const { data, error } = await supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table helper
+  const { data, error } = await (supabase as any)
     .from(table)
     .select("tenant_id")
     .eq("id", entityId)
@@ -114,7 +116,7 @@ export async function verifyTenantOwnership(
     );
   }
 
-  if (data.tenant_id !== userTenantId) {
+  if ((data as { tenant_id: number }).tenant_id !== userTenantId) {
     throw new ActionError(
       "Dữ liệu không thuộc tổ chức của bạn",
       "UNAUTHORIZED",

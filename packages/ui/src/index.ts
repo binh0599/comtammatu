@@ -34,3 +34,9 @@ export * from "./table";
 export * from "./tabs";
 export * from "./textarea";
 export * from "./tooltip";
+
+// Composite components
+export * from "./stat-card";
+export * from "./confirm-dialog";
+export * from "./status-badge";
+export * from "./data-table";

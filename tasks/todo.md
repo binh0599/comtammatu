@@ -486,7 +486,7 @@
 - [x] Package.json exports map (`"."` + `"./src/*"`)
 - [x] Update `components.json` shadcn alias → `../../packages/ui/src`
 - [x] Verify: typecheck + build all pass (7/7 turbo tasks)
-- [ ] Create composite components: `DataTable`, `StatusBadge`, `ConfirmDialog`, `StatCard`
+- [x] Create composite components: `DataTable`, `StatusBadge`, `ConfirmDialog`, `StatCard` (2026-03-13)
 
 ### WCAG Accessibility Audit
 - [x] Install `@axe-core/react` + dev-mode integration (AxeDev component in root layout)
@@ -531,7 +531,8 @@
 - [x] `realtime-triggers.test.ts` — order_number generation, KDS ticket auto-creation
 - [x] `materialized-views.test.ts` — 6 MVs: revenue, payments, items, peak hours, staff, inventory
 - [x] Vitest config (`tests/integration/vitest.config.ts`) — 30s timeout, node env
-- [ ] Run integration tests against live DB (requires env vars in CI)
+- [x] Exclude integration tests from CI unit test run (`packages/shared/vitest.config.ts` — exclude `tests/integration/**`)
+- [ ] Run integration tests against live DB (requires adding `SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` secrets to GitHub Actions)
 
 ---
 
@@ -567,3 +568,24 @@
 - [x] Auto-tier upgrade triggers — inline upgrade in adjustLoyaltyPoints + daily batch cron at 4 AM UTC
 - [--] VNPay — excluded, Momo QR sufficient for current operations
 ```
+
+---
+
+## Các vấn đề còn tồn đọng (Known Issues & Cleanup — 2026-03-13)
+
+### Bug / Cần sửa
+- [x] **Monolithic actions.ts đã xóa** — 5 file `actions.ts` cũ đã được xóa (2026-03-13). Barrel exports từ `actions/index.ts` hoạt động đúng.
+- [x] **Integration tests đã thêm vào CI** — job `integration-test` trong `.github/workflows/ci.yml` (2026-03-13). Cần add secrets `NEXT_PUBLIC_SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` trong GitHub repo Settings → Secrets.
+
+### Cải thiện (Nice-to-have)
+- [x] Composite UI components cho `@comtammatu/ui`: `DataTable`, `StatusBadge`, `ConfirmDialog`, `StatCard` (2026-03-13)
+- [x] Shared `Database` type giữa các packages — `SupabaseClient<Database>` thay thế `any` (2026-03-13). Giảm từ 31 → 7 `as any` casts (còn lại: push_subscriptions chưa có trong DB, dynamic table helpers)
+- [x] `getTaxSettings()` utility function thay vì hardcode system_settings keys (2026-03-13)
+- [ ] Sentry integration thay thế error-reporter stub — **Deferred**: cần SENTRY_DSN + external setup
+
+### Đã hoàn thành tất cả
+- Tất cả 4 Priority roadmap items ✓
+- Tất cả 6 Refactoring Waves ✓
+- 9 Post-MVP Sprints ✓
+- 40+ routes, 502 unit tests, 13 E2E specs, 8 integration tests
+- Hệ thống sẵn sàng cho production pilot

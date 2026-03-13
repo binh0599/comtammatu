@@ -156,8 +156,8 @@ export function BranchComparison({
               }
             />
             <Tooltip
-              formatter={(value: number | undefined) => [
-                formatMetric(value ?? 0, metric),
+              formatter={(value) => [
+                formatMetric((value as number) ?? 0, metric),
                 METRIC_LABELS[metric],
               ]}
               contentStyle={{

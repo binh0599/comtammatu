@@ -140,6 +140,7 @@ async function _getStaffPerformance(
   >();
 
   for (const row of perfResult.data ?? []) {
+    if (!row.profile_id) continue;
     const existing = perfMap.get(row.profile_id) ?? {
       orders_created: 0,
       total_items: 0,

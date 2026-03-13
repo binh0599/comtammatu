@@ -24,7 +24,7 @@ export interface PoItem {
   received_qty: number;
   reject_qty: number;
   reject_reason: string | null;
-  quality_status: QualityStatus;
+  quality_status: string;
   ingredients: { name: string; unit: string } | null;
 }
 

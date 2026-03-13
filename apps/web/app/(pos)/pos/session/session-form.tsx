@@ -42,7 +42,7 @@ interface ActiveSession {
   opening_amount: number;
   opened_at: string;
   status: string;
-  terminal_id: number;
+  terminal_id: number | null;
   pos_terminals: { name: string; type: string } | null;
 }
 

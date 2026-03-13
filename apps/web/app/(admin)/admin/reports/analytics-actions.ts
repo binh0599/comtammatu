@@ -85,6 +85,7 @@ async function _getBranchAnalytics(
   }
 
   for (const row of revenueResult.data ?? []) {
+    if (row.branch_id == null) continue;
     const stats = branchStats.get(row.branch_id);
     if (stats) {
       stats.revenue += Number(row.total_revenue);
@@ -95,6 +96,7 @@ async function _getBranchAnalytics(
   // Aggregate category revenue per branch → find top
   const branchCategories = new Map<number, Map<string, number>>();
   for (const row of categoryResult.data ?? []) {
+    if (row.branch_id == null) continue;
     if (!branchCategories.has(row.branch_id)) {
       branchCategories.set(row.branch_id, new Map());
     }

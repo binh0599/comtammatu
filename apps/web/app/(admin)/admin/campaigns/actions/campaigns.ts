@@ -302,7 +302,7 @@ async function _sendCampaign(id: number) {
   // Verify ownership
   const { data: existing, error: fetchError } = await supabase
     .from("campaigns")
-    .select("id, status, target_segment, name, message")
+    .select("id, status, target_segment, name, content")
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -374,7 +374,7 @@ async function _sendCampaign(id: number) {
   if (sentCount > 0) {
     let recipientQuery = supabase
       .from("customers")
-      .select("id, user_id")
+      .select("id, auth_user_id")
       .eq("tenant_id", tenantId)
       .eq("is_active", true)
       .limit(500);
@@ -394,7 +394,7 @@ async function _sendCampaign(id: number) {
       }
     }
 
-    void recipientQuery.then(({ data: customers }: { data: { id: number; user_id: string | null }[] | null }) => {
+    void recipientQuery.then(({ data: customers }) => {
       if (!customers || customers.length === 0) return;
 
       // Bulk insert campaign_recipients for analytics tracking
@@ -408,10 +408,10 @@ async function _sendCampaign(id: number) {
 
       // Send push notifications (fire-and-forget)
       for (const c of customers) {
-        if (c.user_id) {
-          void sendPushToUser(c.user_id, {
+        if (c.auth_user_id) {
+          void sendPushToUser(c.auth_user_id, {
             title: existing.name ?? "Ưu đãi mới",
-            body: (existing.message as string) ?? "Bạn có ưu đãi mới!",
+            body: (existing.content as unknown as string) ?? "Bạn có ưu đãi mới!",
             type: "campaign",
           }, "campaign");
         }

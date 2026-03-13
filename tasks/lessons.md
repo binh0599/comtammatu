@@ -71,10 +71,10 @@
 **Rule:** For every Server Action that writes data, trace which RLS policies allow the operation for the calling user's role. Add role-specific policies with tight `WITH CHECK` constraints when non-admin roles need write access.
 **Prevention:** After writing any Server Action with `.update()/.insert()/.delete()`, verify the RLS policy chain: "Can role X perform this operation?" Test with a non-admin user.
 
-## 2026-03-13: SupabaseClient type change from `any` cascades type errors
-**Pattern:** Changing `type SupabaseClient = any` to `import type { SupabaseClient } from "@supabase/supabase-js"` in `action-context.ts` caused 10+ type errors across the codebase. All Supabase relation join casts like `item.menu_items as { name: string }` broke because the real type returns arrays, not single objects.
-**Rule:** The codebase extensively uses `as` casts on Supabase query results. These only work when SupabaseClient is `any`. To properly type SupabaseClient, you need to: (1) share the Database type across packages, (2) fix all relation join casts to handle array vs single returns, (3) use `SupabaseClient<Database>` not bare `SupabaseClient`.
-**Prevention:** Never change SupabaseClient typing in isolation. It requires a coordinated effort: create a shared types package for Database type, then update all action files' relation casts simultaneously.
+## 2026-03-13: SupabaseClient type change from `any` — successfully resolved
+**Pattern:** Changing `type SupabaseClient = any` to `SupabaseClient<Database>` in `action-context.ts` caused 10+ cascading type errors: column name mismatches (campaigns `message` → `content`, customers `user_id` → `auth_user_id`), nullable columns (`number | null`), `Json` type vs specific interfaces, Recharts formatter type annotations, and `.from(table)` with dynamic string args.
+**Rule:** Use `import type { Database } from "@comtammatu/database/types"` (subpath export, NOT barrel) to avoid rootDir errors. Generic table helpers (verifyBranchOwnership etc.) need `(supabase as any).from(table)` for dynamic table names. Tables not in generated types (push_subscriptions) keep `as any`.
+**Prevention:** After regenerating `database.types.ts`, run `pnpm turbo build --force` to catch all mismatches. Fix iteratively: column renames, nullable handling, Json casts, then Recharts formatters.
 
 ## 2026-03-13: Package.json `exports` field is strict — only listed paths are resolvable
 **Pattern:** Adding an `exports` map to `@comtammatu/database/package.json` with clean paths (`./supabase/client`) broke all existing imports that used `/src/` prefix (`./src/supabase/client`). Node.js `exports` field takes precedence over filesystem.
@@ -115,3 +115,13 @@
 **Pattern:** The legacy `X-XSS-Protection: 1; mode=block` header can actually introduce XSS vulnerabilities in older browsers via "false positive" blocking. Modern browsers have removed XSS auditors entirely.
 **Rule:** Set `X-XSS-Protection: 0` and rely on CSP `script-src` instead. CSP is the correct modern defense against XSS.
 **Prevention:** When setting security headers, always check current OWASP recommendations. Legacy headers may be counterproductive.
+
+## 2026-03-13: Monolithic file must be deleted after splitting into directory
+**Pattern:** After splitting `actions.ts` (monolithic) into `actions/` directory with `index.ts` barrel re-export, the old `actions.ts` was not deleted. Node.js resolves `import from "./actions"` to `actions.ts` (file) before `actions/index.ts` (directory). Locally, the old monolithic code runs instead of the split modules — silently.
+**Rule:** When refactoring a file into a directory with the same name, the original file MUST be deleted in the same commit. Verify with `ls` after the split.
+**Prevention:** After any file→directory refactor: (1) delete original file, (2) verify `git status` shows original as deleted, (3) test an import resolves to the new barrel, (4) commit delete + new directory together.
+
+## 2026-03-13: CQRS materialized views need UNIQUE indexes for CONCURRENTLY refresh
+**Pattern:** `REFRESH MATERIALIZED VIEW CONCURRENTLY` requires at least one unique index on the view. Without it, PostgreSQL errors out.
+**Rule:** Every materialized view must have a UNIQUE index on its natural key columns (e.g., `branch_id, report_date`). Add the index in the same migration that creates the view.
+**Prevention:** When creating a new MV, always pair it with `CREATE UNIQUE INDEX ON mv_name (key_columns)` in the same migration.

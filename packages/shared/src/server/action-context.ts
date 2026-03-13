@@ -11,16 +11,14 @@
 import { ActionError } from "../utils/errors";
 import type { StaffRole } from "../constants";
 
+import type { SupabaseClient as BaseSupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@comtammatu/database/types";
+
 /**
- * SupabaseClient typed as `any` because @comtammatu/shared cannot import
- * the Database type from @comtammatu/database (circular dependency).
- *
- * TODO: Move Database type to a shared types package, then use:
- *   import type { SupabaseClient } from "@supabase/supabase-js";
- *   type TypedClient = SupabaseClient<Database>;
+ * Typed SupabaseClient with the project's Database schema.
+ * Uses `import type` from @comtammatu/database (no runtime dep, no circular dep).
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SupabaseClient = any;
+export type SupabaseClient = BaseSupabaseClient<Database>;
 type CreateSupabaseServerFn = () => Promise<SupabaseClient>;
 
 /** Injected factory — set via `configureActionContext()` */
@@ -281,7 +279,8 @@ export async function verifyEntityOwnership<T extends Record<string, unknown>>(
     tenantId: number,
     select: string = "id, is_active, branches!inner(tenant_id)",
 ): Promise<{ data: T; error: null } | { data: null; error: string }> {
-    const { data, error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table helper
+    const { data, error } = await (supabase as any)
         .from(table)
         .select(select)
         .eq("id", entityId)

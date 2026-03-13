@@ -35,8 +35,8 @@ export function HourlyChart({ data }: { data: HourlyData[] }) {
           allowDecimals={false}
         />
         <Tooltip
-          formatter={(value: number | undefined) => [
-            `${value ?? 0} đơn`,
+          formatter={(value) => [
+            `${(value as number) ?? 0} đơn`,
             "Số đơn hàng",
           ]}
           contentStyle={{

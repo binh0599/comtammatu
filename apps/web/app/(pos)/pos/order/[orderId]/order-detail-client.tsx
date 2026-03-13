@@ -70,7 +70,7 @@ interface OrderDetail {
   tables: {
     number: number;
     zone_id: number;
-    capacity: number;
+    capacity?: number;
     branch_zones: { name: string } | null;
   } | null;
   order_items: {

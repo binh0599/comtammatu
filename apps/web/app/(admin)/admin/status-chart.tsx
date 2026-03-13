@@ -43,9 +43,9 @@ export function StatusChart({ data }: { data: StatusData[] }) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number | undefined, name: string | undefined) => [
-            value ?? 0,
-            name ?? "",
+          formatter={(value, name) => [
+            (value as number) ?? 0,
+            (name as string) ?? "",
           ]}
           contentStyle={{
             backgroundColor: "var(--color-card)",

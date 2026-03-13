@@ -165,10 +165,11 @@ async function _getReportData(
   // Payment methods (aggregate across branches + days)
   const methodMap = new Map<string, { count: number; total: number }>();
   for (const row of paymentRows) {
-    const entry = methodMap.get(row.method) ?? { count: 0, total: 0 };
+    const method = row.method ?? "unknown";
+    const entry = methodMap.get(method) ?? { count: 0, total: 0 };
     entry.count += Number(row.payment_count);
     entry.total += Number(row.method_total);
-    methodMap.set(row.method, entry);
+    methodMap.set(method, entry);
   }
   const paymentMethods: PaymentMethodBreakdown[] = Array.from(
     methodMap.entries(),
@@ -177,10 +178,11 @@ async function _getReportData(
   // Order type mix (aggregate across branches + days)
   const typeMap = new Map<string, { count: number; revenue: number }>();
   for (const row of orderTypeRows) {
-    const entry = typeMap.get(row.order_type) ?? { count: 0, revenue: 0 };
+    const orderType = row.order_type ?? "unknown";
+    const entry = typeMap.get(orderType) ?? { count: 0, revenue: 0 };
     entry.count += Number(row.type_count);
     entry.revenue += Number(row.type_revenue);
-    typeMap.set(row.order_type, entry);
+    typeMap.set(orderType, entry);
   }
   const orderTypeMix = Array.from(typeMap.entries())
     .map(([type, data]) => ({ type, ...data }))

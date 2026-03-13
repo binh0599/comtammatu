@@ -49,8 +49,7 @@ async function _getPrintersForTerminal(terminalId: number) {
   requireRole(ctx.userRole, POS_ROLES, "xem cấu hình máy in");
   const { supabase } = ctx;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("printer_configs")
     .select("*")
     .eq("branch_id", branchId)
@@ -71,8 +70,7 @@ async function _getPrintersForBranch() {
   requireRole(ctx.userRole, POS_ROLES, "xem cấu hình máy in");
   const { supabase } = ctx;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- printer_configs not in generated types yet
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from("printer_configs")
     .select("*")
     .eq("branch_id", branchId)
@@ -178,9 +176,9 @@ async function _createPrinter(formData: FormData) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from("printer_configs")
-    .insert({ ...parsed.data, branch_id: branchId });
+    .insert({ ...parsed.data, branch_id: branchId } as any);
 
   if (error) {
     if (error.code === "23505") return { error: "Đã có máy in trùng lặp" };
@@ -200,8 +198,7 @@ async function _updatePrinter(formData: FormData) {
   requireRole(ctx.userRole, POS_ROLES, "cập nhật máy in");
   const { supabase } = ctx;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from("printer_configs")
     .select("id")
     .eq("id", id)
@@ -225,9 +222,9 @@ async function _updatePrinter(formData: FormData) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from("printer_configs")
-    .update(parsed.data)
+    .update(parsed.data as any)
     .eq("id", id)
     .eq("branch_id", branchId);
 
@@ -246,8 +243,7 @@ async function _deletePrinter(formData: FormData) {
   requireRole(ctx.userRole, POS_ROLES, "xóa máy in");
   const { supabase } = ctx;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from("printer_configs")
     .select("id")
     .eq("id", id)
@@ -256,8 +252,7 @@ async function _deletePrinter(formData: FormData) {
 
   if (!existing) return { error: "Không tìm thấy máy in" };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from("printer_configs")
     .delete()
     .eq("id", id)

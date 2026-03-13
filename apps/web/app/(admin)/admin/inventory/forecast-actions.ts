@@ -98,6 +98,7 @@ async function _getDemandForecast(
   // Aggregate usage per ingredient (across branches + days in 30-day window)
   const usageMap = new Map<number, number>();
   for (const row of usageResult.data ?? []) {
+    if (row.ingredient_id == null) continue;
     usageMap.set(
       row.ingredient_id,
       (usageMap.get(row.ingredient_id) ?? 0) + Number(row.total_usage),
@@ -107,6 +108,7 @@ async function _getDemandForecast(
   // Aggregate stock per ingredient (across branches)
   const stockMap = new Map<number, number>();
   for (const sl of stockResult.data ?? []) {
+    if (sl.ingredient_id == null) continue;
     stockMap.set(
       sl.ingredient_id,
       (stockMap.get(sl.ingredient_id) ?? 0) + Number(sl.quantity),

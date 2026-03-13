@@ -37,9 +37,9 @@ function mapPrepData(raw: unknown[]): PrepItem[] {
 export function PrepListTab({
   initialData,
 }: {
-  initialData: PrepItem[];
+  initialData: unknown[];
 }) {
-  const [items, setItems] = useState<PrepItem[]>(initialData);
+  const [items, setItems] = useState<PrepItem[]>(() => mapPrepData(initialData));
   const [portions, setPortions] = useState("");
   const [isPending, startTransition] = useTransition();
 

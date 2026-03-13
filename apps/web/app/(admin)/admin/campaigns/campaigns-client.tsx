@@ -69,13 +69,12 @@ interface Campaign {
   tenant_id: number;
   name: string;
   type: string;
-  target_segment: Record<string, unknown> | null;
-  content: { subject?: string; body?: string; cta_url?: string } | null;
+  target_segment: unknown;
+  content: unknown;
   scheduled_at: string | null;
-  sent_count: number;
+  sent_count: number | null;
   status: string;
   created_at: string;
-  updated_at: string;
 }
 
 // =====================

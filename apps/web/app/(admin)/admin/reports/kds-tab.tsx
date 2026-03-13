@@ -262,9 +262,9 @@ export function KdsTab() {
                           tickFormatter={(v: number) => `${v}p`}
                         />
                         <Tooltip
-                          formatter={(value: number | undefined, name: string | undefined) => [
-                            `${value ?? 0} phút`,
-                            name === "avg_prep_time_min"
+                          formatter={(value, name) => [
+                            `${(value as number) ?? 0} phút`,
+                            (name as string) === "avg_prep_time_min"
                               ? "Chế biến"
                               : "Chờ nhận",
                           ]}
@@ -321,11 +321,11 @@ export function KdsTab() {
                       tick={{ fontSize: 11 }}
                     />
                     <Tooltip
-                      formatter={(value: number | undefined, name: string | undefined) => [
-                        name === "avg_prep_min"
-                          ? `${value ?? 0} phút`
-                          : `${value ?? 0} ticket`,
-                        name === "avg_prep_min"
+                      formatter={(value, name) => [
+                        (name as string) === "avg_prep_min"
+                          ? `${(value as number) ?? 0} phút`
+                          : `${(value as number) ?? 0} ticket`,
+                        (name as string) === "avg_prep_min"
                           ? "TB chế biến"
                           : "Số ticket",
                       ]}

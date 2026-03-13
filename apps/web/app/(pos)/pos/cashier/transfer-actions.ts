@@ -42,7 +42,7 @@ async function _createTransferPayment(orderId: number) {
     .eq("status", "open")
     .maybeSingle();
 
-  if (!session) return { error: "Chưa mở ca." };
+  if (!session || !session.terminal_id) return { error: "Chưa mở ca." };
 
   // Verify terminal is cashier_station (PAYMENT_TERMINAL rule)
   const { data: terminal, error: terminalError } = await supabase

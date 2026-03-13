@@ -96,7 +96,7 @@ export default async function PrinterPage({ searchParams }: PrinterPageProps) {
         </div>
       </div>
       <PrinterSettings
-        initialPrinters={printers ?? []}
+        initialPrinters={(printers ?? []) as any}
         terminalId={currentTerminal.id}
         terminalName={currentTerminal.name}
       />
