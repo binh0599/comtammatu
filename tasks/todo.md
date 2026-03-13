@@ -335,6 +335,75 @@
 
 ---
 
+## Completed: Refactoring Wave 1 — Foundation
+
+### Code Organization
+- [x] Split 5 monolithic action files (3100+ lines) into 16 domain sub-modules
+  - HR (873 lines) → employees, shifts, attendance, leave, payroll
+  - CRM (671 lines) → customers, loyalty, vouchers, feedback
+  - Menu → menus, categories, items
+  - Campaigns → campaigns, analytics
+  - Employee portal → profile, leave, schedule, payroll, attendance
+- [x] Barrel re-exports (`actions/index.ts`) for backward compatibility
+- [x] Fix `@comtammatu/database` package.json exports map (clean + `/src/` paths)
+- [x] 14 error boundaries for all admin subroutes
+
+### Database Performance
+- [x] Enable pg_trgm extension + 6 GIN trigram indexes for fuzzy search
+- [x] 7 partial/composite indexes for common query patterns
+  - Active/completed orders, KDS tickets, security events, stock levels, payments, loyalty
+
+### Verification
+- [x] Typecheck + build all pass (7/7 turbo tasks)
+
+## Completed: Refactoring Wave 2 — State + DB
+
+### State Management
+- [x] `@tanstack/react-query` — QueryProvider, query key factory, 4 query hooks, 3 mutation hooks
+- [x] `zustand` — 4 UI stores (POS cart, KDS board, admin panel, notifications)
+- [x] Root layout wrapped with QueryProvider
+
+### Database Atomicity
+- [x] 3 Supabase RPC functions deployed:
+  - `process_payment_and_complete_order` — atomic payment + order completion + table release
+  - `create_order_with_items` — atomic order + items + table status
+  - `approve_stock_count` — atomic count approval + stock adjustments
+- [x] SECURITY DEFINER with SET search_path = public
+- [x] GRANT EXECUTE TO authenticated
+
+### Type Safety
+- [x] Improved SupabaseClient type documentation with TODO for future Database type sharing
+
+### Verification
+- [x] Typecheck + build all pass (7/7 turbo tasks)
+- [x] Migration applied to Supabase project zrlriuednoaqrsvnjjyo
+
+---
+
+## Remaining: Refactoring Wave 3-6
+
+### Wave 3 — Testing + Monitoring
+- [ ] Sentry integration + structured logging
+- [ ] Health check endpoint enhancement
+- [ ] Unit test infrastructure (Vitest)
+- [ ] Optimistic updates for POS/KDS
+
+### Wave 4 — Security + Quality
+- [ ] Security hardening (CSP headers, rate limit improvements)
+- [ ] E2E test expansion
+- [ ] Infrastructure improvements
+
+### Wave 5 — Polish
+- [ ] i18n framework + string extraction
+- [ ] UI package consolidation (`@comtammatu/ui`)
+- [ ] WCAG audit
+
+### Wave 6 — CQRS + Integration
+- [ ] CQRS materialized views for reports
+- [ ] Integration tests
+
+---
+
 ## Remaining Roadmap (All Priorities Complete)
 
 ### Priority 1 — Offline & Resilience (Completed)

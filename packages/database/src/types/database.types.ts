@@ -239,6 +239,64 @@ export type Database = {
           },
         ]
       }
+      campaign_recipients: {
+        Row: {
+          campaign_id: number
+          conversion_order_id: number | null
+          converted_at: string | null
+          created_at: string
+          customer_id: number
+          id: number
+          opened_at: string | null
+          sent_at: string
+          status: string
+        }
+        Insert: {
+          campaign_id: number
+          conversion_order_id?: number | null
+          converted_at?: string | null
+          created_at?: string
+          customer_id: number
+          id?: never
+          opened_at?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Update: {
+          campaign_id?: number
+          conversion_order_id?: number | null
+          converted_at?: string | null
+          created_at?: string
+          customer_id?: number
+          id?: never
+          opened_at?: string | null
+          sent_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_conversion_order_id_fkey"
+            columns: ["conversion_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaigns: {
         Row: {
           content: Json | null
@@ -1062,6 +1120,50 @@ export type Database = {
           },
         ]
       }
+      loyalty_earn_rules: {
+        Row: {
+          created_at: string
+          id: number
+          is_active: boolean
+          min_order_total: number | null
+          name: string
+          points_per_unit: number
+          tenant_id: number
+          unit_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          min_order_total?: number | null
+          name: string
+          points_per_unit?: number
+          tenant_id: number
+          unit_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          is_active?: boolean
+          min_order_total?: number | null
+          name?: string
+          points_per_unit?: number
+          tenant_id?: number
+          unit_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_earn_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loyalty_tiers: {
         Row: {
           benefits: Json | null
@@ -1120,6 +1222,7 @@ export type Database = {
           description: string | null
           expires_at: string | null
           id: number
+          is_expired: boolean
           points: number
           reference_id: number | null
           reference_type: string | null
@@ -1133,6 +1236,7 @@ export type Database = {
           description?: string | null
           expires_at?: string | null
           id?: never
+          is_expired?: boolean
           points: number
           reference_id?: number | null
           reference_type?: string | null
@@ -1146,6 +1250,7 @@ export type Database = {
           description?: string | null
           expires_at?: string | null
           id?: never
+          is_expired?: boolean
           points?: number
           reference_id?: number | null
           reference_type?: string | null
@@ -2071,13 +2176,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "payroll_periods_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "payroll_periods_branch_id_fkey"
             columns: ["branch_id"]
@@ -3527,6 +3625,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_stock_count: {
+        Args: { p_branch_id: number; p_count_id: number; p_user_id: string }
+        Returns: Json
+      }
       auth_branch_id: { Args: never; Returns: number }
       auth_role: { Args: never; Returns: string }
       auth_tenant_id: { Args: never; Returns: number }
@@ -3534,10 +3636,10 @@ export type Database = {
         Args: { p_branch_id: number; p_date_from: string; p_date_to: string }
         Returns: {
           food_cost_pct: number
-          item_count: number
-          top_cost_items: Json
-          total_ingredient_cost: number
-          total_revenue: number
+          ingredient_cost: number
+          menu_item_name: string
+          qty_sold: number
+          revenue: number
         }[]
       }
       calculate_menu_portions: {
@@ -3554,16 +3656,37 @@ export type Database = {
         }[]
       }
       calculate_prep_list: {
-        Args: { p_branch_id: number; p_target_portions?: number }
+        Args: { p_branch_id: number; p_target_portions: number }
         Returns: {
           current_stock: number
           ingredient_id: number
           ingredient_name: string
-          menu_items_using: Json
-          to_prep: number
-          total_needed: number
+          needed_qty: number
+          shortfall: number
           unit: string
         }[]
+      }
+      create_order_with_items: {
+        Args: {
+          p_branch_id: number
+          p_created_by: string
+          p_customer_id?: number
+          p_discount_total?: number
+          p_guest_count?: number
+          p_idempotency_key: string
+          p_items?: Json
+          p_notes?: string
+          p_order_number: string
+          p_service_charge?: number
+          p_subtotal: number
+          p_table_id?: number
+          p_tax?: number
+          p_tenant_id?: number
+          p_terminal_id: number
+          p_total: number
+          p_type: string
+        }
+        Returns: Json
       }
       generate_order_number: { Args: { p_branch_id: number }; Returns: string }
       handle_momo_payment_success: {
@@ -3573,6 +3696,24 @@ export type Database = {
       increment_voucher_usage: {
         Args: { p_voucher_id: number }
         Returns: undefined
+      }
+      process_payment_and_complete_order: {
+        Args: {
+          p_amount: number
+          p_idempotency_key?: string
+          p_method: string
+          p_order_id: number
+          p_paid_at?: string
+          p_pos_session_id: number
+          p_provider?: string
+          p_status?: string
+          p_tenant_id?: number
+          p_terminal_id: number
+          p_tip?: number
+          p_user_id?: string
+          p_voucher_id?: number
+        }
+        Returns: Json
       }
       validate_table_capacity: {
         Args: { p_branch_id: number; p_guest_count: number; p_table_id: number }
@@ -3710,4 +3851,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-

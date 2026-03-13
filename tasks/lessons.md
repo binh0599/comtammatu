@@ -71,6 +71,26 @@
 **Rule:** For every Server Action that writes data, trace which RLS policies allow the operation for the calling user's role. Add role-specific policies with tight `WITH CHECK` constraints when non-admin roles need write access.
 **Prevention:** After writing any Server Action with `.update()/.insert()/.delete()`, verify the RLS policy chain: "Can role X perform this operation?" Test with a non-admin user.
 
+## 2026-03-13: SupabaseClient type change from `any` cascades type errors
+**Pattern:** Changing `type SupabaseClient = any` to `import type { SupabaseClient } from "@supabase/supabase-js"` in `action-context.ts` caused 10+ type errors across the codebase. All Supabase relation join casts like `item.menu_items as { name: string }` broke because the real type returns arrays, not single objects.
+**Rule:** The codebase extensively uses `as` casts on Supabase query results. These only work when SupabaseClient is `any`. To properly type SupabaseClient, you need to: (1) share the Database type across packages, (2) fix all relation join casts to handle array vs single returns, (3) use `SupabaseClient<Database>` not bare `SupabaseClient`.
+**Prevention:** Never change SupabaseClient typing in isolation. It requires a coordinated effort: create a shared types package for Database type, then update all action files' relation casts simultaneously.
+
+## 2026-03-13: Package.json `exports` field is strict — only listed paths are resolvable
+**Pattern:** Adding an `exports` map to `@comtammatu/database/package.json` with clean paths (`./supabase/client`) broke all existing imports that used `/src/` prefix (`./src/supabase/client`). Node.js `exports` field takes precedence over filesystem.
+**Rule:** When adding `exports` to an existing package, you must include BOTH the new clean paths AND the old paths for backward compatibility. Or update all consumers first.
+**Prevention:** Always grep for all import patterns of the package before adding `exports`. Include both old and new path patterns in the exports map.
+
+## 2026-03-13: Agent worktree permission issues with bypassPermissions
+**Pattern:** Background agents in worktree isolation failed due to denied Write/Bash/Edit permissions. Even with `bypassPermissions` mode, some agents couldn't complete work.
+**Rule:** For refactoring tasks that modify many files, prefer running agents directly (not in worktrees) with `bypassPermissions` mode. Monitor agent progress and take over manually if stuck.
+**Prevention:** Check agent output files periodically. If an agent stalls (output file size stops growing), take over its remaining work directly.
+
+## 2026-03-13: PostgreSQL function params — defaults must come last
+**Pattern:** `CREATE FUNCTION foo(p_a INT DEFAULT 0, p_b INT)` fails with `input parameters after one with a default value must also have defaults`.
+**Rule:** In PostgreSQL function definitions, all parameters with DEFAULT values must come after all required (no-default) parameters.
+**Prevention:** When defining RPC functions, always order: required params first, then optional params with defaults.
+
 ## 2026-03-02: Server Actions must validate client-provided IDs against auth context
 **Pattern:** `createOrder` accepted a `terminal_id` from the client without verifying it belonged to the user's branch or was the correct type. A waiter could spoof a cashier terminal ID.
 **Rule:** Every Server Action that receives an entity ID from the client must verify ownership (branch, tenant) before using it. Never trust client-provided foreign keys.
