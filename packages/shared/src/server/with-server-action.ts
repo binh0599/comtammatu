@@ -15,6 +15,7 @@
  */
 
 import { handleServerActionError, type ActionErrorCode } from "../utils/errors";
+import { errorReporter } from "./error-reporter";
 
 /**
  * Wraps a Server Action implementation with error handling.
@@ -34,6 +35,14 @@ export function withServerAction<TArgs extends unknown[], TResult>(
             ) {
                 throw error;
             }
+
+            // Báo cáo lỗi qua error reporter (Sentry khi sẵn sàng)
+            if (error instanceof Error) {
+                errorReporter.captureException(error, {
+                    actionFn: fn.name || "unknown",
+                });
+            }
+
             return handleServerActionError(error);
         }
     };

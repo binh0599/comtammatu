@@ -508,3 +508,12 @@ export {
 export type { ActionContext, KdsContext, CustomerContext } from "./server/action-context";
 
 export { withServerAction, withServerQuery } from "./server/with-server-action";
+
+// ===== Logging & Error Reporting =====
+export { createLogger, logger } from "./server/logger";
+export type { Logger, LogLevel, LogContext } from "./server/logger";
+export {
+    errorReporter,
+    configureErrorReporter,
+} from "./server/error-reporter";
+export type { ErrorReporter } from "./server/error-reporter";
