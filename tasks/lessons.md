@@ -91,6 +91,16 @@
 **Rule:** In PostgreSQL function definitions, all parameters with DEFAULT values must come after all required (no-default) parameters.
 **Prevention:** When defining RPC functions, always order: required params first, then optional params with defaults.
 
+## 2026-03-13: Supabase client export is `createClient`, not `createBrowserClient`
+**Pattern:** Build error "Export createBrowserClient doesn't exist in target module" when importing from `@comtammatu/database/src/supabase/client`.
+**Rule:** The `packages/database/src/supabase/client.ts` wraps `@supabase/ssr`'s `createBrowserClient` internally but exports it as `createClient()`. Always use `import { createClient } from "@comtammatu/database/src/supabase/client"`.
+**Prevention:** Check the actual export name in the source file before writing imports. Don't assume the internal function name matches the export name.
+
+## 2026-03-13: Vitest requires `@types/node` in packages using `process.env`
+**Pattern:** TypeScript error `TS2580: Cannot find name 'process'` in `packages/shared/src/server/logger.ts` which uses `process.env.NODE_ENV`.
+**Rule:** Packages that reference `process`, `Buffer`, or other Node.js globals need `@types/node` in devDependencies, even if they're consumed by apps that have it.
+**Prevention:** When creating server-side utilities in shared packages, add `@types/node` to the package's devDependencies.
+
 ## 2026-03-02: Server Actions must validate client-provided IDs against auth context
 **Pattern:** `createOrder` accepted a `terminal_id` from the client without verifying it belonged to the user's branch or was the correct type. A waiter could spoof a cashier terminal ID.
 **Rule:** Every Server Action that receives an entity ID from the client must verify ownership (branch, tenant) before using it. Never trust client-provided foreign keys.

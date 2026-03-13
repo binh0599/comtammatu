@@ -380,13 +380,36 @@
 
 ---
 
-## Remaining: Refactoring Wave 3-6
+## Completed: Refactoring Wave 3 — Testing + Monitoring
 
-### Wave 3 — Testing + Monitoring
-- [ ] Sentry integration + structured logging
-- [ ] Health check endpoint enhancement
-- [ ] Unit test infrastructure (Vitest)
-- [ ] Optimistic updates for POS/KDS
+### Structured Logging & Error Reporting
+- [x] Structured logger (`packages/shared/src/server/logger.ts`) — JSON (prod) / pretty (dev)
+- [x] Error reporter abstraction (`packages/shared/src/server/error-reporter.ts`) — replaceable with Sentry
+- [x] Integrated error reporter into `withServerAction` wrapper
+- [x] Exported logger + error reporter from `@comtammatu/shared`
+
+### Health Check Enhancement
+- [x] Enhanced `/api/health` — parallel DB + Supabase checks, degraded status, uptime tracking
+
+### Unit Test Infrastructure (Vitest)
+- [x] 502 tests passing across 9 test files (schemas, utils, constants, RLS specs)
+- [x] Test files: order, payment, menu, pos, format, errors, constants (x2), rls-policy-spec
+
+### Optimistic Updates (POS/KDS)
+- [x] `useCreateOrderMutation` — cancel queries, invalidate on success/error
+- [x] `useUpdateOrderStatusMutation` — snapshot + optimistic cache update + rollback
+- [x] `useBumpTicketMutation` — optimistic remove/update + rollback
+- [x] `useRecallTicketMutation` — optimistic set pending + rollback
+- [x] `useOptimisticCart` hook — Zustand cart + React Query mutation
+- [x] `useRealtimeKds` hook — React Query + Supabase Realtime + optimistic mutations
+
+### Verification
+- [x] Typecheck + build all pass (7/7 turbo tasks)
+- [x] 502 unit tests pass
+
+---
+
+## Remaining: Refactoring Wave 4-6
 
 ### Wave 4 — Security + Quality
 - [ ] Security hardening (CSP headers, rate limit improvements)

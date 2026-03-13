@@ -10,3 +10,4 @@
 [2026-03-05] RLS_COVERS_ALL_ACTORS — When a Server Action performs writes on behalf of non-admin roles (e.g., staff re-registering rejected device), verify RLS policies allow that role to perform the operation. Supabase silently returns `{ data: null, error: null }` when RLS blocks.
 [2026-03-13] EXPORTS_BACKWARD_COMPAT — When adding `exports` field to package.json, include BOTH new clean paths AND existing `/src/` prefixed paths. Node.js `exports` is strict — unlisted paths are unresolvable.
 [2026-03-13] PG_FUNC_DEFAULTS_LAST — In PostgreSQL CREATE FUNCTION, all parameters with DEFAULT values must come after all required parameters. Otherwise: `input parameters after one with a default value must also have defaults`.
+[2026-03-13] CLIENT_EXPORT_NAME — `@comtammatu/database/src/supabase/client` exports `createClient`, not `createBrowserClient`. The internal `@supabase/ssr` function is wrapped and renamed.
