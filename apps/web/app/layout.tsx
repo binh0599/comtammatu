@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { QueryProvider } from "@/providers/query-provider";
 import { SwRegisterGlobal } from "@/components/sw-register-global";
 import "./globals.css";
 
@@ -39,7 +40,9 @@ export default function RootLayout({
             Bỏ qua đến nội dung chính
           </a>
           <SwRegisterGlobal />
-          <TooltipProvider>{children}</TooltipProvider>
+          <QueryProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

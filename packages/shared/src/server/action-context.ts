@@ -11,6 +11,14 @@
 import { ActionError } from "../utils/errors";
 import type { StaffRole } from "../constants";
 
+/**
+ * SupabaseClient typed as `any` because @comtammatu/shared cannot import
+ * the Database type from @comtammatu/database (circular dependency).
+ *
+ * TODO: Move Database type to a shared types package, then use:
+ *   import type { SupabaseClient } from "@supabase/supabase-js";
+ *   type TypedClient = SupabaseClient<Database>;
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClient = any;
 type CreateSupabaseServerFn = () => Promise<SupabaseClient>;
