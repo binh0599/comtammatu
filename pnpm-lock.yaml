@@ -108,6 +108,9 @@ importers:
         specifier: ^5.0.11
         version: 5.0.11(@types/react@19.2.14)(immer@11.1.4)(react@19.2.4)(use-sync-external-store@1.6.0(react@19.2.4))
     devDependencies:
+      '@axe-core/react':
+        specifier: ^4.11.1
+        version: 4.11.1
       '@eslint-react/eslint-plugin':
         specifier: ^2.13.0
         version: 2.13.0(eslint@10.0.2(jiti@2.6.1))(typescript@5.9.3)
@@ -219,12 +222,39 @@ importers:
 
   packages/ui:
     dependencies:
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      lucide-react:
+        specifier: ^0.576.0
+        version: 0.576.0(react@19.2.4)
+      next-themes:
+        specifier: '>=0.4.0'
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      radix-ui:
+        specifier: ^1.4.3
+        version: 1.4.3(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: ^19.2.4
         version: 19.2.4
+      react-day-picker:
+        specifier: ^9.14.0
+        version: 9.14.0(react@19.2.4)
       react-dom:
         specifier: ^19.2.4
         version: 19.2.4(react@19.2.4)
+      sonner:
+        specifier: ^2.0.7
+        version: 2.0.7(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      tailwind-merge:
+        specifier: ^3.5.0
+        version: 3.5.0
+      vaul:
+        specifier: ^1.1.2
+        version: 1.1.2(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
     devDependencies:
       '@types/react':
         specifier: ^19.2.14
@@ -245,6 +275,9 @@ packages:
   '@antfu/ni@25.0.0':
     resolution: {integrity: sha512-9q/yCljni37pkMr4sPrI3G4jqdIk074+iukc5aFJl7kmDCCsiJrbZ6zKxnES1Gwg+i9RcDZwvktl23puGslmvA==}
     hasBin: true
+
+  '@axe-core/react@4.11.1':
+    resolution: {integrity: sha512-tjTsYVQw0YhmVDpayb/r55Xbda/Og3l6UCvBZ26C+MtmuSTyQ47PKzq8z3QMgKCJ0RB7lsdiDy4HwO2SKiNuHg==}
 
   '@babel/code-frame@7.29.0':
     resolution: {integrity: sha512-9NhCeYjq9+3uxgdtp20LSiJXJvN0FeCtNGpJxuMFZ1Kv3cWUNb6DOhJwUvcVCzKGR66cw4njwM6hrJLqgOwbcw==}
@@ -2268,6 +2301,10 @@ packages:
     resolution: {integrity: sha512-NZKeq9AfyQvEeNlN0zSYAaWrmBffJh3IELMZfRpJVWgrpEbtEpnjvzqBPf+mxoI287JohRDoa+/nsfqqiZmF6g==}
     engines: {node: '>= 6.0.0'}
 
+  axe-core@4.11.1:
+    resolution: {integrity: sha512-BASOg+YwO2C+346x3LZOeoovTIoTrRqEsqMa6fmfAV0P+U9mFr9NsyOEpiYvFjbc64NMrSswhV50WdXzdb/Z5A==}
+    engines: {node: '>=4'}
+
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
     engines: {node: 18 || 20 || >=22}
@@ -3840,6 +3877,9 @@ packages:
   remeda@2.33.4:
     resolution: {integrity: sha512-ygHswjlc/opg2VrtiYvUOPLjxjtdKvjGz1/plDhkG66hjNjFr1xmfrs2ClNFo/E6TyUFiwYNh53bKV26oBoMGQ==}
 
+  requestidlecallback@0.3.0:
+    resolution: {integrity: sha512-TWHFkT7S9p7IxLC5A1hYmAYQx2Eb9w1skrXmQ+dS1URyvR8tenMLl4lHbqEOUnpEYxNKpkVMXUgknVpBZWXXfQ==}
+
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -4474,6 +4514,11 @@ snapshots:
       fzf: 0.5.2
       package-manager-detector: 1.6.0
       tinyexec: 1.0.2
+
+  '@axe-core/react@4.11.1':
+    dependencies:
+      axe-core: 4.11.1
+      requestidlecallback: 0.3.0
 
   '@babel/code-frame@7.29.0':
     dependencies:
@@ -6546,6 +6591,8 @@ snapshots:
 
   aws-ssl-profiles@1.1.2: {}
 
+  axe-core@4.11.1: {}
+
   balanced-match@4.0.4: {}
 
   baseline-browser-mapping@2.10.0: {}
@@ -8165,6 +8212,8 @@ snapshots:
   regexp-to-ast@0.5.0: {}
 
   remeda@2.33.4: {}
+
+  requestidlecallback@0.3.0: {}
 
   require-directory@2.1.1: {}
 

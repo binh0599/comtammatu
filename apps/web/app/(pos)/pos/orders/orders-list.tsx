@@ -5,14 +5,13 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { createClient } from "@comtammatu/database/src/supabase/client";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   formatPrice,
   formatElapsedTime,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
 import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
+import { Badge, Button } from "@comtammatu/ui";
 
 interface Order {
   id: number;

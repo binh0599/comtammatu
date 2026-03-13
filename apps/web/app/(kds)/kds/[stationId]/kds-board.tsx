@@ -3,8 +3,6 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import Link from "next/link";
 import { WifiOff, Printer, Settings, Usb, Volume2, VolumeOff, Clock, ChefHat, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
 import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
@@ -19,6 +17,7 @@ import { InventoryPanel } from "./components/inventory-panel";
 import type { MenuPortionInfo, IngredientOption, SupplierOption } from "./inventory-actions";
 import { parseItems } from "./types";
 import { toast } from "sonner";
+import { Badge, Button } from "@comtammatu/ui";
 
 function ConnectionBanner({ status }: { status: ConnectionStatus }) {
   // Only show banner for actual connection problems, not initial connecting

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import {
   getCurrentTerminal,
@@ -8,6 +7,7 @@ import {
   getTerminalsForBranch,
 } from "./actions";
 import { PrinterSettings } from "./printer-settings";
+import { Button } from "@comtammatu/ui";
 
 interface PrinterPageProps {
   searchParams: Promise<{ terminalId?: string }>;

@@ -4,41 +4,34 @@ import { useState, useTransition } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
 import {
+  getStaffPerformance,
+  type StaffPerformanceRow,
+} from "./performance-actions";
+import {
+  Badge,
+  Button,
+  Calendar,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import {
-  getStaffPerformance,
-  type StaffPerformanceRow,
-} from "./performance-actions";
-
+  cn,
+} from "@comtammatu/ui";
 
 function getScoreBadge(score: number) {
   if (score >= 80) {

@@ -2,28 +2,26 @@
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { formatPrice } from "@comtammatu/shared";
+import type { Supplier, Branch, Ingredient, NewItem, CreatePoData } from "./po-types";
 import {
+  Button,
+  DialogFooter,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { DialogFooter } from "@/components/ui/dialog";
-import { formatPrice } from "@comtammatu/shared";
-import type { Supplier, Branch, Ingredient, NewItem, CreatePoData } from "./po-types";
+  Textarea,
+} from "@comtammatu/ui";
 
 export function CreatePoForm({
   suppliers,

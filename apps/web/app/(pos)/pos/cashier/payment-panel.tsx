@@ -2,16 +2,6 @@
 
 import { useState, useEffect, useTransition, useRef } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Tag, X, Banknote, QrCode, Loader2, CheckCircle2, ArrowLeft, Landmark, RefreshCw, AlertTriangle } from "lucide-react";
 import {
   formatPrice,
@@ -33,6 +23,16 @@ import {
   confirmTransferPayment,
 } from "./transfer-actions";
 import type { QueueOrder } from "./types";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+} from "@comtammatu/ui";
 
 export function PaymentPanel({
   order,

@@ -1,13 +1,5 @@
 import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardCards } from "./dashboard-cards";
 import { RecentOrders } from "./recent-orders";
 import { TopItems } from "./top-items";
@@ -21,6 +13,17 @@ import {
   getOrderStatusDistribution,
   getBranchComparison,
 } from "./actions";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 function ChartFallback() {
   return <Skeleton className="h-[300px] w-full" />;

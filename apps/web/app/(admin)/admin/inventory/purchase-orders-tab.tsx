@@ -2,35 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Send, PackageCheck, X, TrendingUp, TrendingDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import {
   formatPrice,
   formatDateTime,
@@ -46,6 +17,31 @@ import type { Supplier, Branch, Ingredient, PurchaseOrder, CreatePoData, Receive
 import { getStatusBadgeVariant } from "./po-types";
 import { CreatePoForm } from "./create-po-form";
 import { ReceiveDialog } from "./receive-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface PriceAnomaly {
   po_id: number;

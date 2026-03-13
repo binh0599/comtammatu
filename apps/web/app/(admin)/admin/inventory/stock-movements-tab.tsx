@@ -2,17 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { Plus, ArrowRightLeft, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+  formatDateTime,
+  getStockMovementTypeLabel,
+  STOCK_MOVEMENT_TYPES,
+} from "@comtammatu/shared";
+import { createStockMovement, createBranchTransfer } from "./actions";
 import {
+  Badge,
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -20,23 +18,21 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  formatDateTime,
-  getStockMovementTypeLabel,
-  STOCK_MOVEMENT_TYPES,
-} from "@comtammatu/shared";
-import { createStockMovement, createBranchTransfer } from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from "@comtammatu/ui";
 
 interface StockMovement {
   id: number;

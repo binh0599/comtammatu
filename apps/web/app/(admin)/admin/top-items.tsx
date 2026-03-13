@@ -1,21 +1,19 @@
 "use client";
 
+import { formatPrice } from "@comtammatu/shared";
+import type { TopSellingItem } from "./actions";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { formatPrice } from "@comtammatu/shared";
-import type { TopSellingItem } from "./actions";
+} from "@comtammatu/ui";
 
 interface TopItemsProps {
   items: TopSellingItem[];

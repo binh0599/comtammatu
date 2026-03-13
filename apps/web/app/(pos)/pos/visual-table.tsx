@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@comtammatu/ui";
 import { getTableStatusLabel, getOrderStatusLabel, formatPrice } from "@comtammatu/shared";
 
 // ---------------------------------------------------------------------------

@@ -3,30 +3,6 @@
 import { useState, useMemo } from "react";
 import { CalendarIcon, Eye, Search } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import {
   formatPrice,
   formatDateTime,
@@ -38,6 +14,26 @@ import {
 import { ORDER_STATUSES, ORDER_TYPES } from "@comtammatu/shared/src/constants";
 import type { Order, Payment, Branch } from "./orders-types";
 import { OrderDetailDialog, STATUS_BADGE, TYPE_BADGE } from "./order-detail-dialog";
+import {
+  Badge,
+  Button,
+  Calendar,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 // --- Date preset helpers ---
 
@@ -250,7 +246,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
 
       {/* Table */}
       <div className="overflow-x-auto rounded-md border">
-        <Table>
+        <Table aria-label="Bảng lịch sử đơn hàng">
           <TableHeader>
             <TableRow>
               <TableHead>Mã đơn</TableHead>

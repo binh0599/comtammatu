@@ -2,8 +2,8 @@ import { KDS_ROLES, DEVICE_CHECK_ROLES } from "@comtammatu/shared";
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { RealtimeNotifications } from "@/components/pos/realtime-notifications";
-import { Toaster } from "@/components/ui/sonner";
 import { requireLayoutAuth } from "@/lib/layout-auth";
+import { Toaster } from "@comtammatu/ui";
 
 export default async function KdsLayout({
   children,

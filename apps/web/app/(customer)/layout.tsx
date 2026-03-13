@@ -1,6 +1,6 @@
 import { CustomerHeader } from "@/components/customer/customer-header";
 import { CustomerNav } from "@/components/customer/customer-nav";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@comtammatu/ui";
 
 export default function CustomerLayout({
   children,

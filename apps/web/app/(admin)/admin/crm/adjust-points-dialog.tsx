@@ -1,30 +1,28 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   getLoyaltyTransactionTypeLabel,
   LOYALTY_TRANSACTION_TYPES,
 } from "@comtammatu/shared";
 import { adjustLoyaltyPoints } from "./actions";
 import type { Customer } from "./crm-types";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@comtammatu/ui";
 
 export function AdjustPointsDialog({
   customer,

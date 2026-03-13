@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   formatPrice,
   formatElapsedTime,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
-import { cn } from "@/lib/utils";
 import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import type { QueueOrder } from "./types";
+import {
+  Badge,
+  Button,
+  ScrollArea,
+  cn,
+} from "@comtammatu/ui";
 
 const filterTabs = [
   { value: "all", label: "Tất cả" },
@@ -56,7 +58,7 @@ export function OrderQueue({
 
       {/* Order list */}
       <ScrollArea className="flex-1">
-        <div className="space-y-3 p-3">
+        <div className="space-y-3 p-3" role="list" aria-label="Danh sách đơn hàng">
           {filteredOrders.map((order) => {
             const itemCount = order.order_items.reduce(
               (sum, i) => sum + i.quantity,
@@ -68,6 +70,7 @@ export function OrderQueue({
               <button
                 key={order.id}
                 type="button"
+                role="listitem"
                 onClick={() => onSelectOrder(order)}
                 aria-label={`Chọn đơn ${order.order_number}, trạng thái ${getOrderStatusLabel(order.status)}, tổng cộng ${formatPrice(order.total)}`}
                 className={cn(

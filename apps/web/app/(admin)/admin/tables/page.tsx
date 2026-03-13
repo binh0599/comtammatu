@@ -1,10 +1,15 @@
 import { Header } from "@/components/admin/header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutGrid, List, CalendarClock } from "lucide-react";
 import { getTables, getBranches, getZones, getTableSummary } from "./actions";
 import { FloorPlanTab } from "./floor-plan-tab";
 import { TableListTab } from "./table-list-tab";
 import { ReservationTab } from "./reservation-tab";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 export default async function TablesPage() {
   const [tables, branches, zones, summary] = await Promise.all([

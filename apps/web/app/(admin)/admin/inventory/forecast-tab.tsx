@@ -2,34 +2,30 @@
 
 import { useState, useTransition } from "react";
 import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
+  getDemandForecast,
+  type ForecastRow,
+} from "./forecast-actions";
+import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import {
-  getDemandForecast,
-  type ForecastRow,
-} from "./forecast-actions";
+  cn,
+} from "@comtammatu/ui";
 
 interface ForecastTabProps {
   branches: { id: number; name: string }[];

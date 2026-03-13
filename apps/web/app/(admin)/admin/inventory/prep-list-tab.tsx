@@ -2,19 +2,19 @@
 
 import { useState, useTransition } from "react";
 import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { getPrepList } from "./actions";
 import {
+  Badge,
+  Button,
+  Input,
+  Label,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { getPrepList } from "./actions";
+} from "@comtammatu/ui";
 
 interface PrepItem {
   ingredient_name: string;

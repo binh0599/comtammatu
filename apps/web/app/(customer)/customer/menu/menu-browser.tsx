@@ -3,12 +3,16 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import { Search, UtensilsCrossed } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
 import { formatPrice, MENU_CATEGORY_TYPE_LABELS } from "@comtammatu/shared";
+import {
+  Badge,
+  Card,
+  CardContent,
+  Input,
+  ScrollArea,
+  ScrollBar,
+  cn,
+} from "@comtammatu/ui";
 
 interface MenuItem {
   id: number;

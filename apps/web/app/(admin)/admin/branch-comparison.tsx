@@ -11,26 +11,24 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { formatPrice } from "@comtammatu/shared";
+import { getBranchComparison, type BranchComparisonData } from "./actions";
 import {
+  Button,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { formatPrice } from "@comtammatu/shared";
-import { getBranchComparison, type BranchComparisonData } from "./actions";
+} from "@comtammatu/ui";
 
 type Metric = "revenue" | "orders" | "avgTicket";
 

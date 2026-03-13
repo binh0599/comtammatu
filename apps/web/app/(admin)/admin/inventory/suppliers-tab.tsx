@@ -2,25 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Star, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { formatPrice } from "@comtammatu/shared";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
+  getSupplierAnalytics,
+} from "./actions";
+import type { SupplierAnalytic } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,30 +20,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { formatPrice } from "@comtammatu/shared";
-import {
-  createSupplier,
-  updateSupplier,
-  deleteSupplier,
-  getSupplierAnalytics,
-} from "./actions";
-import type { SupplierAnalytic } from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface Supplier {
   id: number;

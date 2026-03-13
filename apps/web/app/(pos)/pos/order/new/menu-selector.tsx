@@ -2,20 +2,20 @@
 
 import { useState, useMemo } from "react";
 import { Search, Plus, Minus, MessageSquare, Check } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
+import { formatPrice, MENU_CATEGORY_TYPE_LABELS } from "@comtammatu/shared";
 import {
+  Badge,
+  Button,
+  Checkbox,
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { formatPrice, MENU_CATEGORY_TYPE_LABELS } from "@comtammatu/shared";
+  Input,
+  ScrollArea,
+  Textarea,
+} from "@comtammatu/ui";
 
 interface MenuItem {
   id: number;

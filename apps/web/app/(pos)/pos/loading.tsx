@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@comtammatu/ui";
 
 export default function PosHomeLoading() {
   return (

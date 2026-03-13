@@ -2,11 +2,11 @@ import { POS_ROLES, DEVICE_CHECK_ROLES } from "@comtammatu/shared";
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
 import { BottomNav } from "@/components/pos/bottom-nav";
-import { Toaster } from "@/components/ui/sonner";
 import { RealtimeNotifications } from "@/components/pos/realtime-notifications";
 import { requireLayoutAuth } from "@/lib/layout-auth";
 import { ServiceWorkerRegister } from "./pos/components/sw-register";
 import { OfflineIndicator } from "./pos/components/offline-indicator";
+import { Toaster } from "@comtammatu/ui";
 
 export default async function PosLayout({
   children,

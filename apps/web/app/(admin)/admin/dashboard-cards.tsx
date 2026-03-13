@@ -1,15 +1,15 @@
 "use client";
 
+import { DollarSign, ShoppingCart, TrendingUp, Calendar } from "lucide-react";
+import { formatPrice, getOrderStatusLabel } from "@comtammatu/shared";
+import type { DashboardStats } from "./actions";
 import {
+  Badge,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DollarSign, ShoppingCart, TrendingUp, Calendar } from "lucide-react";
-import { formatPrice, getOrderStatusLabel } from "@comtammatu/shared";
-import type { DashboardStats } from "./actions";
+} from "@comtammatu/ui";
 
 interface DashboardCardsProps {
   stats: DashboardStats;

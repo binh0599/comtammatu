@@ -1,46 +1,40 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Plus, Printer, Trash2 } from "lucide-react";
 import {
+  getPrinterTypeLabel,
+  getPrinterTestStatusLabel,
+} from "@comtammatu/shared";
+import { createPrinter, deletePrinter, updatePrinter } from "./actions";
+import {
+  Badge,
+  Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
+  Switch,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Plus, Printer, Trash2 } from "lucide-react";
-import {
-  getPrinterTypeLabel,
-  getPrinterTestStatusLabel,
-} from "@comtammatu/shared";
-import { Badge } from "@/components/ui/badge";
-import { createPrinter, deletePrinter, updatePrinter } from "./actions";
+} from "@comtammatu/ui";
 
 type PrinterType = "browser" | "thermal_usb" | "thermal_network";
 

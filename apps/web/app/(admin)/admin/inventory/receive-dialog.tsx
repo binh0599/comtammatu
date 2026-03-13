@@ -1,26 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import type { PurchaseOrder, ReceivePoData } from "./po-types";
 import {
+  Badge,
+  Button,
+  DialogFooter,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DialogFooter } from "@/components/ui/dialog";
-import type { PurchaseOrder, ReceivePoData } from "./po-types";
+} from "@comtammatu/ui";
 
 export function ReceiveDialog({
   po,

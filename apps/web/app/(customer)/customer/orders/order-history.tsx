@@ -3,15 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ClipboardList, ChevronDown, ChevronUp, Star } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   formatPrice,
   formatDateTime,
   getOrderStatusLabel,
 } from "@comtammatu/shared";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Separator,
+} from "@comtammatu/ui";
 
 interface OrderItem {
   id: number;

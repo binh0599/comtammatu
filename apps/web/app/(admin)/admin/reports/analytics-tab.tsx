@@ -16,28 +16,6 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import {
   getBranchAnalytics,
   getPeakHoursAnalysis,
@@ -46,6 +24,24 @@ import {
   type PeakHourCell,
   type CategoryMixRow,
 } from "./analytics-actions";
+import {
+  Button,
+  Calendar,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  cn,
+} from "@comtammatu/ui";
 
 function formatVND(value: number): string {
   return new Intl.NumberFormat("vi-VN", {

@@ -1,5 +1,4 @@
 import { Header } from "@/components/admin/header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getIngredients,
   getBranches,
@@ -25,6 +24,12 @@ import { StockCountTab } from "./stock-count-tab";
 import { FoodCostTab } from "./food-cost-tab";
 import { ExpiryTab } from "./expiry-tab";
 import { ForecastTab } from "./forecast-tab";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 export default async function InventoryPage() {
   const [

@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { Wifi, WifiOff, CloudUpload, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { Badge } from "@comtammatu/ui";
 
 /**
  * Compact status indicator for the POS header.

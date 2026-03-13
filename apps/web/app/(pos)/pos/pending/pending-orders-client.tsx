@@ -10,8 +10,6 @@ import {
   AlertTriangle,
   Package,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   getPendingOrders,
   removePendingOrder,
@@ -20,6 +18,7 @@ import {
 } from "../lib/offline-db";
 import { syncPendingOrders } from "../lib/offline-queue";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { Badge, Button } from "@comtammatu/ui";
 
 export function PendingOrdersClient() {
   const isOnline = useOnlineStatus();

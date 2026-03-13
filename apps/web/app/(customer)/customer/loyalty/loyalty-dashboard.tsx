@@ -1,15 +1,20 @@
 "use client";
 
 import { Award, TrendingUp, ShoppingBag } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   formatPrice,
   formatDateTime,
   formatPoints,
   getLoyaltyTransactionTypeLabel,
 } from "@comtammatu/shared";
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Separator,
+} from "@comtammatu/ui";
 
 interface LoyaltyTransaction {
   id: number;

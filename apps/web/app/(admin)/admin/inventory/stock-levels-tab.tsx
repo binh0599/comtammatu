@@ -2,17 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { Plus, AlertTriangle, ShoppingCart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { initStockLevel, getReorderSuggestions } from "./actions";
+import type { ReorderSuggestion } from "./actions";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -20,24 +18,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { initStockLevel, getReorderSuggestions } from "./actions";
-import type { ReorderSuggestion } from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface StockLevel {
   id: number;

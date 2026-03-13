@@ -26,30 +26,26 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { Button } from "@/components/ui/button";
+import { PAYMENT_METHOD_LABELS } from "@comtammatu/shared";
+import { getReportData, type ReportSummary } from "./actions";
 import {
+  Button,
+  Calendar,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { PAYMENT_METHOD_LABELS } from "@comtammatu/shared";
-import { getReportData, type ReportSummary } from "./actions";
+  cn,
+} from "@comtammatu/ui";
 
 function formatVND(value: number): string {
   return new Intl.NumberFormat("vi-VN", {

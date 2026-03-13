@@ -2,9 +2,11 @@
 
 import { useTransition } from "react";
 import { ShoppingCart, Trash2, Plus, Minus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@comtammatu/shared";
+import type { CartItem } from "./menu-selector";
 import {
+  Badge,
+  Button,
   Drawer,
   DrawerClose,
   DrawerContent,
@@ -12,9 +14,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer";
-import { formatPrice } from "@comtammatu/shared";
-import type { CartItem } from "./menu-selector";
+} from "@comtammatu/ui";
 
 export function OrderCart({
   cart,
@@ -56,7 +56,7 @@ export function OrderCart({
         <DrawerTrigger asChild>
           <Button className="w-full gap-2 py-6 text-base shadow-lg">
             <ShoppingCart className="size-5" aria-hidden="true" />
-            <span className="flex-1 text-left">
+            <span className="flex-1 text-left" aria-live="polite">
               {totalItems} món · {formatPrice(subtotal)}
             </span>
             <Badge variant="secondary" className="ml-2">
@@ -87,7 +87,7 @@ export function OrderCart({
           </DrawerHeader>
 
           <div className="max-h-[50vh] overflow-y-auto px-4">
-            <div className="space-y-3">
+            <div className="space-y-3" role="list" aria-label="Sản phẩm trong giỏ hàng">
               {cart.map((item) => {
                 const sidesTotal = item.side_items.reduce(
                   (sum, s) => sum + s.unit_price * s.quantity,
@@ -99,6 +99,7 @@ export function OrderCart({
                 return (
                   <div
                     key={`${item.menu_item_id}-${item.variant_id ?? "base"}`}
+                    role="listitem"
                     className="rounded-lg border p-3"
                   >
                     <div className="flex items-center gap-3">

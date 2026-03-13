@@ -1,18 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { DialogFooter } from "@/components/ui/dialog";
 import {
   getCustomerGenderLabel,
   getCustomerSourceLabel,
@@ -20,6 +8,18 @@ import {
   CUSTOMER_SOURCES,
 } from "@comtammatu/shared";
 import type { Customer, LoyaltyTier } from "./crm-types";
+import {
+  Button,
+  DialogFooter,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from "@comtammatu/ui";
 
 export function CustomerForm({
   defaultValues,
@@ -54,38 +54,43 @@ export function CustomerForm({
         </div>
       )}
       <div className="grid gap-4 py-4">
-        <div className="grid gap-2">
-          <Label htmlFor="full_name">Họ tên *</Label>
-          <Input
-            id="full_name"
-            name="full_name"
-            defaultValue={defaultValues?.full_name}
-            placeholder="VD: Nguyen Van A"
-            required
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
+        <fieldset className="grid gap-4">
+          <legend className="text-sm font-medium">Thông tin bắt buộc</legend>
           <div className="grid gap-2">
-            <Label htmlFor="phone">Số điện thoại *</Label>
+            <Label htmlFor="full_name">Họ tên *</Label>
             <Input
-              id="phone"
-              name="phone"
-              defaultValue={defaultValues?.phone}
-              placeholder="VD: 0901234567"
+              id="full_name"
+              name="full_name"
+              defaultValue={defaultValues?.full_name}
+              placeholder="VD: Nguyen Van A"
               required
+              aria-required="true"
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              defaultValue={defaultValues?.email ?? ""}
-              placeholder="VD: email@example.com"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Số điện thoại *</Label>
+              <Input
+                id="phone"
+                name="phone"
+                defaultValue={defaultValues?.phone}
+                placeholder="VD: 0901234567"
+                required
+                aria-required="true"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                defaultValue={defaultValues?.email ?? ""}
+                placeholder="VD: email@example.com"
+              />
+            </div>
           </div>
-        </div>
+        </fieldset>
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="gender">Giới tính</Label>

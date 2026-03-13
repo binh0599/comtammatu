@@ -1,13 +1,13 @@
 "use client";
 
+import { Users, Ticket, Star, MessageCircle } from "lucide-react";
+import type { CrmStats } from "./actions";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Users, Ticket, Star, MessageCircle } from "lucide-react";
-import type { CrmStats } from "./actions";
+} from "@comtammatu/ui";
 
 const statCards = (stats: CrmStats) =>
   [

@@ -1,15 +1,15 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { formatDateTime, getAttendanceStatusLabel } from "@comtammatu/shared";
 import {
+  Badge,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { formatDateTime, getAttendanceStatusLabel } from "@comtammatu/shared";
+} from "@comtammatu/ui";
 
 interface AttendanceRecord {
   id: number;

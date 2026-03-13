@@ -9,7 +9,7 @@ import {
   Printer,
   LogOut,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@comtammatu/ui";
 import { logout } from "@/app/login/actions";
 import { NotificationBell } from "@/components/pos/notification-bell";
 

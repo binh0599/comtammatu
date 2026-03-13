@@ -1,5 +1,4 @@
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { Fragment } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,8 +6,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Fragment } from "react";
+  Separator,
+  SidebarTrigger,
+} from "@comtammatu/ui";
 
 interface HeaderProps {
   breadcrumbs?: { label: string; href?: string }[];

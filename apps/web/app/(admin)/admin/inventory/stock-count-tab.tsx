@@ -2,17 +2,15 @@
 
 import { useState, useTransition } from "react";
 import { Plus, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+  formatDateTime,
+  getStockCountStatusLabel,
+} from "@comtammatu/shared";
+import { createStockCount, approveStockCount } from "./actions";
+import { toast } from "sonner";
 import {
+  Badge,
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -20,16 +18,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  formatDateTime,
-  getStockCountStatusLabel,
-} from "@comtammatu/shared";
-import { createStockCount, approveStockCount } from "./actions";
-import { toast } from "sonner";
+  Input,
+  Label,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from "@comtammatu/ui";
 
 interface StockCount {
   id: number;

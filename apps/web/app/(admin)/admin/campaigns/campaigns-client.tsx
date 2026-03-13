@@ -13,24 +13,15 @@ import {
   CheckCircle2,
   BarChart3,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  createCampaign,
+  updateCampaign,
+  deleteCampaign,
+  scheduleCampaign,
+  sendCampaign,
+  getCampaignAnalytics,
+} from "./actions";
+import type { CampaignAnalytics } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,27 +32,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  createCampaign,
-  updateCampaign,
-  deleteCampaign,
-  scheduleCampaign,
-  sendCampaign,
-  getCampaignAnalytics,
-} from "./actions";
-import type { CampaignAnalytics } from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from "@comtammatu/ui";
 
 // =====================
 // Types

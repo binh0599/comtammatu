@@ -5,13 +5,13 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Users, Minus, Plus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
 import { MenuSelector, type CartItem } from "./menu-selector";
 import { OrderCart } from "./order-cart";
 import { createOrder, confirmOrder } from "../../orders/actions";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useMenuCache } from "@/hooks/use-data-cache";
 import { queueOfflineOrder } from "../../lib/offline-queue";
+import { Button } from "@comtammatu/ui";
 interface MenuItem {
   id: number;
   name: string;

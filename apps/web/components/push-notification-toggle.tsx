@@ -1,10 +1,15 @@
 "use client";
 
 import { Bell, BellOff } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { toast } from "sonner";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@comtammatu/ui";
 
 export function PushNotificationToggle() {
   const { permission, isSubscribed, isLoading, isSupported, subscribe, unsubscribe } =

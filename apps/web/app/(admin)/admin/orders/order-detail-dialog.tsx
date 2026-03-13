@@ -1,21 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   formatPrice,
   formatDateTime,
@@ -25,6 +9,20 @@ import {
   getPaymentStatusLabel,
 } from "@comtammatu/shared/src/utils/format";
 import type { Order } from "./orders-types";
+import {
+  Badge,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-gray-100 text-gray-800 hover:bg-gray-100",

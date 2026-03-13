@@ -16,28 +16,6 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   formatPrice,
   formatDateTime,
@@ -56,6 +34,24 @@ import {
   getTables,
 } from "../../orders/actions";
 import { ReceiptPrinter } from "../../components/receipt-printer";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Textarea,
+} from "@comtammatu/ui";
 
 interface OrderDetail {
   id: number;

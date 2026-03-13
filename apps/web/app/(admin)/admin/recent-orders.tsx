@@ -1,26 +1,24 @@
 "use client";
 
 import {
+  formatPrice,
+  formatDateTime,
+  getOrderStatusLabel,
+} from "@comtammatu/shared";
+import type { RecentOrder } from "./actions";
+import {
+  Badge,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  formatPrice,
-  formatDateTime,
-  getOrderStatusLabel,
-} from "@comtammatu/shared";
-import type { RecentOrder } from "./actions";
+} from "@comtammatu/ui";
 
 interface RecentOrdersProps {
   orders: RecentOrder[];

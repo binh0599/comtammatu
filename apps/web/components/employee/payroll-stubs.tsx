@@ -1,13 +1,12 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Wallet } from "lucide-react";
 import {
   formatDate,
   formatPrice,
   getPayrollStatusLabel,
 } from "@comtammatu/shared";
+import { Badge, Card, CardContent } from "@comtammatu/ui";
 
 interface PayrollEntry {
   id: number;

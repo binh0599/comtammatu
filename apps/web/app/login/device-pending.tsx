@@ -3,16 +3,16 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@comtammatu/database/src/supabase/client";
+import { Monitor, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { checkDeviceStatus } from "./actions";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Monitor, Loader2, CheckCircle, XCircle } from "lucide-react";
-import { checkDeviceStatus } from "./actions";
+} from "@comtammatu/ui";
 
 interface DevicePendingApprovalProps {
   approvalCode: string;

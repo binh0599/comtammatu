@@ -2,25 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Power, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  createKdsStation,
+  updateKdsStation,
+  toggleKdsStation,
+  deleteKdsStation,
+} from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,23 +18,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Badge,
+  Button,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  createKdsStation,
-  updateKdsStation,
-  toggleKdsStation,
-  deleteKdsStation,
-} from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface KdsStation {
   id: number;

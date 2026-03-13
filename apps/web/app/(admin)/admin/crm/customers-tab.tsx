@@ -11,32 +11,6 @@ import {
   Search,
   UserPlus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   formatPrice,
   getCustomerGenderLabel,
@@ -51,6 +25,28 @@ import type { Customer, LoyaltyTier } from "./crm-types";
 import { CustomerForm } from "./customer-form";
 import { LoyaltyHistoryDialog } from "./loyalty-history-dialog";
 import { AdjustPointsDialog } from "./adjust-points-dialog";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 export function CustomersTab({
   customers,

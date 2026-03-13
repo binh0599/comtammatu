@@ -2,25 +2,26 @@
 
 import { useState } from "react";
 import { ShieldAlert, AlertTriangle, ShieldX, Shield } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDateTime, getSeverityLabel } from "@comtammatu/shared";
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatDateTime, getSeverityLabel } from "@comtammatu/shared";
+} from "@comtammatu/ui";
 
 interface SecurityEvent {
   id: number;

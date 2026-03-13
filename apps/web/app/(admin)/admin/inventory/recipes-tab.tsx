@@ -2,32 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Minus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { formatPrice } from "@comtammatu/shared";
+import { createRecipe, deleteRecipe } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,18 +14,34 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { formatPrice } from "@comtammatu/shared";
-import { createRecipe, deleteRecipe } from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface RecipeIngredient {
   id: number;

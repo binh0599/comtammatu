@@ -1,11 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { UserCircle, Shield, Building2, Briefcase, Calendar } from "lucide-react";
 import { updateMyProfile, changeMyPassword } from "@/app/(employee)/employee/actions";
 import {
@@ -15,6 +10,16 @@ import {
 } from "@comtammatu/shared";
 import { toast } from "sonner";
 import { ROLE_LABELS } from "@/lib/role-labels";
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Separator,
+} from "@comtammatu/ui";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ProfileInfoProps {

@@ -3,13 +3,13 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@comtammatu/shared";
 import { toast } from "sonner";
 import { generateKitchenTicketCommands } from "@/lib/printing/kitchen-ticket-commands";
 import { printViaUsb, printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
 import { parseItems, type KdsTicket } from "../types";
+import { Button } from "@comtammatu/ui";
 
 // ===== Component =====
 

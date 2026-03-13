@@ -1,5 +1,5 @@
 import { KdsTicketSkeleton } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@comtammatu/ui";
 
 export default function KdsStationLoading() {
   return (

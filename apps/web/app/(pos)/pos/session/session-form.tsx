@@ -1,25 +1,8 @@
 "use client";
 
 import { useState, useEffect, useTransition } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { formatPrice } from "@comtammatu/shared";
+import { openSession, closeSession } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,10 +13,23 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
-import { formatPrice } from "@comtammatu/shared";
-import { openSession, closeSession } from "./actions";
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+} from "@comtammatu/ui";
 
 interface Terminal {
   id: number;

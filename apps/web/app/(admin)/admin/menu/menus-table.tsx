@@ -4,25 +4,7 @@ import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Eye } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { createMenu, updateMenu, deleteMenu } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,18 +15,30 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { createMenu, updateMenu, deleteMenu } from "./actions";
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface Menu {
   id: number;

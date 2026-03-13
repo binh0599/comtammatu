@@ -2,7 +2,7 @@ import { EMPLOYEE_PORTAL_ROLES } from "@comtammatu/shared";
 import { requireLayoutAuth } from "@/lib/layout-auth";
 import { EmployeeNav } from "@/components/employee/employee-nav";
 import { EmployeeHeader } from "@/components/employee/employee-header";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from "@comtammatu/ui";
 
 export default async function EmployeeLayout({
   children,

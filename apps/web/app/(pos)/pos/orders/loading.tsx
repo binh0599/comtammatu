@@ -1,5 +1,5 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { OrderCardSkeleton } from "@/components/skeletons";
+import { Skeleton } from "@comtammatu/ui";
 
 export default function OrdersLoading() {
   return (

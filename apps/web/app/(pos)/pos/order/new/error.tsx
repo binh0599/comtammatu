@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { WifiOff, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { OfflineFallback } from "./offline-fallback";
+import { Button } from "@comtammatu/ui";
 
 /**
  * Error boundary for the new order page.

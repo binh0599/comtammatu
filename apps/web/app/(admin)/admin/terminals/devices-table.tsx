@@ -2,16 +2,10 @@
 
 import { useState, useTransition, useEffect, useCallback } from "react";
 import { CheckCircle, XCircle, Trash2, Wifi } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { createClient } from "@comtammatu/database/src/supabase/client";
+import { approveDevice, rejectDevice, deleteDevice } from "./actions";
+import { toast } from "sonner";
+import { formatDateTime } from "@comtammatu/shared";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,11 +16,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { createClient } from "@comtammatu/database/src/supabase/client";
-import { approveDevice, rejectDevice, deleteDevice } from "./actions";
-import { toast } from "sonner";
-import { formatDateTime } from "@comtammatu/shared";
+  Badge,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface RegisteredDevice {
   id: number;
@@ -74,7 +72,6 @@ function getStatusBadge(status: string) {
       return <Badge variant="secondary">{status}</Badge>;
   }
 }
-
 
 export function DevicesTable({
   initialDevices,

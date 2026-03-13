@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import { Bell, BellRing } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { getUnreadNotificationCount } from "./actions";
 import { toast } from "sonner";
+import {
+  Button,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@comtammatu/ui";
 
 export function NotificationBadge() {
   const [count, setCount] = useState(0);

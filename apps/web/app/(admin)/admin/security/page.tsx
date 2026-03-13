@@ -1,5 +1,4 @@
 import { Header } from "@/components/admin/header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   getSecurityEvents,
   getSecuritySummary,
@@ -8,6 +7,12 @@ import {
 } from "./actions";
 import { EventsTab } from "./events-tab";
 import { AuditTab } from "./audit-tab";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 export default async function SecurityPage() {
   const [events, summary, auditLogs, resourceTypes] = await Promise.all([

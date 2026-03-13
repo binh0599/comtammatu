@@ -2,11 +2,14 @@
 
 import { useTransition } from "react";
 import { Users, CheckCircle, XCircle, Ban } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { updateTableStatus } from "./actions";
 import { toast } from "sonner";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+} from "@comtammatu/ui";
 
 interface TableData {
   id: number;

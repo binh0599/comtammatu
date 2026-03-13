@@ -2,24 +2,11 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Crown } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  createLoyaltyTier,
+  updateLoyaltyTier,
+  deleteLoyaltyTier,
+} from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,19 +17,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
+  Button,
   Card,
   CardContent,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  createLoyaltyTier,
-  updateLoyaltyTier,
-  deleteLoyaltyTier,
-} from "./actions";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from "@comtammatu/ui";
 
 // Match Supabase Json type without importing from database package (client component)
 type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];

@@ -15,32 +15,28 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { Button } from "@/components/ui/button";
 import {
+  getKdsPerformance,
+  type KdsPerformanceData,
+} from "./kds-actions";
+import {
+  Button,
+  Calendar,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import {
-  getKdsPerformance,
-  type KdsPerformanceData,
-} from "./kds-actions";
+  cn,
+} from "@comtammatu/ui";
 
 const TOOLTIP_STYLE = {
   backgroundColor: "var(--color-card)",

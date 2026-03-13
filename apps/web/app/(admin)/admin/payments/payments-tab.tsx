@@ -2,31 +2,15 @@
 
 import { useState, useTransition, useMemo } from "react";
 import { RotateCcw, Eye, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  formatPrice,
+  formatDateTime,
+  getPaymentMethodLabel,
+  getPaymentStatusLabel,
+  PAYMENT_METHODS,
+  PAYMENT_STATUSES,
+} from "@comtammatu/shared";
+import { refundPayment } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,16 +21,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
-  formatPrice,
-  formatDateTime,
-  getPaymentMethodLabel,
-  getPaymentStatusLabel,
-  PAYMENT_METHODS,
-  PAYMENT_STATUSES,
-} from "@comtammatu/shared";
-import { refundPayment } from "./actions";
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 // --- Types ---
 

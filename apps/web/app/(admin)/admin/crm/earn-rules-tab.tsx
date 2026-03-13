@@ -2,24 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Zap, ToggleLeft, ToggleRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  createEarnRule,
+  updateEarnRule,
+  deleteEarnRule,
+  toggleEarnRule,
+} from "./earn-rule-actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,17 +18,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import {
-  createEarnRule,
-  updateEarnRule,
-  deleteEarnRule,
-  toggleEarnRule,
-} from "./earn-rule-actions";
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface EarnRule {
   id: number;

@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { formatTime, getShiftAssignmentStatusLabel } from "@comtammatu/shared";
 import { getMyShiftAssignments } from "@/app/(employee)/employee/actions";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@comtammatu/ui";
 
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 

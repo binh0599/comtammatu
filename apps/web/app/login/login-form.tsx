@@ -3,19 +3,19 @@
 import { useActionState, useEffect, useRef } from "react";
 import { login } from "./actions";
 import type { ActionErrorCode } from "@comtammatu/shared";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { ChefHat } from "lucide-react";
+import { getDeviceFingerprint, getDeviceName } from "@/lib/device-fingerprint";
+import { DevicePendingApproval } from "./device-pending";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { ChefHat } from "lucide-react";
-import { getDeviceFingerprint, getDeviceName } from "@/lib/device-fingerprint";
-import { DevicePendingApproval } from "./device-pending";
+  Input,
+  Label,
+} from "@comtammatu/ui";
 
 type LoginState =
   | { error: string; code: ActionErrorCode }
@@ -139,6 +139,7 @@ export function LoginForm({ pendingDevice }: LoginFormProps) {
               required
               autoComplete="current-password"
               disabled={isPending}
+              aria-describedby={errorState?.error ? "login-error" : undefined}
             />
           </div>
           <Button type="submit" className="w-full" disabled={isPending}>

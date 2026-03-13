@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { BookOpen, ClipboardList, Gift, Award } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { formatPoints } from "@comtammatu/shared";
+import { Badge, Card, CardContent } from "@comtammatu/ui";
 
 interface CustomerHomeProps {
   isLoggedIn: boolean;

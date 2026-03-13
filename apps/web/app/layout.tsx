@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { SwRegisterGlobal } from "@/components/sw-register-global";
+import { AxeDev } from "@/components/axe-dev";
 import "./globals.css";
+import { TooltipProvider } from "@comtammatu/ui";
 
 export const metadata: Metadata = {
   title: "Cơm tấm Má Tư - CRM",
@@ -40,6 +41,7 @@ export default function RootLayout({
             Bỏ qua đến nội dung chính
           </a>
           <SwRegisterGlobal />
+          <AxeDev />
           <QueryProvider>
             <TooltipProvider>{children}</TooltipProvider>
           </QueryProvider>

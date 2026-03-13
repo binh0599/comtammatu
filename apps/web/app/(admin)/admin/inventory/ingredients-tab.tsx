@@ -2,25 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { formatPrice } from "@comtammatu/shared";
+import { createIngredient, updateIngredient, deleteIngredient } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,12 +14,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { formatPrice } from "@comtammatu/shared";
-import { createIngredient, updateIngredient, deleteIngredient } from "./actions";
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 interface Ingredient {
   id: number;

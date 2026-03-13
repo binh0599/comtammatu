@@ -1,8 +1,8 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { requireLayoutAuth } from "@/lib/layout-auth";
 import { NotificationBadge } from "./admin/notifications/notification-badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { SidebarInset, SidebarProvider } from "@comtammatu/ui";
 
 const ADMIN_ALLOWED_ROLES = ["owner", "manager", "hr"] as const;
 

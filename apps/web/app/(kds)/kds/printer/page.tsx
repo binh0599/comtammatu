@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { getPrintersForStation, getKdsStationsForBranch } from "./actions";
 import { KdsPrinterSettings } from "./kds-printer-settings";
+import { Button } from "@comtammatu/ui";
 
 interface KdsPrinterPageProps {
   searchParams: Promise<{ stationId?: string }>;

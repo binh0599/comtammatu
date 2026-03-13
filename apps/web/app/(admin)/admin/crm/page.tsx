@@ -1,5 +1,4 @@
 import { Header } from "@/components/admin/header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Crown, Ticket, MessageCircle, Zap } from "lucide-react";
 import {
   getCustomers,
@@ -16,6 +15,12 @@ import { LoyaltyTiersTab } from "./loyalty-tiers-tab";
 import { VouchersTab } from "./vouchers-tab";
 import { FeedbackTab } from "./feedback-tab";
 import { EarnRulesTab } from "./earn-rules-tab";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 export default async function CrmPage() {
   const [customers, loyaltyTiers, vouchers, feedback, branches, stats, earnRules] =

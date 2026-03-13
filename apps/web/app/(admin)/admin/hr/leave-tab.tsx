@@ -2,23 +2,25 @@
 
 import { useState, useTransition } from "react";
 import { Check, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { approveLeaveRequest } from "./actions";
 import {
   formatDate,
   getLeaveTypeLabel,
   getLeaveStatusLabel,
 } from "@comtammatu/shared";
+import {
+  Badge,
+  Button,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 interface LeaveRequest {
   id: number;

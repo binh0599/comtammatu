@@ -3,13 +3,18 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Clock, CalendarDays, CalendarOff, UserCircle, LogIn, LogOut } from "lucide-react";
 import { formatTime, formatDateTime, getShiftAssignmentStatusLabel, getAttendanceStatusLabel } from "@comtammatu/shared";
 import { clockIn, clockOut } from "@/app/(employee)/employee/actions";
 import { toast } from "sonner";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@comtammatu/ui";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface EmployeeHomeProps {

@@ -1,7 +1,11 @@
 import { Header } from "@/components/admin/header";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { TabsSkeleton, TableSkeleton } from "@/components/skeletons";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Skeleton,
+} from "@comtammatu/ui";
 
 export default function CrmLoading() {
   return (

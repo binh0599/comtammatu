@@ -3,12 +3,12 @@
 import { useRef, useCallback, useEffect } from "react";
 import { useReactToPrint } from "react-to-print";
 import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { formatPrice, formatDateTime } from "@comtammatu/shared";
 import { toast } from "sonner";
 import { generateReceiptCommands } from "@/lib/printing/receipt-commands";
 import { printViaUsb, printViaUsbAuto, printViaNetwork } from "@/lib/printing/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
+import { Button } from "@comtammatu/ui";
 
 interface ReceiptOrder {
     order_number: string;

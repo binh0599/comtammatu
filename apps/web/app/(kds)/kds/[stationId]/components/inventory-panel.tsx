@@ -10,28 +10,7 @@ import {
   ShoppingCart,
   Plus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import { getWasteReasonLabel } from "@comtammatu/shared";
 import {
   toggleMenuItemAvailability,
@@ -42,6 +21,25 @@ import {
   type IngredientOption,
   type SupplierOption,
 } from "../inventory-actions";
+import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea,
+  cn,
+} from "@comtammatu/ui";
 
 // ===== Low Stock Threshold =====
 const LOW_PORTION_THRESHOLD = 10;

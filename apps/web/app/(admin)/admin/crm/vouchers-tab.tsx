@@ -9,25 +9,18 @@ import {
   ToggleRight,
   Ticket,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+  formatPrice,
+  formatDate,
+  getVoucherTypeLabel,
+  VOUCHER_TYPES,
+} from "@comtammatu/shared";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+  createVoucher,
+  updateVoucher,
+  deleteVoucher,
+  toggleVoucher,
+} from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,34 +31,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
+  Badge,
+  Button,
   Card,
   CardContent,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  formatPrice,
-  formatDate,
-  getVoucherTypeLabel,
-  VOUCHER_TYPES,
-} from "@comtammatu/shared";
-import { cn } from "@/lib/utils";
-import {
-  createVoucher,
-  updateVoucher,
-  deleteVoucher,
-  toggleVoucher,
-} from "./actions";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  cn,
+} from "@comtammatu/ui";
 
 interface Branch {
   id: number;

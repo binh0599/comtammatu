@@ -19,9 +19,11 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { NavUser } from "./nav-user";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -29,10 +31,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { NavUser } from "./nav-user";
+} from "@comtammatu/ui";
 
 const navigation = [
   {

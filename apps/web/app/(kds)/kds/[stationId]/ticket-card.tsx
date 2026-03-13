@@ -2,14 +2,13 @@
 
 import { useEffect, useState, useTransition, useCallback } from "react";
 import { Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { bumpTicket } from "./actions";
 import { KitchenTicketPrinter } from "./components/kitchen-ticket-printer";
 import { buildKdsTicket } from "../lib/escpos";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
 import { getTimingColor, parseItems, type KdsTicket, type TimingRule } from "./types";
+import { Button, cn } from "@comtammatu/ui";
 
 export function TicketCard({
   ticket,

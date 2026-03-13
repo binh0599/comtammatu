@@ -2,35 +2,32 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { TABLE_STATUSES, getTableStatusLabel } from "@comtammatu/shared";
+import { createTable, updateTable, deleteTable, updateTableStatus } from "./actions";
+import { toast } from "sonner";
 import {
+  Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import {
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { TABLE_STATUSES, getTableStatusLabel } from "@comtammatu/shared";
-import { createTable, updateTable, deleteTable, updateTableStatus } from "./actions";
-import { toast } from "sonner";
+} from "@comtammatu/ui";
 
 interface TableData {
   id: number;

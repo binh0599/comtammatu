@@ -16,15 +16,6 @@ import {
     Plus,
 } from "lucide-react";
 import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-} from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
     formatPrice,
     getOrderStatusLabel,
 } from "@comtammatu/shared";
@@ -37,6 +28,15 @@ import {
     updateOrderStatus,
     addOrderItems,
 } from "./orders/actions";
+import {
+  Badge,
+  Button,
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@comtammatu/ui";
 
 // ---------------------------------------------------------------------------
 // Types

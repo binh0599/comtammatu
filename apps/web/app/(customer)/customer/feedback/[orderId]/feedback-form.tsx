@@ -2,15 +2,18 @@
 
 import { useState, useTransition } from "react";
 import { Star, CheckCircle2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 import { formatPrice, formatDateTime } from "@comtammatu/shared";
 import { submitFeedback } from "../../actions";
 import { toast } from "sonner";
+import {
+  Button,
+  Card,
+  CardContent,
+  Label,
+  Separator,
+  Textarea,
+  cn,
+} from "@comtammatu/ui";
 
 interface OrderItem {
   id: number;

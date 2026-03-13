@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, CalendarDays, Monitor, CalendarOff, Wallet, UserCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@comtammatu/ui";
 
 const navItems = [
   { href: "/employee", icon: Home, label: "Chính" },

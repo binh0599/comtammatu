@@ -1,7 +1,5 @@
 import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   getEmployees,
   getCreatableRoles,
@@ -18,6 +16,13 @@ import { ScheduleTab } from "./schedule-tab";
 import { AttendanceTab } from "./attendance-tab";
 import { LeaveTab } from "./leave-tab";
 import { PayrollTab } from "./payroll-tab";
+import {
+  Skeleton,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@comtammatu/ui";
 
 const PerformanceTab = dynamic(
   () => import("./performance-tab").then((m) => ({ default: m.PerformanceTab })),

@@ -3,10 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Clock, DollarSign } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { formatPrice } from "@comtammatu/shared";
 import type { SessionInfo } from "./types";
+import { Badge, Button } from "@comtammatu/ui";
 
 export function SessionBar({ session }: { session: SessionInfo }) {
   const [elapsed, setElapsed] = useState(0);

@@ -2,25 +2,23 @@
 
 import { useState, useTransition } from "react";
 import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { formatPrice } from "@comtammatu/shared";
+import { getFoodCostReport } from "./actions";
 import {
+  Button,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { formatPrice } from "@comtammatu/shared";
-import { getFoodCostReport } from "./actions";
+} from "@comtammatu/ui";
 
 interface FoodCostData {
   total_revenue: number;

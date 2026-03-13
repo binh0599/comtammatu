@@ -2,20 +2,21 @@
 
 import { useState, useTransition } from "react";
 import { Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   TABLE_STATUSES,
   getTableStatusLabel,
 } from "@comtammatu/shared";
 import { updateTableStatus } from "./actions";
+import {
+  Badge,
+  Card,
+  CardContent,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@comtammatu/ui";
 
 interface TableRow {
   id: number;
@@ -39,7 +40,6 @@ const statusColors: Record<string, string> = {
   reserved: "bg-yellow-100 border-yellow-400 text-yellow-800",
   maintenance: "bg-gray-100 border-gray-400 text-gray-600",
 };
-
 
 export function FloorPlanTab({
   tables,

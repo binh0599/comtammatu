@@ -2,23 +2,22 @@
 
 import { ChevronsUpDown, LogOut, User } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { logout } from "@/app/login/actions";
 import {
+  Avatar,
+  AvatarFallback,
+  Badge,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar";
-import { logout } from "@/app/login/actions";
-import { Badge } from "@/components/ui/badge";
+} from "@comtammatu/ui";
 
 interface NavUserProps {
   user: {

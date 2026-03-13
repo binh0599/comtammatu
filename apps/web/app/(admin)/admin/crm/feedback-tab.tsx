@@ -2,32 +2,28 @@
 
 import { useState, useTransition } from "react";
 import { MessageCircle, Star, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { formatDateTime } from "@comtammatu/shared";
+import { respondToFeedback } from "./actions";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import { formatDateTime } from "@comtammatu/shared";
-import { respondToFeedback } from "./actions";
+  Label,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea,
+} from "@comtammatu/ui";
 
 interface Feedback {
   id: number;

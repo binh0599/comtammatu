@@ -1,16 +1,19 @@
 import { Header } from "@/components/admin/header";
-import { Badge } from "@/components/ui/badge";
+import { getNotifications } from "./actions";
+import { formatDateTime } from "@comtammatu/shared";
 import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getNotifications } from "./actions";
-import { formatDateTime } from "@comtammatu/shared";
+} from "@comtammatu/ui";
 
 function getTypeBadge(eventType: string) {
   if (eventType === "inventory_low_stock") {

@@ -11,9 +11,10 @@ import {
   Calendar,
   AlertTriangle,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { formatDateTime, formatPrice } from "@comtammatu/shared";
+import { logout } from "@/app/login/actions";
+import { requestDataExport, requestDeletion } from "../actions";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,11 +25,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { formatDateTime, formatPrice } from "@comtammatu/shared";
-import { logout } from "@/app/login/actions";
-import { requestDataExport, requestDeletion } from "../actions";
-import { toast } from "sonner";
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Separator,
+} from "@comtammatu/ui";
 
 interface ProfileData {
   fullName: string;

@@ -1,22 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   formatDateTime,
   formatPoints,
@@ -24,6 +8,20 @@ import {
 } from "@comtammatu/shared";
 import { getCustomerLoyaltyHistory } from "./actions";
 import type { Customer, LoyaltyTransaction } from "./crm-types";
+import {
+  Badge,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@comtammatu/ui";
 
 export function LoyaltyHistoryDialog({
   customer,

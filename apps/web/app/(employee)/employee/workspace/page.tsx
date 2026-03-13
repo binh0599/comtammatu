@@ -1,8 +1,8 @@
 import { EMPLOYEE_PORTAL_ROLES, POS_ROLES, KDS_ROLES } from "@comtammatu/shared";
 import { requireLayoutAuth } from "@/lib/layout-auth";
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
 import { Monitor, ChefHat, ShieldAlert } from "lucide-react";
+import { Card, CardContent } from "@comtammatu/ui";
 
 export default async function WorkspacePage() {
   const { profile } = await requireLayoutAuth<Record<string, unknown>>(

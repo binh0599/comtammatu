@@ -2,20 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { formatDate } from "@comtammatu/shared";
+import { getExpiringBatches } from "./actions";
 import {
+  Badge,
+  Button,
+  Input,
+  Label,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { formatDate } from "@comtammatu/shared";
-import { getExpiringBatches } from "./actions";
+} from "@comtammatu/ui";
 
 interface ExpiringBatch {
   id: number;

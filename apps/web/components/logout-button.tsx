@@ -2,7 +2,7 @@
 
 import { LogOut } from "lucide-react";
 import { logout } from "@/app/login/actions";
-import { cn } from "@/lib/utils";
+import { cn } from "@comtammatu/ui";
 
 export function LogoutButton({ className }: { className?: string }) {
   return (
