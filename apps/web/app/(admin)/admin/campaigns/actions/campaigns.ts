@@ -9,10 +9,12 @@ import {
   safeDbError,
   safeDbErrorResult,
   auditLog,
+  ActionError,
   createCampaignSchema,
   updateCampaignSchema,
   entityIdSchema,
 } from "@comtammatu/shared";
+import { campaignLimiter } from "@comtammatu/security";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { sendPushToUser } from "@/lib/push-sender";
@@ -287,6 +289,15 @@ export const scheduleCampaign = withServerAction(_scheduleCampaign);
 async function _sendCampaign(id: number) {
   validateId(id);
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
+
+  // Rate limit campaign sends — prevent mass spam
+  const { success: rlSuccess } = await campaignLimiter.limit(userId);
+  if (!rlSuccess) {
+    throw new ActionError(
+      "Bạn đã gửi quá nhiều chiến dịch. Vui lòng thử lại sau 5 phút.",
+      "VALIDATION_ERROR",
+    );
+  }
 
   // Verify ownership
   const { data: existing, error: fetchError } = await supabase

@@ -10,8 +10,10 @@ import {
   withServerAction,
   auditLog,
   safeDbErrorResult,
+  ActionError,
   CASHIER_ROLES,
 } from "@comtammatu/shared";
+import { paymentLimiter } from "@comtammatu/security";
 import { maybeReleaseTable } from "../orders/helpers";
 
 async function _processPayment(data: {
@@ -24,6 +26,15 @@ async function _processPayment(data: {
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
   const { supabase, userId, tenantId } = ctx;
+
+  // Rate limit payment attempts per user
+  const { success: rlSuccess } = await paymentLimiter.limit(userId);
+  if (!rlSuccess) {
+    throw new ActionError(
+      "Quá nhiều yêu cầu thanh toán. Vui lòng thử lại sau.",
+      "VALIDATION_ERROR",
+    );
+  }
 
   const parsed = processPaymentSchema.safeParse(data);
   if (!parsed.success) {

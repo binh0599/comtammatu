@@ -11,3 +11,5 @@
 [2026-03-13] EXPORTS_BACKWARD_COMPAT — When adding `exports` field to package.json, include BOTH new clean paths AND existing `/src/` prefixed paths. Node.js `exports` is strict — unlisted paths are unresolvable.
 [2026-03-13] PG_FUNC_DEFAULTS_LAST — In PostgreSQL CREATE FUNCTION, all parameters with DEFAULT values must come after all required parameters. Otherwise: `input parameters after one with a default value must also have defaults`.
 [2026-03-13] CLIENT_EXPORT_NAME — `@comtammatu/database/src/supabase/client` exports `createClient`, not `createBrowserClient`. The internal `@supabase/ssr` function is wrapped and renamed.
+[2026-03-13] CSP_UNSAFE_EVAL_DEV_ONLY — `unsafe-eval` in CSP must only be enabled in development (needed for HMR/React DevTools). Production CSP must NOT include `unsafe-eval`. Check `next.config.ts` `buildCsp()`.
+[2026-03-13] RATE_LIMIT_BEFORE_AUTH — Rate limiting and account lockout checks must run BEFORE calling `supabase.auth.signInWithPassword()` to prevent wasting auth API calls on locked accounts.

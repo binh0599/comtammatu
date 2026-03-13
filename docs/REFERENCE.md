@@ -118,16 +118,27 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ---
 
-## RATE LIMITS (Planned via Upstash Redis)
+## RATE LIMITS (Upstash Redis)
 
-| Endpoint | Limit | Window |
-| -------- | ----- | ------ |
-| Login/Auth | 5 req | 15 min |
-| GET queries | 100 req | 1 min |
-| POST/PUT/DELETE | 30 req | 1 min |
-| Customer app | 20 req | 1 min |
-| Bulk exports | 5 req | 1 hour |
-| Payment webhooks | 1000 req | 1 min |
+| Limiter | Limit | Window | Used by |
+| ------- | ----- | ------ | ------- |
+| `authLimiter` | 5 req | 60s | Login (by IP) |
+| `apiLimiter` | 30 req | 60s | Authenticated API endpoints |
+| `webhookLimiter` | 10 req | 60s | Momo IPN webhook (by IP) |
+| `paymentLimiter` | 10 req | 60s | `processPayment` (by user ID) |
+| `orderLimiter` | 20 req | 60s | `createOrder` (by user ID) |
+| `campaignLimiter` | 3 req | 300s | `sendCampaign` (by user ID) |
+
+### Account Lockout
+- 5 failed login attempts → 15-minute lockout (by email)
+- Stored in Redis via `checkAccountLockout()` / `recordFailedLogin()` / `clearFailedLogins()`
+- Cleared on successful login
+
+### Security Headers (next.config.ts)
+- CSP: `unsafe-eval` only in dev, `object-src 'none'`, `upgrade-insecure-requests`
+- HSTS: 2 years + includeSubDomains + preload
+- COOP: `same-origin`, CORP: `same-origin`
+- X-XSS-Protection: `0` (rely on CSP instead)
 
 ---
 
@@ -162,49 +173,18 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ---
 
-## POST-MVP BACKLOG (Updated 2026-03-05)
+## POST-MVP BACKLOG (Updated 2026-03-13)
 
 ```text
-Completed (Post-MVP Sprint 1 & 2):
-- [x] Momo payment integration (webhook, HMAC)
-- [x] Stock auto-deduction on order completion (DB trigger)
-- [x] Voucher redemption at POS
-- [x] Charts/graphs for admin dashboard
-- [x] Admin payment management page
-- [x] WCAG AAA accessibility fixes
-- [x] Security hardening (POS/KDS device flow, KDS station actions)
-- [x] HR employee auth account creation from admin
-- [x] Rate Limiting (Redis) and error boundaries
+All priorities completed. Remaining refactoring:
 
-Completed (Post-MVP Sprint 3):
-- [x] Menu System Restructure (Category types, side dishes, item notes)
-- [x] Device approval flow and fingerprinting for terminal registration
-- [x] Move printer settings to POS/KDS (Peripheral config)
-
-Priority 1 (Core — Week 11-12):
-- [ ] VNPay payment integration (webhooks, HMAC verification)
-- [ ] Retention cron jobs (auto-delete after 30-day grace period)
-- [ ] Auto-tier upgrade triggers for loyalty
-- [ ] Receipt printing (thermal printer)
-- [ ] Notifications system (in-app + push)
-
-Priority 2 (Operations — Week 13-14):
-- [ ] Payroll calculations (HR module)
-- [ ] Attendance clock-in/clock-out (QR scan)
-- [ ] Branch comparison in dashboard
-- [ ] Offline support (Service Worker, IndexedDB, AES-256-GCM)
-
-Priority 3 (Quality — Week 15-16):
-- [ ] E2E testing (Playwright)
-- [ ] RLS validation test suite
-- [ ] API documentation (OpenAPI)
-
-Priority 4 (Growth — Week 17+):
-- [ ] Campaigns & notifications (email/SMS/push marketing)
-- [ ] Customer online ordering via PWA
-- [ ] Multi-branch reporting & analytics
-- [ ] Inventory forecasting
-- [ ] Staff performance metrics
+Refactoring Waves (code quality):
+- [x] Wave 1: Code org (16 sub-modules), error boundaries, DB indexes
+- [x] Wave 2: React Query + Zustand + DB transaction RPCs
+- [x] Wave 3: Structured logging, optimistic updates, 502 unit tests
+- [x] Wave 4: CSP hardening, account lockout, rate limiting expansion, security E2E
+- [ ] Wave 5: i18n framework, UI package consolidation, WCAG audit
+- [ ] Wave 6: CQRS materialized views, integration tests
 ```
 
 ---

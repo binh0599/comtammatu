@@ -105,3 +105,13 @@
 **Pattern:** `createOrder` accepted a `terminal_id` from the client without verifying it belonged to the user's branch or was the correct type. A waiter could spoof a cashier terminal ID.
 **Rule:** Every Server Action that receives an entity ID from the client must verify ownership (branch, tenant) before using it. Never trust client-provided foreign keys.
 **Prevention:** Add a verification step for any ID parameter that crosses a trust boundary (client → server). Pattern: fetch the entity, check branch/tenant match, check type/status.
+
+## 2026-03-13: Account lockout must clear on successful login
+**Pattern:** Without clearing failed attempts after a successful login, the counter accumulates across sessions, causing unexpected lockouts for legitimate users who occasionally mistype passwords.
+**Rule:** Always call `clearFailedLogins()` immediately after a successful `signInWithPassword()`, before any other logic (profile fetch, device check, etc.).
+**Prevention:** In the login flow: (1) check lockout → (2) attempt auth → (3) on failure: record attempt → (4) on success: clear attempts → (5) proceed with profile/device checks.
+
+## 2026-03-13: X-XSS-Protection should be `0` not `1; mode=block`
+**Pattern:** The legacy `X-XSS-Protection: 1; mode=block` header can actually introduce XSS vulnerabilities in older browsers via "false positive" blocking. Modern browsers have removed XSS auditors entirely.
+**Rule:** Set `X-XSS-Protection: 0` and rely on CSP `script-src` instead. CSP is the correct modern defense against XSS.
+**Prevention:** When setting security headers, always check current OWASP recommendations. Legacy headers may be counterproductive.

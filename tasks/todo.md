@@ -175,7 +175,7 @@
 
 ---
 
-## Current State Summary (2026-03-06)
+## Current State Summary (2026-03-13)
 
 ### What Exists Now
 | Module | Routes | Status |
@@ -184,31 +184,58 @@
 | Admin Dashboard | /admin | Done (charts, branch comparison) |
 | Menu Management | /admin/menu, /admin/menu/[menuId] | Done (categories, sides, notes) |
 | CRM | /admin/crm | Done (customers, loyalty, vouchers, feedback) |
-| HR | /admin/hr | Done (employees, shifts, schedule, attendance, leave, payroll) |
-| Inventory | /admin/inventory | Done (ingredients, stock, POs, recipes, suppliers, food cost, expiry) |
+| HR | /admin/hr | Done (employees, shifts, schedule, attendance, leave, payroll, performance) |
+| Inventory | /admin/inventory | Done (ingredients, stock, POs, recipes, suppliers, food cost, expiry, forecast) |
 | Security | /admin/security | Done (events, audit logs) |
 | Payments | /admin/payments | Done |
 | Orders (Admin) | /admin/orders | Done |
-| Reports | /admin/reports | Exists (page created) |
-| Settings | /admin/settings | Exists (page created) |
+| Reports | /admin/reports | Done (revenue, peak hours, category mix, branch analytics) |
+| Settings | /admin/settings | Done (tenant info, tax/service charge, branch management) |
 | Terminals | /admin/terminals | Done (device approval, fingerprinting) |
 | KDS Stations | /admin/kds-stations | Done |
+| Tables | /admin/tables | Done (CRUD, floor plan, reservations) |
+| Campaigns | /admin/campaigns | Done (CRUD, schedule, send, segments) |
+| Notifications | /admin/notifications | Done (inventory alerts, severity badges) |
 | POS | /pos, /pos/orders, /pos/order/new, /pos/order/[orderId], /pos/cashier, /pos/session | Done |
 | POS Printer | /pos/printer | Done |
-| KDS | /kds, /kds/[stationId], /kds/printer | Done |
-| Customer PWA | /customer (6 pages) | Done |
-| Employee Portal | /employee (5 pages: home, schedule, profile, workspace, leave, payroll) | Done |
+| POS Offline | /pos/pending | Done (IndexedDB queue, SW, sync-on-reconnect) |
+| KDS | /kds, /kds/[stationId], /kds/printer | Done (ESC/POS, Web Serial, auto-print) |
+| Customer PWA | /customer (6 pages + cart + ordering) | Done |
+| Employee Portal | /employee (home, schedule, profile, workspace, leave, payroll) | Done |
 | Privacy API | /api/privacy/* | Done |
+| Cron Jobs | /api/cron/* | Done (deletions, tier upgrade, inventory alerts, view refresh) |
+| Push Notifications | /api/push/* | Done (VAPID, SW handlers, order/inventory/campaign triggers) |
 
-**37 page routes, 20 action files, 16 Zod schema files, 4 E2E spec files**
+**40+ page routes, 20+ action files (split into 16 sub-modules), 16 Zod schema files, 13 E2E spec files**
 
 ### Infrastructure
-- 24 loading.tsx skeletons, 9 error boundaries
-- Rate limiting on auth, webhooks, privacy APIs
+- 24 loading.tsx skeletons, 23 error boundaries
+- Rate limiting on auth, webhooks, privacy APIs, payments, orders, campaigns
+- Account lockout (5 failed attempts → 15-min lock)
+- Security headers (CSP hardened, HSTS preload, COOP, CORP, Permissions-Policy)
 - Momo payment integration (cash + QR)
 - Realtime subscriptions (orders, tables, KDS tickets)
 - Device fingerprinting & approval flow
-- Printer config for POS & KDS
+- ESC/POS kitchen printing (Web Serial API)
+- POS offline mode (Service Worker + IndexedDB + sync queue)
+- Web Push Notifications (VAPID + SW handlers)
+- PWA manifests for POS + Customer
+- Structured logging (JSON prod / pretty dev) + error reporter abstraction
+- React Query + Zustand state management (4 query hooks, 6 mutation hooks with optimistic updates, 4 UI stores)
+- 3 Supabase RPC functions (atomic payment, order creation, stock count)
+- 13 database indexes (6 pg_trgm GIN + 7 partial/composite)
+- Performance: dynamic imports, optimizePackageImports, ISR, image optimization
+- 502 unit tests (Vitest), 13 E2E spec files (Playwright)
+
+### Refactoring Status
+| Wave | Focus | Status |
+|------|-------|--------|
+| Wave 1 | Code splitting, error boundaries, DB indexes | Done |
+| Wave 2 | React Query, Zustand, DB transaction RPCs | Done |
+| Wave 3 | Structured logging, unit tests, optimistic updates | Done |
+| Wave 4 | CSP hardening, account lockout, rate limiting, security E2E | Done |
+| Wave 5 | i18n, UI package consolidation, WCAG audit | Pending |
+| Wave 6 | CQRS materialized views, integration tests | Pending |
 
 ---
 
@@ -409,21 +436,82 @@
 
 ---
 
-## Remaining: Refactoring Wave 4-6
+## Completed: Refactoring Wave 4 — Security + Quality
 
-### Wave 4 — Security + Quality
-- [ ] Security hardening (CSP headers, rate limit improvements)
-- [ ] E2E test expansion
-- [ ] Infrastructure improvements
+### CSP & Security Headers
+- [x] Tighten CSP — remove `unsafe-eval` in production, add `object-src 'none'`, `upgrade-insecure-requests`
+- [x] HSTS preload — increase max-age to 2 years + preload directive
+- [x] Add `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Resource-Policy: same-origin`
+- [x] Permissions-Policy updated — add `payment=()`, `usb=(self)` for Web Serial
+- [x] X-XSS-Protection set to `0` (modern recommendation — CSP supersedes)
 
-### Wave 5 — Polish
-- [ ] i18n framework + string extraction
-- [ ] UI package consolidation (`@comtammatu/ui`)
-- [ ] WCAG audit
+### Account Lockout
+- [x] Redis-based account lockout after 5 failed login attempts (15-minute window)
+- [x] `checkAccountLockout()`, `recordFailedLogin()`, `clearFailedLogins()` in `@comtammatu/security`
+- [x] Login action integrated — shows remaining attempts, lockout duration message
 
-### Wave 6 — CQRS + Integration
-- [ ] CQRS materialized views for reports
-- [ ] Integration tests
+### Rate Limiting Expansion
+- [x] `paymentLimiter` (10 req/60s) — added to `processPayment` action
+- [x] `orderLimiter` (20 req/60s) — added to `createOrder` action
+- [x] `campaignLimiter` (3 req/300s) — added to `sendCampaign` action
+- [x] Shared Redis instance — reuse connection across all limiters
+
+### Security E2E Tests
+- [x] RBAC access control — unauthenticated redirect for /admin, /pos, /kds
+- [x] Customer cannot access /admin
+- [x] Login form security — password field type, empty/invalid credential handling
+- [x] HTTP security headers verification (CSP, HSTS, COOP, X-Content-Type-Options, etc.)
+- [x] API route authentication checks (privacy endpoints)
+- [x] Admin + POS sub-route protection (9 admin routes, 3 POS routes)
+
+### Verification
+- [x] Typecheck + build all pass (7/7 turbo tasks)
+- [x] Lint: 0 errors, 97 warnings (all pre-existing)
+
+---
+
+## Remaining: Refactoring Wave 5 — UI + Accessibility
+
+### ~~i18n Framework~~ — Skipped (chỉ phục vụ khách nội địa, không cần đa ngôn ngữ hiện tại)
+
+### UI Package Consolidation (`@comtammatu/ui`)
+- [ ] Audit shared components — identify reusable UI across admin/POS/customer
+- [ ] Move shadcn/ui components from `apps/web/components/ui/` → `packages/ui/src/`
+- [ ] Create composite components: `DataTable`, `StatusBadge`, `ConfirmDialog`, `StatCard`
+- [ ] Update imports across all routes to use `@comtammatu/ui`
+- [ ] Package.json exports map + Tailwind content path config
+- [ ] Verify: typecheck + build pass after migration
+
+### WCAG Accessibility Audit
+- [ ] Run axe-core automated scan on all admin pages — fix critical/serious violations
+- [ ] Keyboard navigation audit — all interactive elements focusable, correct tab order
+- [ ] Screen reader audit — ARIA labels on icons, tables, dialogs, toasts
+- [ ] Color contrast check — ensure AA minimum (4.5:1 text, 3:1 large/UI)
+- [ ] Form accessibility — labels linked to inputs, error messages announced
+- [ ] POS/KDS touch target audit — minimum 44x44px for touch interfaces
+
+---
+
+## Remaining: Refactoring Wave 6 — CQRS + Integration Tests
+
+### CQRS Materialized Views
+- [ ] `mv_daily_revenue` — materialized view aggregating orders by branch/day (revenue, count, avg)
+- [ ] `mv_item_popularity` — top-selling items by branch/period
+- [ ] `mv_staff_performance` — waiter orders, cashier payments, chef prep times
+- [ ] `mv_inventory_status` — current stock levels with days-until-stockout
+- [ ] Refresh cron job `/api/cron/refresh-views` — daily 2 AM UTC
+- [ ] Refactor report actions to query MVs instead of raw aggregation queries
+- [ ] Verify: reports page loads faster with pre-computed data
+
+### Integration Tests
+- [ ] Supabase test helpers — seed/teardown with test tenant isolation
+- [ ] Auth integration — login flow, role-based redirect, session persistence
+- [ ] Order lifecycle — create → KDS ticket → bump → payment → completed
+- [ ] Inventory flow — PO create → receive → stock level update → low-stock alert
+- [ ] CRM flow — customer registration → order → loyalty points → tier upgrade
+- [ ] Payment integration — cash payment, Momo webhook verification
+- [ ] Realtime integration — order creates trigger KDS ticket via postgres_changes
+- [ ] RLS integration — verify cross-tenant isolation with real Supabase queries
 
 ---
 

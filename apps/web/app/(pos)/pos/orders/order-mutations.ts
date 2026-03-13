@@ -18,6 +18,7 @@ import {
   withServerAction,
   safeDbError,
 } from "@comtammatu/shared";
+import { orderLimiter } from "@comtammatu/security";
 import {
   isValidTransition,
   calculateOrderTotals,
@@ -77,6 +78,15 @@ async function _createOrder(data: {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   const { supabase, userId, tenantId } = ctx;
+
+  // Rate limit order creation per user
+  const { success: rlSuccess } = await orderLimiter.limit(userId);
+  if (!rlSuccess) {
+    throw new ActionError(
+      "Quá nhiều yêu cầu tạo đơn. Vui lòng thử lại sau.",
+      "VALIDATION_ERROR",
+    );
+  }
 
   const parsed = createOrderSchema.safeParse(data);
   if (!parsed.success) {

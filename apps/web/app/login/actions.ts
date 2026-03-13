@@ -14,7 +14,12 @@ import {
   ROLE_TERMINAL_TYPE_MAP,
   type DeviceTerminalType,
 } from "@comtammatu/shared";
-import { authLimiter } from "@comtammatu/security";
+import {
+  authLimiter,
+  checkAccountLockout,
+  recordFailedLogin,
+  clearFailedLogins,
+} from "@comtammatu/security";
 
 const loginSchema = z.object({
   email: z.string().email("Email không hợp lệ"),
@@ -69,6 +74,19 @@ async function _login(formData: FormData) {
     );
   }
 
+  // Check account lockout before attempting auth
+  const lockoutKey = parsed.data.email.toLowerCase();
+  const lockout = await checkAccountLockout(lockoutKey);
+  if (lockout.locked) {
+    const minutesLeft = lockout.lockoutUntil
+      ? Math.ceil((lockout.lockoutUntil - Date.now()) / 60_000)
+      : 15;
+    throw new ActionError(
+      `Tài khoản tạm khóa do đăng nhập sai quá nhiều lần. Thử lại sau ${minutesLeft} phút.`,
+      "VALIDATION_ERROR",
+    );
+  }
+
   const supabase = await createSupabaseServer();
 
   const { error, data: authData } = await supabase.auth.signInWithPassword({
@@ -77,12 +95,23 @@ async function _login(formData: FormData) {
   });
 
   if (error || !authData.user) {
-    // Generic error message — never reveal whether user exists
+    // Record failed attempt and check if now locked
+    const result = await recordFailedLogin(lockoutKey);
+    if (result.locked) {
+      throw new ActionError(
+        "Tài khoản tạm khóa do đăng nhập sai quá nhiều lần. Thử lại sau 15 phút.",
+        "VALIDATION_ERROR",
+      );
+    }
+    // Generic error — never reveal whether user exists
     throw new ActionError(
-      "Email hoặc mật khẩu không chính xác",
+      `Email hoặc mật khẩu không chính xác. Còn ${result.attemptsRemaining} lần thử.`,
       "UNAUTHORIZED",
     );
   }
+
+  // Successful login — clear any failed attempts
+  await clearFailedLogins(lockoutKey);
 
   const { data: profile } = await supabase
     .from("profiles")
