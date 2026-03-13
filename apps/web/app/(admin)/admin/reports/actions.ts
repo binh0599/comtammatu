@@ -52,7 +52,7 @@ export interface ReportSummary {
 }
 
 // ---------------------------------------------------------------------------
-// getReportData
+// getReportData — Now reads from materialized views
 // ---------------------------------------------------------------------------
 
 async function _getReportData(
@@ -64,113 +64,93 @@ async function _getReportData(
 
   const branchIds = await getBranchIdsForTenant(supabase, tenantId);
   if (branchIds.length === 0) {
-    return {
-      totalRevenue: 0,
-      totalOrders: 0,
-      avgTicket: 0,
-      totalTips: 0,
-      paymentMethods: [],
-      dailyData: [],
-      topItems: [],
-      orderTypeMix: [],
-      growthVsPrev: null,
-    };
+    return emptyReport();
   }
 
-  const [sY = 0, sM = 1, sD = 1] = parsed.startDate.split("-").map(Number);
-  const [eY = 0, eM = 1, eD = 1] = parsed.endDate.split("-").map(Number);
-  const start = new Date(Date.UTC(sY, sM - 1, sD, 0, 0, 0, 0));
-  const end = new Date(Date.UTC(eY, eM - 1, eD, 23, 59, 59, 999));
+  // --- Query materialized views in parallel ---
+  const [revenueResult, paymentMethodsResult, orderTypeMixResult, topItemsResult] =
+    await Promise.all([
+      // Daily revenue from MV
+      supabase
+        .from("mv_daily_revenue")
+        .select("report_date, order_count, total_revenue, total_tips, avg_ticket")
+        .in("branch_id", branchIds)
+        .gte("report_date", parsed.startDate)
+        .lte("report_date", parsed.endDate),
 
-  // Fetch completed orders in range
-  const { data: orders, error: ordersErr } = await supabase
-    .from("orders")
-    .select("id, branch_id, total, type, created_at, status")
-    .in("branch_id", branchIds)
-    .eq("status", "completed")
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString());
+      // Payment methods from MV
+      supabase
+        .from("mv_daily_payment_methods")
+        .select("method, payment_count, method_total")
+        .in("branch_id", branchIds)
+        .gte("report_date", parsed.startDate)
+        .lte("report_date", parsed.endDate),
 
-  if (ordersErr) throw safeDbError(ordersErr, "db");
-  if (!orders || orders.length === 0) {
-    return {
-      totalRevenue: 0,
-      totalOrders: 0,
-      avgTicket: 0,
-      totalTips: 0,
-      paymentMethods: [],
-      dailyData: [],
-      topItems: [],
-      orderTypeMix: [],
-      growthVsPrev: null,
-    };
-  }
+      // Order type mix from MV
+      supabase
+        .from("mv_daily_order_type_mix")
+        .select("order_type, type_count, type_revenue")
+        .in("branch_id", branchIds)
+        .gte("report_date", parsed.startDate)
+        .lte("report_date", parsed.endDate),
 
-  const orderIds = orders.map((o: { id: number }) => o.id);
+      // Top items from MV
+      supabase
+        .from("mv_item_popularity")
+        .select("item_name, total_quantity, total_revenue")
+        .in("branch_id", branchIds)
+        .gte("report_date", parsed.startDate)
+        .lte("report_date", parsed.endDate),
+    ]);
 
-  // Fetch payments for these orders
-  const { data: payments, error: paymentsErr } = await supabase
-    .from("payments")
-    .select("order_id, method, amount, tip, paid_at")
-    .in("order_id", orderIds)
-    .eq("status", "completed")
-    .not("paid_at", "is", null);
+  if (revenueResult.error) throw safeDbError(revenueResult.error, "db");
+  if (paymentMethodsResult.error) throw safeDbError(paymentMethodsResult.error, "db");
+  if (orderTypeMixResult.error) throw safeDbError(orderTypeMixResult.error, "db");
+  if (topItemsResult.error) throw safeDbError(topItemsResult.error, "db");
 
-  if (paymentsErr) throw safeDbError(paymentsErr, "db");
+  const revenueRows = revenueResult.data ?? [];
+  const paymentRows = paymentMethodsResult.data ?? [];
+  const orderTypeRows = orderTypeMixResult.data ?? [];
+  const itemRows = topItemsResult.data ?? [];
 
-  // Fetch order items for top items
-  const { data: orderItems, error: itemsErr } = await supabase
-    .from("order_items")
-    .select("menu_item_id, quantity, item_total, menu_items(name)")
-    .in("order_id", orderIds);
+  if (revenueRows.length === 0) return emptyReport();
 
-  if (itemsErr) throw safeDbError(itemsErr, "db");
+  // --- Aggregate from MV rows ---
 
-  // --- Aggregate ---
-
-  // Revenue totals
+  // Totals (sum across branches + days)
   let totalRevenue = 0;
+  let totalOrders = 0;
   let totalTips = 0;
-  const methodMap = new Map<string, { count: number; total: number }>();
 
-  for (const p of payments ?? []) {
-    const amt = Number(p.amount);
-    const tip = Number(p.tip);
-    totalRevenue += amt + tip;
-    totalTips += tip;
-    const entry = methodMap.get(p.method) ?? { count: 0, total: 0 };
-    entry.count++;
-    entry.total += amt + tip;
-    methodMap.set(p.method, entry);
-  }
-
-  const paymentMethods: PaymentMethodBreakdown[] = Array.from(
-    methodMap.entries(),
-  ).map(([method, data]) => ({ method, ...data }));
-
-  // Daily breakdown
+  // Daily breakdown (aggregate across branches per day)
   const dayMap = new Map<string, { revenue: number; orders: number }>();
 
   // Initialize all days in range
-  const cursor = new Date(start);
-  while (cursor <= end) {
-    const key = cursor.toISOString().slice(0, 10);
-    dayMap.set(key, { revenue: 0, orders: 0 });
+  const [sY = 0, sM = 1, sD = 1] = parsed.startDate.split("-").map(Number);
+  const [eY = 0, eM = 1, eD = 1] = parsed.endDate.split("-").map(Number);
+  const startDt = new Date(Date.UTC(sY, sM - 1, sD));
+  const endDt = new Date(Date.UTC(eY, eM - 1, eD));
+  const cursor = new Date(startDt);
+  while (cursor <= endDt) {
+    dayMap.set(cursor.toISOString().slice(0, 10), { revenue: 0, orders: 0 });
     cursor.setDate(cursor.getDate() + 1);
   }
 
-  // Count orders per day
-  for (const order of orders) {
-    const key = new Date(order.created_at).toISOString().slice(0, 10);
-    const entry = dayMap.get(key);
-    if (entry) entry.orders++;
-  }
+  for (const row of revenueRows) {
+    const revenue = Number(row.total_revenue);
+    const orders = Number(row.order_count);
+    const tips = Number(row.total_tips);
 
-  // Revenue per day from payments
-  for (const p of payments ?? []) {
-    const key = new Date(p.paid_at).toISOString().slice(0, 10);
-    const entry = dayMap.get(key);
-    if (entry) entry.revenue += Number(p.amount) + Number(p.tip);
+    totalRevenue += revenue;
+    totalOrders += orders;
+    totalTips += tips;
+
+    const dateKey = String(row.report_date);
+    const entry = dayMap.get(dateKey);
+    if (entry) {
+      entry.revenue += revenue;
+      entry.orders += orders;
+    }
   }
 
   const dailyData: RevenueReportRow[] = Array.from(dayMap.entries()).map(
@@ -182,94 +162,111 @@ async function _getReportData(
     }),
   );
 
-  // Top items
-  const itemAgg = new Map<number, { name: string; qty: number; revenue: number }>();
-  for (const item of orderItems ?? []) {
-    const menuItem = item.menu_items as { name: string } | null;
-    const name = menuItem?.name ?? "Không rõ";
-    const existing = itemAgg.get(item.menu_item_id);
-    if (existing) {
-      existing.qty += item.quantity;
-      existing.revenue += Number(item.item_total);
-    } else {
-      itemAgg.set(item.menu_item_id, {
-        name,
-        qty: item.quantity,
-        revenue: Number(item.item_total),
-      });
-    }
+  // Payment methods (aggregate across branches + days)
+  const methodMap = new Map<string, { count: number; total: number }>();
+  for (const row of paymentRows) {
+    const entry = methodMap.get(row.method) ?? { count: 0, total: 0 };
+    entry.count += Number(row.payment_count);
+    entry.total += Number(row.method_total);
+    methodMap.set(row.method, entry);
   }
+  const paymentMethods: PaymentMethodBreakdown[] = Array.from(
+    methodMap.entries(),
+  ).map(([method, data]) => ({ method, ...data }));
 
-  const topItems = Array.from(itemAgg.values())
-    .sort((a, b) => b.qty - a.qty)
-    .slice(0, 15);
-
-  // --- Order type mix ---
+  // Order type mix (aggregate across branches + days)
   const typeMap = new Map<string, { count: number; revenue: number }>();
-  for (const order of orders) {
-    const t = (order as Record<string, unknown>).type as string ?? "dine_in";
-    const entry = typeMap.get(t) ?? { count: 0, revenue: 0 };
-    entry.count++;
-    entry.revenue += Number(order.total);
-    typeMap.set(t, entry);
+  for (const row of orderTypeRows) {
+    const entry = typeMap.get(row.order_type) ?? { count: 0, revenue: 0 };
+    entry.count += Number(row.type_count);
+    entry.revenue += Number(row.type_revenue);
+    typeMap.set(row.order_type, entry);
   }
   const orderTypeMix = Array.from(typeMap.entries())
     .map(([type, data]) => ({ type, ...data }))
     .sort((a, b) => b.count - a.count);
 
-  // --- Growth vs previous period ---
-  const periodMs = end.getTime() - start.getTime();
-  const prevStart = new Date(start.getTime() - periodMs - 1);
-  const prevEnd = new Date(start.getTime() - 1);
+  // Top items (aggregate across branches + days)
+  const itemAgg = new Map<string, { name: string; qty: number; revenue: number }>();
+  for (const row of itemRows) {
+    const name = row.item_name ?? "Không rõ";
+    const existing = itemAgg.get(name);
+    if (existing) {
+      existing.qty += Number(row.total_quantity);
+      existing.revenue += Number(row.total_revenue);
+    } else {
+      itemAgg.set(name, {
+        name,
+        qty: Number(row.total_quantity),
+        revenue: Number(row.total_revenue),
+      });
+    }
+  }
+  const topItems = Array.from(itemAgg.values())
+    .sort((a, b) => b.qty - a.qty)
+    .slice(0, 15);
+
+  // --- Growth vs previous period (from MV) ---
+  const periodMs = endDt.getTime() - startDt.getTime();
+  const prevStart = new Date(startDt.getTime() - periodMs - 86400000);
+  const prevEnd = new Date(startDt.getTime() - 86400000);
+  const prevStartStr = prevStart.toISOString().slice(0, 10);
+  const prevEndStr = prevEnd.toISOString().slice(0, 10);
 
   let growthVsPrev: GrowthVsPrev | null = null;
 
-  const { data: prevOrders } = await supabase
-    .from("orders")
-    .select("id, total")
+  const { data: prevRows } = await supabase
+    .from("mv_daily_revenue")
+    .select("order_count, total_revenue")
     .in("branch_id", branchIds)
-    .eq("status", "completed")
-    .gte("created_at", prevStart.toISOString())
-    .lte("created_at", prevEnd.toISOString());
+    .gte("report_date", prevStartStr)
+    .lte("report_date", prevEndStr);
 
-  if (prevOrders && prevOrders.length > 0) {
-    const prevOrderIds = prevOrders.map((o: { id: number }) => o.id);
-    const { data: prevPayments } = await supabase
-      .from("payments")
-      .select("amount, tip")
-      .in("order_id", prevOrderIds)
-      .eq("status", "completed")
-      .not("paid_at", "is", null);
-
+  if (prevRows && prevRows.length > 0) {
     let prevRevenue = 0;
-    for (const p of prevPayments ?? []) {
-      prevRevenue += Number(p.amount) + Number(p.tip);
+    let prevOrders = 0;
+    for (const row of prevRows) {
+      prevRevenue += Number(row.total_revenue);
+      prevOrders += Number(row.order_count);
     }
-    const prevAvgTicket = prevOrders.length > 0 ? prevRevenue / prevOrders.length : 0;
 
     const pctChange = (curr: number, prev: number) =>
       prev > 0 ? ((curr - prev) / prev) * 100 : curr > 0 ? 100 : 0;
 
+    const prevAvgTicket = prevOrders > 0 ? prevRevenue / prevOrders : 0;
+    const currAvgTicket = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+
     growthVsPrev = {
       revenuePct: pctChange(totalRevenue, prevRevenue),
-      ordersPct: pctChange(orders.length, prevOrders.length),
-      avgTicketPct: pctChange(
-        orders.length > 0 ? totalRevenue / orders.length : 0,
-        prevAvgTicket,
-      ),
+      ordersPct: pctChange(totalOrders, prevOrders),
+      avgTicketPct: pctChange(currAvgTicket, prevAvgTicket),
     };
   }
 
   return {
     totalRevenue,
-    totalOrders: orders.length,
-    avgTicket: orders.length > 0 ? totalRevenue / orders.length : 0,
+    totalOrders,
+    avgTicket: totalOrders > 0 ? totalRevenue / totalOrders : 0,
     totalTips,
     paymentMethods,
     dailyData,
     topItems,
     orderTypeMix,
     growthVsPrev,
+  };
+}
+
+function emptyReport(): ReportSummary {
+  return {
+    totalRevenue: 0,
+    totalOrders: 0,
+    avgTicket: 0,
+    totalTips: 0,
+    paymentMethods: [],
+    dailyData: [],
+    topItems: [],
+    orderTypeMix: [],
+    growthVsPrev: null,
   };
 }
 

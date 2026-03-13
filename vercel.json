@@ -21,6 +21,10 @@
     {
       "path": "/api/cron/expire-points",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-views",
+      "schedule": "30 2 * * *"
     }
   ]
 }

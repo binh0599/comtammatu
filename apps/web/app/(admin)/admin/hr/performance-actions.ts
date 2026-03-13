@@ -38,7 +38,7 @@ export interface StaffPerformanceRow {
 }
 
 // =====================
-// getStaffPerformance
+// getStaffPerformance — Now reads from materialized view + attendance tables
 // =====================
 
 async function _getStaffPerformance(
@@ -65,11 +65,6 @@ async function _getStaffPerformance(
   }
   if (targetBranchIds.length === 0) return [];
 
-  const [sY = 0, sM = 1, sD = 1] = parsed.startDate.split("-").map(Number);
-  const [eY = 0, eM = 1, eD = 1] = parsed.endDate.split("-").map(Number);
-  const start = new Date(Date.UTC(sY, sM - 1, sD, 0, 0, 0, 0));
-  const end = new Date(Date.UTC(eY, eM - 1, eD, 23, 59, 59, 999));
-
   // Get employees with role filter
   const { data: employees, error: empErr } = await supabase
     .from("employees")
@@ -79,7 +74,6 @@ async function _getStaffPerformance(
   if (empErr) throw safeDbError(empErr, "db");
   if (!employees || employees.length === 0) return [];
 
-  // Filter by role if specified
   type EmployeeRow = {
     id: number;
     profile_id: string;
@@ -103,172 +97,70 @@ async function _getStaffPerformance(
   const profileIds = filteredEmployees.map((e) => e.profile_id);
   const employeeIds = filteredEmployees.map((e) => e.id);
 
-  // --- Fetch data for different roles in parallel ---
+  // --- Fetch from MV + attendance tables in parallel ---
+  const [perfResult, attendanceResult, shiftsResult] = await Promise.all([
+    // Performance from MV (waiter orders, cashier payments)
+    supabase
+      .from("mv_staff_performance")
+      .select("profile_id, orders_created, total_items_served, payments_processed")
+      .in("profile_id", profileIds)
+      .gte("report_date", parsed.startDate)
+      .lte("report_date", parsed.endDate),
 
-  // Orders created by profile (for waiters)
-  const ordersPromise = supabase
-    .from("orders")
-    .select("id, created_by, status, created_at, updated_at")
-    .in("branch_id", targetBranchIds)
-    .in("created_by", profileIds)
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString());
+    // Attendance records (still raw — small table, fast query)
+    supabase
+      .from("attendance_records")
+      .select("employee_id, status")
+      .in("employee_id", employeeIds)
+      .in("branch_id", targetBranchIds)
+      .gte("date", parsed.startDate)
+      .lte("date", parsed.endDate),
 
-  // Order items count (for waiters avg items per order)
-  // Will fetch after orders
+    // Shift assignments (denominator for attendance rate)
+    supabase
+      .from("shift_assignments")
+      .select("employee_id")
+      .in("employee_id", employeeIds)
+      .gte("date", parsed.startDate)
+      .lte("date", parsed.endDate),
+  ]);
 
-  // Payments (for cashiers)
-  const paymentsPromise = supabase
-    .from("payments")
-    .select("id, processed_by, paid_at, status")
-    .in("processed_by", profileIds)
-    .eq("status", "completed")
-    .gte("paid_at", start.toISOString())
-    .lte("paid_at", end.toISOString());
-
-  // KDS tickets (for chefs)
-  const kdsPromise = supabase
-    .from("kds_tickets")
-    .select("id, bumped_by, status, created_at, bumped_at")
-    .in("branch_id", targetBranchIds)
-    .eq("status", "completed")
-    .in("bumped_by", profileIds)
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString());
-
-  // Attendance records (for all)
-  const attendancePromise = supabase
-    .from("attendance_records")
-    .select("employee_id, status, date")
-    .in("employee_id", employeeIds)
-    .in("branch_id", targetBranchIds)
-    .gte("date", parsed.startDate)
-    .lte("date", parsed.endDate);
-
-  // Shift assignments (for attendance rate denominator)
-  const shiftsPromise = supabase
-    .from("shift_assignments")
-    .select("employee_id, date")
-    .in("employee_id", employeeIds)
-    .gte("date", parsed.startDate)
-    .lte("date", parsed.endDate);
-
-  const [ordersResult, paymentsResult, kdsResult, attendanceResult, shiftsResult] =
-    await Promise.all([
-      ordersPromise,
-      paymentsPromise,
-      kdsPromise,
-      attendancePromise,
-      shiftsPromise,
-    ]);
-
-  if (ordersResult.error) throw safeDbError(ordersResult.error, "db");
-  if (paymentsResult.error) throw safeDbError(paymentsResult.error, "db");
-  if (kdsResult.error) throw safeDbError(kdsResult.error, "db");
+  if (perfResult.error) throw safeDbError(perfResult.error, "db");
   if (attendanceResult.error) throw safeDbError(attendanceResult.error, "db");
   if (shiftsResult.error) throw safeDbError(shiftsResult.error, "db");
 
-  const orders = ordersResult.data ?? [];
-  const payments = paymentsResult.data ?? [];
-  const kdsTickets = kdsResult.data ?? [];
-  const attendanceRecords = attendanceResult.data ?? [];
-  const shiftAssignments = shiftsResult.data ?? [];
-
-  // Get order items for waiter avg items calculation
-  const orderIds = orders.map((o: { id: number }) => o.id);
-  const orderItemCounts = new Map<number, number>();
-  if (orderIds.length > 0) {
-    const { data: orderItems, error: oiErr } = await supabase
-      .from("order_items")
-      .select("order_id, quantity")
-      .in("order_id", orderIds);
-    if (oiErr) throw safeDbError(oiErr, "db");
-    for (const oi of orderItems ?? []) {
-      orderItemCounts.set(
-        oi.order_id,
-        (orderItemCounts.get(oi.order_id) ?? 0) + oi.quantity,
-      );
-    }
-  }
-
-  // For cashier: get orders with ready->completed times
-  const completedOrders = orders.filter(
-    (o: { status: string }) => o.status === "completed",
-  );
-
-  // --- Build per-profile metrics ---
-
-  // Waiter: orders created & avg items
-  const waiterOrders = new Map<string, { count: number; totalItems: number }>();
-  for (const o of orders) {
-    const entry = waiterOrders.get(o.created_by) ?? { count: 0, totalItems: 0 };
-    entry.count++;
-    entry.totalItems += orderItemCounts.get(o.id) ?? 0;
-    waiterOrders.set(o.created_by, entry);
-  }
-
-  // Cashier: payments processed & avg processing time
-  const cashierPayments = new Map<
+  // Aggregate MV rows per profile (sum across days)
+  const perfMap = new Map<
     string,
-    { count: number; totalTimeMin: number; timedCount: number }
-  >();
-  for (const p of payments) {
-    const entry = cashierPayments.get(p.processed_by) ?? {
-      count: 0,
-      totalTimeMin: 0,
-      timedCount: 0,
-    };
-    entry.count++;
-    cashierPayments.set(p.processed_by, entry);
-  }
-
-  // For avg processing time, approximate from order ready->completed
-  // Match payments to orders that were completed
-  const orderReadyTimes = new Map<number, { created_at: string; updated_at: string }>();
-  for (const o of completedOrders) {
-    orderReadyTimes.set(o.id, { created_at: o.created_at, updated_at: o.updated_at });
-  }
-
-  // Chef: KDS tickets bumped & avg prep time
-  const chefTickets = new Map<
-    string,
-    { count: number; totalPrepMin: number; timedCount: number }
-  >();
-  for (const t of kdsTickets) {
-    const entry = chefTickets.get(t.bumped_by) ?? {
-      count: 0,
-      totalPrepMin: 0,
-      timedCount: 0,
-    };
-    entry.count++;
-    if (t.created_at && t.bumped_at) {
-      const prepMs =
-        new Date(t.bumped_at).getTime() - new Date(t.created_at).getTime();
-      if (prepMs > 0 && prepMs < 3600000) {
-        // Reasonable: <1 hour
-        entry.totalPrepMin += prepMs / 60000;
-        entry.timedCount++;
-      }
+    {
+      orders_created: number;
+      total_items: number;
+      payments_processed: number;
     }
-    chefTickets.set(t.bumped_by, entry);
+  >();
+
+  for (const row of perfResult.data ?? []) {
+    const existing = perfMap.get(row.profile_id) ?? {
+      orders_created: 0,
+      total_items: 0,
+      payments_processed: 0,
+    };
+    existing.orders_created += Number(row.orders_created);
+    existing.total_items += Number(row.total_items_served);
+    existing.payments_processed += Number(row.payments_processed);
+    perfMap.set(row.profile_id, existing);
   }
 
   // Attendance rate per employee
   const scheduledDays = new Map<number, number>();
-  for (const sa of shiftAssignments) {
-    scheduledDays.set(
-      sa.employee_id,
-      (scheduledDays.get(sa.employee_id) ?? 0) + 1,
-    );
+  for (const sa of shiftsResult.data ?? []) {
+    scheduledDays.set(sa.employee_id, (scheduledDays.get(sa.employee_id) ?? 0) + 1);
   }
 
   const presentDays = new Map<number, number>();
-  for (const ar of attendanceRecords) {
+  for (const ar of attendanceResult.data ?? []) {
     if (ar.status === "present" || ar.status === "late") {
-      presentDays.set(
-        ar.employee_id,
-        (presentDays.get(ar.employee_id) ?? 0) + 1,
-      );
+      presentDays.set(ar.employee_id, (presentDays.get(ar.employee_id) ?? 0) + 1);
     }
   }
 
@@ -278,6 +170,7 @@ async function _getStaffPerformance(
   for (const emp of filteredEmployees) {
     const role = emp.profiles.role;
     const profileId = emp.profile_id;
+    const perf = perfMap.get(profileId);
     const metrics: StaffMetrics = {};
 
     // Attendance
@@ -287,28 +180,23 @@ async function _getStaffPerformance(
       scheduled > 0 ? Math.round((present / scheduled) * 100) : undefined;
 
     if (role === "waiter") {
-      const waiterData = waiterOrders.get(profileId);
-      metrics.orders_created = waiterData?.count ?? 0;
+      metrics.orders_created = perf?.orders_created ?? 0;
       metrics.avg_items_per_order =
-        waiterData && waiterData.count > 0
-          ? Math.round((waiterData.totalItems / waiterData.count) * 10) / 10
+        perf && perf.orders_created > 0
+          ? Math.round((perf.total_items / perf.orders_created) * 10) / 10
           : 0;
     } else if (role === "cashier") {
-      const cashierData = cashierPayments.get(profileId);
-      metrics.payments_processed = cashierData?.count ?? 0;
-      // Approximate avg processing time
+      metrics.payments_processed = perf?.payments_processed ?? 0;
       metrics.avg_processing_time_min = undefined;
     } else if (role === "chef") {
-      const chefData = chefTickets.get(profileId);
-      metrics.tickets_bumped = chefData?.count ?? 0;
-      metrics.avg_prep_time_min =
-        chefData && chefData.timedCount > 0
-          ? Math.round((chefData.totalPrepMin / chefData.timedCount) * 10) / 10
-          : undefined;
+      // Chef per-person attribution not available (kds_tickets lacks bumped_by)
+      // Show waiter-equivalent metrics if chef also creates orders
+      metrics.tickets_bumped = undefined;
+      metrics.avg_prep_time_min = undefined;
     }
 
     // Calculate a simple relative score
-    let score = 50; // default
+    let score = 50;
     if (role === "waiter" && metrics.orders_created !== undefined) {
       score = Math.min(100, metrics.orders_created * 2);
     } else if (role === "cashier" && metrics.payments_processed !== undefined) {
@@ -330,7 +218,6 @@ async function _getStaffPerformance(
     });
   }
 
-  // Sort by score descending
   rows.sort((a, b) => b.score - a.score);
 
   return rows;

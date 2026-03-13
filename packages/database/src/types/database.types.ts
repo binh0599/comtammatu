@@ -3622,7 +3622,139 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      mv_daily_order_type_mix: {
+        Row: {
+          branch_id: number | null
+          order_type: string | null
+          report_date: string | null
+          type_count: number | null
+          type_revenue: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_daily_payment_methods: {
+        Row: {
+          branch_id: number | null
+          method: string | null
+          method_total: number | null
+          payment_count: number | null
+          report_date: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_daily_revenue: {
+        Row: {
+          avg_ticket: number | null
+          branch_id: number | null
+          order_count: number | null
+          report_date: string | null
+          total_revenue: number | null
+          total_tips: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_inventory_usage: {
+        Row: {
+          branch_id: number | null
+          ingredient_id: number | null
+          report_date: string | null
+          total_usage: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_recipe_ing_ingredient"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_item_popularity: {
+        Row: {
+          branch_id: number | null
+          category_name: string | null
+          item_name: string | null
+          menu_item_id: number | null
+          report_date: string | null
+          total_quantity: number | null
+          total_revenue: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_order_items_menu"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_orders_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_peak_hours: {
+        Row: {
+          branch_id: number | null
+          day_of_week: number | null
+          hour_of_day: number | null
+          order_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_orders_branch"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mv_staff_performance: {
+        Row: {
+          orders_created: number | null
+          payments_processed: number | null
+          profile_id: string | null
+          report_date: string | null
+          total_items_served: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       approve_stock_count: {
@@ -3715,6 +3847,7 @@ export type Database = {
         }
         Returns: Json
       }
+      refresh_materialized_views: { Args: never; Returns: undefined }
       validate_table_capacity: {
         Args: { p_branch_id: number; p_guest_count: number; p_table_id: number }
         Returns: Json
