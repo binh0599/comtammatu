@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("cron:process-deletions");
 
 /**
  * GDPR Deletion Cron — Vercel Cron Job
@@ -33,7 +36,7 @@ export async function GET(request: Request) {
     .lte("scheduled_deletion_at", new Date().toISOString());
 
   if (fetchError) {
-    console.error("[GDPR Cron] Failed to fetch deletion requests:", fetchError.message);
+    log.error("Lỗi truy vấn yêu cầu xóa dữ liệu", { action: "fetch-requests" });
     return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
   }
 
@@ -111,7 +114,7 @@ export async function GET(request: Request) {
 
       processed++;
     } catch (err) {
-      console.error(`[GDPR Cron] Error processing deletion request ${req.id}:`, err);
+      log.error(`Lỗi xử lý yêu cầu xóa #${req.id}`, { action: "process-deletion" });
       errors.push({ id: req.id, error: String(err) });
 
       // Log failure as security event
@@ -128,7 +131,7 @@ export async function GET(request: Request) {
     }
   }
 
-  console.log(`[GDPR Cron] Processed ${processed}/${requests.length} deletion requests`);
+  log.info(`Đã xử lý ${processed}/${requests.length} yêu cầu xóa dữ liệu`);
 
   return NextResponse.json({
     message: `Processed ${processed} deletion requests`,

@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("cron:upgrade-tiers");
 
 /**
  * Auto-Tier Upgrade Cron — Vercel Cron Job
@@ -31,7 +34,7 @@ export async function GET(request: Request) {
     .order("min_points", { ascending: false });
 
   if (tiersError) {
-    console.error("[Tier Cron] Failed to fetch tiers:", tiersError.message);
+    log.error("Lỗi truy vấn hạng thành viên", { action: "fetch-tiers" });
     return NextResponse.json({ error: "Failed to fetch tiers" }, { status: 500 });
   }
 
@@ -63,7 +66,7 @@ export async function GET(request: Request) {
       .eq("is_active", true);
 
     if (custError) {
-      console.error(`[Tier Cron] Failed to fetch customers for tenant ${tenantId}:`, custError.message);
+      log.error("Lỗi truy vấn khách hàng", { action: "fetch-customers", tenantId });
       continue;
     }
 
@@ -106,7 +109,7 @@ export async function GET(request: Request) {
     }
   }
 
-  console.log(`[Tier Cron] Checked ${checked} customers, upgraded ${upgraded}`);
+  log.info(`Đã kiểm tra ${checked} khách hàng, nâng hạng ${upgraded}`);
 
   return NextResponse.json({
     message: `Checked ${checked} customers, upgraded ${upgraded}`,

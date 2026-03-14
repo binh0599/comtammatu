@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("cron:expire-points");
 
 /**
  * Point Expiry Cron — Vercel Cron Job
@@ -37,7 +40,7 @@ export async function GET(request: Request) {
     .limit(500); // Process in batches to avoid timeout
 
   if (fetchError) {
-    console.error("[Expire Points] Lỗi truy vấn:", fetchError.message);
+    log.error("Lỗi truy vấn giao dịch hết hạn", { action: "fetch" });
     return NextResponse.json(
       { error: "Lỗi truy vấn giao dịch hết hạn" },
       { status: 500 },
@@ -58,10 +61,7 @@ export async function GET(request: Request) {
       .eq("id", txn.id);
 
     if (markError) {
-      console.error(
-        `[Expire Points] Lỗi đánh dấu txn ${txn.id}:`,
-        markError.message,
-      );
+      log.error(`Lỗi đánh dấu giao dịch #${txn.id}`, { action: "mark-expired" });
       continue;
     }
 
@@ -94,10 +94,7 @@ export async function GET(request: Request) {
         });
 
       if (insertError) {
-        console.error(
-          `[Expire Points] Lỗi tạo giao dịch hết hạn cho customer ${txn.customer_id}:`,
-          insertError.message,
-        );
+        log.error(`Lỗi tạo giao dịch hết hạn cho khách hàng #${txn.customer_id}`, { action: "insert-expire" });
         continue;
       }
     }
@@ -105,9 +102,7 @@ export async function GET(request: Request) {
     expiredCount++;
   }
 
-  console.log(
-    `[Expire Points] Đã xử lý ${expiredCount}/${expiredTxns.length} giao dịch hết hạn`,
-  );
+  log.info(`Đã xử lý ${expiredCount}/${expiredTxns.length} giao dịch hết hạn`);
 
   return NextResponse.json({ expired: expiredCount });
 }

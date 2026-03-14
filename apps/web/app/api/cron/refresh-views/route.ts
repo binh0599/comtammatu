@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("cron:refresh-views");
 
 /**
  * Materialized View Refresh Cron — Vercel Cron Job
@@ -29,7 +32,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.rpc("refresh_materialized_views");
 
     if (error) {
-      console.error("[MV Refresh] Failed:", error.message);
+      log.error("Lỗi làm mới materialized views", { action: "refresh" });
       return NextResponse.json(
         { error: "Lỗi khi làm mới materialized views", details: error.message },
         { status: 500 },
@@ -38,7 +41,7 @@ export async function GET(request: Request) {
 
     const durationMs = Date.now() - startTime;
 
-    console.log(`[MV Refresh] Hoàn tất trong ${durationMs}ms`);
+    log.info("Hoàn tất làm mới materialized views", { duration_ms: durationMs });
 
     return NextResponse.json({
       message: "Đã làm mới tất cả materialized views",
@@ -54,7 +57,7 @@ export async function GET(request: Request) {
       duration_ms: durationMs,
     });
   } catch (err) {
-    console.error("[MV Refresh] Unexpected error:", err);
+    log.error("Lỗi không mong muốn khi làm mới views", { action: "refresh" });
     return NextResponse.json(
       { error: "Lỗi không mong muốn khi làm mới views" },
       { status: 500 },

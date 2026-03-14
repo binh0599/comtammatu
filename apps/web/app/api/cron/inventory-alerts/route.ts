@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendPushToTenantRole } from "@/lib/push-sender";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("cron:inventory-alerts");
 
 /**
  * Inventory Alerts Cron — Vercel Cron Job
@@ -36,7 +39,7 @@ export async function GET(request: Request) {
     .eq("is_active", true);
 
   if (branchError) {
-    console.error("[Inventory Alerts Cron] Failed to fetch branches:", branchError.message);
+    log.error("Lỗi truy vấn chi nhánh", { action: "fetch-branches" });
     return NextResponse.json({ error: "Failed to fetch branches" }, { status: 500 });
   }
 
@@ -187,7 +190,7 @@ export async function GET(request: Request) {
         }
       }
     } catch (err) {
-      console.error(`[Inventory Alerts Cron] Error processing branch ${branch.id}:`, err);
+      log.error(`Lỗi xử lý chi nhánh #${branch.id}`, { action: "process-branch", branchId: branch.id });
       errors.push({ branch_id: branch.id, error: String(err) });
     }
   }
@@ -204,9 +207,7 @@ export async function GET(request: Request) {
     }
   }
 
-  console.log(
-    `[Inventory Alerts Cron] Created ${alertsCreated} alerts across ${branches.length} branches`,
-  );
+  log.info(`Đã tạo ${alertsCreated} cảnh báo cho ${branches.length} chi nhánh`);
 
   return NextResponse.json({
     message: `Created ${alertsCreated} alerts across ${branches.length} branches`,

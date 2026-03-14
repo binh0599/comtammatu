@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("cron:expire-payments");
 
 /**
  * Payment Expiry Cron — Vercel Cron Job
@@ -35,7 +38,7 @@ export async function GET(request: Request) {
     .lt("created_at", thirtyMinutesAgo);
 
   if (fetchError) {
-    console.error("[Expire Payments] Failed to fetch:", fetchError.message);
+    log.error("Lỗi truy vấn thanh toán chờ xử lý", { action: "fetch", duration_ms: 0 });
     return NextResponse.json(
       { error: "Failed to fetch stale payments" },
       { status: 500 },
@@ -55,16 +58,14 @@ export async function GET(request: Request) {
     .eq("status", "pending"); // Double-check still pending (race condition guard)
 
   if (updateError) {
-    console.error("[Expire Payments] Failed to expire:", updateError.message);
+    log.error("Lỗi cập nhật trạng thái thanh toán", { action: "expire" });
     return NextResponse.json(
       { error: "Failed to update payment status" },
       { status: 500 },
     );
   }
 
-  console.log(
-    `[Expire Payments] Expired ${count ?? staleIds.length} stale pending payments`,
-  );
+  log.info(`Đã hết hạn ${count ?? staleIds.length} thanh toán chờ xử lý`);
 
   return NextResponse.json({ expired: count ?? staleIds.length });
 }
