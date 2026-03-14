@@ -4,6 +4,7 @@ import {
   ChefHat,
   CreditCard,
   LayoutDashboard,
+  Landmark,
   Megaphone,
   Monitor,
   Package,
@@ -97,6 +98,11 @@ const navigation = [
         title: "Chiến dịch",
         url: "/admin/campaigns",
         icon: Megaphone,
+      },
+      {
+        title: "Tài chính",
+        url: "/admin/finance",
+        icon: Landmark,
       },
       {
         title: "Báo cáo",
