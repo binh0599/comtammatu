@@ -9,6 +9,7 @@
 import type { SupabaseClient } from "./action-context";
 import { ActionError } from "../utils/errors";
 import type { StaffRole } from "../constants";
+import { MSG } from "../messages";
 
 /**
  * Get authenticated user profile with optional role check.
@@ -23,7 +24,7 @@ export async function getAuthenticatedProfile(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
+    throw new ActionError(MSG.UNAUTHORIZED, "UNAUTHORIZED", 401);
   }
 
   const { data: profile, error } = await supabase
@@ -33,12 +34,12 @@ export async function getAuthenticatedProfile(
     .single();
 
   if (error || !profile) {
-    throw new ActionError("Hồ sơ không tìm thấy", "NOT_FOUND", 404);
+    throw new ActionError(MSG.PROFILE_NOT_FOUND, "NOT_FOUND", 404);
   }
 
   if (requiredRoles && !requiredRoles.includes(profile.role as StaffRole)) {
     throw new ActionError(
-      "Bạn không có quyền truy cập chức năng này",
+      MSG.NO_PERMISSION,
       "UNAUTHORIZED",
       403,
     );
@@ -71,7 +72,7 @@ export async function verifyBranchOwnership(
 
   if (error || !data) {
     throw new ActionError(
-      `Không tìm thấy dữ liệu trong ${table}`,
+      MSG.ENTITY_NOT_FOUND_IN(table),
       "NOT_FOUND",
       404,
     );
@@ -79,7 +80,7 @@ export async function verifyBranchOwnership(
 
   if ((data as { branch_id: number }).branch_id !== userBranchId) {
     throw new ActionError(
-      "Dữ liệu không thuộc chi nhánh của bạn",
+      MSG.NOT_YOUR_BRANCH,
       "UNAUTHORIZED",
       403,
     );
@@ -110,7 +111,7 @@ export async function verifyTenantOwnership(
 
   if (error || !data) {
     throw new ActionError(
-      `Không tìm thấy dữ liệu trong ${table}`,
+      MSG.ENTITY_NOT_FOUND_IN(table),
       "NOT_FOUND",
       404,
     );
@@ -118,7 +119,7 @@ export async function verifyTenantOwnership(
 
   if ((data as { tenant_id: number }).tenant_id !== userTenantId) {
     throw new ActionError(
-      "Dữ liệu không thuộc tổ chức của bạn",
+      MSG.NOT_YOUR_TENANT,
       "UNAUTHORIZED",
       403,
     );

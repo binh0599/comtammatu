@@ -10,8 +10,9 @@
 
 import { ActionError } from "../utils/errors";
 import type { StaffRole } from "../constants";
+import { MSG } from "../messages";
 
-import type { SupabaseClient as BaseSupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient as BaseSupabaseClient, User } from "@supabase/supabase-js";
 import type { Database } from "@comtammatu/database/types";
 
 /**
@@ -23,6 +24,22 @@ type CreateSupabaseServerFn = () => Promise<SupabaseClient>;
 
 /** Injected factory — set via `configureActionContext()` */
 let _createSupabaseServer: CreateSupabaseServerFn | null = null;
+
+/**
+ * Shared helper: get authenticated Supabase user or throw.
+ * Single source of truth for the "Bạn phải đăng nhập" check.
+ */
+async function _ensureAuthUser(supabase: SupabaseClient): Promise<User> {
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new ActionError(MSG.UNAUTHORIZED, "UNAUTHORIZED", 401);
+    }
+
+    return user;
+}
 
 /**
  * Configure the action context with a Supabase server client factory.
@@ -66,13 +83,7 @@ export async function getActionContext(): Promise<ActionContext> {
     }
 
     const supabase = await _createSupabaseServer();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-        throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
-    }
+    const user = await _ensureAuthUser(supabase);
 
     const { data: profile } = await supabase
         .from("profiles")
@@ -83,7 +94,7 @@ export async function getActionContext(): Promise<ActionContext> {
     const tenantId = profile?.tenant_id;
     if (!tenantId) {
         throw new ActionError(
-            "Tài khoản chưa được gán tenant",
+            MSG.NO_TENANT,
             "UNAUTHORIZED",
             403,
         );
@@ -106,7 +117,7 @@ export async function getActionContext(): Promise<ActionContext> {
 export function requireBranch(ctx: ActionContext): number {
     if (ctx.branchId == null) {
         throw new ActionError(
-            "Bạn chưa được gán chi nhánh",
+            MSG.NO_BRANCH,
             "VALIDATION_ERROR",
             400,
         );
@@ -128,7 +139,7 @@ export async function getAdminContext(
     const ctx = await getActionContext();
     if (!requiredRoles.includes(ctx.userRole as StaffRole)) {
         throw new ActionError(
-            "Bạn không có quyền truy cập chức năng này",
+            MSG.NO_PERMISSION,
             "UNAUTHORIZED",
             403,
         );
@@ -193,14 +204,14 @@ export async function getKdsBranchContext(
     const ctx = await getActionContext();
     if (!requiredRoles.includes(ctx.userRole as StaffRole)) {
         throw new ActionError(
-            "Bạn không có quyền truy cập KDS",
+            MSG.NO_KDS_PERMISSION,
             "UNAUTHORIZED",
             403,
         );
     }
     if (ctx.branchId == null) {
         throw new ActionError(
-            "Chưa được gán chi nhánh",
+            MSG.NO_BRANCH,
             "UNAUTHORIZED",
             403,
         );
@@ -239,13 +250,7 @@ export async function getCustomerContext(): Promise<CustomerContext> {
     }
 
     const supabase = await _createSupabaseServer();
-    const {
-        data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-        throw new ActionError("Bạn phải đăng nhập", "UNAUTHORIZED", 401);
-    }
+    const user = await _ensureAuthUser(supabase);
 
     // Resolve customer record via profile user_id → customers.user_id
     const { data: customer, error } = await supabase
@@ -288,7 +293,7 @@ export async function verifyEntityOwnership<T extends Record<string, unknown>>(
         .single();
 
     if (error || !data) {
-        return { data: null, error: "Dữ liệu không tồn tại hoặc không thuộc đơn vị của bạn" };
+        return { data: null, error: MSG.ENTITY_NOT_FOUND };
     }
 
     return { data: data as T, error: null };

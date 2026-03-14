@@ -14,6 +14,7 @@ import {
   safeDbErrorResult,
   CASHIER_ROLES,
 } from "@comtammatu/shared";
+import { sessionLimiter } from "@comtammatu/security";
 
 // ===== Active Session =====
 
@@ -103,6 +104,9 @@ async function _openSession(formData: FormData) {
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
   const { supabase, userId } = ctx;
 
+  const { success: rateLimitOk } = await sessionLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
+
   const parsed = openSessionSchema.safeParse({
     terminal_id: Number(formData.get("terminal_id")),
     opening_amount: Number(formData.get("opening_amount")),
@@ -180,6 +184,9 @@ async function _closeSession(formData: FormData) {
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
   const { supabase, userId } = ctx;
+
+  const { success: rateLimitOk } = await sessionLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   const parsed = closeSessionSchema.safeParse({
     session_id: Number(formData.get("session_id")),

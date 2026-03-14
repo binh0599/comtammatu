@@ -128,6 +128,16 @@ async function _login(formData: FormData) {
     );
   }
 
+  // Block customer role from CRM login — customers use Mobile App only
+  if (role === "customer") {
+    // Sign out the customer session immediately
+    await supabase.auth.signOut();
+    throw new ActionError(
+      "Tài khoản khách hàng không thể đăng nhập vào hệ thống quản lý. Vui lòng sử dụng ứng dụng Cơm tấm Má Tư trên điện thoại.",
+      "UNAUTHORIZED",
+    );
+  }
+
   // Non-device roles (owner, manager, hr): skip device check, redirect directly
   if (
     !DEVICE_CHECK_ROLES.includes(

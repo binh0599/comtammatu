@@ -58,6 +58,18 @@ export async function POST(request: Request) {
   const isValid = verifyMomoSignature(verifyParams, signature, secretKey);
   const supabase = getServiceClient();
 
+  // Resolve tenant_id from payment record for audit/security logging
+  let resolvedTenantId: number | null = null;
+  if (body.requestId) {
+    const { data: paymentLookup } = await supabase
+      .from("payments")
+      .select("orders!inner(tenant_id)")
+      .eq("idempotency_key", body.requestId)
+      .maybeSingle();
+    const orders = paymentLookup?.orders as unknown as { tenant_id: number } | null;
+    resolvedTenantId = orders?.tenant_id ?? null;
+  }
+
   if (!isValid) {
     console.error("Momo IPN signature verification failed", {
       orderId: body.orderId,
@@ -68,7 +80,7 @@ export async function POST(request: Request) {
     await supabase
       .from("security_events")
       .insert({
-        tenant_id: null,
+        tenant_id: resolvedTenantId,
         event_type: "webhook_hmac_failure",
         severity: "warning",
         description: `Momo IPN HMAC verification failed for requestId: ${body.requestId}`,
@@ -95,7 +107,7 @@ export async function POST(request: Request) {
       await supabase
         .from("security_events")
         .insert({
-          tenant_id: null,
+          tenant_id: resolvedTenantId,
           event_type: "webhook_stale_request",
           severity: "warning",
           description: `Momo IPN stale webhook rejected (age: ${Math.round(webhookAge / 1000)}s) for requestId: ${body.requestId}`,
@@ -147,7 +159,7 @@ export async function POST(request: Request) {
       supabase
         .from("audit_logs")
         .insert({
-          tenant_id: null,
+          tenant_id: resolvedTenantId,
           user_id: null,
           action: "momo_payment_completed",
           resource_type: "payment",

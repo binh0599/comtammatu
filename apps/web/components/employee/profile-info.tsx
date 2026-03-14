@@ -21,23 +21,47 @@ import {
   Separator,
 } from "@comtammatu/ui";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+interface EmergencyContact {
+  name?: string | null;
+  phone?: string | null;
+  relationship?: string | null;
+}
+
+type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+interface EmployeeProfile {
+  id: number;
+  position: string;
+  department: string | null;
+  employment_type: string;
+  status: string;
+  hire_date: string;
+  emergency_contact: Json | null;
+  branches: { name: string } | null;
+}
+
 interface ProfileInfoProps {
   profile: { full_name: string | null; role: string; branch_id: number | null } | null;
-  employee: any | null;
+  employee: EmployeeProfile | null;
   userEmail: string | null;
 }
 
+function getEmergencyContact(ec: Json | null): EmergencyContact | null {
+  if (!ec || typeof ec !== "object" || Array.isArray(ec)) return null;
+  return ec as EmergencyContact;
+}
+
 export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) {
+  const ec = getEmergencyContact(employee?.emergency_contact ?? null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   // Profile form state
   const [fullName, setFullName] = useState(profile?.full_name ?? "");
-  const [ecName, setEcName] = useState(employee?.emergency_contact?.name ?? "");
-  const [ecPhone, setEcPhone] = useState(employee?.emergency_contact?.phone ?? "");
-  const [ecRelationship, setEcRelationship] = useState(employee?.emergency_contact?.relationship ?? "");
+  const [ecName, setEcName] = useState(ec?.name ?? "");
+  const [ecPhone, setEcPhone] = useState(ec?.phone ?? "");
+  const [ecRelationship, setEcRelationship] = useState(ec?.relationship ?? "");
 
   // Password form state
   const [currentPassword, setCurrentPassword] = useState("");
@@ -148,9 +172,9 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
                   size="sm"
                   onClick={() => {
                     setFullName(profile?.full_name ?? "");
-                    setEcName(employee?.emergency_contact?.name ?? "");
-                    setEcPhone(employee?.emergency_contact?.phone ?? "");
-                    setEcRelationship(employee?.emergency_contact?.relationship ?? "");
+                    setEcName(ec?.name ?? "");
+                    setEcPhone(ec?.phone ?? "");
+                    setEcRelationship(ec?.relationship ?? "");
                     setIsEditingProfile(false);
                   }}
                 >
@@ -188,18 +212,18 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
                   <InfoRow label="Loại HĐ" value={getEmploymentTypeLabel(employee.employment_type)} />
                   <InfoRow label="Trạng thái" value={getEmployeeStatusLabel(employee.status)} />
 
-                  {employee.emergency_contact && (
+                  {ec && (
                     <>
                       <Separator />
                       <p className="text-xs font-medium text-muted-foreground">Liên hệ khẩn cấp</p>
-                      {employee.emergency_contact.name && (
-                        <InfoRow label="Tên" value={employee.emergency_contact.name} />
+                      {ec.name && (
+                        <InfoRow label="Tên" value={ec.name} />
                       )}
-                      {employee.emergency_contact.phone && (
-                        <InfoRow label="SĐT" value={employee.emergency_contact.phone} />
+                      {ec.phone && (
+                        <InfoRow label="SĐT" value={ec.phone} />
                       )}
-                      {employee.emergency_contact.relationship && (
-                        <InfoRow label="Quan hệ" value={employee.emergency_contact.relationship} />
+                      {ec.relationship && (
+                        <InfoRow label="Quan hệ" value={ec.relationship} />
                       )}
                     </>
                   )}

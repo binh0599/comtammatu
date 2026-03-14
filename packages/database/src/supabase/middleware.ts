@@ -45,10 +45,17 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication
-  const publicRoutes = ["/login", "/api/health", "/api/auth", "/api/webhooks"];
+  const publicRoutes = ["/login", "/api/health", "/api/auth", "/api/webhooks", "/api/mobile"];
   const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),
   );
+
+  // Block customer routes — Customer PWA removed, replaced by Mobile App
+  if (pathname.startsWith("/customer")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
 
   if (!user && !isPublicRoute) {
     // Not authenticated — redirect to login

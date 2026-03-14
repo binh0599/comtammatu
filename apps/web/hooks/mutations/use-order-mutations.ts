@@ -5,6 +5,13 @@ import { queryKeys } from "@/lib/query-keys";
 import { createOrder, updateOrderStatus } from "@/app/(pos)/pos/orders/actions";
 import { toast } from "sonner";
 
+/** Minimal order shape used in optimistic cache updates */
+interface CachedOrder {
+  id: number;
+  status: string;
+  [key: string]: unknown;
+}
+
 export function useCreateOrderMutation() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -44,15 +51,12 @@ export function useUpdateOrderStatusMutation() {
       // Optimistic update: cập nhật status trong cache
       queryClient.setQueriesData(
         { queryKey: queryKeys.orders.all },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (old: any) => {
+        (old: CachedOrder[] | undefined) => {
           if (!old || !Array.isArray(old)) return old;
-          return old.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (order: any) =>
-              order.id === variables.order_id
-                ? { ...order, status: variables.status }
-                : order,
+          return old.map((order) =>
+            order.id === variables.order_id
+              ? { ...order, status: variables.status }
+              : order,
           );
         },
       );

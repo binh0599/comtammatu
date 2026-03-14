@@ -133,6 +133,36 @@ export const campaignLimiter = createRateLimiter({
   prefix: "ratelimit:campaign",
 });
 
+/**
+ * CRM mutation rate limiter: 15 requests per 60 seconds per user.
+ * Prevents rapid-fire customer creation/update.
+ */
+export const crmLimiter = createRateLimiter({
+  requests: 15,
+  window: "60 s",
+  prefix: "ratelimit:crm",
+});
+
+/**
+ * Inventory mutation rate limiter: 15 requests per 60 seconds per user.
+ * Prevents rapid-fire ingredient creation/update/delete.
+ */
+export const inventoryLimiter = createRateLimiter({
+  requests: 15,
+  window: "60 s",
+  prefix: "ratelimit:inventory",
+});
+
+/**
+ * Session open/close rate limiter: 5 requests per 60 seconds per user.
+ * Prevents rapid session manipulation.
+ */
+export const sessionLimiter = createRateLimiter({
+  requests: 5,
+  window: "60 s",
+  prefix: "ratelimit:session",
+});
+
 // =====================
 // Account lockout
 // =====================

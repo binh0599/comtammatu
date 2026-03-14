@@ -8,6 +8,13 @@ import {
 } from "@/app/(kds)/kds/[stationId]/actions";
 import { toast } from "sonner";
 
+/** Minimal KDS ticket shape used in optimistic cache updates */
+interface CachedTicket {
+  id: number;
+  status: string;
+  [key: string]: unknown;
+}
+
 export function useBumpTicketMutation(stationId: number) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -27,23 +34,19 @@ export function useBumpTicketMutation(stationId: number) {
       // Optimistic update: thay đổi status của ticket trong cache
       queryClient.setQueryData(
         ticketQueryKey,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (old: any) => {
+        (old: CachedTicket[] | undefined) => {
           if (!old || !Array.isArray(old)) return old;
           if (variables.newStatus === "ready") {
             // Khi bump sang "ready" → xóa khỏi danh sách pending/preparing
             return old.filter(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (ticket: any) => ticket.id !== variables.ticketId,
+              (ticket) => ticket.id !== variables.ticketId,
             );
           }
           // Khi bump sang "preparing" → cập nhật status
-          return old.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (ticket: any) =>
-              ticket.id === variables.ticketId
-                ? { ...ticket, status: variables.newStatus }
-                : ticket,
+          return old.map((ticket) =>
+            ticket.id === variables.ticketId
+              ? { ...ticket, status: variables.newStatus }
+              : ticket,
           );
         },
       );
@@ -81,15 +84,12 @@ export function useRecallTicketMutation(stationId: number) {
       // Optimistic: đưa ticket về trạng thái "pending"
       queryClient.setQueryData(
         ticketQueryKey,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (old: any) => {
+        (old: CachedTicket[] | undefined) => {
           if (!old || !Array.isArray(old)) return old;
-          return old.map(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (ticket: any) =>
-              ticket.id === ticketId
-                ? { ...ticket, status: "pending" }
-                : ticket,
+          return old.map((ticket) =>
+            ticket.id === ticketId
+              ? { ...ticket, status: "pending" }
+              : ticket,
           );
         },
       );

@@ -8,8 +8,10 @@ import {
   createIngredientSchema,
   safeDbError,
   safeDbErrorResult,
+  MSG,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
+import { inventoryLimiter } from "@comtammatu/security";
 
 async function _getIngredients() {
   const { supabase, tenantId } = await getActionContext();
@@ -54,10 +56,12 @@ async function _createIngredient(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? MSG.INVALID_DATA };
   }
 
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getActionContext();
+  const { success: rateLimitOk } = await inventoryLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   const { error } = await supabase.from("ingredients").insert({
     tenant_id: tenantId,
@@ -73,7 +77,7 @@ async function _createIngredient(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "SKU đã tồn tại" };
+      return { error: MSG.SKU_EXISTS };
     }
     return safeDbErrorResult(error, "db");
   }
@@ -97,10 +101,12 @@ async function _updateIngredient(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? MSG.INVALID_DATA };
   }
 
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getActionContext();
+  const { success: rateLimitOk } = await inventoryLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   const { error } = await supabase
     .from("ingredients")
@@ -126,7 +132,9 @@ async function _updateIngredient(id: number, formData: FormData) {
 export const updateIngredient = withServerAction(_updateIngredient);
 
 async function _deleteIngredient(id: number) {
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getActionContext();
+  const { success: rateLimitOk } = await inventoryLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   const { error } = await supabase
     .from("ingredients")

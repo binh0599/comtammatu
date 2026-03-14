@@ -44,13 +44,24 @@
 
 ```
 apps/web/app/
-  login/actions.ts            ← Auth: login(), logout()
+  login/actions.ts            ← Auth: login(), logout() — blocks 'customer' role
   (admin)/layout.tsx          ← RBAC guard (owner/manager only)
   (admin)/admin/              ← All admin routes + actions/ directories (split sub-modules)
   (pos)/layout.tsx            ← POS auth guard
   (pos)/pos/orders/actions.ts ← Order lifecycle (createOrder, updateStatus)
   (pos)/pos/cashier/actions.ts← Payment processing
   (kds)/kds/[stationId]/      ← KDS realtime board
+  (customer)/                 ← ⛔ DEPRECATED — gutted stubs, layout redirects to /login
+  api/mobile/                 ← REST API cho Flutter Mobile App (Loyalty)
+    helpers.ts                ← Shared auth (Bearer token) + rate limiting
+    menu/route.ts             ← GET public menu (no auth)
+    orders/route.ts           ← GET customer orders
+    loyalty/route.ts          ← GET loyalty dashboard
+    feedback/route.ts         ← POST submit feedback
+    profile/route.ts          ← GET customer profile
+    vouchers/route.ts         ← GET available vouchers
+    stores/route.ts           ← GET branch/store list (no auth)
+    notifications/route.ts    ← GET customer notifications
 
 packages/
   database/src/supabase/client.ts  ← Client components ONLY import from here
@@ -113,11 +124,15 @@ Failure Conditions:
 
 ## VI. ROLES & ORDER FLOW (Quick Reference)
 
-**Roles:** `owner > manager > cashier > chef > waiter > inventory > hr > customer`
+**CRM Roles (web login):** `owner > manager > cashier > chef > waiter > inventory > hr`
+
+**Customer Role:** ⛔ BLOCKED from CRM login — customers use Flutter Mobile App only via `/api/mobile/*` REST endpoints.
 
 **Order flow:** Waiter creates → KDS receives (realtime) → Chef bumps ready → Cashier pays → completed
 
 **Terminal split:** `mobile_order` (waiter, no payment) | `cashier_station` (payment only)
+
+**Mobile App API:** `/api/mobile/*` — Bearer token auth (Supabase), rate-limited, JSON responses `{ data }` / `{ error }`
 
 ---
 

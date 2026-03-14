@@ -11,8 +11,10 @@ import {
   entityIdSchema,
   safeDbError,
   safeDbErrorResult,
+  MSG,
 } from "@comtammatu/shared";
 import { revalidatePath } from "next/cache";
+import { crmLimiter } from "@comtammatu/security";
 
 // =====================
 // Branches (shared)
@@ -64,10 +66,12 @@ async function _createCustomer(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? MSG.INVALID_DATA };
   }
 
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getActionContext();
+  const { success: rateLimitOk } = await crmLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   const { error } = await supabase.from("customers").insert({
     tenant_id: tenantId,
@@ -82,7 +86,7 @@ async function _createCustomer(formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Số điện thoại đã tồn tại" };
+      return { error: MSG.PHONE_EXISTS };
     }
     return safeDbErrorResult(error, "db");
   }
@@ -107,10 +111,12 @@ async function _updateCustomer(id: number, formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? MSG.INVALID_DATA };
   }
 
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getActionContext();
+  const { success: rateLimitOk } = await crmLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   const { error } = await supabase
     .from("customers")
@@ -129,7 +135,7 @@ async function _updateCustomer(id: number, formData: FormData) {
 
   if (error) {
     if (error.code === "23505") {
-      return { error: "Số điện thoại đã tồn tại" };
+      return { error: MSG.PHONE_EXISTS };
     }
     return safeDbErrorResult(error, "db");
   }
@@ -152,7 +158,7 @@ async function _toggleCustomerActive(id: number) {
     .single();
 
   if (fetchError) return safeDbErrorResult(fetchError, "db");
-  if (!customer) return { error: "Khách hàng không tồn tại" };
+  if (!customer) return { error: MSG.CUSTOMER_NOT_IN_TENANT };
 
   const { error } = await supabase
     .from("customers")
@@ -179,7 +185,7 @@ async function _getCustomerLoyaltyHistory(customerId: number) {
     .eq("id", customerId)
     .eq("tenant_id", tenantId)
     .single();
-  if (!customer) return { error: "Khách hàng không tồn tại hoặc không thuộc đơn vị của bạn" };
+  if (!customer) return { error: MSG.CUSTOMER_NOT_IN_TENANT };
 
   const { data, error } = await supabase
     .from("loyalty_transactions")
@@ -203,10 +209,12 @@ async function _adjustLoyaltyPoints(input: {
   const parsed = adjustLoyaltyPointsSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
+    return { error: parsed.error.issues[0]?.message ?? MSG.INVALID_DATA };
   }
 
-  const { supabase, tenantId } = await getActionContext();
+  const { supabase, tenantId, userId } = await getActionContext();
+  const { success: rateLimitOk } = await crmLimiter.limit(userId);
+  if (!rateLimitOk) return { error: "Quá nhiều yêu cầu, vui lòng thử lại sau" };
 
   // Verify customer belongs to this tenant
   const { data: customer } = await supabase
@@ -215,7 +223,7 @@ async function _adjustLoyaltyPoints(input: {
     .eq("id", parsed.data.customer_id)
     .eq("tenant_id", tenantId)
     .single();
-  if (!customer) return { error: "Khách hàng không tồn tại hoặc không thuộc đơn vị của bạn" };
+  if (!customer) return { error: MSG.CUSTOMER_NOT_IN_TENANT };
 
   const { data: latest } = await supabase
     .from("loyalty_transactions")
@@ -229,7 +237,7 @@ async function _adjustLoyaltyPoints(input: {
   const newBalance = currentBalance + parsed.data.points;
 
   if (newBalance < 0) {
-    return { error: "Không đủ điểm để thực hiện giao dịch" };
+    return { error: MSG.INSUFFICIENT_POINTS };
   }
 
   const { error: txError } = await supabase

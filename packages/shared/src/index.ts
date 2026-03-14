@@ -514,6 +514,9 @@ export type { ActionContext, KdsContext, CustomerContext, SupabaseClient } from 
 
 export { withServerAction, withServerQuery } from "./server/with-server-action";
 
+// ===== Messages =====
+export { MSG } from "./messages";
+
 export { getTaxSettings, getTaxRates } from "./server/tax-settings";
 
 // ===== Logging & Error Reporting =====

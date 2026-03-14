@@ -125,3 +125,13 @@
 **Pattern:** `REFRESH MATERIALIZED VIEW CONCURRENTLY` requires at least one unique index on the view. Without it, PostgreSQL errors out.
 **Rule:** Every materialized view must have a UNIQUE index on its natural key columns (e.g., `branch_id, report_date`). Add the index in the same migration that creates the view.
 **Prevention:** When creating a new MV, always pair it with `CREATE UNIQUE INDEX ON mv_name (key_columns)` in the same migration.
+
+## 2026-03-14: Customer PWA removal — multi-layer blocking required
+**Pattern:** Architecture V3.0 §1.4 specified Customer PWA removed (PR #60), but the `(customer)/` route group was still fully functional with 20+ pages/components and no auth guard on the layout. Customers could access CRM features directly.
+**Rule:** When deprecating a web-facing route group in favor of a mobile app, implement blocking at ALL layers: (1) middleware redirect, (2) layout redirect, (3) login action rejection for the role, (4) stub out all page/component files. A single layer is insufficient — defense in depth.
+**Prevention:** After any "remove feature X" architectural decision, grep for all route groups, components, and actions that serve feature X. Block at middleware + layout + login. Create REST API endpoints (`/api/mobile/*`) as the replacement surface.
+
+## 2026-03-14: Always verify DB column names before writing Supabase queries
+**Pattern:** Agent-generated mobile API routes used non-existent columns (`discount_percentage`, `valid_until`, `title`, `description` on vouchers table) and non-existent tables (`customer_branch_access`). TypeScript caught these via generated types, but only after wasted iterations.
+**Rule:** Before writing any new `.from("table").select("columns")` query, check actual column names from either `database.types.ts` or existing working queries in the codebase that use the same table.
+**Prevention:** When creating new API routes that mirror existing Server Actions, copy the exact `.select()` column list from the working action. Don't guess column names.
