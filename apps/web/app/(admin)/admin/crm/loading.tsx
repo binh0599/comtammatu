@@ -1,11 +1,6 @@
 import { Header } from "@/components/admin/header";
 import { TabsSkeleton, TableSkeleton } from "@/components/skeletons";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Skeleton,
-} from "@comtammatu/ui";
+import { Card, CardContent, CardHeader, Skeleton } from "@comtammatu/ui";
 
 export default function CrmLoading() {
   return (

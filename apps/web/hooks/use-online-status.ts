@@ -39,10 +39,7 @@ export function useOnlineStatus(): boolean {
 export function useOnlineStatusWithReconnect() {
   const isOnline = useOnlineStatus();
   const wasOfflineRef = useRef(false);
-  const [justReconnected, setJustReconnected] = useReducer(
-    (_: boolean, v: boolean) => v,
-    false,
-  );
+  const [justReconnected, setJustReconnected] = useReducer((_: boolean, v: boolean) => v, false);
 
   useEffect(() => {
     if (!isOnline) {

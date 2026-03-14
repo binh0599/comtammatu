@@ -66,9 +66,7 @@ async function _getPayrollEntries(periodId: number) {
 
   const { data, error } = await supabase
     .from("payroll_entries")
-    .select(
-      "*, employees!inner(profile_id, branch_id, profiles(full_name))"
-    )
+    .select("*, employees!inner(profile_id, branch_id, profiles(full_name))")
     .eq("payroll_period_id", periodId)
     .eq("tenant_id", tenantId)
     .order("created_at", { ascending: false });

@@ -4,12 +4,7 @@
  * Tests auto-generated order numbers and KDS ticket creation triggers.
  */
 
-import {
-  createServiceClient,
-  cleanupRows,
-  waitFor,
-  SEED,
-} from "./helpers";
+import { createServiceClient, cleanupRows, waitFor, SEED } from "./helpers";
 import { randomUUID } from "crypto";
 
 describe("Database Triggers", () => {
@@ -45,10 +40,9 @@ describe("Database Triggers", () => {
     // Insert with a placeholder order_number (required by NOT NULL)
     // The generate_order_number function is called explicitly, not via trigger
     // So we test by using the function directly
-    const { data: orderNum, error: fnErr } = await service.rpc(
-      "generate_order_number",
-      { p_branch_id: SEED.branchQ1 },
-    );
+    const { data: orderNum, error: fnErr } = await service.rpc("generate_order_number", {
+      p_branch_id: SEED.branchQ1,
+    });
 
     expect(fnErr).toBeNull();
     expect(orderNum).not.toBeNull();
@@ -97,7 +91,7 @@ describe("Database Triggers", () => {
       .select("station_id, category_id")
       .in(
         "station_id",
-        stations.map((s) => s.id),
+        stations.map((s) => s.id)
       );
 
     if (!stationCategories || stationCategories.length === 0) {
@@ -134,10 +128,7 @@ describe("Database Triggers", () => {
     if (item) createdOrderItemIds.push(item.id);
 
     // Transition order: draft → confirmed (triggers create_kds_tickets)
-    await service
-      .from("orders")
-      .update({ status: "confirmed" })
-      .eq("id", orderId);
+    await service.from("orders").update({ status: "confirmed" }).eq("id", orderId);
 
     // Wait for KDS tickets to be created (trigger is synchronous via AFTER UPDATE)
     await waitFor(
@@ -148,7 +139,7 @@ describe("Database Triggers", () => {
           .eq("order_id", orderId);
         return tickets !== null && tickets.length > 0;
       },
-      { timeout: 5000, label: "KDS tickets created" },
+      { timeout: 5000, label: "KDS tickets created" }
     );
 
     const { data: tickets } = await service

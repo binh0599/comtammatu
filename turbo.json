@@ -2,39 +2,22 @@
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "env": [
-        "SUPABASE_SERVICE_ROLE_KEY"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**",
-        "generated/**"
-      ]
+      "dependsOn": ["^build"],
+      "env": ["SUPABASE_SERVICE_ROLE_KEY"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "generated/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
     },
     "lint": {
-      "dependsOn": [
-        "build",
-        "^build"
-      ]
+      "dependsOn": ["build", "^build"]
     },
     "typecheck": {
-      "dependsOn": [
-        "build",
-        "^build"
-      ]
+      "dependsOn": ["build", "^build"]
     },
     "test": {
-      "dependsOn": [
-        "^build"
-      ]
+      "dependsOn": ["^build"]
     }
   }
 }

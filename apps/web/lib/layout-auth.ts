@@ -9,11 +9,9 @@ import { redirect } from "next/navigation";
  * @param select - Profile columns to fetch (always includes "role")
  * @returns { user, profile, supabase } for layout use
  */
-export async function requireLayoutAuth<
-  T extends Record<string, unknown>,
->(
+export async function requireLayoutAuth<T extends Record<string, unknown>>(
   allowedRoles: readonly string[],
-  select: string,
+  select: string
 ): Promise<{
   user: { id: string; email?: string };
   profile: T & { role: string };

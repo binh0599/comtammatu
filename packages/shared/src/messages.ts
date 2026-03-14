@@ -29,6 +29,5 @@ export const MSG = {
   INSUFFICIENT_POINTS: "Không đủ điểm để thực hiện giao dịch",
 
   // Dynamic messages
-  ENTITY_NOT_FOUND_IN: (table: string) =>
-    `Không tìm thấy dữ liệu trong ${table}`,
+  ENTITY_NOT_FOUND_IN: (table: string) => `Không tìm thấy dữ liệu trong ${table}`,
 } as const;

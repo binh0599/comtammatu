@@ -114,7 +114,7 @@ const ORDER_TYPE_LABELS: Record<string, string> = {
 
 async function _getFinanceDashboardData(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<FinanceDashboardData> {
   const parsed = dateRangeSchema.parse({ startDate, endDate });
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
@@ -131,7 +131,7 @@ async function _getFinanceDashboardData(
 
   if (branchError) throw safeDbError(branchError, "db");
   const branchMap = new Map(
-    (branches ?? []).map((b: { id: number; name: string }) => [b.id, b.name]),
+    (branches ?? []).map((b: { id: number; name: string }) => [b.id, b.name])
   );
 
   // Calculate previous period for comparison
@@ -232,12 +232,18 @@ async function _getFinanceDashboardData(
   const prevMonthStartStr = prevMonthStart.toISOString().slice(0, 10);
   const prevMonthEndStr = prevMonthEnd.toISOString().slice(0, 10);
 
-  let todayRevenue = 0, yesterdayRevenue = 0;
-  let weekRevenue = 0, prevWeekRevenue = 0;
-  let monthRevenue = 0, prevMonthRevenue = 0;
-  let todayOrders = 0, yesterdayOrders = 0;
-  let totalTips = 0, prevMonthTips = 0;
-  let totalRevenue = 0, totalOrders = 0;
+  let todayRevenue = 0,
+    yesterdayRevenue = 0;
+  let weekRevenue = 0,
+    prevWeekRevenue = 0;
+  let monthRevenue = 0,
+    prevMonthRevenue = 0;
+  let todayOrders = 0,
+    yesterdayOrders = 0;
+  let totalTips = 0,
+    prevMonthTips = 0;
+  let totalRevenue = 0,
+    totalOrders = 0;
 
   // Aggregate current period
   for (const row of revenueRows) {
@@ -249,10 +255,19 @@ async function _getFinanceDashboardData(
     totalRevenue += revenue;
     totalOrders += orders;
 
-    if (date === todayStr) { todayRevenue += revenue; todayOrders += orders; }
-    if (date === yesterdayStr) { yesterdayRevenue += revenue; yesterdayOrders += orders; }
+    if (date === todayStr) {
+      todayRevenue += revenue;
+      todayOrders += orders;
+    }
+    if (date === yesterdayStr) {
+      yesterdayRevenue += revenue;
+      yesterdayOrders += orders;
+    }
     if (date >= weekStartStr) weekRevenue += revenue;
-    if (date >= monthStartStr) { monthRevenue += revenue; totalTips += tips; }
+    if (date >= monthStartStr) {
+      monthRevenue += revenue;
+      totalTips += tips;
+    }
   }
 
   // Previous period for comparison
@@ -302,16 +317,14 @@ async function _getFinanceDashboardData(
     }
   }
 
-  const revenueTrend: DailyRevenuePoint[] = Array.from(dayMap.entries()).map(
-    ([date, data]) => ({
-      date,
-      label: date.slice(5).replace("-", "/"),
-      revenue: data.revenue,
-      orders: data.orders,
-      tips: data.tips,
-      avgTicket: data.orders > 0 ? data.revenue / data.orders : 0,
-    }),
-  );
+  const revenueTrend: DailyRevenuePoint[] = Array.from(dayMap.entries()).map(([date, data]) => ({
+    date,
+    label: date.slice(5).replace("-", "/"),
+    revenue: data.revenue,
+    orders: data.orders,
+    tips: data.tips,
+    avgTicket: data.orders > 0 ? data.revenue / data.orders : 0,
+  }));
 
   // ==================
   // Cash Flow (daily income + tips)
@@ -378,7 +391,10 @@ async function _getFinanceDashboardData(
       if (methodMap) {
         let maxVal = 0;
         for (const [m, v] of methodMap) {
-          if (v > maxVal) { maxVal = v; topMethod = PAYMENT_LABELS[m] ?? m; }
+          if (v > maxVal) {
+            maxVal = v;
+            topMethod = PAYMENT_LABELS[m] ?? m;
+          }
         }
       }
       return {
@@ -463,11 +479,17 @@ async function _getFinanceDashboardData(
 function emptyDashboard(): FinanceDashboardData {
   return {
     kpi: {
-      todayRevenue: 0, yesterdayRevenue: 0,
-      weekRevenue: 0, prevWeekRevenue: 0,
-      monthRevenue: 0, prevMonthRevenue: 0,
-      todayOrders: 0, yesterdayOrders: 0,
-      avgOrderValue: 0, totalTips: 0, prevMonthTips: 0,
+      todayRevenue: 0,
+      yesterdayRevenue: 0,
+      weekRevenue: 0,
+      prevWeekRevenue: 0,
+      monthRevenue: 0,
+      prevMonthRevenue: 0,
+      todayOrders: 0,
+      yesterdayOrders: 0,
+      avgOrderValue: 0,
+      totalTips: 0,
+      prevMonthTips: 0,
     },
     revenueTrend: [],
     cashFlow: [],

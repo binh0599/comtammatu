@@ -12,7 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -72,16 +72,10 @@ export async function GET(request: Request) {
         .eq("customer_id", req.customer_id);
 
       // 3. Delete loyalty transactions
-      await supabase
-        .from("loyalty_transactions")
-        .delete()
-        .eq("customer_id", req.customer_id);
+      await supabase.from("loyalty_transactions").delete().eq("customer_id", req.customer_id);
 
       // 4. Delete customer feedback
-      await supabase
-        .from("customer_feedback")
-        .delete()
-        .eq("customer_id", req.customer_id);
+      await supabase.from("customer_feedback").delete().eq("customer_id", req.customer_id);
 
       // 5. Mark deletion request as completed
       const { error: updateError } = await supabase

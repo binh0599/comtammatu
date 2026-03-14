@@ -32,9 +32,7 @@ export function SessionBar({ session }: { session: SessionInfo }) {
       </div>
       <div className="text-muted-foreground flex items-center gap-1 text-sm">
         <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-        <span>
-          {hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`}
-        </span>
+        <span>{hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`}</span>
       </div>
       <span className="text-muted-foreground text-sm">
         {session.cashier_name} · {session.terminal_name}

@@ -13,7 +13,7 @@ const FULL_REFRESH_INTERVAL = 60_000;
 function makeHandleTicketChange(
   stationId: number,
   setTickets: React.Dispatch<React.SetStateAction<KdsTicket[]>>,
-  refetchTickets: (stationId: number) => Promise<KdsTicket[]>,
+  refetchTickets: (stationId: number) => Promise<KdsTicket[]>
 ) {
   return (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
     const eventType = payload.eventType;
@@ -45,9 +45,7 @@ function makeHandleTicketChange(
       } else {
         setTickets((prev) =>
           prev.map((t) =>
-            t.id === updated.id
-              ? { ...t, ...updated, orders: updated.orders ?? t.orders }
-              : t
+            t.id === updated.id ? { ...t, ...updated, orders: updated.orders ?? t.orders } : t
           )
         );
       }
@@ -65,7 +63,7 @@ function makeHandleTicketChange(
 export function useKdsRealtime(
   stationId: number,
   initialTickets: KdsTicket[],
-  refetchTickets: (stationId: number) => Promise<KdsTicket[]>,
+  refetchTickets: (stationId: number) => Promise<KdsTicket[]>
 ) {
   const [tickets, setTickets] = useState<KdsTicket[]>(initialTickets);
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("connecting");
@@ -74,7 +72,9 @@ export function useKdsRealtime(
   const supabaseRef = useRef<ReturnType<typeof createClient> | null>(null);
 
   // Use a ref for the change handler so the subscription effect doesn't re-run
-  const handleTicketChangeRef = useRef(makeHandleTicketChange(stationId, setTickets, refetchTickets));
+  const handleTicketChangeRef = useRef(
+    makeHandleTicketChange(stationId, setTickets, refetchTickets)
+  );
 
   // Keep the ref up to date with stationId
   useEffect(() => {
@@ -129,10 +129,7 @@ export function useKdsRealtime(
     function scheduleReconnect() {
       if (isUnmounted || reconnectTimer) return;
 
-      const delay = Math.min(
-        1000 * Math.pow(2, reconnectAttemptRef.current),
-        MAX_RECONNECT_DELAY,
-      );
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttemptRef.current), MAX_RECONNECT_DELAY);
       reconnectAttemptRef.current++;
 
       reconnectTimer = setTimeout(() => {

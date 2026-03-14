@@ -7,11 +7,7 @@ export function isRealDate(d: string): boolean {
   const [y, m, day] = d.split("-").map(Number);
   if (y === undefined || m === undefined || day === undefined) return false;
   const dt = new Date(Date.UTC(y, m - 1, day));
-  return (
-    dt.getUTCFullYear() === y &&
-    dt.getUTCMonth() === m - 1 &&
-    dt.getUTCDate() === day
-  );
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === day;
 }
 
 export const createPayrollPeriodSchema = z
@@ -34,10 +30,7 @@ export const createPayrollPeriodSchema = z
   });
 export type CreatePayrollPeriodInput = z.infer<typeof createPayrollPeriodSchema>;
 
-export const payrollPeriodIdSchema = z.coerce
-  .number()
-  .int()
-  .positive("ID kỳ lương không hợp lệ");
+export const payrollPeriodIdSchema = z.coerce.number().int().positive("ID kỳ lương không hợp lệ");
 
 export const updatePayrollEntrySchema = z.object({
   id: z.coerce.number().int().positive(),

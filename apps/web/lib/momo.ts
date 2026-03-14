@@ -47,19 +47,11 @@ interface MomoCreateResponse {
 
 // ===== Signature Helpers =====
 
-export function createMomoSignature(
-  rawData: string,
-  secretKey: string,
-): string {
-  return crypto
-    .createHmac("sha256", secretKey)
-    .update(rawData)
-    .digest("hex");
+export function createMomoSignature(rawData: string, secretKey: string): string {
+  return crypto.createHmac("sha256", secretKey).update(rawData).digest("hex");
 }
 
-export function buildRawSignature(
-  params: Record<string, string | number>,
-): string {
+export function buildRawSignature(params: Record<string, string | number>): string {
   return Object.keys(params)
     .sort()
     .map((key) => `${key}=${params[key]}`)
@@ -69,7 +61,7 @@ export function buildRawSignature(
 export function verifyMomoSignature(
   params: Record<string, string | number>,
   receivedSignature: string,
-  secretKey: string,
+  secretKey: string
 ): boolean {
   const rawSignature = buildRawSignature(params);
   const expectedSignature = createMomoSignature(rawSignature, secretKey);

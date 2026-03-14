@@ -30,10 +30,7 @@ export async function GET(_req: NextRequest) {
 
     if (statsError) {
       console.error("Error fetching order stats:", statsError);
-      return jsonError(
-        "Không thể tải thống kê đơn hàng. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải thống kê đơn hàng. Vui lòng thử lại sau.", 500);
     }
 
     const totalSpent = (orderStats ?? []).reduce((sum, o) => sum + (o.total || 0), 0);
@@ -52,9 +49,6 @@ export async function GET(_req: NextRequest) {
     });
   } catch (error) {
     console.error("[GET /api/mobile/profile]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }

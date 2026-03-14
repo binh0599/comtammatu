@@ -54,13 +54,7 @@ interface Branch {
   name: string;
 }
 
-export function ShiftsTab({
-  shifts,
-  branches,
-}: {
-  shifts: Shift[];
-  branches: Branch[];
-}) {
+export function ShiftsTab({ shifts, branches }: { shifts: Shift[]; branches: Branch[] }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -90,9 +84,7 @@ export function ShiftsTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Ca làm</h2>
-          <p className="text-muted-foreground">
-            Quản lý các ca làm việc của nhà hàng
-          </p>
+          <p className="text-muted-foreground">Quản lý các ca làm việc của nhà hàng</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -111,24 +103,15 @@ export function ShiftsTab({
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Thêm ca làm</DialogTitle>
-                <DialogDescription>
-                  Tạo ca làm mới cho chi nhánh
-                </DialogDescription>
+                <DialogDescription>Tạo ca làm mới cho chi nhánh</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Tên ca</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="VD: Ca sáng"
-                    required
-                  />
+                  <Input id="name" name="name" placeholder="VD: Ca sáng" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="branch_id">Chi nhánh</Label>
@@ -148,33 +131,17 @@ export function ShiftsTab({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="start_time">Giờ bắt đầu</Label>
-                    <Input
-                      id="start_time"
-                      name="start_time"
-                      type="time"
-                      required
-                    />
+                    <Input id="start_time" name="start_time" type="time" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="end_time">Giờ kết thúc</Label>
-                    <Input
-                      id="end_time"
-                      name="end_time"
-                      type="time"
-                      required
-                    />
+                    <Input id="end_time" name="end_time" type="time" required />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="break_min">Nghỉ giữa ca (phút)</Label>
-                    <Input
-                      id="break_min"
-                      name="break_min"
-                      type="number"
-                      min={0}
-                      placeholder="30"
-                    />
+                    <Input id="break_min" name="break_min" type="number" min={0} placeholder="30" />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="max_employees">Số NV tối đa</Label>
@@ -189,11 +156,7 @@ export function ShiftsTab({
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -206,9 +169,7 @@ export function ShiftsTab({
       </div>
 
       {error && !isCreateOpen && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="overflow-x-auto rounded-md border">
@@ -221,16 +182,15 @@ export function ShiftsTab({
               <TableHead scope="col">Giờ kết thúc</TableHead>
               <TableHead scope="col">Nghỉ giữa ca (phút)</TableHead>
               <TableHead scope="col">Số NV tối đa</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {shifts.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground h-24 text-center">
                   Chưa có ca làm nào
                 </TableCell>
               </TableRow>
@@ -254,15 +214,13 @@ export function ShiftsTab({
                         <AlertDialogHeader>
                           <AlertDialogTitle>Xóa ca làm</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Bạn có chắc muốn xóa ca &quot;{shift.name}&quot;?
-                            Hành động này không thể hoàn tác.
+                            Bạn có chắc muốn xóa ca &quot;{shift.name}&quot;? Hành động này không
+                            thể hoàn tác.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Hủy</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(shift.id)}
-                          >
+                          <AlertDialogAction onClick={() => handleDelete(shift.id)}>
                             Xóa
                           </AlertDialogAction>
                         </AlertDialogFooter>

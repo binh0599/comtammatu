@@ -20,16 +20,16 @@ interface PushSubscriptionRow {
 export async function sendPushToUser(
   userId: string,
   payload: PushPayload,
-  notificationType: PushNotificationType,
+  notificationType: PushNotificationType
 ): Promise<number> {
   const supabase = await createSupabaseServer();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: subscriptions } = await (supabase as any)
+  const { data: subscriptions } = (await (supabase as any)
     .from("push_subscriptions")
     .select("id, endpoint, p256dh, auth, notification_types")
     .eq("user_id", userId)
-    .eq("status", "active") as { data: PushSubscriptionRow[] | null };
+    .eq("status", "active")) as { data: PushSubscriptionRow[] | null };
 
   if (!subscriptions?.length) return 0;
 
@@ -42,7 +42,7 @@ export async function sendPushToUser(
 
     const success = await sendPushToSubscription(
       { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-      payload,
+      payload
     );
 
     if (success) {
@@ -72,7 +72,7 @@ export async function sendPushToBranchRole(
   branchId: number,
   roles: string[],
   payload: PushPayload,
-  notificationType: PushNotificationType,
+  notificationType: PushNotificationType
 ): Promise<number> {
   const supabase = await createSupabaseServer();
 
@@ -99,7 +99,7 @@ export async function sendPushToTenantRole(
   tenantId: number,
   roles: string[],
   payload: PushPayload,
-  notificationType: PushNotificationType,
+  notificationType: PushNotificationType
 ): Promise<number> {
   const supabase = await createSupabaseServer();
 

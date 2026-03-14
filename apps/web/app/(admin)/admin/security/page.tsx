@@ -7,12 +7,7 @@ import {
 } from "./actions";
 import { EventsTab } from "./events-tab";
 import { AuditTab } from "./audit-tab";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@comtammatu/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@comtammatu/ui";
 
 export default async function SecurityPage() {
   const [events, summary, auditLogs, resourceTypes] = await Promise.all([

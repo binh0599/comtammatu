@@ -4,12 +4,7 @@ import { useTransition } from "react";
 import { Users, CheckCircle, XCircle, Ban } from "lucide-react";
 import { updateTableStatus } from "./actions";
 import { toast } from "sonner";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-} from "@comtammatu/ui";
+import { Badge, Button, Card, CardContent } from "@comtammatu/ui";
 
 interface TableData {
   id: number;
@@ -49,9 +44,7 @@ export function ReservationTab({ tables }: { tables: TableData[] }) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {reserved.length} bàn đang được đặt trước
-      </p>
+      <p className="text-sm text-muted-foreground">{reserved.length} bàn đang được đặt trước</p>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {reserved.map((table) => (

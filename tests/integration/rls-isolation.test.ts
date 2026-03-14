@@ -64,10 +64,7 @@ describe("RLS Isolation", () => {
       if (!otherItems || otherItems.length === 0) return;
 
       const ownerClient = await createAuthClient("owner");
-      const result = await ownerClient
-        .from("menu_items")
-        .select("id")
-        .eq("id", otherItems[0]!.id);
+      const result = await ownerClient.from("menu_items").select("id").eq("id", otherItems[0]!.id);
 
       assertBlocked(result);
     });
@@ -76,9 +73,7 @@ describe("RLS Isolation", () => {
   describe("Customer can read own loyalty data only", () => {
     it("customer sees only their tenant's loyalty tiers", async () => {
       const client = await createAuthClient("customer");
-      const { data, error } = await client
-        .from("loyalty_tiers")
-        .select("id, tenant_id");
+      const { data, error } = await client.from("loyalty_tiers").select("id, tenant_id");
 
       expect(error).toBeNull();
       if (data && data.length > 0) {

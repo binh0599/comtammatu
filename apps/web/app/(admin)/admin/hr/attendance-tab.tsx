@@ -53,11 +53,7 @@ function getAttendanceBadgeVariant(
   }
 }
 
-export function AttendanceTab({
-  attendance,
-}: {
-  attendance: AttendanceRecord[];
-}) {
+export function AttendanceTab({ attendance }: { attendance: AttendanceRecord[] }) {
   const today = new Date().toLocaleDateString("vi-VN", {
     weekday: "long",
     day: "2-digit",
@@ -69,9 +65,7 @@ export function AttendanceTab({
     <div className="space-y-4">
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Chấm công</h2>
-        <p className="text-muted-foreground">
-          Dữ liệu chấm công ngày {today}
-        </p>
+        <p className="text-muted-foreground">Dữ liệu chấm công ngày {today}</p>
       </div>
 
       <div className="overflow-x-auto rounded-md border">
@@ -91,10 +85,7 @@ export function AttendanceTab({
           <TableBody>
             {attendance.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={8} className="text-muted-foreground h-24 text-center">
                   Chưa có dữ liệu chấm công cho ngày này
                 </TableCell>
               </TableRow>
@@ -105,16 +96,10 @@ export function AttendanceTab({
                     {record.employees.profiles.full_name}
                   </TableCell>
                   <TableCell>{record.branches.name}</TableCell>
+                  <TableCell>{record.clock_in ? formatDateTime(record.clock_in) : "-"}</TableCell>
+                  <TableCell>{record.clock_out ? formatDateTime(record.clock_out) : "-"}</TableCell>
                   <TableCell>
-                    {record.clock_in ? formatDateTime(record.clock_in) : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {record.clock_out ? formatDateTime(record.clock_out) : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {record.hours_worked != null
-                      ? `${record.hours_worked.toFixed(1)}h`
-                      : "-"}
+                    {record.hours_worked != null ? `${record.hours_worked.toFixed(1)}h` : "-"}
                   </TableCell>
                   <TableCell>
                     {record.overtime_hours != null && record.overtime_hours > 0
@@ -123,18 +108,14 @@ export function AttendanceTab({
                   </TableCell>
                   <TableCell>
                     {record.status ? (
-                      <Badge
-                        variant={getAttendanceBadgeVariant(record.status)}
-                      >
+                      <Badge variant={getAttendanceBadgeVariant(record.status)}>
                         {getAttendanceStatusLabel(record.status)}
                       </Badge>
                     ) : (
                       "-"
                     )}
                   </TableCell>
-                  <TableCell>
-                    {SOURCE_LABELS[record.source] ?? record.source}
-                  </TableCell>
+                  <TableCell>{SOURCE_LABELS[record.source] ?? record.source}</TableCell>
                 </TableRow>
               ))
             )}

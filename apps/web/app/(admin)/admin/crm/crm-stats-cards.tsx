@@ -2,12 +2,7 @@
 
 import { Users, Ticket, Star, MessageCircle } from "lucide-react";
 import type { CrmStats } from "./actions";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@comtammatu/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@comtammatu/ui";
 
 const statCards = (stats: CrmStats) =>
   [
@@ -50,9 +45,7 @@ export function CrmStatsCards({ stats }: { stats: CrmStats }) {
             <CardTitle className="text-muted-foreground text-sm font-medium">
               {card.title}
             </CardTitle>
-            <div
-              className={`flex size-8 items-center justify-center rounded-lg ${card.iconClass}`}
-            >
+            <div className={`flex size-8 items-center justify-center rounded-lg ${card.iconClass}`}>
               <card.icon className="size-4" />
             </div>
           </CardHeader>

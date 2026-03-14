@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  formatDateTime,
-  formatPoints,
-  getLoyaltyTransactionTypeLabel,
-} from "@comtammatu/shared";
+import { formatDateTime, formatPoints, getLoyaltyTransactionTypeLabel } from "@comtammatu/shared";
 import { getCustomerLoyaltyHistory } from "./actions";
 import type { Customer, LoyaltyTransaction } from "./crm-types";
 import {
@@ -55,18 +51,14 @@ export function LoyaltyHistoryDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Lịch sử điểm — {customer.full_name}</DialogTitle>
-          <DialogDescription>
-            20 giao dịch gần nhất
-          </DialogDescription>
+          <DialogDescription>20 giao dịch gần nhất</DialogDescription>
         </DialogHeader>
         {loading ? (
           <div className="flex justify-center py-8">
             <span className="text-muted-foreground">Đang tải...</span>
           </div>
         ) : history.length === 0 ? (
-          <div className="text-muted-foreground py-8 text-center">
-            Chưa có giao dịch nào
-          </div>
+          <div className="text-muted-foreground py-8 text-center">Chưa có giao dịch nào</div>
         ) : (
           <div className="max-h-80 overflow-y-auto">
             <Table>
@@ -74,20 +66,20 @@ export function LoyaltyHistoryDialog({
                 <TableRow>
                   <TableHead scope="col">Ngày</TableHead>
                   <TableHead scope="col">Loại</TableHead>
-                  <TableHead scope="col" className="text-right">Điểm</TableHead>
-                  <TableHead scope="col" className="text-right">Số dư</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Điểm
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Số dư
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {history.map((tx) => (
                   <TableRow key={tx.id}>
-                    <TableCell className="text-sm">
-                      {formatDateTime(tx.created_at)}
-                    </TableCell>
+                    <TableCell className="text-sm">{formatDateTime(tx.created_at)}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {getLoyaltyTransactionTypeLabel(tx.type)}
-                      </Badge>
+                      <Badge variant="outline">{getLoyaltyTransactionTypeLabel(tx.type)}</Badge>
                     </TableCell>
                     <TableCell
                       className={`text-right font-medium ${

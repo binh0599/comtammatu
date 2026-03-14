@@ -36,10 +36,7 @@ interface LoginFormProps {
   } | null;
 }
 
-function loginAction(
-  _prevState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
+function loginAction(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   return login(formData) as Promise<LoginState>;
 }
 
@@ -52,9 +49,7 @@ export function LoginForm({ pendingDevice }: LoginFormProps) {
     const form = formRef.current;
     if (!form) return;
 
-    let fpInput = form.querySelector<HTMLInputElement>(
-      'input[name="device_fingerprint"]',
-    );
+    let fpInput = form.querySelector<HTMLInputElement>('input[name="device_fingerprint"]');
     if (!fpInput) {
       fpInput = document.createElement("input");
       fpInput.type = "hidden";
@@ -63,9 +58,7 @@ export function LoginForm({ pendingDevice }: LoginFormProps) {
     }
     fpInput.value = getDeviceFingerprint();
 
-    let dnInput = form.querySelector<HTMLInputElement>(
-      'input[name="device_name"]',
-    );
+    let dnInput = form.querySelector<HTMLInputElement>('input[name="device_name"]');
     if (!dnInput) {
       dnInput = document.createElement("input");
       dnInput.type = "hidden";

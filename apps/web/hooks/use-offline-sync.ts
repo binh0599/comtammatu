@@ -3,10 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useOnlineStatusWithReconnect } from "./use-online-status";
-import {
-  syncPendingOrders,
-  type SyncResult,
-} from "@/app/(pos)/pos/lib/offline-queue";
+import { syncPendingOrders, type SyncResult } from "@/app/(pos)/pos/lib/offline-queue";
 import { getPendingOrderCount } from "@/app/(pos)/pos/lib/offline-db";
 
 /**
@@ -60,9 +57,7 @@ export function useOfflineSync() {
         }
 
         if (result.failed > 0) {
-          toast.error(
-            `${result.failed} đơn hàng không đồng bộ được. Kiểm tra danh sách đơn chờ.`,
-          );
+          toast.error(`${result.failed} đơn hàng không đồng bộ được. Kiểm tra danh sách đơn chờ.`);
         }
       } catch {
         toast.error("Lỗi khi đồng bộ đơn hàng offline");

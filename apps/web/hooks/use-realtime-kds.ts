@@ -5,7 +5,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import { queryKeys } from "@/lib/query-keys";
 import { useStationTicketsQuery } from "@/hooks/queries/use-kds-query";
-import { useBumpTicketMutation, useRecallTicketMutation } from "@/hooks/mutations/use-kds-mutations";
+import {
+  useBumpTicketMutation,
+  useRecallTicketMutation,
+} from "@/hooks/mutations/use-kds-mutations";
 
 /**
  * Hook kết hợp React Query + Supabase Realtime + Optimistic mutations cho KDS.
@@ -59,7 +62,7 @@ export function useRealtimeKds(stationId: number) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (old.some((t: any) => t.id === newRecord.id)) return old;
                 return [newRecord, ...old];
-              },
+              }
             );
           } else if (eventType === "UPDATE") {
             queryClient.setQueryData(
@@ -81,9 +84,9 @@ export function useRealtimeKds(stationId: number) {
                       order_items: newRecord.order_items ?? ticket.order_items,
                       orders: newRecord.orders ?? ticket.orders,
                     };
-                  },
+                  }
                 );
-              },
+              }
             );
           } else if (eventType === "DELETE") {
             queryClient.setQueryData(
@@ -93,10 +96,10 @@ export function useRealtimeKds(stationId: number) {
                 if (!old) return old;
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 return old.filter((t: any) => t.id !== oldRecord.id);
-              },
+              }
             );
           }
-        },
+        }
       )
       .subscribe();
 
@@ -109,12 +112,12 @@ export function useRealtimeKds(stationId: number) {
   const bumpTicket = useCallback(
     (ticketId: number, newStatus: "preparing" | "ready") =>
       bumpMutation.mutate({ ticketId, newStatus }),
-    [bumpMutation],
+    [bumpMutation]
   );
 
   const recallTicket = useCallback(
     (ticketId: number) => recallMutation.mutate(ticketId),
-    [recallMutation],
+    [recallMutation]
   );
 
   return {

@@ -64,7 +64,9 @@ const orderStatusDot: Record<string, string> = {
 // Chair positions around a table (supports 2, 4, 6, 8 seats)
 // ---------------------------------------------------------------------------
 
-function getChairPositions(capacity: number): Array<{ cx: number; cy: number; rx: number; ry: number }> {
+function getChairPositions(
+  capacity: number
+): Array<{ cx: number; cy: number; rx: number; ry: number }> {
   // SVG viewBox is 120x120, table centered at 60,60
   const positions: Array<{ cx: number; cy: number; rx: number; ry: number }> = [];
 
@@ -143,8 +145,9 @@ export function VisualTable({
       className={cn(
         "group relative flex flex-col items-center rounded-xl border p-2 transition-all",
         tableStatusBg[status] ?? "bg-gray-50 border-gray-300",
-        isClickable && "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        !isClickable && "cursor-default opacity-60",
+        isClickable &&
+          "cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        !isClickable && "cursor-default opacity-60"
       )}
     >
       {/* SVG Table + Chairs */}
@@ -206,14 +209,10 @@ export function VisualTable({
       </svg>
 
       {/* Table label */}
-      <span className="mt-1 text-xs font-bold leading-tight">
-        Bàn {tableNumber}
-      </span>
+      <span className="mt-1 text-xs font-bold leading-tight">Bàn {tableNumber}</span>
 
       {/* Status */}
-      <span className="text-[10px] opacity-70 leading-tight">
-        {getTableStatusLabel(status)}
-      </span>
+      <span className="text-[10px] opacity-70 leading-tight">{getTableStatusLabel(status)}</span>
 
       {/* Sub-order indicators for split orders */}
       {orderCount > 0 && (
@@ -227,14 +226,10 @@ export function VisualTable({
               <span
                 className={cn(
                   "inline-block size-1.5 rounded-full",
-                  orderStatusDot[order.status] ?? "bg-gray-400",
+                  orderStatusDot[order.status] ?? "bg-gray-400"
                 )}
               />
-              {label ? (
-                <span>{label}</span>
-              ) : (
-                <span>{order.item_count} món</span>
-              )}
+              {label ? <span>{label}</span> : <span>{order.item_count} món</span>}
             </div>
           ))}
         </div>

@@ -2,10 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Users } from "lucide-react";
-import {
-  TABLE_STATUSES,
-  getTableStatusLabel,
-} from "@comtammatu/shared";
+import { TABLE_STATUSES, getTableStatusLabel } from "@comtammatu/shared";
 import { updateTableStatus } from "./actions";
 import {
   Badge,
@@ -55,9 +52,7 @@ export function FloorPlanTab({
   const [error, setError] = useState<string | null>(null);
 
   const filteredTables =
-    branchFilter === "all"
-      ? tables
-      : tables.filter((t) => t.branch_id === Number(branchFilter));
+    branchFilter === "all" ? tables : tables.filter((t) => t.branch_id === Number(branchFilter));
 
   // Group by zone
   const grouped: Record<string, TableRow[]> = {};
@@ -116,9 +111,7 @@ export function FloorPlanTab({
         </Select>
       </div>
 
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       {/* Floor Plan Grid grouped by zone */}
       {Object.keys(grouped).length === 0 ? (

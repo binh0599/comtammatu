@@ -7,13 +7,7 @@ test.describe("Inventory Management Flow", () => {
     await expect(page).toHaveURL(/\/admin\/inventory/);
 
     // Verify key tabs are visible
-    const tabs = [
-      /nguyên liệu/i,
-      /tồn kho/i,
-      /nhập\/xuất kho/i,
-      /nhà cung cấp/i,
-      /đơn mua hàng/i,
-    ];
+    const tabs = [/nguyên liệu/i, /tồn kho/i, /nhập\/xuất kho/i, /nhà cung cấp/i, /đơn mua hàng/i];
 
     for (const tabName of tabs) {
       await expect(page.getByRole("tab", { name: tabName })).toBeVisible({
@@ -60,15 +54,10 @@ test.describe("Inventory Management Flow", () => {
     await expect(stockTab).toHaveAttribute("data-state", "active");
 
     // Verify content loads
-    await expect(
-      page.getByText(/tồn kho/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/tồn kho/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
-  test("stock movements tab loads with transfer button", async ({
-    page,
-    loginAs,
-  }) => {
+  test("stock movements tab loads with transfer button", async ({ page, loginAs }) => {
     await loginAs("owner");
     await page.goto("/admin/inventory");
 
@@ -77,18 +66,11 @@ test.describe("Inventory Management Flow", () => {
     await expect(movementsTab).toHaveAttribute("data-state", "active");
 
     // Verify both main action buttons are visible
-    await expect(
-      page.getByRole("button", { name: /tạo phiếu/i }),
-    ).toBeVisible({ timeout: 10_000 });
-    await expect(
-      page.getByRole("button", { name: /chuyển kho/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /tạo phiếu/i })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: /chuyển kho/i })).toBeVisible();
   });
 
-  test("suppliers tab loads with analytics section", async ({
-    page,
-    loginAs,
-  }) => {
+  test("suppliers tab loads with analytics section", async ({ page, loginAs }) => {
     await loginAs("owner");
     await page.goto("/admin/inventory");
 
@@ -97,14 +79,10 @@ test.describe("Inventory Management Flow", () => {
     await expect(suppliersTab).toHaveAttribute("data-state", "active");
 
     // Verify supplier content
-    await expect(
-      page.getByText(/nhà cung cấp/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/nhà cung cấp/i).first()).toBeVisible({ timeout: 10_000 });
 
     // Verify analytics section exists
-    await expect(
-      page.getByText(/xem phân tích/i),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/xem phân tích/i)).toBeVisible({ timeout: 10_000 });
   });
 
   test("purchase orders tab loads", async ({ page, loginAs }) => {
@@ -115,8 +93,6 @@ test.describe("Inventory Management Flow", () => {
     await poTab.click();
     await expect(poTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/đơn mua hàng/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/đơn mua hàng/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

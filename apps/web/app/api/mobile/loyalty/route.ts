@@ -29,15 +29,12 @@ export async function GET(_req: NextRequest) {
 
     if (pointsError) {
       console.error("Error fetching loyalty points:", pointsError);
-      return jsonError(
-        "Không thể tải thông tin điểm thưởng. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải thông tin điểm thưởng. Vui lòng thử lại sau.", 500);
     }
 
     const currentPoints = (pointsData ?? []).reduce(
       (sum: number, t: { points: number | null }) => sum + (t.points ?? 0),
-      0,
+      0
     );
 
     // Get current tier — match by loyalty_tier_id on customer record,
@@ -90,10 +87,7 @@ export async function GET(_req: NextRequest) {
 
     if (transError) {
       console.error("Error fetching transactions:", transError);
-      return jsonError(
-        "Không thể tải lịch sử giao dịch. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải lịch sử giao dịch. Vui lòng thử lại sau.", 500);
     }
 
     return jsonOk({
@@ -107,9 +101,6 @@ export async function GET(_req: NextRequest) {
     });
   } catch (error) {
     console.error("[GET /api/mobile/loyalty]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }

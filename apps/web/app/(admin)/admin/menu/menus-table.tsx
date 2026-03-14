@@ -91,9 +91,7 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Thực đơn</h2>
-          <p className="text-muted-foreground">
-            Quản lý danh sách thực đơn của nhà hàng
-          </p>
+          <p className="text-muted-foreground">Quản lý danh sách thực đơn của nhà hàng</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
@@ -106,24 +104,15 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Tạo thực đơn mới</DialogTitle>
-                <DialogDescription>
-                  Thêm thực đơn mới cho nhà hàng
-                </DialogDescription>
+                <DialogDescription>Thêm thực đơn mới cho nhà hàng</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Tên thực đơn</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="VD: Thực đơn chính"
-                    required
-                  />
+                  <Input id="name" name="name" placeholder="VD: Thực đơn chính" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="type">Loại</Label>
@@ -170,16 +159,15 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
               <TableHead scope="col">Tên thực đơn</TableHead>
               <TableHead scope="col">Loại</TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {menus.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={4} className="text-muted-foreground h-24 text-center">
                   Chưa có thực đơn nào
                 </TableCell>
               </TableRow>
@@ -188,14 +176,10 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">{menu.name}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">
-                      {typeLabels[menu.type] ?? menu.type}
-                    </Badge>
+                    <Badge variant="outline">{typeLabels[menu.type] ?? menu.type}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={menu.is_active ? "default" : "secondary"}
-                    >
+                    <Badge variant={menu.is_active ? "default" : "secondary"}>
                       {menu.is_active ? "Hoạt động" : "Tạm dừng"}
                     </Badge>
                   </TableCell>
@@ -225,11 +209,7 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
-                          <form
-                            action={(formData) =>
-                              handleUpdate(menu.id, formData)
-                            }
-                          >
+                          <form action={(formData) => handleUpdate(menu.id, formData)}>
                             <DialogHeader>
                               <DialogTitle>Sửa thực đơn</DialogTitle>
                             </DialogHeader>
@@ -240,9 +220,7 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                             )}
                             <div className="grid gap-4 py-4">
                               <div className="grid gap-2">
-                                <Label htmlFor="edit-name">
-                                  Tên thực đơn
-                                </Label>
+                                <Label htmlFor="edit-name">Tên thực đơn</Label>
                                 <Input
                                   id="edit-name"
                                   name="name"
@@ -252,23 +230,14 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                               </div>
                               <div className="grid gap-2">
                                 <Label htmlFor="edit-type">Loại</Label>
-                                <Select
-                                  name="type"
-                                  defaultValue={menu.type}
-                                >
+                                <Select name="type" defaultValue={menu.type}>
                                   <SelectTrigger>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="dine_in">
-                                      Tại quán
-                                    </SelectItem>
-                                    <SelectItem value="takeaway">
-                                      Mang đi
-                                    </SelectItem>
-                                    <SelectItem value="delivery">
-                                      Giao hàng
-                                    </SelectItem>
+                                    <SelectItem value="dine_in">Tại quán</SelectItem>
+                                    <SelectItem value="takeaway">Mang đi</SelectItem>
+                                    <SelectItem value="delivery">Giao hàng</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -278,12 +247,10 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                                   name="is_active_toggle"
                                   defaultChecked={menu.is_active}
                                   onCheckedChange={(checked) => {
-                                    const hidden =
-                                      document.getElementById(
-                                        "edit-is_active-hidden",
-                                      ) as HTMLInputElement;
-                                    if (hidden)
-                                      hidden.value = String(checked);
+                                    const hidden = document.getElementById(
+                                      "edit-is_active-hidden"
+                                    ) as HTMLInputElement;
+                                    if (hidden) hidden.value = String(checked);
                                   }}
                                 />
                                 <input
@@ -292,9 +259,7 @@ export function MenusTable({ menus }: { menus: Menu[] }) {
                                   name="is_active"
                                   defaultValue={String(menu.is_active)}
                                 />
-                                <Label htmlFor="edit-is_active">
-                                  Hoạt động
-                                </Label>
+                                <Label htmlFor="edit-is_active">Hoạt động</Label>
                               </div>
                             </div>
                             <DialogFooter>

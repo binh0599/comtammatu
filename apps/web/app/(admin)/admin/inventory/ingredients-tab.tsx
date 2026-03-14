@@ -66,11 +66,7 @@ function IngredientForm({
 
   return (
     <form action={onSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
           <Label htmlFor="name">Tên nguyên liệu</Label>
@@ -153,11 +149,7 @@ function IngredientForm({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Switch
-            id="is_active"
-            checked={isActive}
-            onCheckedChange={setIsActive}
-          />
+          <Switch id="is_active" checked={isActive} onCheckedChange={setIsActive} />
           <input type="hidden" name="is_active" value={String(isActive)} />
           <Label htmlFor="is_active">Đang hoạt động</Label>
         </div>
@@ -171,11 +163,7 @@ function IngredientForm({
   );
 }
 
-export function IngredientsTab({
-  ingredients,
-}: {
-  ingredients: Ingredient[];
-}) {
+export function IngredientsTab({ ingredients }: { ingredients: Ingredient[] }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Ingredient | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -221,9 +209,7 @@ export function IngredientsTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Nguyên liệu</h2>
-          <p className="text-muted-foreground">
-            Quản lý danh sách nguyên liệu của nhà hàng
-          </p>
+          <p className="text-muted-foreground">Quản lý danh sách nguyên liệu của nhà hàng</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -241,9 +227,7 @@ export function IngredientsTab({
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Thêm nguyên liệu</DialogTitle>
-              <DialogDescription>
-                Tạo nguyên liệu mới cho nhà hàng
-              </DialogDescription>
+              <DialogDescription>Tạo nguyên liệu mới cho nhà hàng</DialogDescription>
             </DialogHeader>
             <IngredientForm
               onSubmit={handleCreate}
@@ -257,9 +241,7 @@ export function IngredientsTab({
       </div>
 
       {error && !isCreateOpen && !editingItem && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="rounded-md border">
@@ -270,20 +252,25 @@ export function IngredientsTab({
               <TableHead scope="col">SKU</TableHead>
               <TableHead scope="col">Đơn vị</TableHead>
               <TableHead scope="col">Danh mục</TableHead>
-              <TableHead scope="col" className="text-right">Giá nhập</TableHead>
-              <TableHead scope="col" className="text-right">Tối thiểu</TableHead>
-              <TableHead scope="col" className="text-right">Tối đa</TableHead>
+              <TableHead scope="col" className="text-right">
+                Giá nhập
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Tối thiểu
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Tối đa
+              </TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {ingredients.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={9} className="text-muted-foreground h-24 text-center">
                   Chưa có nguyên liệu nào
                 </TableCell>
               </TableRow>
@@ -295,16 +282,10 @@ export function IngredientsTab({
                   <TableCell>{item.unit}</TableCell>
                   <TableCell>{item.category ?? "-"}</TableCell>
                   <TableCell className="text-right">
-                    {item.cost_price != null
-                      ? formatPrice(item.cost_price)
-                      : "-"}
+                    {item.cost_price != null ? formatPrice(item.cost_price) : "-"}
                   </TableCell>
-                  <TableCell className="text-right">
-                    {item.min_stock ?? "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {item.max_stock ?? "-"}
-                  </TableCell>
+                  <TableCell className="text-right">{item.min_stock ?? "-"}</TableCell>
+                  <TableCell className="text-right">{item.max_stock ?? "-"}</TableCell>
                   <TableCell>
                     <Badge variant={item.is_active ? "default" : "secondary"}>
                       {item.is_active ? "Hoạt động" : "Ngưng"}
@@ -344,9 +325,7 @@ export function IngredientsTab({
                           </DialogHeader>
                           <IngredientForm
                             defaultValues={item}
-                            onSubmit={(formData) =>
-                              handleUpdate(item.id, formData)
-                            }
+                            onSubmit={(formData) => handleUpdate(item.id, formData)}
                             isPending={isPending}
                             error={error}
                             submitLabel="Lưu"
@@ -366,15 +345,13 @@ export function IngredientsTab({
                           <AlertDialogHeader>
                             <AlertDialogTitle>Xóa nguyên liệu</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Bạn có chắc muốn xóa &quot;{item.name}&quot;?
-                              Hành động này không thể hoàn tác.
+                              Bạn có chắc muốn xóa &quot;{item.name}&quot;? Hành động này không thể
+                              hoàn tác.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(item.id)}
-                            >
+                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
                               Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>

@@ -2,12 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Power, Trash2 } from "lucide-react";
-import {
-  createKdsStation,
-  updateKdsStation,
-  toggleKdsStation,
-  deleteKdsStation,
-} from "./actions";
+import { createKdsStation, updateKdsStation, toggleKdsStation, deleteKdsStation } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,18 +84,14 @@ function CategorySelector({
       <Label>Danh mục món ăn</Label>
       <div className="max-h-48 space-y-2 overflow-y-auto rounded-md border p-3">
         {categories.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            Chưa có danh mục nào
-          </p>
+          <p className="text-muted-foreground text-sm">Chưa có danh mục nào</p>
         ) : (
           categories.map((cat) => (
             <div key={cat.id} className="flex items-center space-x-2">
               <Checkbox
                 id={`cat-${cat.id}`}
                 checked={selectedIds.includes(cat.id)}
-                onCheckedChange={(checked) =>
-                  handleToggle(cat.id, checked === true)
-                }
+                onCheckedChange={(checked) => handleToggle(cat.id, checked === true)}
               />
               <label
                 htmlFor={`cat-${cat.id}`}
@@ -191,9 +182,7 @@ export function StationsTable({
 
   function openEditDialog(station: KdsStation) {
     setError(null);
-    setSelectedCategoryIds(
-      station.kds_station_categories.map((sc) => sc.category_id)
-    );
+    setSelectedCategoryIds(station.kds_station_categories.map((sc) => sc.category_id));
     setEditingStation(station);
   }
 
@@ -223,24 +212,15 @@ export function StationsTable({
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Thêm bếp KDS</DialogTitle>
-                <DialogDescription>
-                  Tạo bếp KDS mới và gán danh mục món ăn
-                </DialogDescription>
+                <DialogDescription>Tạo bếp KDS mới và gán danh mục món ăn</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Tên bếp</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="VD: Bếp Chính"
-                    required
-                  />
+                  <Input id="name" name="name" placeholder="VD: Bếp Chính" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="branch_id">Chi nhánh</Label>
@@ -250,10 +230,7 @@ export function StationsTable({
                     </SelectTrigger>
                     <SelectContent>
                       {branches.map((branch) => (
-                        <SelectItem
-                          key={branch.id}
-                          value={String(branch.id)}
-                        >
+                        <SelectItem key={branch.id} value={String(branch.id)}>
                           {branch.name}
                         </SelectItem>
                       ))}
@@ -267,11 +244,7 @@ export function StationsTable({
                 />
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -284,9 +257,7 @@ export function StationsTable({
       </div>
 
       {error && !isCreateOpen && !editingStation && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="rounded-md border">
@@ -297,25 +268,22 @@ export function StationsTable({
               <TableHead scope="col">Chi nhánh</TableHead>
               <TableHead scope="col">Danh mục</TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stations.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   Chưa có bếp KDS nào
                 </TableCell>
               </TableRow>
             ) : (
               stations.map((station) => (
                 <TableRow key={station.id}>
-                  <TableCell className="font-medium">
-                    {station.name}
-                  </TableCell>
+                  <TableCell className="font-medium">{station.name}</TableCell>
                   <TableCell>{station.branches.name}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -327,9 +295,7 @@ export function StationsTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={station.is_active ? "default" : "secondary"}
-                    >
+                    <Badge variant={station.is_active ? "default" : "secondary"}>
                       {station.is_active ? "Hoạt động" : "Tắt"}
                     </Badge>
                   </TableCell>
@@ -356,11 +322,7 @@ export function StationsTable({
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
-                          <form
-                            action={(formData) =>
-                              handleUpdate(station.id, formData)
-                            }
-                          >
+                          <form action={(formData) => handleUpdate(station.id, formData)}>
                             <DialogHeader>
                               <DialogTitle>Sửa bếp KDS</DialogTitle>
                               <DialogDescription>
@@ -394,10 +356,7 @@ export function StationsTable({
                                   </SelectTrigger>
                                   <SelectContent>
                                     {branches.map((branch) => (
-                                      <SelectItem
-                                        key={branch.id}
-                                        value={String(branch.id)}
-                                      >
+                                      <SelectItem key={branch.id} value={String(branch.id)}>
                                         {branch.name}
                                       </SelectItem>
                                     ))}
@@ -434,9 +393,7 @@ export function StationsTable({
                         size="icon"
                         onClick={() => handleToggle(station.id)}
                         disabled={isPending}
-                        aria-label={
-                          station.is_active ? "Tắt bếp" : "Bật bếp"
-                        }
+                        aria-label={station.is_active ? "Tắt bếp" : "Bật bếp"}
                       >
                         <Power className="h-4 w-4" aria-hidden="true" />
                       </Button>
@@ -444,11 +401,7 @@ export function StationsTable({
                       {/* Delete Dialog */}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Xóa bếp"
-                          >
+                          <Button variant="ghost" size="icon" aria-label="Xóa bếp">
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
@@ -462,9 +415,7 @@ export function StationsTable({
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(station.id)}
-                            >
+                            <AlertDialogAction onClick={() => handleDelete(station.id)}>
                               Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>

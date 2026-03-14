@@ -2,18 +2,21 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Send, PackageCheck, X, TrendingUp, TrendingDown } from "lucide-react";
-import {
-  formatPrice,
-  formatDateTime,
-  getPoStatusLabel,
-} from "@comtammatu/shared";
+import { formatPrice, formatDateTime, getPoStatusLabel } from "@comtammatu/shared";
 import {
   createPurchaseOrder,
   sendPurchaseOrder,
   receivePurchaseOrder,
   cancelPurchaseOrder,
 } from "./actions";
-import type { Supplier, Branch, Ingredient, PurchaseOrder, CreatePoData, ReceivePoData } from "./po-types";
+import type {
+  Supplier,
+  Branch,
+  Ingredient,
+  PurchaseOrder,
+  CreatePoData,
+  ReceivePoData,
+} from "./po-types";
 import { getStatusBadgeVariant } from "./po-types";
 import { CreatePoForm } from "./create-po-form";
 import { ReceiveDialog } from "./receive-dialog";
@@ -123,9 +126,7 @@ export function PurchaseOrdersTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Đơn mua hàng</h2>
-          <p className="text-muted-foreground">
-            Quản lý đơn mua hàng từ nhà cung cấp
-          </p>
+          <p className="text-muted-foreground">Quản lý đơn mua hàng từ nhà cung cấp</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -143,9 +144,7 @@ export function PurchaseOrdersTab({
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Tạo đơn mua hàng</DialogTitle>
-              <DialogDescription>
-                Tạo đơn mua nguyên liệu từ nhà cung cấp
-              </DialogDescription>
+              <DialogDescription>Tạo đơn mua nguyên liệu từ nhà cung cấp</DialogDescription>
             </DialogHeader>
             <CreatePoForm
               suppliers={suppliers}
@@ -178,11 +177,13 @@ export function PurchaseOrdersTab({
                 )}
                 <span>
                   <strong>PO #{a.po_id}</strong> — {a.ingredient_name}:{" "}
-                  {formatPrice(a.current_price)}/{a.unit} (trung bình:{" "}
-                  {formatPrice(a.avg_price)}, lệch{" "}
+                  {formatPrice(a.current_price)}/{a.unit} (trung bình: {formatPrice(a.avg_price)},
+                  lệch{" "}
                   <span
                     className={
-                      a.direction === "up" ? "text-red-600 font-semibold" : "text-blue-600 font-semibold"
+                      a.direction === "up"
+                        ? "text-red-600 font-semibold"
+                        : "text-blue-600 font-semibold"
                     }
                   >
                     {a.deviation_pct > 0 ? "+" : ""}
@@ -197,9 +198,7 @@ export function PurchaseOrdersTab({
       )}
 
       {error && !isCreateOpen && !receivingPo && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       {/* Receive Dialog */}
@@ -238,18 +237,19 @@ export function PurchaseOrdersTab({
               <TableHead scope="col">Nhà cung cấp</TableHead>
               <TableHead scope="col">Chi nhánh</TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Tổng tiền</TableHead>
+              <TableHead scope="col" className="text-right">
+                Tổng tiền
+              </TableHead>
               <TableHead scope="col">Ngày tạo</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {purchaseOrders.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground h-24 text-center">
                   Chưa có đơn mua hàng nào
                 </TableCell>
               </TableRow>
@@ -257,12 +257,8 @@ export function PurchaseOrdersTab({
               purchaseOrders.map((po) => (
                 <TableRow key={po.id}>
                   <TableCell className="font-medium">#{po.id}</TableCell>
-                  <TableCell>
-                    {po.suppliers?.name ?? `#${po.supplier_id}`}
-                  </TableCell>
-                  <TableCell>
-                    {po.branches?.name ?? `#${po.branch_id}`}
-                  </TableCell>
+                  <TableCell>{po.suppliers?.name ?? `#${po.supplier_id}`}</TableCell>
+                  <TableCell>{po.branches?.name ?? `#${po.branch_id}`}</TableCell>
                   <TableCell>
                     <Badge variant={getStatusBadgeVariant(po.status)}>
                       {getPoStatusLabel(po.status)}
@@ -288,30 +284,22 @@ export function PurchaseOrdersTab({
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                title="Hủy đơn"
-                              >
+                              <Button variant="ghost" size="sm" title="Hủy đơn">
                                 <X className="mr-1 h-3 w-3" />
                                 Hủy
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Hủy đơn mua hàng
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>Hủy đơn mua hàng</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Bạn có chắc muốn hủy đơn #{po.id}? Hành động
-                                  này không thể hoàn tác.
+                                  Bạn có chắc muốn hủy đơn #{po.id}? Hành động này không thể hoàn
+                                  tác.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Đóng</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleCancel(po.id)}
-                                >
+                                <AlertDialogAction onClick={() => handleCancel(po.id)}>
                                   Hủy đơn
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -336,30 +324,22 @@ export function PurchaseOrdersTab({
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                title="Hủy đơn"
-                              >
+                              <Button variant="ghost" size="sm" title="Hủy đơn">
                                 <X className="mr-1 h-3 w-3" />
                                 Hủy
                               </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                               <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Hủy đơn mua hàng
-                                </AlertDialogTitle>
+                                <AlertDialogTitle>Hủy đơn mua hàng</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Bạn có chắc muốn hủy đơn #{po.id}? Hành động
-                                  này không thể hoàn tác.
+                                  Bạn có chắc muốn hủy đơn #{po.id}? Hành động này không thể hoàn
+                                  tác.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Đóng</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleCancel(po.id)}
-                                >
+                                <AlertDialogAction onClick={() => handleCancel(po.id)}>
                                   Hủy đơn
                                 </AlertDialogAction>
                               </AlertDialogFooter>

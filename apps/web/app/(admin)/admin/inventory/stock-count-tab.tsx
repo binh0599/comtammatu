@@ -2,10 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Plus, CheckCircle } from "lucide-react";
-import {
-  formatDateTime,
-  getStockCountStatusLabel,
-} from "@comtammatu/shared";
+import { formatDateTime, getStockCountStatusLabel } from "@comtammatu/shared";
 import { createStockCount, approveStockCount } from "./actions";
 import { toast } from "sonner";
 import {
@@ -150,9 +147,7 @@ export function StockCountTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Kiểm kho</h2>
-          <p className="text-muted-foreground">
-            Kiểm kê cuối ngày, đối chiếu tồn kho thực tế
-          </p>
+          <p className="text-muted-foreground">Kiểm kê cuối ngày, đối chiếu tồn kho thực tế</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -174,14 +169,10 @@ export function StockCountTab({
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Tạo phiếu kiểm kho</DialogTitle>
-                <DialogDescription>
-                  Nhập số lượng thực tế của từng nguyên liệu
-                </DialogDescription>
+                <DialogDescription>Nhập số lượng thực tế của từng nguyên liệu</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -196,12 +187,7 @@ export function StockCountTab({
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <Label>Nguyên liệu</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addCountItem}
-                    >
+                    <Button type="button" variant="outline" size="sm" onClick={addCountItem}>
                       <Plus className="mr-1 h-3 w-3" />
                       Thêm dòng
                     </Button>
@@ -229,18 +215,14 @@ export function StockCountTab({
                         className="h-9 w-28"
                         placeholder="SL thực tế"
                         value={item.actual_qty}
-                        onChange={(e) =>
-                          updateCountItem(item._key, "actual_qty", e.target.value)
-                        }
+                        onChange={(e) => updateCountItem(item._key, "actual_qty", e.target.value)}
                       />
                       <Input
                         type="text"
                         className="h-9 w-32"
                         placeholder="Ghi chú"
                         value={item.notes}
-                        onChange={(e) =>
-                          updateCountItem(item._key, "notes", e.target.value)
-                        }
+                        onChange={(e) => updateCountItem(item._key, "notes", e.target.value)}
                       />
                       <Button
                         type="button"
@@ -256,11 +238,7 @@ export function StockCountTab({
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -288,10 +266,7 @@ export function StockCountTab({
           <TableBody>
             {stockCounts.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground h-24 text-center">
                   Chưa có phiếu kiểm kho
                 </TableCell>
               </TableRow>
@@ -304,16 +279,10 @@ export function StockCountTab({
                       {getStockCountStatusLabel(sc.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    {sc.profiles?.full_name ?? "-"}
-                  </TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {sc.notes ?? "-"}
-                  </TableCell>
+                  <TableCell>{sc.profiles?.full_name ?? "-"}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">{sc.notes ?? "-"}</TableCell>
                   <TableCell>{formatDateTime(sc.counted_at)}</TableCell>
-                  <TableCell>
-                    {sc.approved_at ? formatDateTime(sc.approved_at) : "-"}
-                  </TableCell>
+                  <TableCell>{sc.approved_at ? formatDateTime(sc.approved_at) : "-"}</TableCell>
                   <TableCell>
                     {sc.status === "submitted" && (
                       <Button

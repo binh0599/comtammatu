@@ -24,10 +24,7 @@ export default async function TerminalsPage() {
     <>
       <Header breadcrumbs={[{ label: "Thiết bị" }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <DevicesTable
-          initialDevices={devices ?? []}
-          tenantId={profile?.tenant_id ?? 0}
-        />
+        <DevicesTable initialDevices={devices ?? []} tenantId={profile?.tenant_id ?? 0} />
       </div>
     </>
   );

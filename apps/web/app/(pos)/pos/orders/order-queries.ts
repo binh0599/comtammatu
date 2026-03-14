@@ -1,21 +1,13 @@
 "use server";
 
 import "@/lib/server-bootstrap";
-import {
-  getActionContext,
-  requireBranch,
-  withServerQuery,
-  safeDbError,
-} from "@comtammatu/shared";
+import { getActionContext, requireBranch, withServerQuery, safeDbError } from "@comtammatu/shared";
 
 // ---------------------------------------------------------------------------
 // getOrders
 // ---------------------------------------------------------------------------
 
-async function _getOrders(filters?: {
-  status?: string;
-  type?: string;
-}) {
+async function _getOrders(filters?: { status?: string; type?: string }) {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   const { supabase } = ctx;
@@ -122,9 +114,7 @@ async function _getTablesWithActiveOrders() {
   const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
   const { data: activeOrders, error: ordersError } = await supabase
     .from("orders")
-    .select(
-      "id, order_number, status, total, table_id, guest_count, order_items(id, quantity)"
-    )
+    .select("id, order_number, status, total, table_id, guest_count, order_items(id, quantity)")
     .eq("branch_id", branchId)
     .in("status", activeStatuses)
     .not("table_id", "is", null)
@@ -148,10 +138,7 @@ async function _getTablesWithActiveOrders() {
     for (const order of activeOrders) {
       if (order.table_id) {
         const itemCount = Array.isArray(order.order_items)
-          ? order.order_items.reduce(
-            (sum: number, i: { quantity: number }) => sum + i.quantity,
-            0
-          )
+          ? order.order_items.reduce((sum: number, i: { quantity: number }) => sum + i.quantity, 0)
           : 0;
         const entry: OrderInfo = {
           id: order.id,
@@ -172,21 +159,19 @@ async function _getTablesWithActiveOrders() {
   }
 
   // 4. Merge
-  return tables.map((table: { id: number;[key: string]: unknown }) => ({
+  return tables.map((table: { id: number; [key: string]: unknown }) => ({
     ...table,
     active_orders: ordersByTable.get(table.id) ?? [],
   }));
 }
 
-export const getTablesWithActiveOrders = withServerQuery(
-  _getTablesWithActiveOrders
-);
+export const getTablesWithActiveOrders = withServerQuery(_getTablesWithActiveOrders);
 
 // ---------------------------------------------------------------------------
 // getMenuItems
 // ---------------------------------------------------------------------------
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 async function _getMenuItems() {
   const ctx = await getActionContext();
   requireBranch(ctx);
@@ -213,11 +198,10 @@ async function _getMenuItems() {
     .eq("is_available", false);
 
   const disabledSet = new Set(
-    (branchDisabled ?? []).map((r: { menu_item_id: number }) => r.menu_item_id),
+    (branchDisabled ?? []).map((r: { menu_item_id: number }) => r.menu_item_id)
   );
-  const filteredItems = disabledSet.size > 0
-    ? menuItems.filter((item: any) => !disabledSet.has(item.id))
-    : menuItems;
+  const filteredItems =
+    disabledSet.size > 0 ? menuItems.filter((item: any) => !disabledSet.has(item.id)) : menuItems;
 
   if (filteredItems.length === 0) return [];
 

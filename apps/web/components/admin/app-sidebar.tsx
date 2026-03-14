@@ -140,9 +140,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
     ?.items.find((item) => item.url === "/admin/hr");
 
   const filteredNav =
-    user.role === "hr" && hrItem
-      ? [{ label: "Quản lý", items: [hrItem] }]
-      : navigation;
+    user.role === "hr" && hrItem ? [{ label: "Quản lý", items: [hrItem] }] : navigation;
 
   // HR role links to /admin/hr, others link to /admin dashboard
   const homeHref = user.role === "hr" ? "/admin/hr" : "/admin";
@@ -159,9 +157,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">Cơm tấm Má Tư</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    Hệ thống quản lý
-                  </span>
+                  <span className="text-muted-foreground truncate text-xs">Hệ thống quản lý</span>
                 </div>
               </Link>
             </SidebarMenuButton>

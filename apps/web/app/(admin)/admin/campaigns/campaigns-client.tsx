@@ -109,9 +109,7 @@ function getStatusLabel(status: string): string {
   }
 }
 
-function getStatusVariant(
-  status: string,
-): "default" | "secondary" | "destructive" | "outline" {
+function getStatusVariant(status: string): "default" | "secondary" | "destructive" | "outline" {
   switch (status) {
     case "draft":
       return "secondary";
@@ -126,9 +124,7 @@ function getStatusVariant(
   }
 }
 
-function getTypeVariant(
-  type: string,
-): "default" | "secondary" | "destructive" | "outline" {
+function getTypeVariant(type: string): "default" | "secondary" | "destructive" | "outline" {
   switch (type) {
     case "email":
       return "default";
@@ -157,9 +153,7 @@ function StatsCards({ campaigns }: { campaigns: Campaign[] }) {
   const total = campaigns.length;
   const draft = campaigns.filter((c) => c.status === "draft").length;
   const scheduled = campaigns.filter((c) => c.status === "scheduled").length;
-  const sent = campaigns.filter(
-    (c) => c.status === "sent" || c.status === "completed",
-  ).length;
+  const sent = campaigns.filter((c) => c.status === "sent" || c.status === "completed").length;
 
   const cards = [
     {
@@ -250,10 +244,8 @@ function CampaignFormDialog({
         min_total_spent: form.get("min_total_spent")
           ? Number(form.get("min_total_spent"))
           : undefined,
-        min_visits: form.get("min_visits")
-          ? Number(form.get("min_visits"))
-          : undefined,
-        gender: ((g) => g && g !== "ALL" ? g : undefined)(form.get("gender") as string),
+        min_visits: form.get("min_visits") ? Number(form.get("min_visits")) : undefined,
+        gender: ((g) => (g && g !== "ALL" ? g : undefined))(form.get("gender") as string),
       },
     };
 
@@ -274,9 +266,7 @@ function CampaignFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Chỉnh sửa chiến dịch" : "Tạo chiến dịch mới"}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? "Chỉnh sửa chiến dịch" : "Tạo chiến dịch mới"}</DialogTitle>
           <DialogDescription>
             {isEditing
               ? "Cập nhật thông tin chiến dịch"
@@ -285,11 +275,7 @@ function CampaignFormDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
+            {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
             <div className="grid gap-2">
               <Label htmlFor="name">Tên chiến dịch</Label>
               <Input
@@ -344,9 +330,7 @@ function CampaignFormDialog({
             </div>
 
             <div className="border-t pt-4">
-              <p className="text-sm font-medium mb-3">
-                Đối tượng mục tiêu
-              </p>
+              <p className="text-sm font-medium mb-3">Đối tượng mục tiêu</p>
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="grid gap-1">
                   <Label htmlFor="min_total_spent" className="text-xs">
@@ -378,10 +362,7 @@ function CampaignFormDialog({
                   <Label htmlFor="gender" className="text-xs">
                     Giới tính
                   </Label>
-                  <Select
-                    name="gender"
-                    defaultValue={segment.gender ?? "ALL"}
-                  >
+                  <Select name="gender" defaultValue={segment.gender ?? "ALL"}>
                     <SelectTrigger id="gender">
                       <SelectValue placeholder="Tất cả" />
                     </SelectTrigger>
@@ -397,11 +378,7 @@ function CampaignFormDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Hủy
             </Button>
             <Button type="submit" disabled={isPending}>
@@ -475,27 +452,14 @@ function ScheduleDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
+            {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
             <div className="grid gap-2">
               <Label htmlFor="scheduled_at">Thời gian gửi</Label>
-              <Input
-                id="scheduled_at"
-                name="scheduled_at"
-                type="datetime-local"
-                required
-              />
+              <Input id="scheduled_at" name="scheduled_at" type="datetime-local" required />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Hủy
             </Button>
             <Button type="submit" disabled={isPending}>
@@ -515,8 +479,7 @@ function ScheduleDialog({
 export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [editCampaign, setEditCampaign] = useState<Campaign | null>(null);
-  const [scheduleCampaignItem, setScheduleCampaignItem] =
-    useState<Campaign | null>(null);
+  const [scheduleCampaignItem, setScheduleCampaignItem] = useState<Campaign | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
@@ -583,9 +546,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Chiến dịch</h2>
-          <p className="text-muted-foreground">
-            Quản lý chiến dịch marketing cho nhà hàng
-          </p>
+          <p className="text-muted-foreground">Quản lý chiến dịch marketing cho nhà hàng</p>
         </div>
         <Button onClick={() => setCreateOpen(true)}>
           <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
@@ -593,11 +554,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
         </Button>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <div className="rounded-md border">
         <Table>
@@ -619,19 +576,14 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
           <TableBody>
             {campaigns.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="h-24 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                   Chưa có chiến dịch nào
                 </TableCell>
               </TableRow>
             ) : (
               campaigns.map((campaign) => (
                 <TableRow key={campaign.id}>
-                  <TableCell className="font-medium">
-                    {campaign.name}
-                  </TableCell>
+                  <TableCell className="font-medium">{campaign.name}</TableCell>
                   <TableCell>
                     <Badge variant={getTypeVariant(campaign.type)}>
                       {getTypeLabel(campaign.type)}
@@ -642,20 +594,13 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                       {getStatusLabel(campaign.status)}
                     </Badge>
                   </TableCell>
-                  <TableCell className="text-right">
-                    {campaign.sent_count}
-                  </TableCell>
-                  <TableCell>
-                    {formatDateTime(campaign.scheduled_at)}
-                  </TableCell>
-                  <TableCell>
-                    {formatDateTime(campaign.created_at)}
-                  </TableCell>
+                  <TableCell className="text-right">{campaign.sent_count}</TableCell>
+                  <TableCell>{formatDateTime(campaign.scheduled_at)}</TableCell>
+                  <TableCell>{formatDateTime(campaign.created_at)}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
                       {/* Edit — only draft/scheduled */}
-                      {(campaign.status === "draft" ||
-                        campaign.status === "scheduled") && (
+                      {(campaign.status === "draft" || campaign.status === "scheduled") && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -676,10 +621,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           disabled={isPending}
                           aria-label="Lên lịch"
                         >
-                          <CalendarClock
-                            className="h-4 w-4"
-                            aria-hidden="true"
-                          />
+                          <CalendarClock className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
 
@@ -693,17 +635,12 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                               disabled={isPending}
                               aria-label="Gửi ngay"
                             >
-                              <Send
-                                className="h-4 w-4"
-                                aria-hidden="true"
-                              />
+                              <Send className="h-4 w-4" aria-hidden="true" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Gửi chiến dịch
-                              </AlertDialogTitle>
+                              <AlertDialogTitle>Gửi chiến dịch</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Bạn có chắc muốn gửi chiến dịch &quot;
                                 {campaign.name}&quot; ngay bây giờ?
@@ -711,9 +648,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Hủy</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleSend(campaign.id)}
-                              >
+                              <AlertDialogAction onClick={() => handleSend(campaign.id)}>
                                 Gửi ngay
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -722,8 +657,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                       )}
 
                       {/* Analytics — only sent/completed */}
-                      {(campaign.status === "sent" ||
-                        campaign.status === "completed") && (
+                      {(campaign.status === "sent" || campaign.status === "completed") && (
                         <Button
                           variant="ghost"
                           size="icon"
@@ -731,10 +665,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                           disabled={isPending}
                           aria-label="Xem phân tích"
                         >
-                          <BarChart3
-                            className="h-4 w-4"
-                            aria-hidden="true"
-                          />
+                          <BarChart3 className="h-4 w-4" aria-hidden="true" />
                         </Button>
                       )}
 
@@ -742,33 +673,21 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
                       {campaign.status === "draft" && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="Xóa chiến dịch"
-                            >
-                              <Trash2
-                                className="h-4 w-4"
-                                aria-hidden="true"
-                              />
+                            <Button variant="ghost" size="icon" aria-label="Xóa chiến dịch">
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Xóa chiến dịch
-                              </AlertDialogTitle>
+                              <AlertDialogTitle>Xóa chiến dịch</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Bạn có chắc muốn xóa chiến dịch &quot;
-                                {campaign.name}&quot;? Hành động này không
-                                thể hoàn tác.
+                                {campaign.name}&quot;? Hành động này không thể hoàn tác.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Hủy</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(campaign.id)}
-                              >
+                              <AlertDialogAction onClick={() => handleDelete(campaign.id)}>
                                 Xóa
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -814,9 +733,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Phân tích chiến dịch</DialogTitle>
-            <DialogDescription>
-              Thống kê hiệu quả gửi và chuyển đổi
-            </DialogDescription>
+            <DialogDescription>Thống kê hiệu quả gửi và chuyển đổi</DialogDescription>
           </DialogHeader>
           {analyticsLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -855,9 +772,7 @@ export function CampaignsClient({ campaigns }: { campaigns: Campaign[] }) {
             </div>
           ) : (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground text-sm">
-                Chưa có dữ liệu phân tích
-              </p>
+              <p className="text-muted-foreground text-sm">Chưa có dữ liệu phân tích</p>
             </div>
           )}
         </DialogContent>

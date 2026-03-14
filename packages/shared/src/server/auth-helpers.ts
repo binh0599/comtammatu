@@ -17,7 +17,7 @@ import { MSG } from "../messages";
  */
 export async function getAuthenticatedProfile(
   supabase: SupabaseClient,
-  requiredRoles?: readonly StaffRole[],
+  requiredRoles?: readonly StaffRole[]
 ) {
   const {
     data: { user },
@@ -38,11 +38,7 @@ export async function getAuthenticatedProfile(
   }
 
   if (requiredRoles && !requiredRoles.includes(profile.role as StaffRole)) {
-    throw new ActionError(
-      MSG.NO_PERMISSION,
-      "UNAUTHORIZED",
-      403,
-    );
+    throw new ActionError(MSG.NO_PERMISSION, "UNAUTHORIZED", 403);
   }
 
   return { user, profile };
@@ -61,7 +57,7 @@ export async function verifyBranchOwnership(
   supabase: SupabaseClient,
   table: string,
   entityId: number,
-  userBranchId: number,
+  userBranchId: number
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table helper
   const { data, error } = await (supabase as any)
@@ -71,19 +67,11 @@ export async function verifyBranchOwnership(
     .single();
 
   if (error || !data) {
-    throw new ActionError(
-      MSG.ENTITY_NOT_FOUND_IN(table),
-      "NOT_FOUND",
-      404,
-    );
+    throw new ActionError(MSG.ENTITY_NOT_FOUND_IN(table), "NOT_FOUND", 404);
   }
 
   if ((data as { branch_id: number }).branch_id !== userBranchId) {
-    throw new ActionError(
-      MSG.NOT_YOUR_BRANCH,
-      "UNAUTHORIZED",
-      403,
-    );
+    throw new ActionError(MSG.NOT_YOUR_BRANCH, "UNAUTHORIZED", 403);
   }
 }
 
@@ -100,7 +88,7 @@ export async function verifyTenantOwnership(
   supabase: SupabaseClient,
   table: string,
   entityId: number,
-  userTenantId: number,
+  userTenantId: number
 ): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- generic table helper
   const { data, error } = await (supabase as any)
@@ -110,18 +98,10 @@ export async function verifyTenantOwnership(
     .single();
 
   if (error || !data) {
-    throw new ActionError(
-      MSG.ENTITY_NOT_FOUND_IN(table),
-      "NOT_FOUND",
-      404,
-    );
+    throw new ActionError(MSG.ENTITY_NOT_FOUND_IN(table), "NOT_FOUND", 404);
   }
 
   if ((data as { tenant_id: number }).tenant_id !== userTenantId) {
-    throw new ActionError(
-      MSG.NOT_YOUR_TENANT,
-      "UNAUTHORIZED",
-      403,
-    );
+    throw new ActionError(MSG.NOT_YOUR_TENANT, "UNAUTHORIZED", 403);
   }
 }

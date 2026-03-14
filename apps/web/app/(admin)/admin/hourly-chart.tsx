@@ -29,16 +29,9 @@ export function HourlyChart({ data }: { data: HourlyData[] }) {
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
         <XAxis dataKey="hour" className="text-xs" tick={{ fontSize: 12 }} />
-        <YAxis
-          className="text-xs"
-          tick={{ fontSize: 12 }}
-          allowDecimals={false}
-        />
+        <YAxis className="text-xs" tick={{ fontSize: 12 }} allowDecimals={false} />
         <Tooltip
-          formatter={(value) => [
-            `${(value as number) ?? 0} đơn`,
-            "Số đơn hàng",
-          ]}
+          formatter={(value) => [`${(value as number) ?? 0} đơn`, "Số đơn hàng"]}
           contentStyle={{
             backgroundColor: "var(--color-card)",
             border: "1px solid var(--color-border)",

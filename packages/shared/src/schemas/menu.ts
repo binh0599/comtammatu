@@ -40,9 +40,7 @@ export const menuItemAvailableSidesSchema = z.object({
   side_item_ids: z.array(z.number().int().positive()).min(0),
 });
 
-export type MenuItemAvailableSidesInput = z.infer<
-  typeof menuItemAvailableSidesSchema
->;
+export type MenuItemAvailableSidesInput = z.infer<typeof menuItemAvailableSidesSchema>;
 
 // ===== Entity ID (reusable for single-ID mutation params) =====
 

@@ -15,10 +15,7 @@ interface Order {
   branch_id: number;
 }
 
-export function useRealtimeOrders<T extends Order>(
-  branchId: number,
-  initialOrders: T[]
-) {
+export function useRealtimeOrders<T extends Order>(branchId: number, initialOrders: T[]) {
   const [orders, setOrders] = useState<T[]>(initialOrders);
 
   const handleOrderChange = useCallback(
@@ -37,9 +34,7 @@ export function useRealtimeOrders<T extends Order>(
 
       if (eventType === "UPDATE") {
         const updated = payload.new as unknown as T;
-        setOrders((prev) =>
-          prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o))
-        );
+        setOrders((prev) => prev.map((o) => (o.id === updated.id ? { ...o, ...updated } : o)));
       }
 
       if (eventType === "DELETE") {

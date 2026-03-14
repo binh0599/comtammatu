@@ -34,7 +34,9 @@ async function _getStationTickets(stationId: number) {
 
   const { data: tickets, error: ticketsError } = await supabase
     .from("kds_tickets")
-    .select("id, order_id, station_id, items, status, priority, created_at, color_code, accepted_at, completed_at")
+    .select(
+      "id, order_id, station_id, items, status, priority, created_at, color_code, accepted_at, completed_at"
+    )
     .eq("station_id", stationId)
     .in("status", ["pending", "preparing"])
     .order("created_at", { ascending: true });
@@ -84,8 +86,7 @@ async function _getStationInfo(stationId: number) {
     .eq("branch_id", profile.branch_id)
     .single();
 
-  if (error)
-    throw new ActionError("Trạm KDS không tồn tại", "NOT_FOUND", 404);
+  if (error) throw new ActionError("Trạm KDS không tồn tại", "NOT_FOUND", 404);
   return data;
 }
 
@@ -135,10 +136,7 @@ export async function getTimingRules(stationId: number) {
 
 // --- Mutation (returns ActionResult) ---
 
-async function _bumpTicket(
-  ticketId: number,
-  newStatus: "preparing" | "ready",
-) {
+async function _bumpTicket(ticketId: number, newStatus: "preparing" | "ready") {
   const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
 
   // Fetch current ticket — verify it belongs to a station in user's branch
@@ -189,10 +187,7 @@ async function _bumpTicket(
     }
   }
 
-  const { error } = await supabase
-    .from("kds_tickets")
-    .update(updateData)
-    .eq("id", ticketId);
+  const { error } = await supabase.from("kds_tickets").update(updateData).eq("id", ticketId);
 
   if (error) return safeDbErrorResult(error, "db");
 
@@ -232,10 +227,7 @@ async function _bumpTicket(
   return { error: null };
 }
 
-export async function bumpTicket(
-  ticketId: number,
-  newStatus: "preparing" | "ready",
-) {
+export async function bumpTicket(ticketId: number, newStatus: "preparing" | "ready") {
   const parsed = bumpTicketSchema.safeParse({ ticket_id: ticketId, status: newStatus });
   if (!parsed.success) {
     return { error: "Dữ liệu không hợp lệ" };

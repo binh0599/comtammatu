@@ -2,7 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Building2, Store, Settings2, Save, CreditCard, Banknote, QrCode, Landmark } from "lucide-react";
+import {
+  Building2,
+  Store,
+  Settings2,
+  Save,
+  CreditCard,
+  Banknote,
+  QrCode,
+  Landmark,
+} from "lucide-react";
 import type { PaymentMethodsConfig, BankTransferConfig } from "@comtammatu/shared";
 import {
   updateBranch,
@@ -62,11 +71,7 @@ function SettingInput({
     <div className="flex items-end gap-3">
       <div className="flex-1 space-y-1.5">
         <Label htmlFor={settingKey}>{label}</Label>
-        <Input
-          id={settingKey}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
+        <Input id={settingKey} value={value} onChange={(e) => setValue(e.target.value)} />
       </div>
       <Button
         onClick={handleSave}
@@ -81,20 +86,13 @@ function SettingInput({
   );
 }
 
-function BranchCard({
-  branch,
-}: {
-  branch: SettingsData["branches"][number];
-}) {
+function BranchCard({ branch }: { branch: SettingsData["branches"][number] }) {
   const [name, setName] = useState(branch.name);
   const [address, setAddress] = useState(branch.address);
   const [phone, setPhone] = useState(branch.phone);
   const [isPending, startTransition] = useTransition();
 
-  const hasChanges =
-    name !== branch.name ||
-    address !== branch.address ||
-    phone !== branch.phone;
+  const hasChanges = name !== branch.name || address !== branch.address || phone !== branch.phone;
 
   function handleSave() {
     startTransition(async () => {
@@ -150,16 +148,9 @@ function BranchCard({
             onChange={(e) => setPhone(e.target.value)}
           />
         </div>
-        <div className="text-xs text-muted-foreground">
-          Múi giờ: {branch.timezone}
-        </div>
+        <div className="text-xs text-muted-foreground">Múi giờ: {branch.timezone}</div>
         {hasChanges && (
-          <Button
-            onClick={handleSave}
-            disabled={isPending}
-            size="sm"
-            className="gap-1"
-          >
+          <Button onClick={handleSave} disabled={isPending} size="sm" className="gap-1">
             <Save className="h-3.5 w-3.5" />
             {isPending ? "Đang lưu..." : "Lưu thay đổi"}
           </Button>
@@ -204,34 +195,20 @@ function sanitizeAccountName(name: string): string {
     .replace(/\s{2,}/g, " ");
 }
 
-function PaymentMethodsCard({
-  config,
-}: {
-  config: PaymentMethodsConfig | null;
-}) {
+function PaymentMethodsCard({ config }: { config: PaymentMethodsConfig | null }) {
   const current = config ?? DEFAULT_CONFIG;
-  const [enabledMethods, setEnabledMethods] = useState<string[]>(
-    current.enabled_methods,
-  );
+  const [enabledMethods, setEnabledMethods] = useState<string[]>(current.enabled_methods);
   const [bankId, setBankId] = useState(current.bank_transfer?.bank_id ?? "");
-  const [accountNo, setAccountNo] = useState(
-    current.bank_transfer?.account_no ?? "",
-  );
-  const [accountName, setAccountName] = useState(
-    current.bank_transfer?.account_name ?? "",
-  );
-  const [template, setTemplate] = useState(
-    current.bank_transfer?.template ?? "compact2",
-  );
+  const [accountNo, setAccountNo] = useState(current.bank_transfer?.account_no ?? "");
+  const [accountName, setAccountName] = useState(current.bank_transfer?.account_name ?? "");
+  const [template, setTemplate] = useState(current.bank_transfer?.template ?? "compact2");
   const [isPending, startTransition] = useTransition();
 
   const transferEnabled = enabledMethods.includes("transfer");
 
   function toggleMethod(method: string) {
     setEnabledMethods((prev) =>
-      prev.includes(method)
-        ? prev.filter((m) => m !== method)
-        : [...prev, method],
+      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
     );
   }
 
@@ -365,7 +342,10 @@ function PaymentMethodsCard({
 
             <div className="space-y-1.5">
               <Label htmlFor="qr-template">Mẫu QR</Label>
-              <Select value={template} onValueChange={(v) => setTemplate(v as BankTransferConfig["template"])}>
+              <Select
+                value={template}
+                onValueChange={(v) => setTemplate(v as BankTransferConfig["template"])}
+              >
                 <SelectTrigger id="qr-template">
                   <SelectValue />
                 </SelectTrigger>
@@ -381,26 +361,19 @@ function PaymentMethodsCard({
             {/* QR Preview */}
             {previewUrl && (
               <div className="space-y-2">
-                <Label className="text-muted-foreground text-xs">Xem trước (50,000đ - DH1234)</Label>
+                <Label className="text-muted-foreground text-xs">
+                  Xem trước (50,000đ - DH1234)
+                </Label>
                 <div className="rounded-lg border bg-white p-2 w-fit">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={previewUrl}
-                    alt="VietQR Preview"
-                    className="h-48 w-auto"
-                  />
+                  <img src={previewUrl} alt="VietQR Preview" className="h-48 w-auto" />
                 </div>
               </div>
             )}
           </div>
         )}
 
-        <Button
-          onClick={handleSave}
-          disabled={isPending}
-          size="sm"
-          className="gap-1"
-        >
+        <Button onClick={handleSave} disabled={isPending} size="sm" className="gap-1">
           <Save className="h-3.5 w-3.5" />
           {isPending ? "Đang lưu..." : "Lưu cấu hình thanh toán"}
         </Button>
@@ -410,10 +383,8 @@ function PaymentMethodsCard({
 }
 
 export function SettingsClient({ data }: { data: SettingsData }) {
-  const taxRate =
-    data.settings.find((s) => s.key === "tax_rate")?.value ?? "10";
-  const serviceCharge =
-    data.settings.find((s) => s.key === "service_charge")?.value ?? "5";
+  const taxRate = data.settings.find((s) => s.key === "tax_rate")?.value ?? "10";
+  const serviceCharge = data.settings.find((s) => s.key === "service_charge")?.value ?? "5";
 
   return (
     <div className="space-y-6">
@@ -424,9 +395,7 @@ export function SettingsClient({ data }: { data: SettingsData }) {
             <Building2 className="h-5 w-5" />
             Thông tin doanh nghiệp
           </CardTitle>
-          <CardDescription>
-            Thông tin chung của hệ thống
-          </CardDescription>
+          <CardDescription>Thông tin chung của hệ thống</CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -441,8 +410,7 @@ export function SettingsClient({ data }: { data: SettingsData }) {
             <div>
               <Label className="text-muted-foreground text-xs">Gói</Label>
               <Badge variant="outline">
-                {PLAN_LABELS[data.tenant.subscription_plan] ??
-                  data.tenant.subscription_plan}
+                {PLAN_LABELS[data.tenant.subscription_plan] ?? data.tenant.subscription_plan}
               </Badge>
             </div>
           </div>
@@ -456,16 +424,10 @@ export function SettingsClient({ data }: { data: SettingsData }) {
             <Settings2 className="h-5 w-5" />
             Cài đặt hệ thống
           </CardTitle>
-          <CardDescription>
-            Thuế và phụ thu áp dụng cho tất cả đơn hàng
-          </CardDescription>
+          <CardDescription>Thuế và phụ thu áp dụng cho tất cả đơn hàng</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <SettingInput
-            label="Thuế VAT (%)"
-            settingKey="tax_rate"
-            currentValue={taxRate}
-          />
+          <SettingInput label="Thuế VAT (%)" settingKey="tax_rate" currentValue={taxRate} />
           <SettingInput
             label="Phụ thu dịch vụ (%)"
             settingKey="service_charge"

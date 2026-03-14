@@ -19,7 +19,7 @@ export interface PushPayload {
 
 export async function sendPushToSubscription(
   subscription: { endpoint: string; keys: { p256dh: string; auth: string } },
-  payload: PushPayload,
+  payload: PushPayload
 ): Promise<boolean> {
   if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
     console.warn("[web-push] VAPID keys not configured, skipping push notification");
@@ -33,7 +33,7 @@ export async function sendPushToSubscription(
         keys: subscription.keys,
       },
       JSON.stringify(payload),
-      { TTL: 86400 },
+      { TTL: 86400 }
     );
     return true;
   } catch (error) {

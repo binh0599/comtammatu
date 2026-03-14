@@ -25,7 +25,4 @@ export {
   toggleVoucher,
 } from "./vouchers";
 
-export {
-  getFeedback,
-  respondToFeedback,
-} from "./feedback";
+export { getFeedback, respondToFeedback } from "./feedback";

@@ -6,14 +6,10 @@ import { SidebarInset, SidebarProvider } from "@comtammatu/ui";
 
 const ADMIN_ALLOWED_ROLES = ["owner", "manager", "hr"] as const;
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, profile } = await requireLayoutAuth<{ full_name: string | null }>(
     ADMIN_ALLOWED_ROLES,
-    "full_name, role",
+    "full_name, role"
   );
 
   return (
@@ -30,7 +26,9 @@ export default async function AdminLayout({
           <ThemeToggle />
           <NotificationBadge />
         </div>
-        <main id="main-content" className="animate-page-in">{children}</main>
+        <main id="main-content" className="animate-page-in">
+          {children}
+        </main>
       </SidebarInset>
     </SidebarProvider>
   );

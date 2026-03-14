@@ -20,11 +20,7 @@ import {
   getTaxSettings,
 } from "@comtammatu/shared";
 import { orderLimiter } from "@comtammatu/security";
-import {
-  isValidTransition,
-  calculateOrderTotals,
-  maybeReleaseTable,
-} from "./helpers";
+import { isValidTransition, calculateOrderTotals, maybeReleaseTable } from "./helpers";
 import { sendPushToBranchRole } from "@/lib/push-sender";
 
 // ---------------------------------------------------------------------------
@@ -58,10 +54,7 @@ async function _createOrder(data: {
   // Rate limit order creation per user
   const { success: rlSuccess } = await orderLimiter.limit(userId);
   if (!rlSuccess) {
-    throw new ActionError(
-      "Quá nhiều yêu cầu tạo đơn. Vui lòng thử lại sau.",
-      "VALIDATION_ERROR",
-    );
+    throw new ActionError("Quá nhiều yêu cầu tạo đơn. Vui lòng thử lại sau.", "VALIDATION_ERROR");
   }
 
   const parsed = createOrderSchema.safeParse(data);
@@ -75,18 +68,12 @@ async function _createOrder(data: {
   const { table_id, type, notes, guest_count, items } = parsed.data;
 
   if (items.length === 0) {
-    throw new ActionError(
-      "Đơn hàng phải có ít nhất 1 món",
-      "VALIDATION_ERROR"
-    );
+    throw new ActionError("Đơn hàng phải có ít nhất 1 món", "VALIDATION_ERROR");
   }
 
   // Dine-in orders must have a table
   if (type === "dine_in" && !table_id) {
-    throw new ActionError(
-      "Đơn tại bàn phải chọn bàn",
-      "VALIDATION_ERROR"
-    );
+    throw new ActionError("Đơn tại bàn phải chọn bàn", "VALIDATION_ERROR");
   }
 
   // Validate guest_count against table capacity for dine-in orders
@@ -98,7 +85,7 @@ async function _createOrder(data: {
         p_table_id: table_id,
         p_branch_id: branchId,
         p_guest_count: guest_count,
-      },
+      }
     );
 
     if (capacityError) {
@@ -120,7 +107,7 @@ async function _createOrder(data: {
       }
       throw new ActionError(
         `Bàn chỉ còn ${result?.remaining ?? 0} chỗ trống (sức chứa ${result?.capacity ?? 0}, đã có ${result?.occupied ?? 0} khách)`,
-        "VALIDATION_ERROR",
+        "VALIDATION_ERROR"
       );
     }
   }
@@ -136,17 +123,10 @@ async function _createOrder(data: {
     throw new ActionError("Thiết bị không tồn tại", "NOT_FOUND", 404);
   }
   if (terminal.branch_id !== branchId) {
-    throw new ActionError(
-      "Thiết bị không thuộc chi nhánh của bạn",
-      "UNAUTHORIZED",
-      403
-    );
+    throw new ActionError("Thiết bị không thuộc chi nhánh của bạn", "UNAUTHORIZED", 403);
   }
   if (!terminal.is_active || !terminal.approved_at) {
-    throw new ActionError(
-      "Thiết bị chưa được kích hoạt hoặc phê duyệt",
-      "VALIDATION_ERROR"
-    );
+    throw new ActionError("Thiết bị chưa được kích hoạt hoặc phê duyệt", "VALIDATION_ERROR");
   }
   if (terminal.type !== "mobile_order" && terminal.type !== "cashier_station") {
     throw new ActionError(
@@ -211,16 +191,14 @@ async function _createOrder(data: {
     .eq("is_available", false);
 
   if (branchUnavailable && branchUnavailable.length > 0) {
-    const unavailableIds = new Set(branchUnavailable.map((r: { menu_item_id: number }) => r.menu_item_id));
+    const unavailableIds = new Set(
+      branchUnavailable.map((r: { menu_item_id: number }) => r.menu_item_id)
+    );
     const unavailableNames = typedMenuItems
       .filter((mi) => unavailableIds.has(mi.id))
       .map((mi) => mi.name)
       .join(", ");
-    throw new ActionError(
-      `Các món sau đã hết tại chi nhánh: ${unavailableNames}`,
-      "CONFLICT",
-      409,
-    );
+    throw new ActionError(`Các món sau đã hết tại chi nhánh: ${unavailableNames}`, "CONFLICT", 409);
   }
 
   // Build price map
@@ -279,11 +257,7 @@ async function _createOrder(data: {
     if (variants) {
       for (const v of variants) {
         if (!v.is_available) {
-          throw new ActionError(
-            "Một số biến thể đã hết hàng",
-            "CONFLICT",
-            409
-          );
+          throw new ActionError("Một số biến thể đã hết hàng", "CONFLICT", 409);
         }
         variantPriceMap.set(v.id, v.price_adjustment);
       }
@@ -293,13 +267,8 @@ async function _createOrder(data: {
   // Calculate line items
   const orderItems = items.map((item) => {
     const basePrice = priceMap.get(item.menu_item_id)!;
-    const variantAdj = item.variant_id
-      ? (variantPriceMap.get(item.variant_id) ?? 0)
-      : 0;
-    const modifierTotal = (item.modifiers ?? []).reduce(
-      (sum, m) => sum + m.price,
-      0
-    );
+    const variantAdj = item.variant_id ? (variantPriceMap.get(item.variant_id) ?? 0) : 0;
+    const modifierTotal = (item.modifiers ?? []).reduce((sum, m) => sum + m.price, 0);
     const unitPrice = basePrice + variantAdj + modifierTotal;
 
     return {
@@ -315,18 +284,14 @@ async function _createOrder(data: {
   });
 
   // Calculate totals
-  const { taxRate, serviceChargeRate } = await getTaxSettings(
-    supabase,
-    tenantId
-  );
+  const { taxRate, serviceChargeRate } = await getTaxSettings(supabase, tenantId);
 
   const totals = calculateOrderTotals(orderItems, taxRate, serviceChargeRate);
 
   // Generate order number
-  const { data: orderNum, error: numError } = await supabase.rpc(
-    "generate_order_number",
-    { p_branch_id: branchId }
-  );
+  const { data: orderNum, error: numError } = await supabase.rpc("generate_order_number", {
+    p_branch_id: branchId,
+  });
 
   if (numError) {
     throw safeDbError(numError, "db");
@@ -435,9 +400,7 @@ async function _createOrder(data: {
     }
 
     if (sideInserts.length > 0) {
-      const { error: sidesError } = await supabase
-        .from("order_items")
-        .insert(sideInserts);
+      const { error: sidesError } = await supabase.from("order_items").insert(sideInserts);
 
       if (sidesError) {
         throw safeDbError(sidesError, "db");
@@ -503,10 +466,7 @@ export async function confirmOrder(orderId: number) {
 // updateOrderStatus
 // ---------------------------------------------------------------------------
 
-async function _updateOrderStatus(data: {
-  order_id: number;
-  status: string;
-}) {
+async function _updateOrderStatus(data: { order_id: number; status: string }) {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   const { supabase } = ctx;
@@ -532,12 +492,7 @@ async function _updateOrderStatus(data: {
     throw new ActionError("Đơn hàng không tồn tại", "NOT_FOUND", 404);
   }
 
-  if (
-    !isValidTransition(
-      order.status as OrderStatus,
-      newStatus as OrderStatus
-    )
-  ) {
+  if (!isValidTransition(order.status as OrderStatus, newStatus as OrderStatus)) {
     throw new ActionError(
       `Không thể chuyển từ "${order.status}" sang "${newStatus}"`,
       "CONFLICT",
@@ -596,14 +551,19 @@ async function _updateOrderStatus(data: {
     };
     const targetRoles = pushTargetRoles[newStatus];
     if (targetRoles) {
-      const pushUrl =
-        newStatus === "confirmed" ? "/kds" : `/pos/order/${order_id}`;
-      void sendPushToBranchRole(ctx.tenantId, branchId, targetRoles, {
-        title: `Đơn ${order.order_number}`,
-        body: msg.message,
-        url: pushUrl,
-        type: "order_status",
-      }, "order_status");
+      const pushUrl = newStatus === "confirmed" ? "/kds" : `/pos/order/${order_id}`;
+      void sendPushToBranchRole(
+        ctx.tenantId,
+        branchId,
+        targetRoles,
+        {
+          title: `Đơn ${order.order_number}`,
+          body: msg.message,
+          url: pushUrl,
+          type: "order_status",
+        },
+        "order_status"
+      );
     }
   }
 
@@ -662,11 +622,7 @@ async function _addOrderItems(data: {
 
   const finalStatuses = ["completed", "cancelled"];
   if (finalStatuses.includes(order.status)) {
-    throw new ActionError(
-      "Không thể thêm món khi đơn đã hoàn thành hoặc đã hủy",
-      "CONFLICT",
-      409
-    );
+    throw new ActionError("Không thể thêm món khi đơn đã hoàn thành hoặc đã hủy", "CONFLICT", 409);
   }
 
   // Collect all menu item IDs (main + side items)
@@ -726,11 +682,7 @@ async function _addOrderItems(data: {
     .eq("is_available", false);
 
   if (branchUnavailableItems && branchUnavailableItems.length > 0) {
-    throw new ActionError(
-      "Một số món đã hết tại chi nhánh",
-      "CONFLICT",
-      409,
-    );
+    throw new ActionError("Một số món đã hết tại chi nhánh", "CONFLICT", 409);
   }
 
   // Validate side items against allowed list (batched query)
@@ -794,13 +746,8 @@ async function _addOrderItems(data: {
   // Build main items
   const newItems = items.map((item) => {
     const basePrice = priceMap.get(item.menu_item_id)!;
-    const variantAdj = item.variant_id
-      ? (variantPriceMap.get(item.variant_id) ?? 0)
-      : 0;
-    const modifierTotal = (item.modifiers ?? []).reduce(
-      (sum, m) => sum + m.price,
-      0
-    );
+    const variantAdj = item.variant_id ? (variantPriceMap.get(item.variant_id) ?? 0) : 0;
+    const modifierTotal = (item.modifiers ?? []).reduce((sum, m) => sum + m.price, 0);
     const unitPrice = basePrice + variantAdj + modifierTotal;
 
     return {
@@ -864,9 +811,7 @@ async function _addOrderItems(data: {
     }
 
     if (sideInserts.length > 0) {
-      const { error: sidesError } = await supabase
-        .from("order_items")
-        .insert(sideInserts);
+      const { error: sidesError } = await supabase.from("order_items").insert(sideInserts);
 
       if (sidesError) {
         throw safeDbError(sidesError, "db");
@@ -881,10 +826,7 @@ async function _addOrderItems(data: {
     .eq("order_id", order_id);
 
   if (allItems) {
-    const { taxRate, serviceChargeRate } = await getTaxSettings(
-      supabase,
-      tenantId
-    );
+    const { taxRate, serviceChargeRate } = await getTaxSettings(supabase, tenantId);
     const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
 
     const { error: updateError } = await supabase
@@ -914,10 +856,7 @@ export const addOrderItems = withServerAction(_addOrderItems);
 // removeOrderItem
 // ---------------------------------------------------------------------------
 
-async function _removeOrderItem(data: {
-  order_id: number;
-  item_id: number;
-}) {
+async function _removeOrderItem(data: { order_id: number; item_id: number }) {
   const parsed = removeOrderItemSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
@@ -971,11 +910,7 @@ async function _removeOrderItem(data: {
   }
 
   if (item.status !== "pending") {
-    throw new ActionError(
-      "Không thể xoá món đã gửi đến bếp",
-      "VALIDATION_ERROR",
-      400
-    );
+    throw new ActionError("Không thể xoá món đã gửi đến bếp", "VALIDATION_ERROR", 400);
   }
 
   // Don't allow removing a side item directly — remove via parent
@@ -1044,10 +979,7 @@ async function _removeOrderItem(data: {
     .eq("order_id", order_id);
 
   if (allItems) {
-    const { taxRate, serviceChargeRate } = await getTaxSettings(
-      supabase,
-      tenantId
-    );
+    const { taxRate, serviceChargeRate } = await getTaxSettings(supabase, tenantId);
     const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
 
     const { error: updateError } = await supabase
@@ -1077,11 +1009,7 @@ export const removeOrderItem = withServerAction(_removeOrderItem);
 // updateOrderItem (quantity)
 // ---------------------------------------------------------------------------
 
-async function _updateOrderItem(data: {
-  order_id: number;
-  item_id: number;
-  quantity: number;
-}) {
+async function _updateOrderItem(data: { order_id: number; item_id: number; quantity: number }) {
   const parsed = updateOrderItemSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
@@ -1135,11 +1063,7 @@ async function _updateOrderItem(data: {
   }
 
   if (item.status !== "pending") {
-    throw new ActionError(
-      "Không thể cập nhật món đã gửi đến bếp",
-      "VALIDATION_ERROR",
-      400
-    );
+    throw new ActionError("Không thể cập nhật món đã gửi đến bếp", "VALIDATION_ERROR", 400);
   }
 
   // Update item quantity and recalculate item_total
@@ -1165,10 +1089,7 @@ async function _updateOrderItem(data: {
     .eq("order_id", order_id);
 
   if (allItems) {
-    const { taxRate, serviceChargeRate } = await getTaxSettings(
-      supabase,
-      tenantId
-    );
+    const { taxRate, serviceChargeRate } = await getTaxSettings(supabase, tenantId);
     const totals = calculateOrderTotals(allItems, taxRate, serviceChargeRate);
 
     const { error: updateError } = await supabase
@@ -1198,10 +1119,7 @@ export const updateOrderItem = withServerAction(_updateOrderItem);
 // transferOrderTable
 // ---------------------------------------------------------------------------
 
-async function _transferOrderTable(data: {
-  order_id: number;
-  new_table_id: number;
-}) {
+async function _transferOrderTable(data: { order_id: number; new_table_id: number }) {
   const parsed = transferOrderTableSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
@@ -1248,14 +1166,11 @@ async function _transferOrderTable(data: {
 
   // Validate new table belongs to same branch and has capacity
   if (order.guest_count != null) {
-    const { data: capacityCheck } = await supabase.rpc(
-      "validate_table_capacity",
-      {
-        p_table_id: new_table_id,
-        p_branch_id: branchId,
-        p_guest_count: order.guest_count,
-      },
-    );
+    const { data: capacityCheck } = await supabase.rpc("validate_table_capacity", {
+      p_table_id: new_table_id,
+      p_branch_id: branchId,
+      p_guest_count: order.guest_count,
+    });
 
     const result = capacityCheck as {
       ok: boolean;
@@ -1270,7 +1185,7 @@ async function _transferOrderTable(data: {
       }
       throw new ActionError(
         `Bàn mới chỉ còn ${result?.remaining ?? 0} chỗ trống`,
-        "VALIDATION_ERROR",
+        "VALIDATION_ERROR"
       );
     }
   } else {
@@ -1323,10 +1238,7 @@ export const transferOrderTable = withServerAction(_transferOrderTable);
 // updateGuestCount
 // ---------------------------------------------------------------------------
 
-async function _updateGuestCount(data: {
-  order_id: number;
-  guest_count: number;
-}) {
+async function _updateGuestCount(data: { order_id: number; guest_count: number }) {
   const parsed = updateGuestCountSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(
@@ -1369,14 +1281,11 @@ async function _updateGuestCount(data: {
 
   // Validate capacity if table assigned
   if (order.table_id) {
-    const { data: capacityCheck } = await supabase.rpc(
-      "validate_table_capacity",
-      {
-        p_table_id: order.table_id,
-        p_branch_id: branchId,
-        p_guest_count: guest_count,
-      },
-    );
+    const { data: capacityCheck } = await supabase.rpc("validate_table_capacity", {
+      p_table_id: order.table_id,
+      p_branch_id: branchId,
+      p_guest_count: guest_count,
+    });
 
     const result = capacityCheck as {
       ok: boolean;
@@ -1384,10 +1293,7 @@ async function _updateGuestCount(data: {
     } | null;
 
     if (!result || !result.ok) {
-      throw new ActionError(
-        `Bàn không đủ chỗ cho ${guest_count} khách`,
-        "VALIDATION_ERROR",
-      );
+      throw new ActionError(`Bàn không đủ chỗ cho ${guest_count} khách`, "VALIDATION_ERROR");
     }
   }
 
@@ -1412,10 +1318,7 @@ export const updateGuestCount = withServerAction(_updateGuestCount);
 // updateOrderNotes
 // ---------------------------------------------------------------------------
 
-async function _updateOrderNotes(data: {
-  order_id: number;
-  notes?: string | null;
-}) {
+async function _updateOrderNotes(data: { order_id: number; notes?: string | null }) {
   const parsed = updateOrderNotesSchema.safeParse(data);
   if (!parsed.success) {
     throw new ActionError(

@@ -111,10 +111,7 @@ export function BranchComparison({
         </div>
         <div>
           <Label>Chỉ số</Label>
-          <Select
-            value={metric}
-            onValueChange={(v) => setMetric(v as Metric)}
-          >
+          <Select value={metric} onValueChange={(v) => setMetric(v as Metric)}>
             <SelectTrigger className="w-[160px]">
               <SelectValue />
             </SelectTrigger>
@@ -141,18 +138,12 @@ export function BranchComparison({
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-            <XAxis
-              dataKey="name"
-              className="text-xs"
-              tick={{ fontSize: 12 }}
-            />
+            <XAxis dataKey="name" className="text-xs" tick={{ fontSize: 12 }} />
             <YAxis
               className="text-xs"
               tick={{ fontSize: 12 }}
               tickFormatter={(v) =>
-                metric === "orders"
-                  ? v.toString()
-                  : `${(v / 1000).toFixed(0)}k`
+                metric === "orders" ? v.toString() : `${(v / 1000).toFixed(0)}k`
               }
             />
             <Tooltip
@@ -167,11 +158,7 @@ export function BranchComparison({
               }}
             />
             <Legend />
-            <Bar
-              dataKey="value"
-              name={METRIC_LABELS[metric]}
-              radius={[4, 4, 0, 0]}
-            />
+            <Bar dataKey="value" name={METRIC_LABELS[metric]} radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       )}
@@ -179,47 +166,46 @@ export function BranchComparison({
       {/* Summary Table */}
       {data.length > 0 && (
         <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Chi nhánh</TableHead>
-              <TableHead className="text-right">Doanh thu</TableHead>
-              <TableHead className="text-right">Số đơn</TableHead>
-              <TableHead className="text-right">TB/đơn</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((b) => (
-              <TableRow key={b.branch_id}>
-                <TableCell className="font-medium">{b.branch_name}</TableCell>
-                <TableCell className="text-right">
-                  {formatPrice(b.revenue)}
-                </TableCell>
-                <TableCell className="text-right">{b.orders}</TableCell>
-                <TableCell className="text-right">
-                  {formatPrice(b.avgTicket)}
-                </TableCell>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Chi nhánh</TableHead>
+                <TableHead className="text-right">Doanh thu</TableHead>
+                <TableHead className="text-right">Số đơn</TableHead>
+                <TableHead className="text-right">TB/đơn</TableHead>
               </TableRow>
-            ))}
-            {data.length > 1 && (
-              <TableRow className="font-semibold">
-                <TableCell>Tổng</TableCell>
-                <TableCell className="text-right">
-                  {formatPrice(data.reduce((s, b) => s + b.revenue, 0))}
-                </TableCell>
-                <TableCell className="text-right">
-                  {data.reduce((s, b) => s + b.orders, 0)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatPrice(
-                    data.reduce((s, b) => s + b.revenue, 0) /
-                      Math.max(1, data.reduce((s, b) => s + b.orders, 0))
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {data.map((b) => (
+                <TableRow key={b.branch_id}>
+                  <TableCell className="font-medium">{b.branch_name}</TableCell>
+                  <TableCell className="text-right">{formatPrice(b.revenue)}</TableCell>
+                  <TableCell className="text-right">{b.orders}</TableCell>
+                  <TableCell className="text-right">{formatPrice(b.avgTicket)}</TableCell>
+                </TableRow>
+              ))}
+              {data.length > 1 && (
+                <TableRow className="font-semibold">
+                  <TableCell>Tổng</TableCell>
+                  <TableCell className="text-right">
+                    {formatPrice(data.reduce((s, b) => s + b.revenue, 0))}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {data.reduce((s, b) => s + b.orders, 0)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatPrice(
+                      data.reduce((s, b) => s + b.revenue, 0) /
+                        Math.max(
+                          1,
+                          data.reduce((s, b) => s + b.orders, 0)
+                        )
+                    )}
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

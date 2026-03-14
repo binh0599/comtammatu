@@ -45,7 +45,9 @@ async function _getMenuItemsForRecipe() {
 
   if (recipesError) throw safeDbError(recipesError, "db");
 
-  const usedIds = new Set(existingRecipes?.map((r: { menu_item_id: number }) => r.menu_item_id) ?? []);
+  const usedIds = new Set(
+    existingRecipes?.map((r: { menu_item_id: number }) => r.menu_item_id) ?? []
+  );
   return (allItems ?? []).filter((item: { id: number }) => !usedIds.has(item.id));
 }
 
@@ -115,9 +117,7 @@ async function _createRecipe(data: {
     waste_pct: ing.waste_pct ?? 0,
   }));
 
-  const { error: ingError } = await supabase
-    .from("recipe_ingredients")
-    .insert(ingredientRows);
+  const { error: ingError } = await supabase.from("recipe_ingredients").insert(ingredientRows);
 
   if (ingError) {
     await supabase.from("recipes").delete().eq("id", recipe.id);
@@ -132,7 +132,9 @@ async function _createRecipe(data: {
     .in("id", ingredientIds);
 
   if (costs && costs.length > 0) {
-    const costMap = new Map<number, number>(costs.map((c: { id: number; cost_price: number | null }) => [c.id, Number(c.cost_price ?? 0)]));
+    const costMap = new Map<number, number>(
+      costs.map((c: { id: number; cost_price: number | null }) => [c.id, Number(c.cost_price ?? 0)])
+    );
     let totalCost = 0;
     for (const ing of parsed.data.ingredients) {
       const costPrice = costMap.get(ing.ingredient_id) ?? 0;

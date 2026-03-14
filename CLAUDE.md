@@ -6,15 +6,15 @@
 
 ## I. STACK
 
-| Layer | Choice |
-| ----- | ------ |
-| Framework | Next.js 16.1 App Router + React 19.1 + TypeScript 5.9 strict |
-| Database | Supabase (project: `zrlriuednoaqrsvnjjyo`) + Prisma 7.2 + `@prisma/adapter-pg` |
-| Auth | Supabase Auth + `@supabase/ssr@0.8.0` — cookie-based sessions |
-| UI | shadcn/ui (new-york) + Tailwind CSS v4.2 + Lucide React |
-| Monorepo | Turborepo 2.8 + pnpm 9.15.0 workspaces |
-| Hosting | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI |
-| State | React Query + Zustand |
+| Layer           | Choice                                                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework       | Next.js 16.1 App Router + React 19.1 + TypeScript 5.9 strict                                                                                                    |
+| Database        | Supabase (project: `zrlriuednoaqrsvnjjyo`) + Prisma 7.2 + `@prisma/adapter-pg`                                                                                  |
+| Auth            | Supabase Auth + `@supabase/ssr@0.8.0` — cookie-based sessions                                                                                                   |
+| UI              | shadcn/ui (new-york) + Tailwind CSS v4.2 + Lucide React                                                                                                         |
+| Monorepo        | Turborepo 2.8 + pnpm 9.15.0 workspaces                                                                                                                          |
+| Hosting         | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI                                                                                                            |
+| State           | React Query + Zustand                                                                                                                                           |
 | Shared packages | `@comtammatu/database`, `@comtammatu/shared` (Zod schemas + logging), `@comtammatu/security` (rate limiting + lockout), `@comtammatu/ui` (26 shadcn components) |
 
 **Phase:** Production-ready. All sprints + refactoring waves completed. ~300+ source files, 40+ routes, `main` branch.
@@ -22,6 +22,7 @@
 ---
 
 ## II. HARD BOUNDARIES
+
 > Violation = stop immediately, `git checkout .`, and diagnose root cause.
 
 1. **CLIENT_IMPORT** — `"use client"` files import from `@comtammatu/database/src/supabase/client` (never the barrel). Middleware/Edge from `@comtammatu/database/src/supabase`. RSC/Actions from `@comtammatu/database` (full barrel).
@@ -85,6 +86,7 @@ tasks/
 ---
 
 ## IV. TASK CONTRACT TEMPLATE
+
 > Use before starting any task with 3+ steps. Pre-filled examples in `docs/TASK_TEMPLATES.md`.
 
 ```
@@ -110,6 +112,7 @@ Failure Conditions:
 ---
 
 ## V. BOOT SEQUENCE
+
 ```text
 1. Check docs/SESSION_PROTOCOL.md — strictly follow session lifecycle & rules
 2. Check docs/TASK_TEMPLATES.md — read the templates before coding
@@ -136,7 +139,7 @@ Failure Conditions:
 
 ---
 
-*Full reference: `docs/REFERENCE.md` — dependencies, DB conventions, full file tree, skills map, migration path.*
+_Full reference: `docs/REFERENCE.md` — dependencies, DB conventions, full file tree, skills map, migration path._
 
 ---
 
@@ -146,13 +149,13 @@ Failure Conditions:
 
 **Available skills:**
 
-| Skill | Purpose |
-| ----- | ------- |
-| `/browse` | Headless browser for navigating URLs, interacting with elements, taking screenshots, QA testing |
-| `/plan-ceo-review` | CEO-level plan review |
-| `/plan-eng-review` | Engineering plan review |
-| `/review` | Code review |
-| `/ship` | Ship/deploy workflow |
-| `/qa` | QA testing workflow |
-| `/setup-browser-cookies` | Configure browser cookies for authenticated browsing |
-| `/retro` | Retrospective workflow |
+| Skill                    | Purpose                                                                                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| `/browse`                | Headless browser for navigating URLs, interacting with elements, taking screenshots, QA testing |
+| `/plan-ceo-review`       | CEO-level plan review                                                                           |
+| `/plan-eng-review`       | Engineering plan review                                                                         |
+| `/review`                | Code review                                                                                     |
+| `/ship`                  | Ship/deploy workflow                                                                            |
+| `/qa`                    | QA testing workflow                                                                             |
+| `/setup-browser-cookies` | Configure browser cookies for authenticated browsing                                            |
+| `/retro`                 | Retrospective workflow                                                                          |

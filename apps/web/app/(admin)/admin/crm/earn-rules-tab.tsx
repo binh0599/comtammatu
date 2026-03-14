@@ -75,11 +75,7 @@ function EarnRuleForm({
 }) {
   return (
     <form action={onSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       <input
         type="hidden"
         name="is_active"
@@ -123,9 +119,7 @@ function EarnRuleForm({
               defaultValue={defaultValues?.unit_amount ?? 10000}
               required
             />
-            <p className="text-muted-foreground text-xs">
-              Mỗi bao nhiêu VNĐ thì tích 1 lần
-            </p>
+            <p className="text-muted-foreground text-xs">Mỗi bao nhiêu VNĐ thì tích 1 lần</p>
           </div>
         </div>
         <div className="grid gap-2">
@@ -209,9 +203,7 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Quy tắc tích điểm
-          </h2>
+          <h2 className="text-2xl font-bold tracking-tight">Quy tắc tích điểm</h2>
           <p className="text-muted-foreground">
             Cấu hình quy tắc tự động tích điểm khi khách hàng thanh toán
           </p>
@@ -233,8 +225,7 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
             <DialogHeader>
               <DialogTitle>Thêm quy tắc tích điểm</DialogTitle>
               <DialogDescription>
-                Tạo quy tắc mới để tự động tích điểm cho khách hàng khi đơn
-                hàng hoàn thành
+                Tạo quy tắc mới để tự động tích điểm cho khách hàng khi đơn hàng hoàn thành
               </DialogDescription>
             </DialogHeader>
             <EarnRuleForm
@@ -249,9 +240,7 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
       </div>
 
       {error && !isCreateOpen && !editingItem && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <Card>
@@ -283,9 +272,7 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
                   <TableCell colSpan={6} className="h-32 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Zap className="text-muted-foreground/50 h-8 w-8" />
-                      <p className="text-muted-foreground text-sm">
-                        Chưa có quy tắc tích điểm nào
-                      </p>
+                      <p className="text-muted-foreground text-sm">Chưa có quy tắc tích điểm nào</p>
                       <p className="text-muted-foreground text-xs">
                         Tạo quy tắc để tự động tích điểm khi khách thanh toán
                       </p>
@@ -296,16 +283,10 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
                 earnRules.map((rule) => (
                   <TableRow key={rule.id}>
                     <TableCell className="font-medium">{rule.name}</TableCell>
+                    <TableCell className="text-right">{rule.points_per_unit}</TableCell>
+                    <TableCell className="text-right">{formatPrice(rule.unit_amount)}</TableCell>
                     <TableCell className="text-right">
-                      {rule.points_per_unit}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {formatPrice(rule.unit_amount)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {rule.min_order_total
-                        ? formatPrice(rule.min_order_total)
-                        : "-"}
+                      {rule.min_order_total ? formatPrice(rule.min_order_total) : "-"}
                     </TableCell>
                     <TableCell className="text-center">
                       <Button
@@ -313,9 +294,7 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
                         size="sm"
                         onClick={() => handleToggle(rule.id)}
                         disabled={isPending}
-                        aria-label={
-                          rule.is_active ? "Tắt quy tắc" : "Bật quy tắc"
-                        }
+                        aria-label={rule.is_active ? "Tắt quy tắc" : "Bật quy tắc"}
                       >
                         {rule.is_active ? (
                           <Badge variant="default" className="gap-1">
@@ -364,9 +343,7 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
                             </DialogHeader>
                             <EarnRuleForm
                               defaultValues={rule}
-                              onSubmit={(formData) =>
-                                handleUpdate(rule.id, formData)
-                              }
+                              onSubmit={(formData) => handleUpdate(rule.id, formData)}
                               isPending={isPending}
                               error={error}
                               submitLabel="Lưu"
@@ -378,32 +355,21 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
                         {/* Delete Dialog */}
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label="Xóa"
-                            >
-                              <Trash2
-                                className="h-4 w-4"
-                                aria-hidden="true"
-                              />
+                            <Button variant="ghost" size="icon" aria-label="Xóa">
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>
-                                Xóa quy tắc tích điểm
-                              </AlertDialogTitle>
+                              <AlertDialogTitle>Xóa quy tắc tích điểm</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Bạn có chắc muốn xóa &quot;{rule.name}&quot;?
-                                Hành động này không thể hoàn tác.
+                                Bạn có chắc muốn xóa &quot;{rule.name}&quot;? Hành động này không
+                                thể hoàn tác.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Hủy</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(rule.id)}
-                              >
+                              <AlertDialogAction onClick={() => handleDelete(rule.id)}>
                                 Xóa
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -427,10 +393,9 @@ export function EarnRulesTab({ earnRules }: { earnRules: EarnRule[] }) {
             <div className="text-sm">
               <p className="font-medium">Cách tích điểm tự động hoạt động</p>
               <p className="text-muted-foreground mt-1">
-                Khi đơn hàng chuyển sang trạng thái &quot;Hoàn thành&quot; và có
-                liên kết khách hàng, hệ thống sẽ tự động tính điểm theo các quy
-                tắc đang bật. Điểm = ⌊Tổng đơn ÷ Mức chi tiêu⌋ × Điểm/lần.
-                Điểm tích sẽ hết hạn sau 365 ngày.
+                Khi đơn hàng chuyển sang trạng thái &quot;Hoàn thành&quot; và có liên kết khách
+                hàng, hệ thống sẽ tự động tính điểm theo các quy tắc đang bật. Điểm = ⌊Tổng đơn ÷
+                Mức chi tiêu⌋ × Điểm/lần. Điểm tích sẽ hết hạn sau 365 ngày.
               </p>
             </div>
           </div>

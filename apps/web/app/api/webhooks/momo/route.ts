@@ -6,7 +6,7 @@ import { webhookLimiter, getClientIp } from "@comtammatu/security";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -18,10 +18,7 @@ export async function POST(request: Request) {
   const ip = getClientIp(request);
   const { success: rateLimitOk } = await webhookLimiter.limit(ip);
   if (!rateLimitOk) {
-    return NextResponse.json(
-      { resultCode: 1, message: "Too many requests" },
-      { status: 429 },
-    );
+    return NextResponse.json({ resultCode: 1, message: "Too many requests" }, { status: 429 });
   }
 
   let body: MomoIPNPayload;
@@ -29,20 +26,14 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json(
-      { resultCode: 1, message: "Invalid request" },
-      { status: 400 },
-    );
+    return NextResponse.json({ resultCode: 1, message: "Invalid request" }, { status: 400 });
   }
 
   // Verify HMAC signature
   const secretKey = process.env.MOMO_SECRET_KEY;
   if (!secretKey) {
     console.error("MOMO_SECRET_KEY is not configured");
-    return NextResponse.json(
-      { resultCode: 1, message: "Server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ resultCode: 1, message: "Server error" }, { status: 500 });
   }
 
   const { signature, ...signatureParams } = body;
@@ -88,10 +79,7 @@ export async function POST(request: Request) {
       })
       .then(() => {});
 
-    return NextResponse.json(
-      { resultCode: 1, message: "Invalid request" },
-      { status: 400 },
-    );
+    return NextResponse.json({ resultCode: 1, message: "Invalid request" }, { status: 400 });
   }
 
   // Validate webhook timestamp — reject if older than 1 hour
@@ -115,29 +103,20 @@ export async function POST(request: Request) {
         })
         .then(() => {});
 
-      return NextResponse.json(
-        { resultCode: 1, message: "Invalid request" },
-        { status: 400 },
-      );
+      return NextResponse.json({ resultCode: 1, message: "Invalid request" }, { status: 400 });
     }
   }
 
   // resultCode 0 = success — use atomic RPC
   if (body.resultCode === 0) {
-    const { data: result, error: rpcError } = await supabase.rpc(
-      "handle_momo_payment_success",
-      {
-        p_request_id: body.requestId,
-        p_trans_id: String(body.transId),
-      },
-    );
+    const { data: result, error: rpcError } = await supabase.rpc("handle_momo_payment_success", {
+      p_request_id: body.requestId,
+      p_trans_id: String(body.transId),
+    });
 
     if (rpcError) {
       console.error("Momo payment RPC failed", rpcError);
-      return NextResponse.json(
-        { resultCode: 1, message: "Processing error" },
-        { status: 500 },
-      );
+      return NextResponse.json({ resultCode: 1, message: "Processing error" }, { status: 500 });
     }
 
     const rpcResult = result as {
@@ -148,10 +127,7 @@ export async function POST(request: Request) {
     };
 
     if (rpcResult.error === "payment_not_found") {
-      return NextResponse.json(
-        { resultCode: 1, message: "Not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ resultCode: 1, message: "Not found" }, { status: 404 });
     }
 
     // Audit log for successful payment (fire-and-forget)
@@ -186,10 +162,7 @@ export async function POST(request: Request) {
     .maybeSingle();
 
   if (failedPayment) {
-    await supabase
-      .from("payments")
-      .update({ status: "failed" })
-      .eq("id", failedPayment.id);
+    await supabase.from("payments").update({ status: "failed" }).eq("id", failedPayment.id);
   }
 
   return NextResponse.json({ resultCode: 0, message: "ok" });

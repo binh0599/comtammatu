@@ -80,9 +80,7 @@ export function FoodCostTab() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Chi phí nguyên liệu</h2>
-          <p className="text-muted-foreground">
-            Báo cáo food cost theo khoảng thời gian
-          </p>
+          <p className="text-muted-foreground">Báo cáo food cost theo khoảng thời gian</p>
         </div>
       </div>
 
@@ -113,11 +111,7 @@ export function FoodCostTab() {
         </Button>
       </div>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       {data && (
         <>
@@ -125,9 +119,7 @@ export function FoodCostTab() {
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Doanh thu</CardDescription>
-                <CardTitle className="text-2xl">
-                  {formatPrice(data.total_revenue)}
-                </CardTitle>
+                <CardTitle className="text-2xl">{formatPrice(data.total_revenue)}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
@@ -149,18 +141,14 @@ export function FoodCostTab() {
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Số món bán</CardDescription>
-                <CardTitle className="text-2xl">
-                  {data.item_count}
-                </CardTitle>
+                <CardTitle className="text-2xl">{data.item_count}</CardTitle>
               </CardHeader>
             </Card>
           </div>
 
           {data.top_cost_items && data.top_cost_items.length > 0 && (
             <div>
-              <h3 className="mb-2 text-lg font-semibold">
-                Nguyên liệu tốn nhiều chi phí nhất
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold">Nguyên liệu tốn nhiều chi phí nhất</h3>
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
@@ -177,15 +165,11 @@ export function FoodCostTab() {
                   <TableBody>
                     {data.top_cost_items.map((item) => (
                       <TableRow key={item.ingredient_name}>
-                        <TableCell className="font-medium">
-                          {item.ingredient_name}
-                        </TableCell>
+                        <TableCell className="font-medium">{item.ingredient_name}</TableCell>
                         <TableCell className="text-right">
                           {Number(item.total_qty).toFixed(2)}
                         </TableCell>
-                        <TableCell className="text-right">
-                          {formatPrice(item.total_cost)}
-                        </TableCell>
+                        <TableCell className="text-right">{formatPrice(item.total_cost)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

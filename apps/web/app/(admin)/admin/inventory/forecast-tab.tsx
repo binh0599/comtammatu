@@ -2,10 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { AlertTriangle, CheckCircle, Clock } from "lucide-react";
-import {
-  getDemandForecast,
-  type ForecastRow,
-} from "./forecast-actions";
+import { getDemandForecast, type ForecastRow } from "./forecast-actions";
 import {
   Badge,
   Button,
@@ -85,7 +82,7 @@ export function ForecastTab({ branches }: ForecastTabProps) {
     startTransition(async () => {
       const result = await getDemandForecast(
         Number(daysAhead),
-        branchId === "all" ? undefined : Number(branchId),
+        branchId === "all" ? undefined : Number(branchId)
       );
       setData(result);
       setLoaded(true);
@@ -93,13 +90,10 @@ export function ForecastTab({ branches }: ForecastTabProps) {
   }
 
   const urgentCount = data.filter(
-    (r) => r.days_until_stockout !== null && r.days_until_stockout < 3,
+    (r) => r.days_until_stockout !== null && r.days_until_stockout < 3
   ).length;
   const warningCount = data.filter(
-    (r) =>
-      r.days_until_stockout !== null &&
-      r.days_until_stockout >= 3 &&
-      r.days_until_stockout < 7,
+    (r) => r.days_until_stockout !== null && r.days_until_stockout >= 3 && r.days_until_stockout < 7
   ).length;
 
   return (
@@ -150,45 +144,29 @@ export function ForecastTab({ branches }: ForecastTabProps) {
           <div className="grid gap-4 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Cần đặt hàng gấp
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Cần đặt hàng gấp</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {urgentCount}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Hết trong vòng 3 ngày
-                </p>
+                <div className="text-2xl font-bold text-red-600">{urgentCount}</div>
+                <p className="text-xs text-muted-foreground">Hết trong vòng 3 ngày</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Cần theo dõi
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Cần theo dõi</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-yellow-600">
-                  {warningCount}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Hết trong 3-7 ngày
-                </p>
+                <div className="text-2xl font-bold text-yellow-600">{warningCount}</div>
+                <p className="text-xs text-muted-foreground">Hết trong 3-7 ngày</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Tổng nguyên liệu
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Tổng nguyên liệu</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{data.length}</div>
-                <p className="text-xs text-muted-foreground">
-                  Dự báo {daysAhead} ngày tới
-                </p>
+                <p className="text-xs text-muted-foreground">Dự báo {daysAhead} ngày tới</p>
               </CardContent>
             </Card>
           </div>
@@ -200,9 +178,7 @@ export function ForecastTab({ branches }: ForecastTabProps) {
             </CardHeader>
             <CardContent>
               {data.length === 0 ? (
-                <p className="text-muted-foreground text-sm">
-                  Không có dữ liệu nguyên liệu
-                </p>
+                <p className="text-muted-foreground text-sm">Không có dữ liệu nguyên liệu</p>
               ) : (
                 <div className="max-h-[600px] overflow-auto">
                   <Table>
@@ -211,18 +187,10 @@ export function ForecastTab({ branches }: ForecastTabProps) {
                         <TableHead>Nguyên liệu</TableHead>
                         <TableHead>Đơn vị</TableHead>
                         <TableHead className="text-right">Tồn kho</TableHead>
-                        <TableHead className="text-right">
-                          TB/ngay
-                        </TableHead>
-                        <TableHead className="text-right">
-                          Cần ({daysAhead} ngày)
-                        </TableHead>
-                        <TableHead className="text-center">
-                          Còn lại
-                        </TableHead>
-                        <TableHead className="text-center">
-                          Đặt hàng
-                        </TableHead>
+                        <TableHead className="text-right">TB/ngay</TableHead>
+                        <TableHead className="text-right">Cần ({daysAhead} ngày)</TableHead>
+                        <TableHead className="text-center">Còn lại</TableHead>
+                        <TableHead className="text-center">Đặt hàng</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -236,12 +204,10 @@ export function ForecastTab({ branches }: ForecastTabProps) {
                             row.days_until_stockout !== null &&
                               row.days_until_stockout >= 3 &&
                               row.days_until_stockout < 7 &&
-                              "bg-yellow-50 dark:bg-yellow-950/20",
+                              "bg-yellow-50 dark:bg-yellow-950/20"
                           )}
                         >
-                          <TableCell className="font-medium">
-                            {row.name}
-                          </TableCell>
+                          <TableCell className="font-medium">{row.name}</TableCell>
                           <TableCell>{row.unit}</TableCell>
                           <TableCell className="text-right">
                             {row.current_stock.toLocaleString("vi-VN")}

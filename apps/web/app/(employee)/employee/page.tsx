@@ -9,10 +9,6 @@ export default async function EmployeeHomePage() {
   ]);
 
   return (
-    <EmployeeHome
-      todayShifts={todayShifts}
-      todayAttendance={todayAttendance}
-      employee={employee}
-    />
+    <EmployeeHome todayShifts={todayShifts} todayAttendance={todayAttendance} employee={employee} />
   );
 }

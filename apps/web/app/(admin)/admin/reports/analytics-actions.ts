@@ -41,7 +41,7 @@ export interface CategoryMixRow {
 
 async function _getBranchAnalytics(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<BranchAnalyticsRow[]> {
   const parsed = analyticsQuerySchema.parse({ startDate, endDate });
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
@@ -137,10 +137,7 @@ export const getBranchAnalytics = withServerQuery(_getBranchAnalytics);
 // getPeakHoursAnalysis — Now reads from materialized view
 // =====================
 
-async function _getPeakHoursAnalysis(
-  startDate: string,
-  endDate: string,
-): Promise<PeakHourCell[]> {
+async function _getPeakHoursAnalysis(startDate: string, endDate: string): Promise<PeakHourCell[]> {
   analyticsQuerySchema.parse({ startDate, endDate });
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
@@ -188,7 +185,7 @@ export const getPeakHoursAnalysis = withServerQuery(_getPeakHoursAnalysis);
 async function _getCategoryMix(
   startDate: string,
   endDate: string,
-  branchIds?: number[],
+  branchIds?: number[]
 ): Promise<CategoryMixRow[]> {
   const parsed = analyticsQuerySchema.parse({ startDate, endDate, branchIds });
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);

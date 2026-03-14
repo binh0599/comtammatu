@@ -18,7 +18,9 @@ async function _getStockLevels() {
 
   const { data, error } = await supabase
     .from("stock_levels")
-    .select("*, ingredients!inner(name, unit, min_stock, max_stock, tenant_id), branches!inner(name)")
+    .select(
+      "*, ingredients!inner(name, unit, min_stock, max_stock, tenant_id), branches!inner(name)"
+    )
     .eq("ingredients.tenant_id", tenantId)
     .order("updated_at", { ascending: false });
 
@@ -74,7 +76,9 @@ async function _getStockMovements() {
 
   const { data, error } = await supabase
     .from("stock_movements")
-    .select("*, ingredients!inner(name, unit, tenant_id), branches!inner(name), profiles(full_name)")
+    .select(
+      "*, ingredients!inner(name, unit, tenant_id), branches!inner(name), profiles(full_name)"
+    )
     .eq("ingredients.tenant_id", tenantId)
     .order("created_at", { ascending: false })
     .limit(100);
@@ -203,9 +207,7 @@ async function _createBranchTransfer(data: {
   }
 
   // Process each item
-  const notePrefix = parsed.data.notes
-    ? `[Chuyển kho] ${parsed.data.notes}`
-    : "[Chuyển kho]";
+  const notePrefix = parsed.data.notes ? `[Chuyển kho] ${parsed.data.notes}` : "[Chuyển kho]";
 
   for (const item of parsed.data.items) {
     // 1. Check source has enough stock

@@ -102,37 +102,20 @@ function formatPrice(price: number) {
   }).format(price);
 }
 
-const categoryTypeBadgeVariant: Record<
-  MenuCategoryType,
-  "default" | "secondary" | "outline"
-> = {
+const categoryTypeBadgeVariant: Record<MenuCategoryType, "default" | "secondary" | "outline"> = {
   main_dish: "default",
   side_dish: "secondary",
   drink: "outline",
 };
 
-export function MenuDetail({
-  menu,
-  categories,
-}: {
-  menu: Menu;
-  categories: Category[];
-}) {
+export function MenuDetail({ menu, categories }: { menu: Menu; categories: Category[] }) {
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
-  const [addItemCategoryId, setAddItemCategoryId] = useState<number | null>(
-    null,
-  );
+  const [addItemCategoryId, setAddItemCategoryId] = useState<number | null>(null);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
-  const [editingItemCategoryId, setEditingItemCategoryId] = useState<
-    number | null
-  >(null);
-  const [sidesDialogItemId, setSidesDialogItemId] = useState<number | null>(
-    null,
-  );
+  const [editingItemCategoryId, setEditingItemCategoryId] = useState<number | null>(null);
+  const [sidesDialogItemId, setSidesDialogItemId] = useState<number | null>(null);
   const [allSideItems, setAllSideItems] = useState<SideItem[]>([]);
-  const [selectedSideIds, setSelectedSideIds] = useState<Set<number>>(
-    new Set(),
-  );
+  const [selectedSideIds, setSelectedSideIds] = useState<Set<number>>(new Set());
   const [deletingItemId, setDeletingItemId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -157,14 +140,10 @@ export function MenuDetail({
             id: s.id,
             name: s.name,
             base_price: s.base_price,
-          })),
+          }))
         );
         setSelectedSideIds(
-          new Set(
-            (available as { side_item_id: number }[]).map(
-              (a) => a.side_item_id,
-            ),
-          ),
+          new Set((available as { side_item_id: number }[]).map((a) => a.side_item_id))
         );
       } catch (err) {
         if (cancelled) return;
@@ -260,9 +239,7 @@ export function MenuDetail({
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">{menu.name}</h2>
-          <p className="text-muted-foreground">
-            Quản lý danh mục và món ăn trong thực đơn
-          </p>
+          <p className="text-muted-foreground">Quản lý danh mục và món ăn trong thực đơn</p>
         </div>
         <Dialog open={isCategoryOpen} onOpenChange={setIsCategoryOpen}>
           <DialogTrigger asChild>
@@ -275,25 +252,16 @@ export function MenuDetail({
             <form action={handleCreateCategory}>
               <DialogHeader>
                 <DialogTitle>Tạo danh mục mới</DialogTitle>
-                <DialogDescription>
-                  Thêm danh mục món ăn cho thực đơn
-                </DialogDescription>
+                <DialogDescription>Thêm danh mục món ăn cho thực đơn</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <input type="hidden" name="menu_id" value={menu.id} />
                 <div className="grid gap-2">
                   <Label htmlFor="cat-name">Tên danh mục</Label>
-                  <Input
-                    id="cat-name"
-                    name="name"
-                    placeholder="VD: Cơm"
-                    required
-                  />
+                  <Input id="cat-name" name="name" placeholder="VD: Cơm" required />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="cat-type">Loại danh mục</Label>
@@ -312,13 +280,7 @@ export function MenuDetail({
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="cat-sort">Thứ tự</Label>
-                  <Input
-                    id="cat-sort"
-                    name="sort_order"
-                    type="number"
-                    defaultValue="0"
-                    min="0"
-                  />
+                  <Input id="cat-sort" name="sort_order" type="number" defaultValue="0" min="0" />
                 </div>
               </div>
               <DialogFooter>
@@ -346,9 +308,7 @@ export function MenuDetail({
 
       {categories.length === 0 ? (
         <div className="bg-muted/50 flex h-40 items-center justify-center rounded-xl">
-          <p className="text-muted-foreground">
-            Chưa có danh mục nào. Hãy thêm danh mục đầu tiên.
-          </p>
+          <p className="text-muted-foreground">Chưa có danh mục nào. Hãy thêm danh mục đầu tiên.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -360,9 +320,7 @@ export function MenuDetail({
                   <Badge variant={categoryTypeBadgeVariant[category.type]}>
                     {MENU_CATEGORY_TYPE_LABELS[category.type]}
                   </Badge>
-                  <Badge variant="secondary">
-                    {category.items.length} món
-                  </Badge>
+                  <Badge variant="secondary">{category.items.length} món</Badge>
                 </div>
                 <div className="flex gap-2">
                   {/* Add item to category */}
@@ -396,11 +354,7 @@ export function MenuDetail({
                           </div>
                         )}
                         <div className="grid gap-4 py-4">
-                          <input
-                            type="hidden"
-                            name="category_id"
-                            value={category.id}
-                          />
+                          <input type="hidden" name="category_id" value={category.id} />
                           <div className="grid gap-2">
                             <Label htmlFor="item-name">Tên món</Label>
                             <Input
@@ -430,11 +384,7 @@ export function MenuDetail({
                               required
                             />
                           </div>
-                          <input
-                            type="hidden"
-                            name="is_available"
-                            value="true"
-                          />
+                          <input type="hidden" name="is_available" value="true" />
                         </div>
                         <DialogFooter>
                           <Button type="submit" disabled={isPending}>
@@ -455,8 +405,7 @@ export function MenuDetail({
                       <AlertDialogHeader>
                         <AlertDialogTitle>Xóa danh mục?</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Danh mục &quot;{category.name}&quot; và tất cả món
-                          ăn bên trong sẽ bị xóa.
+                          Danh mục &quot;{category.name}&quot; và tất cả món ăn bên trong sẽ bị xóa.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -478,39 +427,32 @@ export function MenuDetail({
                   <TableRow>
                     <TableHead scope="col">Tên món</TableHead>
                     <TableHead scope="col">Mô tả</TableHead>
-                    <TableHead scope="col" className="text-right">Giá</TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Giá
+                    </TableHead>
                     <TableHead scope="col">Trạng thái</TableHead>
-                    <TableHead scope="col" className="text-right">Thao tác</TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Thao tác
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {category.items.length === 0 ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-muted-foreground h-16 text-center"
-                      >
+                      <TableCell colSpan={5} className="text-muted-foreground h-16 text-center">
                         Chưa có món ăn
                       </TableCell>
                     </TableRow>
                   ) : (
                     category.items.map((item) => (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium">
-                          {item.name}
-                        </TableCell>
+                        <TableCell className="font-medium">{item.name}</TableCell>
                         <TableCell className="text-muted-foreground max-w-[200px] truncate">
                           {item.description ?? "—"}
                         </TableCell>
-                        <TableCell className="text-right">
-                          {formatPrice(item.base_price)}
-                        </TableCell>
+                        <TableCell className="text-right">{formatPrice(item.base_price)}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              item.is_available ? "default" : "secondary"
-                            }
-                          >
+                          <Badge variant={item.is_available ? "default" : "secondary"}>
                             {item.is_available ? "Có sẵn" : "Hết"}
                           </Badge>
                         </TableCell>
@@ -551,11 +493,7 @@ export function MenuDetail({
                                 </Button>
                               </DialogTrigger>
                               <DialogContent>
-                                <form
-                                  action={(formData) =>
-                                    handleUpdateItem(item.id, formData)
-                                  }
-                                >
+                                <form action={(formData) => handleUpdateItem(item.id, formData)}>
                                   <DialogHeader>
                                     <DialogTitle>Sửa món ăn</DialogTitle>
                                   </DialogHeader>
@@ -572,19 +510,13 @@ export function MenuDetail({
                                     />
                                     <div className="grid gap-2">
                                       <Label>Tên món</Label>
-                                      <Input
-                                        name="name"
-                                        defaultValue={item.name}
-                                        required
-                                      />
+                                      <Input name="name" defaultValue={item.name} required />
                                     </div>
                                     <div className="grid gap-2">
                                       <Label>Mô tả</Label>
                                       <Textarea
                                         name="description"
-                                        defaultValue={
-                                          item.description ?? ""
-                                        }
+                                        defaultValue={item.description ?? ""}
                                       />
                                     </div>
                                     <div className="grid gap-2">
@@ -603,30 +535,23 @@ export function MenuDetail({
                                         name="is_available_toggle"
                                         defaultChecked={item.is_available}
                                         onCheckedChange={(checked) => {
-                                          const h =
-                                            document.getElementById(
-                                              `avail-${item.id}`,
-                                            ) as HTMLInputElement;
-                                          if (h)
-                                            h.value = String(checked);
+                                          const h = document.getElementById(
+                                            `avail-${item.id}`
+                                          ) as HTMLInputElement;
+                                          if (h) h.value = String(checked);
                                         }}
                                       />
                                       <input
                                         type="hidden"
                                         id={`avail-${item.id}`}
                                         name="is_available"
-                                        defaultValue={String(
-                                          item.is_available,
-                                        )}
+                                        defaultValue={String(item.is_available)}
                                       />
                                       <Label>Có sẵn</Label>
                                     </div>
                                   </div>
                                   <DialogFooter>
-                                    <Button
-                                      type="submit"
-                                      disabled={isPending}
-                                    >
+                                    <Button type="submit" disabled={isPending}>
                                       {isPending ? "Đang lưu..." : "Lưu"}
                                     </Button>
                                   </DialogFooter>
@@ -652,12 +577,9 @@ export function MenuDetail({
                               </AlertDialogTrigger>
                               <AlertDialogContent>
                                 <AlertDialogHeader>
-                                  <AlertDialogTitle>
-                                    Xóa món ăn?
-                                  </AlertDialogTitle>
+                                  <AlertDialogTitle>Xóa món ăn?</AlertDialogTitle>
                                   <AlertDialogDescription>
-                                    Món &quot;{item.name}&quot; sẽ bị xóa
-                                    vĩnh viễn.
+                                    Món &quot;{item.name}&quot; sẽ bị xóa vĩnh viễn.
                                   </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 {error && (
@@ -702,14 +624,11 @@ export function MenuDetail({
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Quản lý món kèm</DialogTitle>
-            <DialogDescription>
-              Chọn các món kèm có thể thêm vào món chính này
-            </DialogDescription>
+            <DialogDescription>Chọn các món kèm có thể thêm vào món chính này</DialogDescription>
           </DialogHeader>
           {allSideItems.length === 0 ? (
             <p className="text-muted-foreground py-4 text-center text-sm">
-              Chưa có món kèm nào. Hãy tạo danh mục &quot;Món kèm&quot; và
-              thêm món trước.
+              Chưa có món kèm nào. Hãy tạo danh mục &quot;Món kèm&quot; và thêm món trước.
             </p>
           ) : (
             <div className="space-y-3 py-2">
@@ -731,10 +650,7 @@ export function MenuDetail({
             </div>
           )}
           <DialogFooter>
-            <Button
-              onClick={handleSaveSides}
-              disabled={isPending}
-            >
+            <Button onClick={handleSaveSides} disabled={isPending}>
               {isPending ? "Đang lưu..." : "Lưu"}
             </Button>
           </DialogFooter>

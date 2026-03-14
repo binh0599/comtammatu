@@ -20,7 +20,7 @@ export async function getMobileCustomer() {
     return {
       error: NextResponse.json(
         { error: "Chưa đăng nhập. Vui lòng đăng nhập lại." },
-        { status: 401 },
+        { status: 401 }
       ),
     } as const;
   }
@@ -47,10 +47,7 @@ export async function getMobileCustomer() {
 
   if (!customer) {
     return {
-      error: NextResponse.json(
-        { error: "Không tìm thấy hồ sơ khách hàng." },
-        { status: 404 },
-      ),
+      error: NextResponse.json({ error: "Không tìm thấy hồ sơ khách hàng." }, { status: 404 }),
     } as const;
   }
 
@@ -61,14 +58,12 @@ export async function getMobileCustomer() {
  * Rate limit a mobile API request by customer ID or IP.
  * Returns a 429 response if rate limited.
  */
-export async function checkMobileRateLimit(
-  key: string,
-): Promise<NextResponse | null> {
+export async function checkMobileRateLimit(key: string): Promise<NextResponse | null> {
   const { success } = await apiLimiter.limit(`mobile:${key}`);
   if (!success) {
     return NextResponse.json(
       { error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." },
-      { status: 429 },
+      { status: 429 }
     );
   }
   return null;

@@ -5,9 +5,7 @@ import { z } from "zod";
 export const createKdsStationSchema = z.object({
   branch_id: z.number().int().positive(),
   name: z.string().min(1, "Tên bếp không được để trống").max(100),
-  category_ids: z
-    .array(z.number().int().positive())
-    .min(1, "Phải chọn ít nhất 1 danh mục"),
+  category_ids: z.array(z.number().int().positive()).min(1, "Phải chọn ít nhất 1 danh mục"),
   display_config: z.record(z.string(), z.unknown()).optional(),
 });
 

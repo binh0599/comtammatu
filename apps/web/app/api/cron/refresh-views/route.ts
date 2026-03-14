@@ -12,7 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       console.error("[MV Refresh] Failed:", error.message);
       return NextResponse.json(
         { error: "Lỗi khi làm mới materialized views", details: error.message },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -55,9 +55,6 @@ export async function GET(request: Request) {
     });
   } catch (err) {
     console.error("[MV Refresh] Unexpected error:", err);
-    return NextResponse.json(
-      { error: "Lỗi không mong muốn khi làm mới views" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Lỗi không mong muốn khi làm mới views" }, { status: 500 });
   }
 }

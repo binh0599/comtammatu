@@ -4,10 +4,7 @@ import { useState, useTransition } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
-import {
-  getStaffPerformance,
-  type StaffPerformanceRow,
-} from "./performance-actions";
+import { getStaffPerformance, type StaffPerformanceRow } from "./performance-actions";
 import {
   Badge,
   Button,
@@ -35,29 +32,15 @@ import {
 
 function getScoreBadge(score: number) {
   if (score >= 80) {
-    return (
-      <Badge className="bg-green-600 text-white hover:bg-green-700">
-        {score}
-      </Badge>
-    );
+    return <Badge className="bg-green-600 text-white hover:bg-green-700">{score}</Badge>;
   }
   if (score >= 60) {
-    return (
-      <Badge className="bg-blue-500 text-white hover:bg-blue-600">
-        {score}
-      </Badge>
-    );
+    return <Badge className="bg-blue-500 text-white hover:bg-blue-600">{score}</Badge>;
   }
   if (score >= 40) {
-    return (
-      <Badge className="bg-yellow-500 text-white hover:bg-yellow-600">
-        {score}
-      </Badge>
-    );
+    return <Badge className="bg-yellow-500 text-white hover:bg-yellow-600">{score}</Badge>;
   }
-  return (
-    <Badge variant="destructive">{score}</Badge>
-  );
+  return <Badge variant="destructive">{score}</Badge>;
 }
 
 interface PerformanceTabProps {
@@ -84,7 +67,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
         start,
         end,
         branchId === "all" ? undefined : Number(branchId),
-        role === "all" ? undefined : role,
+        role === "all" ? undefined : role
       );
       setData(result);
       setLoaded(true);
@@ -110,7 +93,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
               variant="outline"
               className={cn(
                 "w-full sm:w-[200px] justify-start text-left font-normal",
-                !startDate && "text-muted-foreground",
+                !startDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -135,7 +118,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
               variant="outline"
               className={cn(
                 "w-full sm:w-[200px] justify-start text-left font-normal",
-                !endDate && "text-muted-foreground",
+                !endDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -227,9 +210,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
                             ? `${w.metrics.attendance_rate}%`
                             : "-"}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {getScoreBadge(w.score)}
-                        </TableCell>
+                        <TableCell className="text-center">{getScoreBadge(w.score)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -250,9 +231,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
                     <TableRow>
                       <TableHead>Tên</TableHead>
                       <TableHead>Chi nhánh</TableHead>
-                      <TableHead className="text-right">
-                        Thanh toán xử lý
-                      </TableHead>
+                      <TableHead className="text-right">Thanh toán xử lý</TableHead>
                       <TableHead className="text-right">Chuyên cần</TableHead>
                       <TableHead className="text-center">Điểm</TableHead>
                     </TableRow>
@@ -270,9 +249,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
                             ? `${c.metrics.attendance_rate}%`
                             : "-"}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {getScoreBadge(c.score)}
-                        </TableCell>
+                        <TableCell className="text-center">{getScoreBadge(c.score)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -293,12 +270,8 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
                     <TableRow>
                       <TableHead>Tên</TableHead>
                       <TableHead>Chi nhánh</TableHead>
-                      <TableHead className="text-right">
-                        Ticket xử lý
-                      </TableHead>
-                      <TableHead className="text-right">
-                        TB thời gian (phút)
-                      </TableHead>
+                      <TableHead className="text-right">Ticket xử lý</TableHead>
+                      <TableHead className="text-right">TB thời gian (phút)</TableHead>
                       <TableHead className="text-right">Chuyên cần</TableHead>
                       <TableHead className="text-center">Điểm</TableHead>
                     </TableRow>
@@ -306,9 +279,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
                   <TableBody>
                     {chefs.map((ch) => (
                       <TableRow key={ch.employee_id}>
-                        <TableCell className="font-medium">
-                          {ch.name}
-                        </TableCell>
+                        <TableCell className="font-medium">{ch.name}</TableCell>
                         <TableCell>{ch.branch_name}</TableCell>
                         <TableCell className="text-right">
                           {ch.metrics.tickets_bumped ?? 0}
@@ -323,9 +294,7 @@ export function PerformanceTab({ branches }: PerformanceTabProps) {
                             ? `${ch.metrics.attendance_rate}%`
                             : "-"}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {getScoreBadge(ch.score)}
-                        </TableCell>
+                        <TableCell className="text-center">{getScoreBadge(ch.score)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

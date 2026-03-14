@@ -31,10 +31,7 @@ import {
   ComposedChart,
   Line,
 } from "recharts";
-import {
-  getFinanceDashboardData,
-  type FinanceDashboardData,
-} from "./actions";
+import { getFinanceDashboardData, type FinanceDashboardData } from "./actions";
 import {
   Button,
   Calendar,
@@ -80,11 +77,11 @@ function formatCompact(value: number): string {
 const CHART_COLORS = [
   "hsl(142, 76%, 36%)", // emerald
   "hsl(210, 80%, 55%)", // blue
-  "hsl(45, 90%, 50%)",  // amber
+  "hsl(45, 90%, 50%)", // amber
   "hsl(270, 60%, 55%)", // violet
-  "hsl(0, 70%, 50%)",   // red
+  "hsl(0, 70%, 50%)", // red
   "hsl(180, 60%, 45%)", // teal
-  "hsl(30, 80%, 55%)",  // orange
+  "hsl(30, 80%, 55%)", // orange
   "hsl(330, 60%, 55%)", // pink
 ];
 
@@ -120,21 +117,27 @@ function exportFinanceCSV(data: FinanceDashboardData) {
   lines.push("=== PHƯƠNG THỨC THANH TOÁN ===");
   lines.push("Phương thức,Số giao dịch,Tổng tiền,TB/giao dịch,%");
   for (const pm of data.paymentMethods) {
-    lines.push(`${pm.label},${pm.count},${pm.total},${pm.avgPerTransaction.toFixed(0)},${pm.pctOfTotal.toFixed(1)}`);
+    lines.push(
+      `${pm.label},${pm.count},${pm.total},${pm.avgPerTransaction.toFixed(0)},${pm.pctOfTotal.toFixed(1)}`
+    );
   }
   lines.push("");
 
   lines.push("=== DOANH THU THEO CHI NHÁNH ===");
   lines.push("Chi nhánh,Doanh thu,Đơn hàng,TB/đơn,Tip,%");
   for (const b of data.branchFinance) {
-    lines.push(`"${b.branchName}",${b.revenue},${b.orders},${b.avgTicket.toFixed(0)},${b.tips},${b.pctOfTotal.toFixed(1)}`);
+    lines.push(
+      `"${b.branchName}",${b.revenue},${b.orders},${b.avgTicket.toFixed(0)},${b.tips},${b.pctOfTotal.toFixed(1)}`
+    );
   }
   lines.push("");
 
   lines.push("=== MÓN CÓ DOANH THU CAO NHẤT ===");
   lines.push("Món,Doanh thu,SL bán,Giá TB,%");
   for (const item of data.topRevenueItems) {
-    lines.push(`"${item.name}",${item.revenue},${item.quantity},${item.avgPrice.toFixed(0)},${item.pctOfTotal.toFixed(1)}`);
+    lines.push(
+      `"${item.name}",${item.revenue},${item.quantity},${item.avgPrice.toFixed(0)},${item.pctOfTotal.toFixed(1)}`
+    );
   }
 
   const blob = new Blob([bom + lines.join("\n")], { type: "text/csv;charset=utf-8" });
@@ -185,7 +188,12 @@ export function FinanceDashboardClient({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
-            <Calendar mode="single" selected={startDate} onSelect={(d) => d && setStartDate(d)} locale={vi} />
+            <Calendar
+              mode="single"
+              selected={startDate}
+              onSelect={(d) => d && setStartDate(d)}
+              locale={vi}
+            />
           </PopoverContent>
         </Popover>
 
@@ -199,7 +207,12 @@ export function FinanceDashboardClient({
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0">
-            <Calendar mode="single" selected={endDate} onSelect={(d) => d && setEndDate(d)} locale={vi} />
+            <Calendar
+              mode="single"
+              selected={endDate}
+              onSelect={(d) => d && setEndDate(d)}
+              locale={vi}
+            />
           </PopoverContent>
         </Popover>
 
@@ -278,9 +291,16 @@ export function FinanceDashboardClient({
                     <XAxis
                       dataKey="label"
                       tick={{ fontSize: 11 }}
-                      interval={data.revenueTrend.length > 15 ? Math.floor(data.revenueTrend.length / 10) : 0}
+                      interval={
+                        data.revenueTrend.length > 15
+                          ? Math.floor(data.revenueTrend.length / 10)
+                          : 0
+                      }
                     />
-                    <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatCompact(v)} />
+                    <YAxis
+                      tick={{ fontSize: 11 }}
+                      tickFormatter={(v: number) => formatCompact(v)}
+                    />
                     <Tooltip
                       formatter={(value, name) => [
                         formatVND((value as number) ?? 0),
@@ -453,9 +473,7 @@ export function FinanceDashboardClient({
                           {formatVND(data.kpi.avgOrderValue)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {formatVND(
-                            data.revenueTrend.reduce((s, r) => s + r.revenue + r.tips, 0),
-                          )}
+                          {formatVND(data.revenueTrend.reduce((s, r) => s + r.revenue + r.tips, 0))}
                         </TableCell>
                       </TableRow>
                     </TableBody>
@@ -568,17 +586,36 @@ export function FinanceDashboardClient({
                     <BarChart data={data.paymentMethods}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                       <XAxis dataKey="label" tick={{ fontSize: 12 }} />
-                      <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatCompact(v)} />
+                      <YAxis
+                        tick={{ fontSize: 11 }}
+                        tickFormatter={(v: number) => formatCompact(v)}
+                      />
                       <Tooltip
                         formatter={(value, name) => [
-                          name === "total" ? formatVND((value as number) ?? 0) : String((value as number) ?? 0),
+                          name === "total"
+                            ? formatVND((value as number) ?? 0)
+                            : String((value as number) ?? 0),
                           name === "total" ? "Tổng tiền" : "Số giao dịch",
                         ]}
                         contentStyle={TOOLTIP_STYLE}
                       />
-                      <Bar dataKey="total" fill="hsl(210, 80%, 55%)" radius={[4, 4, 0, 0]} name="total" />
-                      <Bar dataKey="count" fill="hsl(142, 76%, 36%)" radius={[4, 4, 0, 0]} name="count" />
-                      <Legend formatter={(value: string) => (value === "total" ? "Tổng tiền" : "Số giao dịch")} />
+                      <Bar
+                        dataKey="total"
+                        fill="hsl(210, 80%, 55%)"
+                        radius={[4, 4, 0, 0]}
+                        name="total"
+                      />
+                      <Bar
+                        dataKey="count"
+                        fill="hsl(142, 76%, 36%)"
+                        radius={[4, 4, 0, 0]}
+                        name="count"
+                      />
+                      <Legend
+                        formatter={(value: string) =>
+                          value === "total" ? "Tổng tiền" : "Số giao dịch"
+                        }
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -606,11 +643,23 @@ export function FinanceDashboardClient({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={Math.max(250, data.branchFinance.length * 60)}>
+                  <ResponsiveContainer
+                    width="100%"
+                    height={Math.max(250, data.branchFinance.length * 60)}
+                  >
                     <BarChart data={data.branchFinance} layout="vertical" margin={{ left: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatCompact(v)} />
-                      <YAxis type="category" dataKey="branchName" width={150} tick={{ fontSize: 12 }} />
+                      <XAxis
+                        type="number"
+                        tick={{ fontSize: 11 }}
+                        tickFormatter={(v: number) => formatCompact(v)}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="branchName"
+                        width={150}
+                        tick={{ fontSize: 12 }}
+                      />
                       <Tooltip
                         formatter={(value, name) => [
                           formatVND((value as number) ?? 0),
@@ -618,8 +667,18 @@ export function FinanceDashboardClient({
                         ]}
                         contentStyle={TOOLTIP_STYLE}
                       />
-                      <Bar dataKey="revenue" fill="hsl(270, 60%, 55%)" radius={[0, 4, 4, 0]} name="revenue" />
-                      <Bar dataKey="tips" fill="hsl(45, 90%, 50%)" radius={[0, 4, 4, 0]} name="tips" />
+                      <Bar
+                        dataKey="revenue"
+                        fill="hsl(270, 60%, 55%)"
+                        radius={[0, 4, 4, 0]}
+                        name="revenue"
+                      />
+                      <Bar
+                        dataKey="tips"
+                        fill="hsl(45, 90%, 50%)"
+                        radius={[0, 4, 4, 0]}
+                        name="tips"
+                      />
                       <Legend formatter={(v: string) => (v === "revenue" ? "Doanh thu" : "Tip")} />
                     </BarChart>
                   </ResponsiveContainer>
@@ -648,7 +707,9 @@ export function FinanceDashboardClient({
                       {data.branchFinance.map((b) => (
                         <TableRow key={b.branchId}>
                           <TableCell className="font-medium">{b.branchName}</TableCell>
-                          <TableCell className="text-right font-semibold">{formatVND(b.revenue)}</TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {formatVND(b.revenue)}
+                          </TableCell>
                           <TableCell className="text-right">{b.orders}</TableCell>
                           <TableCell className="text-right">{formatVND(b.avgTicket)}</TableCell>
                           <TableCell className="text-right">{formatVND(b.tips)}</TableCell>
@@ -663,7 +724,9 @@ export function FinanceDashboardClient({
                                   style={{ width: `${Math.min(100, b.pctOfTotal)}%` }}
                                 />
                               </div>
-                              <span className="text-xs font-medium">{b.pctOfTotal.toFixed(1)}%</span>
+                              <span className="text-xs font-medium">
+                                {b.pctOfTotal.toFixed(1)}%
+                              </span>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -702,23 +765,38 @@ export function FinanceDashboardClient({
                     <BarChart
                       data={data.topRevenueItems.map((item) => ({
                         ...item,
-                        shortName:
-                          item.name.length > 25 ? item.name.slice(0, 23) + "…" : item.name,
+                        shortName: item.name.length > 25 ? item.name.slice(0, 23) + "…" : item.name,
                       }))}
                       layout="vertical"
                       margin={{ left: 20 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                      <XAxis type="number" tick={{ fontSize: 11 }} tickFormatter={(v: number) => formatCompact(v)} />
-                      <YAxis type="category" dataKey="shortName" width={170} tick={{ fontSize: 11 }} />
+                      <XAxis
+                        type="number"
+                        tick={{ fontSize: 11 }}
+                        tickFormatter={(v: number) => formatCompact(v)}
+                      />
+                      <YAxis
+                        type="category"
+                        dataKey="shortName"
+                        width={170}
+                        tick={{ fontSize: 11 }}
+                      />
                       <Tooltip
                         formatter={(value, name) => [
-                          name === "revenue" ? formatVND((value as number) ?? 0) : String((value as number) ?? 0),
+                          name === "revenue"
+                            ? formatVND((value as number) ?? 0)
+                            : String((value as number) ?? 0),
                           name === "revenue" ? "Doanh thu" : "Số lượng",
                         ]}
                         contentStyle={TOOLTIP_STYLE}
                       />
-                      <Bar dataKey="revenue" fill="hsl(142, 76%, 36%)" radius={[0, 4, 4, 0]} name="revenue" />
+                      <Bar
+                        dataKey="revenue"
+                        fill="hsl(142, 76%, 36%)"
+                        radius={[0, 4, 4, 0]}
+                        name="revenue"
+                      />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -746,7 +824,9 @@ export function FinanceDashboardClient({
                         <TableRow key={i}>
                           <TableCell className="font-bold text-muted-foreground">{i + 1}</TableCell>
                           <TableCell className="font-medium">{item.name}</TableCell>
-                          <TableCell className="text-right font-semibold">{formatVND(item.revenue)}</TableCell>
+                          <TableCell className="text-right font-semibold">
+                            {formatVND(item.revenue)}
+                          </TableCell>
                           <TableCell className="text-right">{item.quantity}</TableCell>
                           <TableCell className="text-right">{formatVND(item.avgPrice)}</TableCell>
                           <TableCell className="text-right">

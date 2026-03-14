@@ -34,14 +34,10 @@ function GrowthIndicator({ value }: { value: number | null }) {
         "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-xs font-semibold",
         isPositive
           ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400"
-          : "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400",
+          : "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-400"
       )}
     >
-      {isPositive ? (
-        <ArrowUpRight className="size-3" />
-      ) : (
-        <ArrowDownRight className="size-3" />
-      )}
+      {isPositive ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
       {Math.abs(value).toFixed(1)}%
     </span>
   );
@@ -77,9 +73,7 @@ function KPICard({
   return (
     <Card className={cn("border-l-4", accentBorder[accent])}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className={cn("flex size-9 items-center justify-center rounded-lg", iconClassName)}>
           <Icon className="size-4" aria-hidden="true" />
         </div>

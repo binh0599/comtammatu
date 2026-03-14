@@ -81,9 +81,7 @@ describe("processPaymentSchema", () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        const amountIssue = result.error.issues.find(
-          (i) => i.path.includes("amount_tendered"),
-        );
+        const amountIssue = result.error.issues.find((i) => i.path.includes("amount_tendered"));
         expect(amountIssue).toBeDefined();
       }
     });

@@ -19,11 +19,7 @@ export {
 
 export { getAttendanceRecords } from "./attendance";
 
-export {
-  getLeaveRequests,
-  createLeaveRequest,
-  approveLeaveRequest,
-} from "./leave";
+export { getLeaveRequests, createLeaveRequest, approveLeaveRequest } from "./leave";
 
 export {
   getPayrollPeriods,

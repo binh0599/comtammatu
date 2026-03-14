@@ -27,10 +27,7 @@ export function useOptimisticCart(terminalId: number) {
   const createOrderMutation = useCreateOrderMutation();
 
   /** Tính tổng tiền giỏ hàng */
-  const cartTotal = cart.reduce(
-    (sum, item) => sum + item.unitPrice * item.quantity,
-    0,
-  );
+  const cartTotal = cart.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 
   /** Tổng số món trong giỏ */
   const cartItemCount = cart.reduce((sum, item) => sum + item.quantity, 0);

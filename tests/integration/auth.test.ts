@@ -4,12 +4,7 @@
  * Tests authentication flows against the real Supabase project.
  */
 
-import {
-  createAnonClient,
-  createAuthClient,
-  TEST_ACCOUNTS,
-  TEST_PASSWORD,
-} from "./helpers";
+import { createAnonClient, createAuthClient, TEST_ACCOUNTS, TEST_PASSWORD } from "./helpers";
 
 describe("Auth Integration", () => {
   describe("Login with valid credentials", () => {

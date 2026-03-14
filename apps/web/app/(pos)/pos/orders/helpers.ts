@@ -3,10 +3,7 @@ import { VALID_ORDER_TRANSITIONS, type OrderStatus } from "@comtammatu/shared";
 /**
  * Check if a status transition is valid
  */
-export function isValidTransition(
-  from: OrderStatus,
-  to: OrderStatus
-): boolean {
+export function isValidTransition(from: OrderStatus, to: OrderStatus): boolean {
   const allowed = VALID_ORDER_TRANSITIONS[from];
   return allowed?.includes(to) ?? false;
 }
@@ -20,10 +17,7 @@ export function calculateOrderTotals(
   taxRate: number,
   serviceChargeRate: number
 ) {
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
-    0
-  );
+  const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
 
   const tax = Math.round(subtotal * (taxRate / 100));
   const serviceCharge = Math.round(subtotal * (serviceChargeRate / 100));
@@ -40,20 +34,14 @@ export function calculateOrderTotals(
  * @param excludeOrderId - The order that just completed/cancelled; excluded
  *   from the "still active?" check.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 export async function maybeReleaseTable(
   supabase: any,
   tableId: number,
   branchId: number,
   excludeOrderId: number
 ) {
-  const activeStatuses = [
-    "draft",
-    "confirmed",
-    "preparing",
-    "ready",
-    "served",
-  ];
+  const activeStatuses = ["draft", "confirmed", "preparing", "ready", "served"];
 
   const { count } = await supabase
     .from("orders")

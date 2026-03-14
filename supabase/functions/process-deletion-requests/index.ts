@@ -18,7 +18,7 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 Deno.serve(async (req: Request) => {
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
   // Find pending deletion requests past their scheduled date
@@ -30,17 +30,16 @@ Deno.serve(async (req: Request) => {
 
   if (fetchError) {
     console.error("Failed to fetch deletion requests:", fetchError);
-    return new Response(
-      JSON.stringify({ error: "Failed to fetch requests" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Failed to fetch requests" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   if (!requests || requests.length === 0) {
-    return new Response(
-      JSON.stringify({ message: "No pending deletion requests", processed: 0 }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ message: "No pending deletion requests", processed: 0 }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   let processed = 0;
@@ -74,16 +73,10 @@ Deno.serve(async (req: Request) => {
         .eq("customer_id", request.customer_id);
 
       // 3. Delete loyalty transactions
-      await supabase
-        .from("loyalty_transactions")
-        .delete()
-        .eq("customer_id", request.customer_id);
+      await supabase.from("loyalty_transactions").delete().eq("customer_id", request.customer_id);
 
       // 4. Delete customer feedback
-      await supabase
-        .from("customer_feedback")
-        .delete()
-        .eq("customer_id", request.customer_id);
+      await supabase.from("customer_feedback").delete().eq("customer_id", request.customer_id);
 
       // 5. Mark deletion request as completed
       const { error: updateError } = await supabase
@@ -124,6 +117,6 @@ Deno.serve(async (req: Request) => {
       total: requests.length,
       errors: errors.length > 0 ? errors : undefined,
     }),
-    { headers: { "Content-Type": "application/json" } },
+    { headers: { "Content-Type": "application/json" } }
   );
 });

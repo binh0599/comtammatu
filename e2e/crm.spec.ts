@@ -35,9 +35,9 @@ test.describe("CRM Module", () => {
     await expect(loyaltyTab).toHaveAttribute("data-state", "active");
 
     // Verify tab content is rendered
-    await expect(
-      page.getByText(/hạng thành viên|loyalty/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/hạng thành viên|loyalty/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("vouchers tab loads", async ({ page, loginAs }) => {
@@ -50,9 +50,7 @@ test.describe("CRM Module", () => {
 
     await expect(vouchersTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/voucher/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/voucher/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("feedback tab loads", async ({ page, loginAs }) => {
@@ -65,8 +63,6 @@ test.describe("CRM Module", () => {
 
     await expect(feedbackTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/phản hồi|feedback/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/phản hồi|feedback/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

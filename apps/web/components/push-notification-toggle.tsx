@@ -3,13 +3,7 @@
 import { Bell, BellOff } from "lucide-react";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { toast } from "sonner";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@comtammatu/ui";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@comtammatu/ui";
 
 export function PushNotificationToggle() {
   const { permission, isSubscribed, isLoading, isSupported, subscribe, unsubscribe } =
@@ -47,9 +41,7 @@ export function PushNotificationToggle() {
               <BellOff className="text-muted-foreground h-4 w-4" />
             )}
             <div>
-              <p className="text-sm font-medium">
-                {isSubscribed ? "Đang bật" : "Đã tắt"}
-              </p>
+              <p className="text-sm font-medium">{isSubscribed ? "Đang bật" : "Đã tắt"}</p>
               <p className="text-muted-foreground text-xs">
                 {isSubscribed
                   ? "Nhận thông báo về đơn hàng, ưu đãi"

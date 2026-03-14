@@ -19,15 +19,14 @@ export default async function KdsStationPage({
 
   if (isNaN(id)) notFound();
 
-  const [station, tickets, timingRules, portions, ingredients, suppliers] =
-    await Promise.all([
-      getStationInfo(id),
-      getStationTickets(id),
-      getTimingRules(id),
-      getMenuPortions(),
-      getIngredients(),
-      getSuppliers(),
-    ]);
+  const [station, tickets, timingRules, portions, ingredients, suppliers] = await Promise.all([
+    getStationInfo(id),
+    getStationTickets(id),
+    getTimingRules(id),
+    getMenuPortions(),
+    getIngredients(),
+    getSuppliers(),
+  ]);
 
   if (!station || !station.is_active) notFound();
 

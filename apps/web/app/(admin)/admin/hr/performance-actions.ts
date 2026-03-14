@@ -45,7 +45,7 @@ async function _getStaffPerformance(
   startDate: string,
   endDate: string,
   branch_id?: number,
-  role?: string,
+  role?: string
 ): Promise<StaffPerformanceRow[]> {
   const parsed = staffPerformanceQuerySchema.parse({
     startDate,
@@ -82,14 +82,12 @@ async function _getStaffPerformance(
     branches: { name: string };
   };
 
-  let filteredEmployees = (employees as unknown as EmployeeRow[]).filter(
-    (e) => ["waiter", "cashier", "chef"].includes(e.profiles.role),
+  let filteredEmployees = (employees as unknown as EmployeeRow[]).filter((e) =>
+    ["waiter", "cashier", "chef"].includes(e.profiles.role)
   );
 
   if (parsed.role) {
-    filteredEmployees = filteredEmployees.filter(
-      (e) => e.profiles.role === parsed.role,
-    );
+    filteredEmployees = filteredEmployees.filter((e) => e.profiles.role === parsed.role);
   }
 
   if (filteredEmployees.length === 0) return [];
@@ -177,8 +175,7 @@ async function _getStaffPerformance(
     // Attendance
     const scheduled = scheduledDays.get(emp.id) ?? 0;
     const present = presentDays.get(emp.id) ?? 0;
-    metrics.attendance_rate =
-      scheduled > 0 ? Math.round((present / scheduled) * 100) : undefined;
+    metrics.attendance_rate = scheduled > 0 ? Math.round((present / scheduled) * 100) : undefined;
 
     if (role === "waiter") {
       metrics.orders_created = perf?.orders_created ?? 0;

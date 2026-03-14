@@ -15,12 +15,7 @@ import { LoyaltyTiersTab } from "./loyalty-tiers-tab";
 import { VouchersTab } from "./vouchers-tab";
 import { FeedbackTab } from "./feedback-tab";
 import { EarnRulesTab } from "./earn-rules-tab";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@comtammatu/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@comtammatu/ui";
 
 export default async function CrmPage() {
   const [customers, loyaltyTiers, vouchers, feedback, branches, stats, earnRules] =
@@ -64,10 +59,7 @@ export default async function CrmPage() {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="customers">
-            <CustomersTab
-              customers={customers}
-              loyaltyTiers={loyaltyTiers}
-            />
+            <CustomersTab customers={customers} loyaltyTiers={loyaltyTiers} />
           </TabsContent>
           <TabsContent value="loyalty">
             <LoyaltyTiersTab loyaltyTiers={loyaltyTiers} />

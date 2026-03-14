@@ -4,12 +4,7 @@
  * Tests purchase order workflow: creation -> status transitions -> stock updates.
  */
 
-import {
-  createAuthClient,
-  createServiceClient,
-  cleanupRows,
-  SEED,
-} from "./helpers";
+import { createAuthClient, createServiceClient, cleanupRows, SEED } from "./helpers";
 
 describe("Inventory Flow", () => {
   const createdPOIds: number[] = [];

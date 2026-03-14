@@ -88,11 +88,7 @@ export function CreatePoForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
@@ -156,8 +152,12 @@ export function CreatePoForm({
               <TableHeader>
                 <TableRow>
                   <TableHead scope="col">Nguyên liệu</TableHead>
-                  <TableHead scope="col" className="w-[120px]">Số lượng</TableHead>
-                  <TableHead scope="col" className="w-[140px]">Đơn giá</TableHead>
+                  <TableHead scope="col" className="w-[120px]">
+                    Số lượng
+                  </TableHead>
+                  <TableHead scope="col" className="w-[140px]">
+                    Đơn giá
+                  </TableHead>
                   <TableHead scope="col" className="w-[120px] text-right">
                     Thành tiền
                   </TableHead>
@@ -170,9 +170,7 @@ export function CreatePoForm({
                     <TableCell>
                       <Select
                         value={item.ingredient_id}
-                        onValueChange={(v) =>
-                          updateItem(index, "ingredient_id", v)
-                        }
+                        onValueChange={(v) => updateItem(index, "ingredient_id", v)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn" />
@@ -192,9 +190,7 @@ export function CreatePoForm({
                         min="0"
                         step="0.01"
                         value={item.quantity}
-                        onChange={(e) =>
-                          updateItem(index, "quantity", e.target.value)
-                        }
+                        onChange={(e) => updateItem(index, "quantity", e.target.value)}
                         placeholder="0"
                       />
                     </TableCell>
@@ -204,9 +200,7 @@ export function CreatePoForm({
                         min="0"
                         step="1"
                         value={item.unit_price}
-                        onChange={(e) =>
-                          updateItem(index, "unit_price", e.target.value)
-                        }
+                        onChange={(e) => updateItem(index, "unit_price", e.target.value)}
                         placeholder="0"
                       />
                     </TableCell>
@@ -235,9 +229,7 @@ export function CreatePoForm({
               <Plus className="mr-1 h-4 w-4" />
               Thêm dòng
             </Button>
-            <div className="text-lg font-semibold">
-              Tổng: {formatPrice(grandTotal)}
-            </div>
+            <div className="text-lg font-semibold">Tổng: {formatPrice(grandTotal)}</div>
           </div>
         </div>
       </div>

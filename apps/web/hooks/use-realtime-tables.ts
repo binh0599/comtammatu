@@ -11,10 +11,7 @@ interface TableRow {
   branch_id: number;
 }
 
-export function useRealtimeTables<T extends TableRow>(
-  branchId: number,
-  initialTables: T[]
-) {
+export function useRealtimeTables<T extends TableRow>(branchId: number, initialTables: T[]) {
   const [tables, setTables] = useState<T[]>(initialTables);
 
   const handleTableChange = useCallback(
@@ -23,9 +20,7 @@ export function useRealtimeTables<T extends TableRow>(
 
       if (eventType === "UPDATE") {
         const updated = payload.new as unknown as T;
-        setTables((prev) =>
-          prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t))
-        );
+        setTables((prev) => prev.map((t) => (t.id === updated.id ? { ...t, ...updated } : t)));
       }
     },
     []

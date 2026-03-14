@@ -32,7 +32,7 @@ async function _processPayment(data: {
   if (!rlSuccess) {
     throw new ActionError(
       "Quá nhiều yêu cầu thanh toán. Vui lòng thử lại sau.",
-      "VALIDATION_ERROR",
+      "VALIDATION_ERROR"
     );
   }
 
@@ -114,10 +114,7 @@ async function _processPayment(data: {
     }
   }
 
-  const change =
-    parsed.data.method === "cash"
-      ? (parsed.data.amount_tendered ?? 0) - totalDue
-      : 0;
+  const change = parsed.data.method === "cash" ? (parsed.data.amount_tendered ?? 0) - totalDue : 0;
 
   const idempotencyKey = crypto.randomUUID();
 
@@ -127,10 +124,11 @@ async function _processPayment(data: {
     pos_session_id: session.id,
     terminal_id: session.terminal_id,
     method: parsed.data.method,
-    provider: parsed.data.method === "qr" ? "momo" : parsed.data.method === "transfer" ? "vietqr" : null,
+    provider:
+      parsed.data.method === "qr" ? "momo" : parsed.data.method === "transfer" ? "vietqr" : null,
     amount: order.total,
     tip,
-    status: parsed.data.method === "cash" ? "completed" : "pending",  // qr + transfer start as pending
+    status: parsed.data.method === "cash" ? "completed" : "pending", // qr + transfer start as pending
     paid_at: parsed.data.method === "cash" ? new Date().toISOString() : null,
     idempotency_key: idempotencyKey,
   });

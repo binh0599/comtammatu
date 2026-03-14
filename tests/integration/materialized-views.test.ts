@@ -41,9 +41,7 @@ describe("Materialized Views", () => {
     it("returns item popularity data with quantities", async () => {
       const { data, error } = await service
         .from("mv_item_popularity")
-        .select(
-          "branch_id, report_date, menu_item_id, item_name, total_quantity, total_revenue",
-        )
+        .select("branch_id, report_date, menu_item_id, item_name, total_quantity, total_revenue")
         .eq("branch_id", SEED.branchQ1)
         .limit(10);
 
@@ -107,9 +105,7 @@ describe("Materialized Views", () => {
     it("returns staff performance stats", async () => {
       const { data, error } = await service
         .from("mv_staff_performance")
-        .select(
-          "profile_id, report_date, orders_created, total_items_served, payments_processed",
-        )
+        .select("profile_id, report_date, orders_created, total_items_served, payments_processed")
         .limit(10);
 
       expect(error).toBeNull();

@@ -24,9 +24,7 @@ test.describe("Order Flow", () => {
     }
 
     // Add a menu item
-    const menuItem = page
-      .locator("[data-menu-item-id], [data-testid='menu-item']")
-      .first();
+    const menuItem = page.locator("[data-menu-item-id], [data-testid='menu-item']").first();
     await expect(menuItem).toBeVisible({ timeout: 5_000 });
     await menuItem.click();
 
@@ -59,10 +57,7 @@ test.describe("Order Flow", () => {
     await expect(page).toHaveURL(/\/kds/);
 
     // KDS should show the ticket for the created order
-    const ticket = page
-      .locator("[data-kds-ticket]")
-      .filter({ hasText: orderNumber })
-      .first();
+    const ticket = page.locator("[data-kds-ticket]").filter({ hasText: orderNumber }).first();
     await expect(ticket).toBeVisible({ timeout: 15_000 });
   });
 
@@ -73,10 +68,7 @@ test.describe("Order Flow", () => {
     await expect(page).toHaveURL(/\/kds/);
 
     // Scope to the ticket for this order
-    const ticket = page
-      .locator("[data-kds-ticket]")
-      .filter({ hasText: orderNumber })
-      .first();
+    const ticket = page.locator("[data-kds-ticket]").filter({ hasText: orderNumber }).first();
     await expect(ticket).toBeVisible({ timeout: 10_000 });
 
     const bumpButton = ticket.getByRole("button", {
@@ -127,7 +119,8 @@ test.describe("Order Flow", () => {
 
     // Payment should succeed — match success toast/banner, not the button
     await expect(
-      page.locator("[data-testid='payment-success'], .payment-success, [role='status']")
+      page
+        .locator("[data-testid='payment-success'], .payment-success, [role='status']")
         .or(page.getByText(/thành công|thanh toán xong|payment success/i))
     ).toBeVisible({ timeout: 10_000 });
   });

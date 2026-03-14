@@ -25,13 +25,13 @@ February 2026
 
 Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 
-| Phase      | Duration | Focus                                    |
-| ---------- | -------- | ---------------------------------------- |
-| Week 1-2   | 2 weeks  | Foundation + Security Baseline           |
-| Week 3-4   | 2 weeks  | Split POS & Orders                       |
-| Week 5-6   | 2 weeks  | Operations (Inventory, HR, Admin)        |
-| Week 7-8   | 2 weeks  | CRM, Privacy & Polish                    |
-| Post-MVP   | Ongoing  | Advanced features, integrations, scaling |
+| Phase    | Duration | Focus                                    |
+| -------- | -------- | ---------------------------------------- |
+| Week 1-2 | 2 weeks  | Foundation + Security Baseline           |
+| Week 3-4 | 2 weeks  | Split POS & Orders                       |
+| Week 5-6 | 2 weeks  | Operations (Inventory, HR, Admin)        |
+| Week 7-8 | 2 weeks  | CRM, Privacy & Polish                    |
+| Post-MVP | Ongoing  | Advanced features, integrations, scaling |
 
 **Team:** 2-3 developers
 **Time to MVP:** 4-6 weeks (8-week roadmap includes testing & docs)
@@ -54,13 +54,13 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 - [x] Corrected schema (v2.1 → v2.2 DDL) — all ~35 tables
 - [x] RLS policies on every table
 - [x] Seed data for development
-- [ ] RLS validation test suite *(deferred to Week 7-8)*
+- [ ] RLS validation test suite _(deferred to Week 7-8)_
 
 ### Authentication & Security
 
 - [x] Supabase Auth configuration
 - [x] RBAC via custom claims + RLS
-- [ ] MFA (TOTP) for admin/manager/owner roles *(deferred)*
+- [ ] MFA (TOTP) for admin/manager/owner roles _(deferred)_
 - [x] Login pages
 - [x] Pre-commit hooks (detect-secrets)
 - [x] CI pipeline (secrets scan, dependency scan, typecheck, lint, Prisma generate)
@@ -86,8 +86,8 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 ### Terminal Management
 
 - [x] Device registration with manager approval
-- [ ] Device fingerprinting *(deferred — enhancement)*
-- [ ] Peripheral config (printers, cash drawers) *(deferred)*
+- [ ] Device fingerprinting _(deferred — enhancement)_
+- [ ] Peripheral config (printers, cash drawers) _(deferred)_
 - [x] Terminal type enforcement (`mobile_order` vs `cashier_station`)
 
 ### Mobile Order (Waiter — `mobile_order`)
@@ -102,14 +102,14 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 - [x] Cashier screen — view orders by status (60/40 split layout)
 - [x] Process payment (cash only — MVP)
 - [x] Open/close cash shifts (POS sessions)
-- [ ] Print receipt *(deferred)*
+- [ ] Print receipt _(deferred)_
 - [x] Shift reconciliation (opening vs closing amount + difference tracking)
 
 ### Payment Integration
 
 - [x] Cash payment flow (with change calculator, quick amounts)
-- [ ] VNPay integration with webhook signature verification *(deferred)*
-- [ ] Momo integration with webhook signature verification *(deferred)*
+- [ ] VNPay integration with webhook signature verification _(deferred)_
+- [ ] Momo integration with webhook signature verification _(deferred)_
 - [x] Idempotency enforcement on all payments (`idempotency_key UUID`)
 - [x] Cashier-station-only restriction enforced
 
@@ -117,7 +117,7 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 
 - [x] Order state machine: draft → confirmed → preparing → ready → served → completed
 - [x] Status history tracking (DB trigger: `record_order_status_change`)
-- [ ] Order discounts and voucher application *(deferred to Week 7-8)*
+- [ ] Order discounts and voucher application _(deferred to Week 7-8)_
 - [x] Split POS flow (waiter creates, cashier pays)
 
 ### KDS (Kitchen Display System)
@@ -128,7 +128,7 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 - [x] Timing rules and alerts (warning, critical thresholds with color coding)
 - [x] DB triggers: `create_kds_tickets`, `update_order_from_kds`
 
-### POS Offline Support *(DEFERRED)*
+### POS Offline Support _(DEFERRED)_
 
 - [ ] Service Worker + PWA setup for both terminal types
 - [ ] IndexedDB for pending orders (waiter) and pending payments (cashier)
@@ -137,7 +137,7 @@ Condensed **8-week roadmap** for MVP, followed by iterative improvements.
 - [ ] Cash-only restriction when offline (code enforced)
 - [ ] Idempotency key deduplication on server
 
-### API Protection *(DEFERRED)*
+### API Protection _(DEFERRED)_
 
 - [ ] Upstash Redis rate limiting middleware
 - [ ] Rate limits per endpoint category (auth, GET, mutation, webhook, export, customer)

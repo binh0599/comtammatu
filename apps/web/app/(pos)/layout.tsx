@@ -8,11 +8,7 @@ import { ServiceWorkerRegister } from "./pos/components/sw-register";
 import { OfflineIndicator } from "./pos/components/offline-indicator";
 import { Toaster } from "@comtammatu/ui";
 
-export default async function PosLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function PosLayout({ children }: { children: React.ReactNode }) {
   const { user, profile } = await requireLayoutAuth<{
     branch_id: number | null;
     tenant_id: number | null;
@@ -20,11 +16,7 @@ export default async function PosLayout({
 
   // Staff roles must have an approved device to access POS.
   // Fail-closed: if tenant_id is missing, redirect to login (incomplete profile).
-  if (
-    DEVICE_CHECK_ROLES.includes(
-      profile.role as (typeof DEVICE_CHECK_ROLES)[number],
-    )
-  ) {
+  if (DEVICE_CHECK_ROLES.includes(profile.role as (typeof DEVICE_CHECK_ROLES)[number])) {
     if (!profile.tenant_id) {
       redirect("/login");
     }
@@ -52,13 +44,13 @@ export default async function PosLayout({
   return (
     <div data-route-group="pos" className="bg-background min-h-screen pb-16">
       <ServiceWorkerRegister />
-      {profile.branch_id && (
-        <RealtimeNotifications branchId={profile.branch_id} />
-      )}
+      {profile.branch_id && <RealtimeNotifications branchId={profile.branch_id} />}
       <div className="fixed top-2 right-2 z-50">
         <OfflineIndicator />
       </div>
-      <main id="main-content" className="animate-page-in">{children}</main>
+      <main id="main-content" className="animate-page-in">
+        {children}
+      </main>
       <BottomNav />
       <Toaster position="top-center" />
     </div>

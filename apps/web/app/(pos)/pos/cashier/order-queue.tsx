@@ -1,19 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  formatPrice,
-  formatElapsedTime,
-  getOrderStatusLabel,
-} from "@comtammatu/shared";
+import { formatPrice, formatElapsedTime, getOrderStatusLabel } from "@comtammatu/shared";
 import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import type { QueueOrder } from "./types";
-import {
-  Badge,
-  Button,
-  ScrollArea,
-  cn,
-} from "@comtammatu/ui";
+import { Badge, Button, ScrollArea, cn } from "@comtammatu/ui";
 
 const filterTabs = [
   { value: "all", label: "Tất cả" },
@@ -35,8 +26,7 @@ export function OrderQueue({
   const filteredOrders = orders.filter((order) => {
     if (filter === "all") return true;
     if (filter === "unpaid") return order.status !== "completed";
-    if (filter === "ready")
-      return order.status === "ready" || order.status === "served";
+    if (filter === "ready") return order.status === "ready" || order.status === "served";
     return true;
   });
 
@@ -60,10 +50,7 @@ export function OrderQueue({
       <ScrollArea className="flex-1">
         <div className="space-y-3 p-3" role="list" aria-label="Danh sách đơn hàng">
           {filteredOrders.map((order) => {
-            const itemCount = order.order_items.reduce(
-              (sum, i) => sum + i.quantity,
-              0
-            );
+            const itemCount = order.order_items.reduce((sum, i) => sum + i.quantity, 0);
             const isSelected = selectedOrderId === order.id;
 
             return (
@@ -75,33 +62,23 @@ export function OrderQueue({
                 aria-label={`Chọn đơn ${order.order_number}, trạng thái ${getOrderStatusLabel(order.status)}, tổng cộng ${formatPrice(order.total)}`}
                 className={cn(
                   "w-full rounded-lg border p-4 text-left transition-all",
-                  isSelected
-                    ? "border-primary bg-primary/5 ring-primary ring-1"
-                    : "hover:bg-accent"
+                  isSelected ? "border-primary bg-primary/5 ring-primary ring-1" : "hover:bg-accent"
                 )}
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold">{order.order_number}</span>
-                  <Badge
-                    variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}
-                  >
+                  <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
                     {getOrderStatusLabel(order.status)}
                   </Badge>
                 </div>
                 <div className="text-muted-foreground mt-1 text-sm">
-                  {order.tables ? (
-                    <span>Bàn {order.tables.number}</span>
-                  ) : (
-                    <span>Mang đi</span>
-                  )}
+                  {order.tables ? <span>Bàn {order.tables.number}</span> : <span>Mang đi</span>}
                   <span className="mx-1">·</span>
                   <span>{itemCount} món</span>
                   <span className="mx-1">·</span>
                   <span>{formatElapsedTime(order.created_at)}</span>
                 </div>
-                <div className="mt-2 font-semibold">
-                  {formatPrice(order.total)}
-                </div>
+                <div className="mt-2 font-semibold">{formatPrice(order.total)}</div>
               </button>
             );
           })}

@@ -1,9 +1,5 @@
 import { Header } from "@/components/admin/header";
-import {
-  StatCardSkeleton,
-  ChartSkeleton,
-  TableSkeleton,
-} from "@/components/skeletons";
+import { StatCardSkeleton, ChartSkeleton, TableSkeleton } from "@/components/skeletons";
 
 export default function AdminDashboardLoading() {
   return (

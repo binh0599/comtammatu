@@ -5,11 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { createClient } from "@comtammatu/database/src/supabase/client";
-import {
-  formatPrice,
-  formatElapsedTime,
-  getOrderStatusLabel,
-} from "@comtammatu/shared";
+import { formatPrice, formatElapsedTime, getOrderStatusLabel } from "@comtammatu/shared";
 import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import { Badge, Button } from "@comtammatu/ui";
 
@@ -103,10 +99,7 @@ export function OrdersList({
       {/* Orders */}
       <div className="space-y-3">
         {filteredOrders.map((order) => {
-          const itemCount = order.order_items.reduce(
-            (sum, i) => sum + i.quantity,
-            0
-          );
+          const itemCount = order.order_items.reduce((sum, i) => sum + i.quantity, 0);
 
           return (
             <Link
@@ -117,9 +110,7 @@ export function OrdersList({
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="font-bold">{order.order_number}</span>
-                  <Badge
-                    variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}
-                  >
+                  <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
                     {getOrderStatusLabel(order.status)}
                   </Badge>
                 </div>

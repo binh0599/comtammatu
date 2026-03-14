@@ -34,12 +34,7 @@ export default async function LoginPage() {
 
     // Staff roles: check device approval before redirecting.
     // Fail-closed: if tenant_id is missing, show login form (incomplete profile).
-    if (
-      role &&
-      DEVICE_CHECK_ROLES.includes(
-        role as (typeof DEVICE_CHECK_ROLES)[number],
-      )
-    ) {
+    if (role && DEVICE_CHECK_ROLES.includes(role as (typeof DEVICE_CHECK_ROLES)[number])) {
       if (data?.tenant_id) {
         const { data: device } = await supabase
           .from("registered_devices")

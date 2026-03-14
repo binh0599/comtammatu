@@ -70,6 +70,7 @@ When Claude produces a bug or broken build:
 ```
 
 **Error Recovery Prompt Template:**
+
 ```
 Task: Fix [specific error]
 
@@ -94,28 +95,28 @@ Context:
 
 ## WHAT NOT TO DO (Based on Production Experience)
 
-| Practice | Why it fails in production |
-| -------- | ------------------------- |
-| "think hard" on every task | Wastes tokens on simple tasks. Use only for complex architectural decisions. |
-| Multi-task in one session | Context from task A pollutes task B. One task = one session. |
-| Let Claude self-review | Claude reviews against its own assumptions. You review against requirements. |
-| Personality instructions in CLAUDE.md | Zero effect on output quality. Wastes context window. |
-| Let Claude fix its own bugs in-session | It defends the broken approach. Fresh session finds root cause faster. |
-| Skip checkpoint commit | No safety net. One bad session destroys hours of clean work. |
-| Long CLAUDE.md | Claude ignores most of it after 847+ lines. Keep it under 150 lines. |
+| Practice                               | Why it fails in production                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| "think hard" on every task             | Wastes tokens on simple tasks. Use only for complex architectural decisions. |
+| Multi-task in one session              | Context from task A pollutes task B. One task = one session.                 |
+| Let Claude self-review                 | Claude reviews against its own assumptions. You review against requirements. |
+| Personality instructions in CLAUDE.md  | Zero effect on output quality. Wastes context window.                        |
+| Let Claude fix its own bugs in-session | It defends the broken approach. Fresh session finds root cause faster.       |
+| Skip checkpoint commit                 | No safety net. One bad session destroys hours of clean work.                 |
+| Long CLAUDE.md                         | Claude ignores most of it after 847+ lines. Keep it under 150 lines.         |
 
 ---
 
 ## SESSION SIZE GUIDE
 
-| Task type | Expected turns | Expected time |
-| --------- | -------------- | ------------- |
-| New admin tab (simple CRUD) | 8-12 turns | 20-30 min |
-| New admin tab (with migration) | 12-18 turns | 30-45 min |
-| Order flow change | 10-15 turns | 25-40 min |
-| Schema migration + type regen | 6-10 turns | 15-25 min |
-| Error recovery (single file) | 4-8 turns | 10-20 min |
-| Full new route (RSC + actions + client) | 15-20 turns → split into 2 sessions | 2 × 30 min |
+| Task type                               | Expected turns                      | Expected time |
+| --------------------------------------- | ----------------------------------- | ------------- |
+| New admin tab (simple CRUD)             | 8-12 turns                          | 20-30 min     |
+| New admin tab (with migration)          | 12-18 turns                         | 30-45 min     |
+| Order flow change                       | 10-15 turns                         | 25-40 min     |
+| Schema migration + type regen           | 6-10 turns                          | 15-25 min     |
+| Error recovery (single file)            | 4-8 turns                           | 10-20 min     |
+| Full new route (RSC + actions + client) | 15-20 turns → split into 2 sessions | 2 × 30 min    |
 
 If a task exceeds the expected range, checkpoint commit and open a new session with only the remaining work.
 
@@ -140,6 +141,7 @@ Example — do NOT parallelize:
 ```
 
 Pattern:
+
 1. Run shared package changes first (one session)
 2. Then run consumer module sessions in parallel
 3. Merge: typecheck + lint + build on combined output
@@ -169,12 +171,12 @@ Ugly git log beats a beautiful log you can't navigate. Every commit is a potenti
 
 **Before starting a session**, identify which skills to invoke. Doing it during the session breaks flow.
 
-| Task involves | Invoke skill first |
-| ------------- | ------------------ |
-| New SQL / migration / RLS | `supabase-postgres-best-practices` |
-| Next.js routes / RSC / Server Actions | `next-best-practices` |
-| Auth / middleware / sessions | `nextjs-supabase-auth` |
-| Any code writing | `clean-code` |
-| Complex types / Zod inference | `javascript-typescript:typescript-advanced-types` |
-| Bug investigation | `engineering:code-review` |
-| Architecture decision | `engineering:system-design` |
+| Task involves                         | Invoke skill first                                |
+| ------------------------------------- | ------------------------------------------------- |
+| New SQL / migration / RLS             | `supabase-postgres-best-practices`                |
+| Next.js routes / RSC / Server Actions | `next-best-practices`                             |
+| Auth / middleware / sessions          | `nextjs-supabase-auth`                            |
+| Any code writing                      | `clean-code`                                      |
+| Complex types / Zod inference         | `javascript-typescript:typescript-advanced-types` |
+| Bug investigation                     | `engineering:code-review`                         |
+| Architecture decision                 | `engineering:system-design`                       |

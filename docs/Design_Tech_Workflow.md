@@ -26,25 +26,25 @@
 
 Trước khi so sánh framework, cần xác định **chính xác chỗ nào** hiệu năng ảnh hưởng trực tiếp đến trải nghiệm người dùng trong app Cơm Tấm Má Tư:
 
-| Khoảnh khắc UX | Yêu cầu hiệu năng | Tầm quan trọng |
-|----------------|-------------------|----------------|
-| **Cold Start** — Mở app để check-in/đặt hàng | < 1.5 giây từ tap icon → màn hình Home interactive | **Rất cao** — Khách hàng mở app khi đang xếp hàng |
-| **Camera QR Launch** — Mở camera quét QR check-in | < 500ms từ tap nút → camera sẵn sàng | **Rất cao** — "Zero-friction" check-in |
-| **Animations** — Check-in celebration, tier upgrade, point counter | 60fps nhất quán, không drop frame | **Cao** — Tạo cảm xúc thích thú, gamification |
-| **Scroll Performance** — Danh sách giao dịch, menu món ăn, đơn giao hàng | 60fps, lazy loading, không jank | **Cao** — Dùng hằng ngày |
-| **Map & Delivery Tracking** — Bản đồ giao hàng real-time | Smooth panning/zooming, marker updates mượt | **Cao** — Trải nghiệm giao hàng |
-| **Haptic Feedback** — Phản hồi xúc giác khi check-in, thanh toán | Native-quality haptics, không delay | **Trung bình** — Tăng premium feel |
-| **Background Geofencing** — Tự động check-in khi đến gần quán | Tiêu thụ pin thấp, trigger chính xác | **Trung bình** — Nice-to-have |
-| **Push Notification** — Trạng thái đơn hàng, giao hàng, khuyến mãi | Đáng tin cậy, deep link chính xác | **Cao** — Giao hàng cần real-time updates |
+| Khoảnh khắc UX                                                           | Yêu cầu hiệu năng                                  | Tầm quan trọng                                    |
+| ------------------------------------------------------------------------ | -------------------------------------------------- | ------------------------------------------------- |
+| **Cold Start** — Mở app để check-in/đặt hàng                             | < 1.5 giây từ tap icon → màn hình Home interactive | **Rất cao** — Khách hàng mở app khi đang xếp hàng |
+| **Camera QR Launch** — Mở camera quét QR check-in                        | < 500ms từ tap nút → camera sẵn sàng               | **Rất cao** — "Zero-friction" check-in            |
+| **Animations** — Check-in celebration, tier upgrade, point counter       | 60fps nhất quán, không drop frame                  | **Cao** — Tạo cảm xúc thích thú, gamification     |
+| **Scroll Performance** — Danh sách giao dịch, menu món ăn, đơn giao hàng | 60fps, lazy loading, không jank                    | **Cao** — Dùng hằng ngày                          |
+| **Map & Delivery Tracking** — Bản đồ giao hàng real-time                 | Smooth panning/zooming, marker updates mượt        | **Cao** — Trải nghiệm giao hàng                   |
+| **Haptic Feedback** — Phản hồi xúc giác khi check-in, thanh toán         | Native-quality haptics, không delay                | **Trung bình** — Tăng premium feel                |
+| **Background Geofencing** — Tự động check-in khi đến gần quán            | Tiêu thụ pin thấp, trigger chính xác               | **Trung bình** — Nice-to-have                     |
+| **Push Notification** — Trạng thái đơn hàng, giao hàng, khuyến mãi       | Đáng tin cậy, deep link chính xác                  | **Cao** — Giao hàng cần real-time updates         |
 
 ### 0.2 Bốn Ứng Viên Framework
 
-| # | Framework | Ngôn ngữ | Rendering |
-|---|-----------|---------|-----------|
-| A | **Flutter 3.x** (Impeller) | Dart | Skia/Impeller — tự vẽ mọi pixel |
-| B | **React Native 0.79+** (New Architecture) | TypeScript/JSX | Native views qua Fabric + JSI |
-| C | **Native** (Swift/SwiftUI + Kotlin/Compose) | Swift + Kotlin | Platform-native 100% |
-| D | **Kotlin Multiplatform (KMP)** + Native UI | Kotlin (shared) + Swift (UI) | Platform-native UI |
+| #   | Framework                                   | Ngôn ngữ                     | Rendering                       |
+| --- | ------------------------------------------- | ---------------------------- | ------------------------------- |
+| A   | **Flutter 3.x** (Impeller)                  | Dart                         | Skia/Impeller — tự vẽ mọi pixel |
+| B   | **React Native 0.79+** (New Architecture)   | TypeScript/JSX               | Native views qua Fabric + JSI   |
+| C   | **Native** (Swift/SwiftUI + Kotlin/Compose) | Swift + Kotlin               | Platform-native 100%            |
+| D   | **Kotlin Multiplatform (KMP)** + Native UI  | Kotlin (shared) + Swift (UI) | Platform-native UI              |
 
 ### 0.3 Benchmark So Sánh — Các Chỉ Số Thực Tế
 
@@ -63,26 +63,27 @@ React Native (Expo)  ████████████░░░░░░░�
                      0ms       500ms      1000ms     1500ms
 ```
 
-| Framework | iPhone 13 | Galaxy S22 | Budget Android (2GB RAM) | Ghi chú |
-|-----------|-----------|-----------|--------------------------|---------|
-| **Native** | ~400ms | ~500ms | ~800-1000ms | Baseline tốt nhất |
-| **Flutter** | ~550ms | ~650ms | ~1000-1300ms | Dart VM init, nhưng ổn định |
-| **React Native (New Arch)** | ~700ms | ~850ms | ~1300-1800ms | Hermes engine giúp giảm đáng kể |
-| **React Native (Expo)** | ~800ms | ~1000ms | ~1500-2200ms | Expo runtime overhead |
+| Framework                   | iPhone 13 | Galaxy S22 | Budget Android (2GB RAM) | Ghi chú                         |
+| --------------------------- | --------- | ---------- | ------------------------ | ------------------------------- |
+| **Native**                  | ~400ms    | ~500ms     | ~800-1000ms              | Baseline tốt nhất               |
+| **Flutter**                 | ~550ms    | ~650ms     | ~1000-1300ms             | Dart VM init, nhưng ổn định     |
+| **React Native (New Arch)** | ~700ms    | ~850ms     | ~1300-1800ms             | Hermes engine giúp giảm đáng kể |
+| **React Native (Expo)**     | ~800ms    | ~1000ms    | ~1500-2200ms             | Expo runtime overhead           |
 
 **Kết luận Cold Start:** Trên flagship devices, cả 4 đều < 1.5 giây — chấp nhận được. Trên **budget Android** (phổ biến tại Việt Nam), React Native + Expo có thể vượt 2 giây — **đây là rủi ro thực tế**.
 
 #### B. Camera QR Launch (Thời gian mở camera)
 
-| Framework | Cách tiếp cận | Thời gian | Ghi chú |
-|-----------|--------------|-----------|---------|
-| **Native** | AVCaptureSession / CameraX trực tiếp | ~200-300ms | Nhanh nhất, control hoàn toàn |
-| **Flutter** | `camera` plugin + `mobile_scanner` | ~300-500ms | Plugin gọi native, overhead nhỏ |
-| **React Native** | `expo-camera` / `react-native-vision-camera` | ~400-700ms | JS bridge + native camera init |
+| Framework        | Cách tiếp cận                                | Thời gian  | Ghi chú                         |
+| ---------------- | -------------------------------------------- | ---------- | ------------------------------- |
+| **Native**       | AVCaptureSession / CameraX trực tiếp         | ~200-300ms | Nhanh nhất, control hoàn toàn   |
+| **Flutter**      | `camera` plugin + `mobile_scanner`           | ~300-500ms | Plugin gọi native, overhead nhỏ |
+| **React Native** | `expo-camera` / `react-native-vision-camera` | ~400-700ms | JS bridge + native camera init  |
 
 **Ghi chú quan trọng:** `react-native-vision-camera` v4 (by Marc Rousavy) sử dụng JSI trực tiếp, gần như ngang native (~300-400ms). Nhưng **expo-camera** (managed) chậm hơn đáng kể (~500-700ms).
 
 **Kỹ thuật Pre-warm Camera (áp dụng cho mọi framework):**
+
 ```
 App vào foreground → init camera session ẩn → user tap "Quét QR" → camera đã sẵn sàng
 Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
@@ -90,71 +91,72 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 
 #### C. Animation Performance (60fps Test)
 
-| Loại animation | Native | Flutter | React Native |
-|---------------|--------|---------|-------------|
-| **Page transitions** | 60fps ✅ | 60fps ✅ | 60fps ✅ (Reanimated 3 trên UI thread) |
-| **Scroll + header collapse** | 60fps ✅ | 60fps ✅ | 55-60fps ⚠️ (phụ thuộc implementation) |
-| **Lottie animations** | 60fps ✅ | 60fps ✅ (rive tốt hơn) | 55-60fps ⚠️ (lottie-react-native qua bridge) |
-| **Particle effects** (check-in celebration) | 60fps ✅ | 60fps ✅ (Impeller xuất sắc) | 40-55fps ⚠️ (cần Skia via react-native-skia) |
-| **Animated counter** (điểm tăng) | 60fps ✅ | 60fps ✅ | 60fps ✅ (Reanimated shared values) |
-| **Map marker animation** | 60fps ✅ | 55-60fps ⚠️ (platform view) | 55-60fps ⚠️ (native map view) |
-| **Glassmorphism/Blur** | 60fps ✅ | 50-55fps ⚠️ (BackdropFilter tốn GPU) | 55-60fps ⚠️ |
+| Loại animation                              | Native   | Flutter                              | React Native                                 |
+| ------------------------------------------- | -------- | ------------------------------------ | -------------------------------------------- |
+| **Page transitions**                        | 60fps ✅ | 60fps ✅                             | 60fps ✅ (Reanimated 3 trên UI thread)       |
+| **Scroll + header collapse**                | 60fps ✅ | 60fps ✅                             | 55-60fps ⚠️ (phụ thuộc implementation)       |
+| **Lottie animations**                       | 60fps ✅ | 60fps ✅ (rive tốt hơn)              | 55-60fps ⚠️ (lottie-react-native qua bridge) |
+| **Particle effects** (check-in celebration) | 60fps ✅ | 60fps ✅ (Impeller xuất sắc)         | 40-55fps ⚠️ (cần Skia via react-native-skia) |
+| **Animated counter** (điểm tăng)            | 60fps ✅ | 60fps ✅                             | 60fps ✅ (Reanimated shared values)          |
+| **Map marker animation**                    | 60fps ✅ | 55-60fps ⚠️ (platform view)          | 55-60fps ⚠️ (native map view)                |
+| **Glassmorphism/Blur**                      | 60fps ✅ | 50-55fps ⚠️ (BackdropFilter tốn GPU) | 55-60fps ⚠️                                  |
 
 **Kết luận Animation:**
+
 - **Native** luôn 60fps — không bàn cãi
 - **Flutter** 60fps hầu hết case, Impeller engine xử lý particle/complex animation tốt hơn RN
 - **React Native** 60fps cho basic animations (Reanimated 3), nhưng **particle effects và complex compositions thường drop frame**
 
 #### D. Binary Size (Kích thước cài đặt)
 
-| Framework | Minimum app size | App Cơm Tấm Má Tư (ước tính) | Ghi chú |
-|-----------|-----------------|-------------------------------|---------|
-| **Native iOS** | ~3-5MB | ~15-25MB | Nhỏ nhất |
-| **Native Android** | ~3-5MB | ~12-20MB | Nhỏ nhất |
-| **Flutter** | ~15-18MB | ~30-45MB | Dart runtime + Skia engine |
-| **React Native** | ~10-12MB | ~25-40MB | Hermes engine + native modules |
-| **React Native + Expo** | ~15-20MB | ~35-55MB | Expo runtime + prebuild modules |
+| Framework               | Minimum app size | App Cơm Tấm Má Tư (ước tính) | Ghi chú                         |
+| ----------------------- | ---------------- | ---------------------------- | ------------------------------- |
+| **Native iOS**          | ~3-5MB           | ~15-25MB                     | Nhỏ nhất                        |
+| **Native Android**      | ~3-5MB           | ~12-20MB                     | Nhỏ nhất                        |
+| **Flutter**             | ~15-18MB         | ~30-45MB                     | Dart runtime + Skia engine      |
+| **React Native**        | ~10-12MB         | ~25-40MB                     | Hermes engine + native modules  |
+| **React Native + Expo** | ~15-20MB         | ~35-55MB                     | Expo runtime + prebuild modules |
 
 **Context Việt Nam:** Nhiều khách hàng dùng Android giá rẻ (32-64GB storage). App 50MB+ có thể bị cân nhắc trước khi cài. App < 30MB là lý tưởng.
 
 #### E. Supabase SDK & Ecosystem
 
-| Framework | SDK | Mức độ trưởng thành | Realtime | Auth |
-|-----------|-----|---------------------|----------|------|
-| **React Native** | `@supabase/supabase-js` (JS SDK) | ⭐⭐⭐⭐⭐ Rất trưởng thành | ✅ Đầy đủ | ✅ Token-based |
-| **Flutter** | `supabase_flutter` (Dart SDK) | ⭐⭐⭐⭐ Trưởng thành, ít edge case hơn JS | ✅ Đầy đủ | ✅ Token-based |
-| **Native iOS** | `supabase-swift` | ⭐⭐⭐ Đủ dùng, community nhỏ hơn | ✅ Có | ✅ Có |
-| **Native Android** | `supabase-kt` | ⭐⭐⭐ Đủ dùng, community nhỏ hơn | ✅ Có | ✅ Có |
+| Framework          | SDK                              | Mức độ trưởng thành                        | Realtime  | Auth           |
+| ------------------ | -------------------------------- | ------------------------------------------ | --------- | -------------- |
+| **React Native**   | `@supabase/supabase-js` (JS SDK) | ⭐⭐⭐⭐⭐ Rất trưởng thành                | ✅ Đầy đủ | ✅ Token-based |
+| **Flutter**        | `supabase_flutter` (Dart SDK)    | ⭐⭐⭐⭐ Trưởng thành, ít edge case hơn JS | ✅ Đầy đủ | ✅ Token-based |
+| **Native iOS**     | `supabase-swift`                 | ⭐⭐⭐ Đủ dùng, community nhỏ hơn          | ✅ Có     | ✅ Có          |
+| **Native Android** | `supabase-kt`                    | ⭐⭐⭐ Đủ dùng, community nhỏ hơn          | ✅ Có     | ✅ Có          |
 
 **Ghi chú:** Supabase JS SDK là SDK chính thức, có features đầy đủ nhất và được support tốt nhất. Dart SDK đứng thứ 2. Swift/Kotlin SDK ít mature hơn.
 
 #### F. Khả Năng Tích Hợp Bản Đồ (Map — cho Delivery & Đặt Bàn)
 
-| Framework | Map Library | Performance | Ghi chú |
-|-----------|------------|-------------|---------|
-| **Native** | Apple MapKit / Google Maps SDK | 60fps, tốt nhất | Full native API |
-| **Flutter** | `google_maps_flutter` (platform view) | 50-60fps, occasional jank khi scroll | Platform view overhead |
-| **React Native** | `react-native-maps` | 50-60fps, tương tự Flutter | Native map view qua bridge |
+| Framework        | Map Library                           | Performance                          | Ghi chú                    |
+| ---------------- | ------------------------------------- | ------------------------------------ | -------------------------- |
+| **Native**       | Apple MapKit / Google Maps SDK        | 60fps, tốt nhất                      | Full native API            |
+| **Flutter**      | `google_maps_flutter` (platform view) | 50-60fps, occasional jank khi scroll | Platform view overhead     |
+| **React Native** | `react-native-maps`                   | 50-60fps, tương tự Flutter           | Native map view qua bridge |
 
 ### 0.4 Ma Trận Đánh Giá Tổng Hợp
 
 > Thang điểm: 1-10 (10 = tốt nhất). **Trọng số** phản ánh ưu tiên "hiệu năng & UX là chính".
 
-| Tiêu chí | Trọng số | Native | Flutter | React Native (New Arch) | RN + Expo |
-|----------|---------|--------|---------|------------------------|-----------|
-| **Cold Start** | 15% | 10 | 8 | 7 | 6 |
-| **Camera/QR Speed** | 15% | 10 | 8 | 7 (vision-camera) | 6 (expo-camera) |
-| **Animation 60fps** | 15% | 10 | 9 | 7 | 7 |
-| **Scroll Performance** | 10% | 10 | 9 | 8 | 8 |
-| **Map/Delivery UX** | 10% | 10 | 7 | 7 | 7 |
-| **Haptic Feedback** | 5% | 10 | 8 | 7 | 6 |
-| **Binary Size** | 5% | 10 | 6 | 7 | 5 |
-| **Platform Native Feel** | 10% | 10 | 7 | 8 | 8 |
-| **Supabase SDK** | 5% | 7 | 8 | 10 | 10 |
-| **1-dev cho 2 platform** | 5% | 2 | 9 | 9 | 10 |
-| **Time-to-market** | 5% | 3 | 8 | 8 | 9 |
-| | | | | | |
-| **TỔNG (có trọng số)** | **100%** | **8.65** | **8.05** | **7.45** | **6.95** |
+| Tiêu chí                 | Trọng số | Native   | Flutter  | React Native (New Arch) | RN + Expo       |
+| ------------------------ | -------- | -------- | -------- | ----------------------- | --------------- |
+| **Cold Start**           | 15%      | 10       | 8        | 7                       | 6               |
+| **Camera/QR Speed**      | 15%      | 10       | 8        | 7 (vision-camera)       | 6 (expo-camera) |
+| **Animation 60fps**      | 15%      | 10       | 9        | 7                       | 7               |
+| **Scroll Performance**   | 10%      | 10       | 9        | 8                       | 8               |
+| **Map/Delivery UX**      | 10%      | 10       | 7        | 7                       | 7               |
+| **Haptic Feedback**      | 5%       | 10       | 8        | 7                       | 6               |
+| **Binary Size**          | 5%       | 10       | 6        | 7                       | 5               |
+| **Platform Native Feel** | 10%      | 10       | 7        | 8                       | 8               |
+| **Supabase SDK**         | 5%       | 7        | 8        | 10                      | 10              |
+| **1-dev cho 2 platform** | 5%       | 2        | 9        | 9                       | 10              |
+| **Time-to-market**       | 5%       | 3        | 8        | 8                       | 9               |
+|                          |          |          |          |                         |                 |
+| **TỔNG (có trọng số)**   | **100%** | **8.65** | **8.05** | **7.45**                | **6.95**        |
 
 ### 0.5 Phân Tích Ưu Nhược Điểm Từng Phương Án
 
@@ -253,6 +255,7 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 #### 🥇 Khuyến Nghị #1: Flutter 3.x + Impeller (Nếu Ưu Tiên Performance + UX)
 
 **Lý do cốt lõi:** Flutter cho hiệu năng gần native nhất trong các cross-platform framework, đặc biệt:
+
 - Impeller engine: animation celebration khi check-in, tier upgrade sẽ **luôn 60fps**
 - Cold start nhanh hơn RN ~200ms — quan trọng khi khách mở app tại quầy
 - QR scanning nhanh hơn RN ~150ms
@@ -260,11 +263,13 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 - Dart có null safety, type system mạnh, cú pháp gần TypeScript
 
 **Trade-off chấp nhận được:**
+
 - Team mất 2-3 tuần học Dart (nhưng Dart syntax ~70% giống TypeScript)
 - Không share code trực tiếp với web CRM (nhưng share Design Tokens, API contracts)
 - Binary size ~35-45MB (chấp nhận được cho loyalty app)
 
 **Chiến lược giảm thiểu rủi ro:**
+
 - Tuần 1-2: FE Developer tập trung học Dart + Flutter qua project nhỏ
 - Dùng `supabase_flutter` SDK (đủ mature cho use case này)
 - Dùng Rive thay Lottie (native Flutter, performance tốt hơn)
@@ -272,12 +277,14 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 #### 🥈 Khuyến Nghị #2: React Native 0.79+ Bare (KHÔNG Expo) (Nếu Ưu Tiên Ecosystem + Tốc Độ Dev)
 
 **Khi nào chọn RN thay Flutter:**
+
 - FE Developer đã có kinh nghiệm React Native
 - Muốn share Zod schemas, types, utilities với web CRM
 - Cần OTA updates (CodePush) — rất hữu ích cho fix nhanh sau release
 - Supabase JS SDK là critical requirement
 
 **Bắt buộc nếu chọn RN (để đảm bảo perf):**
+
 - ✅ Bật New Architecture (Fabric + JSI) — **không optional**
 - ✅ Dùng `react-native-vision-camera` v4 (KHÔNG dùng expo-camera)
 - ✅ Dùng `react-native-reanimated` v3 cho MỌI animation
@@ -290,13 +297,13 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 
 **Lý do loại bỏ (so với bản v1.0 trước đó):**
 
-| Vấn đề | Chi tiết | Ảnh hưởng UX |
-|--------|---------|-------------|
-| Cold start | +200-400ms so với RN Bare | Khách chờ lâu hơn khi mở app tại quầy |
-| Camera | expo-camera chậm hơn vision-camera ~200ms | Check-in không đạt "zero-friction" |
-| Binary size | 35-55MB (Expo runtime overhead) | Budget Android e ngại cài đặt |
-| Animation ceiling | Không access trực tiếp react-native-skia | Particle effects celebration kém |
-| Native module control | Giới hạn bởi Expo SDK | Không custom được haptic patterns |
+| Vấn đề                | Chi tiết                                  | Ảnh hưởng UX                          |
+| --------------------- | ----------------------------------------- | ------------------------------------- |
+| Cold start            | +200-400ms so với RN Bare                 | Khách chờ lâu hơn khi mở app tại quầy |
+| Camera                | expo-camera chậm hơn vision-camera ~200ms | Check-in không đạt "zero-friction"    |
+| Binary size           | 35-55MB (Expo runtime overhead)           | Budget Android e ngại cài đặt         |
+| Animation ceiling     | Không access trực tiếp react-native-skia  | Particle effects celebration kém      |
+| Native module control | Giới hạn bởi Expo SDK                     | Không custom được haptic patterns     |
 
 **Expo phù hợp cho:** MVP nhanh, prototype, app không yêu cầu performance cao. **Không phù hợp** khi "tối ưu hiệu năng và UX là chính".
 
@@ -304,34 +311,34 @@ Kết quả: Giảm perceived time xuống ~100-200ms cho mọi framework
 
 #### Nếu Chọn Flutter (Khuyến Nghị #1):
 
-| Thành phần | Lựa chọn | Thay thế cho |
-|-----------|----------|-------------|
-| **Framework** | Flutter 3.x + Impeller | React Native + Expo |
-| **Navigation** | GoRouter (declarative) | Expo Router |
-| **State Management** | Riverpod 2 + Dio | Zustand + TanStack Query |
-| **UI Framework** | Material 3 + custom theme từ Design Tokens | NativeWind |
-| **Offline Database** | Drift (SQLite wrapper cho Dart) | WatermelonDB |
-| **Animations** | Rive + Flutter implicit/explicit animations | Reanimated 3 |
-| **QR Scanner** | `mobile_scanner` | expo-camera |
-| **Geolocation** | `geolocator` + `flutter_background_geolocation` | expo-location |
-| **Map** | `google_maps_flutter` + `flutter_polyline_points` | react-native-maps |
-| **Push** | `firebase_messaging` | expo-notifications |
-| **Testing** | Flutter test + integration_test + Patrol (E2E) | Jest + Detox |
-| **CI/CD** | Fastlane + GitHub Actions + Firebase App Distribution | EAS Build |
-| **Code Push** | Shorebird.dev (OTA updates cho Flutter) | Expo OTA |
+| Thành phần           | Lựa chọn                                              | Thay thế cho             |
+| -------------------- | ----------------------------------------------------- | ------------------------ |
+| **Framework**        | Flutter 3.x + Impeller                                | React Native + Expo      |
+| **Navigation**       | GoRouter (declarative)                                | Expo Router              |
+| **State Management** | Riverpod 2 + Dio                                      | Zustand + TanStack Query |
+| **UI Framework**     | Material 3 + custom theme từ Design Tokens            | NativeWind               |
+| **Offline Database** | Drift (SQLite wrapper cho Dart)                       | WatermelonDB             |
+| **Animations**       | Rive + Flutter implicit/explicit animations           | Reanimated 3             |
+| **QR Scanner**       | `mobile_scanner`                                      | expo-camera              |
+| **Geolocation**      | `geolocator` + `flutter_background_geolocation`       | expo-location            |
+| **Map**              | `google_maps_flutter` + `flutter_polyline_points`     | react-native-maps        |
+| **Push**             | `firebase_messaging`                                  | expo-notifications       |
+| **Testing**          | Flutter test + integration_test + Patrol (E2E)        | Jest + Detox             |
+| **CI/CD**            | Fastlane + GitHub Actions + Firebase App Distribution | EAS Build                |
+| **Code Push**        | Shorebird.dev (OTA updates cho Flutter)               | Expo OTA                 |
 
 #### Nếu Chọn React Native Bare (Khuyến Nghị #2):
 
-| Thành phần | Lựa chọn | Thay đổi so với v1.0 |
-|-----------|----------|---------------------|
-| **Framework** | React Native 0.79+ (New Arch ON) | Bỏ Expo managed |
-| **Camera** | `react-native-vision-camera` v4 | Thay expo-camera |
-| **Animation** | Reanimated 3 + `react-native-skia` | Thêm Skia cho particle |
-| **List** | `@shopify/flash-list` | Thay FlatList |
-| **Map** | `react-native-maps` + `@mapbox/polyline` | Mới (cho delivery) |
-| **Code Push** | `react-native-code-push` (AppCenter) | Thay Expo OTA |
-| **Build** | Fastlane + GitHub Actions | Thay EAS Build |
-| Còn lại | Giữ nguyên (Zustand, TanStack Query, WatermelonDB) | — |
+| Thành phần    | Lựa chọn                                           | Thay đổi so với v1.0   |
+| ------------- | -------------------------------------------------- | ---------------------- |
+| **Framework** | React Native 0.79+ (New Arch ON)                   | Bỏ Expo managed        |
+| **Camera**    | `react-native-vision-camera` v4                    | Thay expo-camera       |
+| **Animation** | Reanimated 3 + `react-native-skia`                 | Thêm Skia cho particle |
+| **List**      | `@shopify/flash-list`                              | Thay FlatList          |
+| **Map**       | `react-native-maps` + `@mapbox/polyline`           | Mới (cho delivery)     |
+| **Code Push** | `react-native-code-push` (AppCenter)               | Thay Expo OTA          |
+| **Build**     | Fastlane + GitHub Actions                          | Thay EAS Build         |
+| Còn lại       | Giữ nguyên (Zustand, TanStack Query, WatermelonDB) | —                      |
 
 ---
 
@@ -491,13 +498,13 @@ Khách hàng đủ điều kiện khuyến mãi
 
 ### 1.3 Xử Lý Tính Nhất Quán Dữ Liệu (Data Consistency)
 
-| Chiến lược | Áp dụng cho | Chi tiết |
-|------------|-------------|----------|
-| **Database Transaction** | Tích điểm, thanh toán, cashback | Dùng `BEGIN...COMMIT` trong Edge Function. Nếu bất kỳ bước nào thất bại → rollback toàn bộ |
-| **Eventual Consistency** | Đồng bộ CRM | App → Supabase DB (source of truth) → async sync → CRM. CRM không bao giờ là source of truth cho mobile data |
-| **Idempotency Keys** | Mọi write operation | Mỗi request mang `idempotency_key` (UUID v7). Edge Function check trùng trước khi xử lý. Tránh duplicate khi retry |
-| **Optimistic Locking** | Cập nhật điểm, ví | Dùng `version` column. `UPDATE ... WHERE version = $expected_version`. Nếu conflict → client retry với data mới |
-| **Outbox Pattern** | CRM sync | Ghi event vào bảng `sync_outbox` cùng transaction chính. Background worker đọc outbox → gửi CRM → mark processed |
+| Chiến lược               | Áp dụng cho                     | Chi tiết                                                                                                           |
+| ------------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Database Transaction** | Tích điểm, thanh toán, cashback | Dùng `BEGIN...COMMIT` trong Edge Function. Nếu bất kỳ bước nào thất bại → rollback toàn bộ                         |
+| **Eventual Consistency** | Đồng bộ CRM                     | App → Supabase DB (source of truth) → async sync → CRM. CRM không bao giờ là source of truth cho mobile data       |
+| **Idempotency Keys**     | Mọi write operation             | Mỗi request mang `idempotency_key` (UUID v7). Edge Function check trùng trước khi xử lý. Tránh duplicate khi retry |
+| **Optimistic Locking**   | Cập nhật điểm, ví               | Dùng `version` column. `UPDATE ... WHERE version = $expected_version`. Nếu conflict → client retry với data mới    |
+| **Outbox Pattern**       | CRM sync                        | Ghi event vào bảng `sync_outbox` cùng transaction chính. Background worker đọc outbox → gửi CRM → mark processed   |
 
 #### Quy tắc Source of Truth
 
@@ -522,12 +529,12 @@ Supabase DB         Supabase DB          CRM (chỉ đọc)
 
 ### 2.1 Design & Handoff — Quy Trình Thiết Kế Đến Code
 
-| Công cụ | Mục đích | Lý do chọn |
-|---------|---------|-------------|
-| **Figma** | UI/UX Design chính | Industry standard, real-time collaboration, Dev Mode cho handoff |
-| **Figma Variables** | Design Tokens (colors, spacing, typography) | Đồng bộ trực tiếp với code tokens, single source of truth cho visual design |
-| **Figma Auto Layout** | Responsive design | Map 1:1 với Flexbox trong React Native |
-| **Storybook (React Native Web)** | Component Library documentation | Designer review components trực tiếp trên browser, đảm bảo design-code parity |
+| Công cụ                          | Mục đích                                    | Lý do chọn                                                                    |
+| -------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------- |
+| **Figma**                        | UI/UX Design chính                          | Industry standard, real-time collaboration, Dev Mode cho handoff              |
+| **Figma Variables**              | Design Tokens (colors, spacing, typography) | Đồng bộ trực tiếp với code tokens, single source of truth cho visual design   |
+| **Figma Auto Layout**            | Responsive design                           | Map 1:1 với Flexbox trong React Native                                        |
+| **Storybook (React Native Web)** | Component Library documentation             | Designer review components trực tiếp trên browser, đảm bảo design-code parity |
 
 #### Quy trình Design-to-Code (Design Handoff Pipeline)
 
@@ -603,46 +610,46 @@ Supabase DB         Supabase DB          CRM (chỉ đọc)
 
 ### 2.2 Front-End (Mobile)
 
-| Thành phần | Lựa chọn | Lý do |
-|-----------|----------|-------|
-| **Framework** | **React Native 0.79 + Expo SDK 52** | 1 codebase cho iOS + Android, phù hợp team có 1 Senior FE. Expo giảm cấu hình native. Hệ sinh thái React quen thuộc nếu team đã dùng React web |
-| **Navigation** | Expo Router (file-based) | Tương tự Next.js App Router mà team đã quen |
-| **State Management** | Zustand + TanStack Query v5 | Zustand cho client state, TanStack Query cho server state + caching |
-| **UI Framework** | Tamagui hoặc NativeWind (Tailwind cho RN) | Đồng bộ Design Tokens dễ dàng. NativeWind nếu team thích Tailwind (đã dùng trong web) |
-| **Offline Database** | WatermelonDB | Hiệu suất cao cho offline-first, lazy loading, sync primitives tích hợp |
-| **Animations** | React Native Reanimated 3 | Animations mượt chạy trên UI thread (check-in celebration, tier upgrade) |
-| **QR Scanner** | expo-camera + expo-barcode-scanner | Tích hợp sẵn trong Expo, không cần native module bên ngoài |
-| **Geolocation** | expo-location | Geofencing cho check-in tại quán |
-| **Push Notifications** | expo-notifications + FCM/APNs | Managed workflow, Expo Push Service đơn giản hóa setup |
-| **Testing** | Jest + React Native Testing Library + Detox (E2E) | Đầy đủ unit → integration → E2E |
+| Thành phần             | Lựa chọn                                          | Lý do                                                                                                                                          |
+| ---------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Framework**          | **React Native 0.79 + Expo SDK 52**               | 1 codebase cho iOS + Android, phù hợp team có 1 Senior FE. Expo giảm cấu hình native. Hệ sinh thái React quen thuộc nếu team đã dùng React web |
+| **Navigation**         | Expo Router (file-based)                          | Tương tự Next.js App Router mà team đã quen                                                                                                    |
+| **State Management**   | Zustand + TanStack Query v5                       | Zustand cho client state, TanStack Query cho server state + caching                                                                            |
+| **UI Framework**       | Tamagui hoặc NativeWind (Tailwind cho RN)         | Đồng bộ Design Tokens dễ dàng. NativeWind nếu team thích Tailwind (đã dùng trong web)                                                          |
+| **Offline Database**   | WatermelonDB                                      | Hiệu suất cao cho offline-first, lazy loading, sync primitives tích hợp                                                                        |
+| **Animations**         | React Native Reanimated 3                         | Animations mượt chạy trên UI thread (check-in celebration, tier upgrade)                                                                       |
+| **QR Scanner**         | expo-camera + expo-barcode-scanner                | Tích hợp sẵn trong Expo, không cần native module bên ngoài                                                                                     |
+| **Geolocation**        | expo-location                                     | Geofencing cho check-in tại quán                                                                                                               |
+| **Push Notifications** | expo-notifications + FCM/APNs                     | Managed workflow, Expo Push Service đơn giản hóa setup                                                                                         |
+| **Testing**            | Jest + React Native Testing Library + Detox (E2E) | Đầy đủ unit → integration → E2E                                                                                                                |
 
 #### Lý Do Chọn React Native Thay Vì Native (Swift/Kotlin)
 
 Dựa trên team composition (1 Senior FE developer cho cả 2 platform):
 
-| Tiêu chí | React Native + Expo | Native (Swift + Kotlin) |
-|----------|--------------------|-----------------------|
-| Số lượng developer cần | 1 | Tối thiểu 2 (1 iOS + 1 Android) |
-| Code sharing | ~85-90% shared | 0% (ngoại trừ backend) |
-| Design System implementation | 1 lần | 2 lần |
-| Time-to-market | Nhanh hơn ~40% | Chậm hơn |
-| Performance | Đủ tốt cho loyalty app | Tối ưu nhất |
-| Offline support | WatermelonDB (tốt) | Core Data/Room (tốt nhất) |
+| Tiêu chí                     | React Native + Expo    | Native (Swift + Kotlin)         |
+| ---------------------------- | ---------------------- | ------------------------------- |
+| Số lượng developer cần       | 1                      | Tối thiểu 2 (1 iOS + 1 Android) |
+| Code sharing                 | ~85-90% shared         | 0% (ngoại trừ backend)          |
+| Design System implementation | 1 lần                  | 2 lần                           |
+| Time-to-market               | Nhanh hơn ~40%         | Chậm hơn                        |
+| Performance                  | Đủ tốt cho loyalty app | Tối ưu nhất                     |
+| Offline support              | WatermelonDB (tốt)     | Core Data/Room (tốt nhất)       |
 
 **Kết luận:** Với đội 3 người và 1 FE developer, React Native + Expo là lựa chọn tối ưu. App loyalty không yêu cầu performance cực cao (không phải game hay video editing).
 
 ### 2.3 Back-End & Database
 
-| Thành phần | Lựa chọn | Lý do |
-|-----------|----------|-------|
-| **Backend Platform** | **Supabase** (project hiện có: `zrlriuednoaqrsvnjjyo`) | Đã là nền tảng của CRM web, tận dụng toàn bộ infrastructure hiện có |
-| **API Layer** | Supabase Edge Functions (Deno/TypeScript) | Business logic phức tạp, reuse Zod schemas từ `@comtammatu/shared` |
-| **Database** | PostgreSQL (Supabase managed) | Đã có schema, RLS policies, migrations sẵn |
-| **Auth** | Supabase Auth (JWT-based cho mobile) | Token-based thay vì cookie-based (mobile-friendly) |
-| **Realtime** | Supabase Realtime (WebSocket) | postgres_changes cho live updates (điểm, hạng, check-in) |
-| **File Storage** | Supabase Storage | Avatar, QR codes, promotional banners |
-| **Caching** | Supabase Edge Function + CDN headers | Cache menu data, promotion banners |
-| **Queue/Background Jobs** | pg_cron + pg_notify + Edge Functions | CRM sync, push notifications, batch processing |
+| Thành phần                | Lựa chọn                                               | Lý do                                                               |
+| ------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------- |
+| **Backend Platform**      | **Supabase** (project hiện có: `zrlriuednoaqrsvnjjyo`) | Đã là nền tảng của CRM web, tận dụng toàn bộ infrastructure hiện có |
+| **API Layer**             | Supabase Edge Functions (Deno/TypeScript)              | Business logic phức tạp, reuse Zod schemas từ `@comtammatu/shared`  |
+| **Database**              | PostgreSQL (Supabase managed)                          | Đã có schema, RLS policies, migrations sẵn                          |
+| **Auth**                  | Supabase Auth (JWT-based cho mobile)                   | Token-based thay vì cookie-based (mobile-friendly)                  |
+| **Realtime**              | Supabase Realtime (WebSocket)                          | postgres_changes cho live updates (điểm, hạng, check-in)            |
+| **File Storage**          | Supabase Storage                                       | Avatar, QR codes, promotional banners                               |
+| **Caching**               | Supabase Edge Function + CDN headers                   | Cache menu data, promotion banners                                  |
+| **Queue/Background Jobs** | pg_cron + pg_notify + Edge Functions                   | CRM sync, push notifications, batch processing                      |
 
 #### Database Schema Bổ Sung Cho Mobile App
 
@@ -751,14 +758,14 @@ ALTER TABLE sync_outbox ENABLE ROW LEVEL SECURITY;
 
 ### 2.4 Infrastructure / DevOps
 
-| Thành phần | Lựa chọn | Chi tiết |
-|-----------|----------|---------|
-| **Cloud** | Supabase (managed) + Expo EAS | Supabase cho backend, EAS cho build & distribute mobile |
-| **CI/CD** | GitHub Actions | Đã có sẵn trong monorepo hiện tại |
-| **Mobile Build** | EAS Build | Cloud builds cho iOS + Android, không cần local Xcode/Android Studio |
-| **Mobile Deploy** | EAS Submit + OTA Updates | App Store/Play Store submit + over-the-air JS bundle updates |
-| **Monitoring** | Sentry (React Native) | Crash reporting, performance monitoring, release tracking |
-| **Analytics** | PostHog (self-hosted hoặc cloud) | Product analytics, feature flags, session replay |
+| Thành phần        | Lựa chọn                         | Chi tiết                                                             |
+| ----------------- | -------------------------------- | -------------------------------------------------------------------- |
+| **Cloud**         | Supabase (managed) + Expo EAS    | Supabase cho backend, EAS cho build & distribute mobile              |
+| **CI/CD**         | GitHub Actions                   | Đã có sẵn trong monorepo hiện tại                                    |
+| **Mobile Build**  | EAS Build                        | Cloud builds cho iOS + Android, không cần local Xcode/Android Studio |
+| **Mobile Deploy** | EAS Submit + OTA Updates         | App Store/Play Store submit + over-the-air JS bundle updates         |
+| **Monitoring**    | Sentry (React Native)            | Crash reporting, performance monitoring, release tracking            |
+| **Analytics**     | PostHog (self-hosted hoặc cloud) | Product analytics, feature flags, session replay                     |
 
 #### CI/CD Pipeline
 
@@ -784,6 +791,7 @@ ALTER TABLE sync_outbox ENABLE ROW LEVEL SECURITY;
 ### 3.1 UX Challenge: Check-in Tại Quán Nhanh Chóng, Không Gây Ách Tắc
 
 #### Vấn đề
+
 Khách hàng đến quán, xếp hàng order, nếu phải mở app → đăng nhập → tìm nút check-in → quét QR → chờ xác thực thì sẽ gây ách tắc tại quầy và trải nghiệm kém.
 
 #### Giải pháp UX: "Check-in Không Cần Suy Nghĩ" (Zero-Friction Check-in)
@@ -839,17 +847,20 @@ Khách hàng đến quán, xếp hàng order, nếu phải mở app → đăng n
 ```
 
 **Phương án 2: Geofencing Tự Động (Secondary — 0 giây)**
+
 - Khi khách hàng đến gần quán (trong bán kính 100m), app gửi silent notification: "Bạn đang ở gần Cơm Tấm Má Tư. Nhấn để check-in!"
 - Nhấn notification → xác thực GPS → check-in hoàn tất
 - **Ưu điểm:** Không cần mở app chủ động
 - **Hạn chế:** Yêu cầu quyền location "Always" (nhiều user từ chối)
 
 **Phương án 3: NFC Tap (Future Enhancement)**
+
 - Đặt NFC tag tại quầy thu ngân
 - Khách chạm điện thoại → check-in tự động
 - Nhanh nhất nhưng yêu cầu đầu tư hardware
 
 #### Design Principles Cho Check-in Flow
+
 1. **Tối đa 2 tap** từ Home → Check-in thành công
 2. **Pre-warm camera** khi app vào foreground (giảm thời gian chờ mở camera)
 3. **Haptic feedback** + animation celebration khi check-in thành công
@@ -860,13 +871,13 @@ Khách hàng đến quán, xếp hàng order, nếu phải mở app → đăng n
 
 #### Các vector tấn công và giải pháp
 
-| Vector tấn công | Mức độ rủi ro | Giải pháp |
-|-----------------|---------------|-----------|
-| **Fake GPS (GPS Spoofing)** | Cao | Multi-layer verification (xem chi tiết bên dưới) |
-| **Chụp lại/Chia sẻ QR** | Trung bình | Dynamic QR codes (thay đổi mỗi 30 giây) |
-| **Emulator/Rooted device** | Trung bình | Device integrity check |
-| **Replay attack** | Thấp | QR chứa timestamp + HMAC, hết hạn sau 60 giây |
-| **Multiple accounts** | Thấp | Device fingerprint binding |
+| Vector tấn công             | Mức độ rủi ro | Giải pháp                                        |
+| --------------------------- | ------------- | ------------------------------------------------ |
+| **Fake GPS (GPS Spoofing)** | Cao           | Multi-layer verification (xem chi tiết bên dưới) |
+| **Chụp lại/Chia sẻ QR**     | Trung bình    | Dynamic QR codes (thay đổi mỗi 30 giây)          |
+| **Emulator/Rooted device**  | Trung bình    | Device integrity check                           |
+| **Replay attack**           | Thấp          | QR chứa timestamp + HMAC, hết hạn sau 60 giây    |
+| **Multiple accounts**       | Thấp          | Device fingerprint binding                       |
 
 #### Chi tiết kỹ thuật chống gian lận
 
@@ -892,45 +903,57 @@ Mỗi 30 giây: QR code thay đổi → screenshot cũ không dùng được
 async function verifyCheckin(request: CheckinRequest): Promise<CheckinResult> {
   // Layer 1: Kiểm tra timestamp QR (phải trong 60 giây gần nhất)
   if (Date.now() - request.qr_timestamp > 60_000) {
-    return { verified: false, reason: 'QR_EXPIRED' };
+    return { verified: false, reason: "QR_EXPIRED" };
   }
 
   // Layer 2: Verify HMAC
-  const expectedHmac = hmacSha256(SECRET, `${request.branch_id}:${request.timestamp}:${request.nonce}`);
+  const expectedHmac = hmacSha256(
+    SECRET,
+    `${request.branch_id}:${request.timestamp}:${request.nonce}`
+  );
   if (request.hmac !== expectedHmac) {
-    return { verified: false, reason: 'INVALID_QR' };
+    return { verified: false, reason: "INVALID_QR" };
   }
 
   // Layer 3: GPS consistency check (nếu dùng geolocation)
-  if (request.method === 'geolocation') {
+  if (request.method === "geolocation") {
     const branch = await getBranch(request.branch_id);
     const distance = haversineDistance(
-      request.latitude, request.longitude,
-      branch.latitude, branch.longitude
+      request.latitude,
+      request.longitude,
+      branch.latitude,
+      branch.longitude
     );
-    if (distance > 100) { // meters
-      return { verified: false, reason: 'TOO_FAR' };
+    if (distance > 100) {
+      // meters
+      return { verified: false, reason: "TOO_FAR" };
     }
   }
 
   // Layer 4: Rate limiting (1 check-in/branch/ngày)
-  const existingCheckin = await db.query(`
+  const existingCheckin = await db.query(
+    `
     SELECT id FROM checkins
     WHERE member_id = $1 AND branch_id = $2
     AND created_at::DATE = CURRENT_DATE
-  `, [request.member_id, request.branch_id]);
+  `,
+    [request.member_id, request.branch_id]
+  );
 
   if (existingCheckin.rows.length > 0) {
-    return { verified: false, reason: 'ALREADY_CHECKED_IN' };
+    return { verified: false, reason: "ALREADY_CHECKED_IN" };
   }
 
   // Layer 5: Device fingerprint (1 device = 1 account)
-  const suspiciousDevice = await db.query(`
+  const suspiciousDevice = await db.query(
+    `
     SELECT id FROM checkins
     WHERE device_fingerprint = $1
     AND member_id != $2
     AND created_at > now() - interval '24 hours'
-  `, [request.device_fingerprint, request.member_id]);
+  `,
+    [request.device_fingerprint, request.member_id]
+  );
 
   if (suspiciousDevice.rows.length > 0) {
     // Flag cho admin review, không block ngay
@@ -946,8 +969,8 @@ async function verifyCheckin(request: CheckinRequest): Promise<CheckinResult> {
 
 ```typescript
 // Client-side (React Native)
-import { isEmulator } from 'react-native-device-info';
-import { attestKey } from 'expo-attestation'; // iOS App Attest / Android Play Integrity
+import { isEmulator } from "react-native-device-info";
+import { attestKey } from "expo-attestation"; // iOS App Attest / Android Play Integrity
 
 async function getDeviceIntegrity(): Promise<DeviceAttestation> {
   return {
@@ -1056,18 +1079,22 @@ async function processSyncOutbox() {
   for (const event of pendingEvents.rows) {
     try {
       await sendToCRM(event.event_type, event.payload);
-      await db.update('sync_outbox', {
-        status: 'completed',
-        processed_at: new Date(),
-      }).where({ id: event.id });
+      await db
+        .update("sync_outbox", {
+          status: "completed",
+          processed_at: new Date(),
+        })
+        .where({ id: event.id });
     } catch (error) {
       const nextRetry = calculateBackoff(event.retry_count); // 30s, 1m, 2m, 5m, 15m
-      await db.update('sync_outbox', {
-        status: 'failed',
-        retry_count: event.retry_count + 1,
-        next_retry_at: nextRetry,
-        error_message: error.message,
-      }).where({ id: event.id });
+      await db
+        .update("sync_outbox", {
+          status: "failed",
+          retry_count: event.retry_count + 1,
+          next_retry_at: nextRetry,
+          error_message: error.message,
+        })
+        .where({ id: event.id });
 
       if (event.retry_count + 1 >= event.max_retries) {
         await alertAdmin(`CRM sync failed permanently: ${event.event_type} #${event.id}`);
@@ -1079,12 +1106,12 @@ async function processSyncOutbox() {
 
 #### Tóm Tắt: App Không Bao Giờ Down Vì CRM
 
-| Tình huống | Hành vi App | Hành vi CRM Sync |
-|-----------|-------------|-------------------|
-| CRM online | Bình thường | Sync gần real-time (< 5 giây) |
-| CRM down < 1 giờ | **Bình thường** (user không biết) | Queue trong outbox, sync khi CRM up |
-| CRM down > 1 giờ | **Bình thường** | Alert admin, tiếp tục queue |
-| CRM down > 24 giờ | **Bình thường** | Escalate, manual reconciliation nếu cần |
+| Tình huống        | Hành vi App                       | Hành vi CRM Sync                        |
+| ----------------- | --------------------------------- | --------------------------------------- |
+| CRM online        | Bình thường                       | Sync gần real-time (< 5 giây)           |
+| CRM down < 1 giờ  | **Bình thường** (user không biết) | Queue trong outbox, sync khi CRM up     |
+| CRM down > 1 giờ  | **Bình thường**                   | Alert admin, tiếp tục queue             |
+| CRM down > 24 giờ | **Bình thường**                   | Escalate, manual reconciliation nếu cần |
 
 ---
 
@@ -1107,31 +1134,31 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 
 #### Phase 1: Research & Strategy (Tuần 1-2)
 
-| Nhiệm vụ | Output | Deadline |
-|----------|--------|----------|
-| User Research: Phỏng vấn 5-10 khách hàng thường xuyên | Research Report (insights, pain points, jobs-to-be-done) | Tuần 1 |
-| Competitive Analysis: Phân tích 5 loyalty apps phổ biến tại Việt Nam (The Coffee House, Phúc Long, GrabFood, ShopeeFood, MoMo) | Competitive Matrix + Key Takeaways | Tuần 1 |
-| User Persona & Journey Map: Tạo 3 personas (Khách mới, Khách trung thành, Khách VIP) | Persona Cards + Journey Maps trên Figma | Tuần 2 |
-| Information Architecture: Sơ đồ cấu trúc app, luồng navigation | IA Diagram + User Flows | Tuần 2 |
+| Nhiệm vụ                                                                                                                       | Output                                                   | Deadline |
+| ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------- | -------- |
+| User Research: Phỏng vấn 5-10 khách hàng thường xuyên                                                                          | Research Report (insights, pain points, jobs-to-be-done) | Tuần 1   |
+| Competitive Analysis: Phân tích 5 loyalty apps phổ biến tại Việt Nam (The Coffee House, Phúc Long, GrabFood, ShopeeFood, MoMo) | Competitive Matrix + Key Takeaways                       | Tuần 1   |
+| User Persona & Journey Map: Tạo 3 personas (Khách mới, Khách trung thành, Khách VIP)                                           | Persona Cards + Journey Maps trên Figma                  | Tuần 2   |
+| Information Architecture: Sơ đồ cấu trúc app, luồng navigation                                                                 | IA Diagram + User Flows                                  | Tuần 2   |
 
 #### Phase 2: Design System & Wireframes (Tuần 3-4)
 
-| Nhiệm vụ | Output | Deadline |
-|----------|--------|----------|
-| Xây dựng Design Tokens trên Figma Variables | Color, Typography, Spacing, Border Radius tokens | Tuần 3 |
-| Component Library trên Figma | Atoms: Button, Input, Badge, Card, Icon... Molecules: ListItem, TabBar, Header, PointsDisplay... | Tuần 3-4 |
-| Wireframes cho tất cả màn hình chính | Low-fi wireframes (15-20 screens) | Tuần 3 |
-| Hi-fi Design cho Sprint 1 screens | Home, Login, Check-in Flow, Profile | Tuần 4 |
+| Nhiệm vụ                                    | Output                                                                                           | Deadline |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------ | -------- |
+| Xây dựng Design Tokens trên Figma Variables | Color, Typography, Spacing, Border Radius tokens                                                 | Tuần 3   |
+| Component Library trên Figma                | Atoms: Button, Input, Badge, Card, Icon... Molecules: ListItem, TabBar, Header, PointsDisplay... | Tuần 3-4 |
+| Wireframes cho tất cả màn hình chính        | Low-fi wireframes (15-20 screens)                                                                | Tuần 3   |
+| Hi-fi Design cho Sprint 1 screens           | Home, Login, Check-in Flow, Profile                                                              | Tuần 4   |
 
 #### Phase 3: Ongoing Design Support (Tuần 5-16)
 
-| Nhiệm vụ | Tần suất | Chi tiết |
-|----------|---------|---------|
-| Sprint Design Review | Mỗi 2 tuần | Review components đã build trên Storybook, feedback |
-| Thiết kế màn hình cho sprint tiếp theo | Liên tục | Luôn đi trước FE 1 sprint |
-| Micro-interactions & Animations | Khi cần | Check-in celebration, tier upgrade animation, point counter |
-| Usability Testing | Tuần 10, 14 | Test với 3-5 khách hàng thật, iterate |
-| App Store Assets | Tuần 15 | Screenshots, app icon, feature graphic |
+| Nhiệm vụ                               | Tần suất    | Chi tiết                                                    |
+| -------------------------------------- | ----------- | ----------------------------------------------------------- |
+| Sprint Design Review                   | Mỗi 2 tuần  | Review components đã build trên Storybook, feedback         |
+| Thiết kế màn hình cho sprint tiếp theo | Liên tục    | Luôn đi trước FE 1 sprint                                   |
+| Micro-interactions & Animations        | Khi cần     | Check-in celebration, tier upgrade animation, point counter |
+| Usability Testing                      | Tuần 10, 14 | Test với 3-5 khách hàng thật, iterate                       |
+| App Store Assets                       | Tuần 15     | Screenshots, app icon, feature graphic                      |
 
 #### Design System — Cấu Trúc Figma
 
@@ -1169,41 +1196,41 @@ Tuần 15-16: ░░░░░░░░░░░░░░░░░░░░░░
 
 #### Phase 1: Project Setup & Component Library (Tuần 1-4)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| Khởi tạo Expo project trong monorepo | `apps/mobile/` với Expo SDK 52, TypeScript strict | Solo |
-| Thiết lập Design Token pipeline | Figma Variables → JSON export → `theme.ts` trong RN | Với Designer |
-| Build Component Library (Atoms) | Button, Input, Badge, Card... theo Design System | Với Designer (review trên Storybook) |
-| Thiết lập Storybook React Native Web | Để Designer review components trên browser | Solo |
-| Cấu hình Navigation (Expo Router) | Tab navigation, stack screens, deep linking | Solo |
-| Tích hợp Supabase client | Auth flow, realtime subscription setup | Với Back-End |
+| Nhiệm vụ                             | Chi tiết                                            | Phối hợp                             |
+| ------------------------------------ | --------------------------------------------------- | ------------------------------------ |
+| Khởi tạo Expo project trong monorepo | `apps/mobile/` với Expo SDK 52, TypeScript strict   | Solo                                 |
+| Thiết lập Design Token pipeline      | Figma Variables → JSON export → `theme.ts` trong RN | Với Designer                         |
+| Build Component Library (Atoms)      | Button, Input, Badge, Card... theo Design System    | Với Designer (review trên Storybook) |
+| Thiết lập Storybook React Native Web | Để Designer review components trên browser          | Solo                                 |
+| Cấu hình Navigation (Expo Router)    | Tab navigation, stack screens, deep linking         | Solo                                 |
+| Tích hợp Supabase client             | Auth flow, realtime subscription setup              | Với Back-End                         |
 
 #### Phase 2: Core Screens (Tuần 5-8)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| Home Screen | Points summary, quick actions, promotions carousel | Với Designer (hi-fi design) |
-| Login / Onboarding Flow | Phone/email auth, OTP, first-time tutorial | Với Back-End (auth API) |
-| Check-in Screen | Camera QR scanner, geolocation fallback, success animation | Với Designer (micro-interactions) + Back-End (verify-checkin API) |
-| Loyalty Dashboard | Tier progress bar, points history, tier benefits | Với Designer + Back-End (loyalty APIs) |
+| Nhiệm vụ                | Chi tiết                                                   | Phối hợp                                                          |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| Home Screen             | Points summary, quick actions, promotions carousel         | Với Designer (hi-fi design)                                       |
+| Login / Onboarding Flow | Phone/email auth, OTP, first-time tutorial                 | Với Back-End (auth API)                                           |
+| Check-in Screen         | Camera QR scanner, geolocation fallback, success animation | Với Designer (micro-interactions) + Back-End (verify-checkin API) |
+| Loyalty Dashboard       | Tier progress bar, points history, tier benefits           | Với Designer + Back-End (loyalty APIs)                            |
 
 #### Phase 3: Advanced Features (Tuần 9-12)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
+| Nhiệm vụ              | Chi tiết                                              | Phối hợp                     |
+| --------------------- | ----------------------------------------------------- | ---------------------------- |
 | Cashback & Promotions | Active promotions list, cashback history, redeem flow | Với Back-End (cashback APIs) |
-| Profile & Settings | Profile edit, notification preferences, privacy | Solo |
-| Offline Support | WatermelonDB setup, sync queue, offline check-in | Với Back-End (sync protocol) |
-| Push Notifications | expo-notifications setup, notification center UI | Với Back-End (push infra) |
+| Profile & Settings    | Profile edit, notification preferences, privacy       | Solo                         |
+| Offline Support       | WatermelonDB setup, sync queue, offline check-in      | Với Back-End (sync protocol) |
+| Push Notifications    | expo-notifications setup, notification center UI      | Với Back-End (push infra)    |
 
 #### Phase 4: Polish & Release (Tuần 13-16)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| Performance Optimization | FlatList optimization, image caching, bundle size | Solo |
-| Accessibility | VoiceOver/TalkBack support, contrast ratios | Với Designer |
-| E2E Tests (Detox) | Happy paths: onboarding, check-in, view points | Solo |
-| App Store Preparation | EAS Submit config, app metadata, screenshots | Với Designer (assets) |
+| Nhiệm vụ                 | Chi tiết                                          | Phối hợp              |
+| ------------------------ | ------------------------------------------------- | --------------------- |
+| Performance Optimization | FlatList optimization, image caching, bundle size | Solo                  |
+| Accessibility            | VoiceOver/TalkBack support, contrast ratios       | Với Designer          |
+| E2E Tests (Detox)        | Happy paths: onboarding, check-in, view points    | Solo                  |
+| App Store Preparation    | EAS Submit config, app metadata, screenshots      | Với Designer (assets) |
 
 #### Quy Trình Phối Hợp FE ↔ Designer (Component Library Build)
 
@@ -1233,54 +1260,54 @@ Designer                           Front-End Developer
 
 #### Phase 1: API & Database Foundation (Tuần 1-4)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| Database Schema Migration | Tạo tables: loyalty_tiers, loyalty_members, point_transactions, checkins, cashback_programs, sync_outbox | Solo |
-| RLS Policies | Viết policies cho tất cả bảng mới | Solo |
-| Edge Function: Auth Setup | JWT verification, tenant/branch context extraction | Solo |
-| Edge Function: `verify-checkin` | QR decode, HMAC verify, GPS check, rate limit, fraud detection | Với FE (payload format) |
-| Edge Function: `earn-points` | Tính điểm, cập nhật balance, kiểm tra nâng hạng | Solo |
-| API Documentation | OpenAPI spec cho tất cả Edge Functions | Với FE (contract agreement) |
+| Nhiệm vụ                        | Chi tiết                                                                                                 | Phối hợp                    |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------- |
+| Database Schema Migration       | Tạo tables: loyalty_tiers, loyalty_members, point_transactions, checkins, cashback_programs, sync_outbox | Solo                        |
+| RLS Policies                    | Viết policies cho tất cả bảng mới                                                                        | Solo                        |
+| Edge Function: Auth Setup       | JWT verification, tenant/branch context extraction                                                       | Solo                        |
+| Edge Function: `verify-checkin` | QR decode, HMAC verify, GPS check, rate limit, fraud detection                                           | Với FE (payload format)     |
+| Edge Function: `earn-points`    | Tính điểm, cập nhật balance, kiểm tra nâng hạng                                                          | Solo                        |
+| API Documentation               | OpenAPI spec cho tất cả Edge Functions                                                                   | Với FE (contract agreement) |
 
 #### Phase 2: Core Business Logic (Tuần 5-8)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| Edge Function: `process-cashback` | Tính cashback theo chương trình, ghi vào ví | Solo |
+| Nhiệm vụ                               | Chi tiết                                             | Phối hợp                |
+| -------------------------------------- | ---------------------------------------------------- | ----------------------- |
+| Edge Function: `process-cashback`      | Tính cashback theo chương trình, ghi vào ví          | Solo                    |
 | Edge Function: `get-loyalty-dashboard` | Aggregate data cho dashboard (tier, points, history) | Với FE (response shape) |
-| Edge Function: `get-promotions` | Active promotions, eligibility check theo tier | Solo |
-| Dynamic QR Generator | QR rotation mỗi 30 giây cho tablet tại quán | Solo |
-| CRM Integration Layer | Outbox pattern, sync worker, retry logic | Solo |
+| Edge Function: `get-promotions`        | Active promotions, eligibility check theo tier       | Solo                    |
+| Dynamic QR Generator                   | QR rotation mỗi 30 giây cho tablet tại quán          | Solo                    |
+| CRM Integration Layer                  | Outbox pattern, sync worker, retry logic             | Solo                    |
 
 #### Phase 3: Infrastructure (Tuần 9-12)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| CRM Sync Worker | pg_cron job, exponential backoff, alert on persistent failure | Solo |
-| Push Notification Infra | FCM/APNs setup, Edge Function triggers, token management | Với FE (device token registration) |
-| Offline Sync Protocol | Define sync handshake, conflict resolution rules, batch sync endpoint | Với FE (WatermelonDB sync) |
-| Rate Limiting & Security | Per-user rate limits, abuse detection, IP blocking | Solo |
+| Nhiệm vụ                 | Chi tiết                                                              | Phối hợp                           |
+| ------------------------ | --------------------------------------------------------------------- | ---------------------------------- |
+| CRM Sync Worker          | pg_cron job, exponential backoff, alert on persistent failure         | Solo                               |
+| Push Notification Infra  | FCM/APNs setup, Edge Function triggers, token management              | Với FE (device token registration) |
+| Offline Sync Protocol    | Define sync handshake, conflict resolution rules, batch sync endpoint | Với FE (WatermelonDB sync)         |
+| Rate Limiting & Security | Per-user rate limits, abuse detection, IP blocking                    | Solo                               |
 
 #### Phase 4: Monitoring & Release (Tuần 13-16)
 
-| Nhiệm vụ | Chi tiết | Phối hợp |
-|----------|---------|----------|
-| Database Monitoring | Query performance, connection pool, RLS audit | Solo |
-| Load Testing | Simulate 1000 concurrent check-ins, 500 point transactions/min | Solo |
-| CRM Reconciliation Tool | Admin endpoint để so sánh Supabase ↔ CRM data, fix discrepancies | Solo |
-| Production Readiness | Backup strategy, disaster recovery plan, runbook | Toàn team |
+| Nhiệm vụ                | Chi tiết                                                         | Phối hợp  |
+| ----------------------- | ---------------------------------------------------------------- | --------- |
+| Database Monitoring     | Query performance, connection pool, RLS audit                    | Solo      |
+| Load Testing            | Simulate 1000 concurrent check-ins, 500 point transactions/min   | Solo      |
+| CRM Reconciliation Tool | Admin endpoint để so sánh Supabase ↔ CRM data, fix discrepancies | Solo      |
+| Production Readiness    | Backup strategy, disaster recovery plan, runbook                 | Toàn team |
 
 ### 4.5 Quy Trình Làm Việc Hằng Ngày (Daily Workflow)
 
 #### Ceremonies
 
-| Ceremony | Tần suất | Thời lượng | Ai tham gia |
-|----------|---------|-----------|-------------|
-| **Daily Standup** | Hằng ngày (9:00 SA) | 15 phút | Toàn team (3 người) |
-| **Sprint Planning** | Mỗi 2 tuần (Thứ 2) | 1 giờ | Toàn team |
-| **Design Review** | Mỗi tuần (Thứ 4) | 30 phút | Designer + FE |
-| **API Contract Review** | Khi cần | 30 phút | FE + Back-End |
-| **Sprint Review + Retro** | Mỗi 2 tuần (Thứ 6) | 1 giờ | Toàn team |
+| Ceremony                  | Tần suất            | Thời lượng | Ai tham gia         |
+| ------------------------- | ------------------- | ---------- | ------------------- |
+| **Daily Standup**         | Hằng ngày (9:00 SA) | 15 phút    | Toàn team (3 người) |
+| **Sprint Planning**       | Mỗi 2 tuần (Thứ 2)  | 1 giờ      | Toàn team           |
+| **Design Review**         | Mỗi tuần (Thứ 4)    | 30 phút    | Designer + FE       |
+| **API Contract Review**   | Khi cần             | 30 phút    | FE + Back-End       |
+| **Sprint Review + Retro** | Mỗi 2 tuần (Thứ 6)  | 1 giờ      | Toàn team           |
 
 #### Communication Flow
 
@@ -1309,26 +1336,26 @@ Designer                           Front-End Developer
 
 #### Công Cụ Quản Lý Dự Án
 
-| Công cụ | Mục đích |
-|---------|---------|
-| **Linear** | Task management, sprint tracking, backlog |
-| **GitHub** | Code repository, PRs, CI/CD |
-| **Slack** | Daily communication, alerts, integrations |
-| **Figma** | Design files, prototypes, handoff |
+| Công cụ    | Mục đích                                    |
+| ---------- | ------------------------------------------- |
+| **Linear** | Task management, sprint tracking, backlog   |
+| **GitHub** | Code repository, PRs, CI/CD                 |
+| **Slack**  | Daily communication, alerts, integrations   |
+| **Figma**  | Design files, prototypes, handoff           |
 | **Notion** | Documentation, meeting notes, decisions log |
 
 ### 4.6 Milestone & Deliverables
 
-| Milestone | Tuần | Deliverable | Acceptance Criteria |
-|-----------|------|-------------|---------------------|
-| **M0: Setup Complete** | 2 | Repo setup, Design System v0, API contracts drafted | App builds, Storybook runs, Figma file structured |
-| **M1: Đăng Nhập + Home** | 4 | User login, home screen với mock data | Đăng nhập bằng phone/email, hiển thị points + tier |
-| **M2: Check-in MVP** | 6 | QR check-in hoạt động end-to-end | Quét QR → verify → cộng điểm → hiển thị thành công |
-| **M3: Loyalty Full** | 8 | Tier system, points history, tier upgrade | Xem hạng, lịch sử điểm, nâng hạng khi đủ điểm |
-| **M4: Cashback + CRM** | 10 | Cashback flow, CRM sync | Hoàn điểm sau thanh toán, data sync to CRM |
-| **M5: Notifications + Offline** | 12 | Push notifications, offline check-in | Nhận notification, check-in offline rồi sync |
-| **M6: Beta Release** | 14 | Internal beta (TestFlight + Firebase) | 10 nhân viên test, 0 critical bugs |
-| **M7: Production Release** | 16 | App Store + Play Store | Published, 50 khách hàng đầu tiên onboard |
+| Milestone                       | Tuần | Deliverable                                         | Acceptance Criteria                                |
+| ------------------------------- | ---- | --------------------------------------------------- | -------------------------------------------------- |
+| **M0: Setup Complete**          | 2    | Repo setup, Design System v0, API contracts drafted | App builds, Storybook runs, Figma file structured  |
+| **M1: Đăng Nhập + Home**        | 4    | User login, home screen với mock data               | Đăng nhập bằng phone/email, hiển thị points + tier |
+| **M2: Check-in MVP**            | 6    | QR check-in hoạt động end-to-end                    | Quét QR → verify → cộng điểm → hiển thị thành công |
+| **M3: Loyalty Full**            | 8    | Tier system, points history, tier upgrade           | Xem hạng, lịch sử điểm, nâng hạng khi đủ điểm      |
+| **M4: Cashback + CRM**          | 10   | Cashback flow, CRM sync                             | Hoàn điểm sau thanh toán, data sync to CRM         |
+| **M5: Notifications + Offline** | 12   | Push notifications, offline check-in                | Nhận notification, check-in offline rồi sync       |
+| **M6: Beta Release**            | 14   | Internal beta (TestFlight + Firebase)               | 10 nhân viên test, 0 critical bugs                 |
+| **M7: Production Release**      | 16   | App Store + Play Store                              | Published, 50 khách hàng đầu tiên onboard          |
 
 ---
 
@@ -1545,14 +1572,14 @@ Khách đặt hàng trên App
 
 #### E. Edge Functions Mới Cho Delivery
 
-| Endpoint | Method | Input | Output |
-|----------|--------|-------|--------|
-| `/check-delivery-zone` | POST | `{ latitude, longitude, branch_id? }` | `{ available, branch_id, zone, fee, estimated_minutes }` |
-| `/create-delivery-order` | POST | `{ items[], address_id, payment_method, coupon_code?, note? }` | `{ order_id, delivery_order_id, total, fee, estimated_at }` |
-| `/update-delivery-status` | POST | `{ delivery_order_id, status, latitude?, longitude? }` | `{ success, new_status }` |
-| `/update-driver-location` | POST | `{ delivery_order_id, latitude, longitude }` | `{ success }` (broadcast to customer) |
-| `/rate-delivery` | POST | `{ delivery_order_id, rating, comment? }` | `{ success }` |
-| `/get-delivery-history` | GET | `{ page, limit }` | `{ orders[], total, has_more }` |
+| Endpoint                  | Method | Input                                                          | Output                                                      |
+| ------------------------- | ------ | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| `/check-delivery-zone`    | POST   | `{ latitude, longitude, branch_id? }`                          | `{ available, branch_id, zone, fee, estimated_minutes }`    |
+| `/create-delivery-order`  | POST   | `{ items[], address_id, payment_method, coupon_code?, note? }` | `{ order_id, delivery_order_id, total, fee, estimated_at }` |
+| `/update-delivery-status` | POST   | `{ delivery_order_id, status, latitude?, longitude? }`         | `{ success, new_status }`                                   |
+| `/update-driver-location` | POST   | `{ delivery_order_id, latitude, longitude }`                   | `{ success }` (broadcast to customer)                       |
+| `/rate-delivery`          | POST   | `{ delivery_order_id, rating, comment? }`                      | `{ success }`                                               |
+| `/get-delivery-history`   | GET    | `{ page, limit }`                                              | `{ orders[], total, has_more }`                             |
 
 ### 5.2 Đặt Bàn (Table Reservation)
 
@@ -1760,47 +1787,48 @@ Khách đã đặt bàn đến quán
 
 #### F. Edge Functions Mới Cho Đặt Bàn
 
-| Endpoint | Method | Input | Output |
-|----------|--------|-------|--------|
-| `/get-available-slots` | GET | `{ branch_id, date, party_size }` | `{ slots[], branch_info }` |
-| `/create-reservation` | POST | `{ branch_id, date, time, party_size, special_requests? }` | `{ reservation_id, code, status }` |
-| `/cancel-reservation` | POST | `{ reservation_id, reason? }` | `{ success, refund_policy }` |
-| `/get-my-reservations` | GET | `{ status?, page, limit }` | `{ reservations[], total }` |
-| `/confirm-reservation` | POST | `{ reservation_id, table_id }` | `{ success }` (Staff only) |
-| `/process-no-shows` | POST | — (pg_cron trigger) | `{ processed_count }` |
+| Endpoint               | Method | Input                                                      | Output                             |
+| ---------------------- | ------ | ---------------------------------------------------------- | ---------------------------------- |
+| `/get-available-slots` | GET    | `{ branch_id, date, party_size }`                          | `{ slots[], branch_info }`         |
+| `/create-reservation`  | POST   | `{ branch_id, date, time, party_size, special_requests? }` | `{ reservation_id, code, status }` |
+| `/cancel-reservation`  | POST   | `{ reservation_id, reason? }`                              | `{ success, refund_policy }`       |
+| `/get-my-reservations` | GET    | `{ status?, page, limit }`                                 | `{ reservations[], total }`        |
+| `/confirm-reservation` | POST   | `{ reservation_id, table_id }`                             | `{ success }` (Staff only)         |
+| `/process-no-shows`    | POST   | — (pg_cron trigger)                                        | `{ processed_count }`              |
 
 ### 5.3 Cập Nhật Kiến Trúc Tổng Thể
 
 #### Core Features Mở Rộng (6 tính năng)
 
-| # | Tính năng | Complexity | Ảnh hưởng UX |
-|---|-----------|-----------|-------------|
-| 1 | Loyalty Program (Hạng thành viên) | Trung bình | Cao — Gamification |
-| 2 | Point System (Tích điểm) | Trung bình | Cao — Motivation |
-| 3 | Check-in (QR/Location) | Cao | Rất cao — Zero-friction |
-| 4 | Cashback (Hoàn điểm) | Trung bình | Cao — Perceived value |
-| 5 | **Delivery (Giao hàng)** | **Cao** | **Rất cao — Revenue driver** |
-| 6 | **Table Reservation (Đặt bàn)** | **Trung bình** | **Cao — Convenience** |
+| #   | Tính năng                         | Complexity     | Ảnh hưởng UX                 |
+| --- | --------------------------------- | -------------- | ---------------------------- |
+| 1   | Loyalty Program (Hạng thành viên) | Trung bình     | Cao — Gamification           |
+| 2   | Point System (Tích điểm)          | Trung bình     | Cao — Motivation             |
+| 3   | Check-in (QR/Location)            | Cao            | Rất cao — Zero-friction      |
+| 4   | Cashback (Hoàn điểm)              | Trung bình     | Cao — Perceived value        |
+| 5   | **Delivery (Giao hàng)**          | **Cao**        | **Rất cao — Revenue driver** |
+| 6   | **Table Reservation (Đặt bàn)**   | **Trung bình** | **Cao — Convenience**        |
 
 #### Cập Nhật Timeline (18 tuần → 22 tuần)
 
-| Milestone | Tuần | Deliverable |
-|-----------|------|-------------|
-| M0: Setup Complete | 2 | Repo, Design System v0, API contracts |
-| M1: Đăng Nhập + Home | 4 | Login, home screen, address management |
-| M2: Check-in MVP | 6 | QR check-in end-to-end |
-| M3: Loyalty Full | 8 | Tier system, points history |
-| M4: Cashback + CRM | 10 | Cashback flow, CRM sync |
-| **M5: Menu + Cart** | **12** | **Menu browsing, cart, delivery zone check** |
-| **M6: Delivery Full** | **14** | **Đặt hàng giao tận nơi, tracking real-time** |
-| **M7: Đặt Bàn** | **16** | **Reservation flow, auto check-in link** |
-| M8: Notifications + Offline | 18 | Push, offline check-in, delivery notifications |
-| M9: Beta Release | 20 | Internal beta, 10 nhân viên test |
-| M10: Production Release | 22 | App Store + Play Store |
+| Milestone                   | Tuần   | Deliverable                                    |
+| --------------------------- | ------ | ---------------------------------------------- |
+| M0: Setup Complete          | 2      | Repo, Design System v0, API contracts          |
+| M1: Đăng Nhập + Home        | 4      | Login, home screen, address management         |
+| M2: Check-in MVP            | 6      | QR check-in end-to-end                         |
+| M3: Loyalty Full            | 8      | Tier system, points history                    |
+| M4: Cashback + CRM          | 10     | Cashback flow, CRM sync                        |
+| **M5: Menu + Cart**         | **12** | **Menu browsing, cart, delivery zone check**   |
+| **M6: Delivery Full**       | **14** | **Đặt hàng giao tận nơi, tracking real-time**  |
+| **M7: Đặt Bàn**             | **16** | **Reservation flow, auto check-in link**       |
+| M8: Notifications + Offline | 18     | Push, offline check-in, delivery notifications |
+| M9: Beta Release            | 20     | Internal beta, 10 nhân viên test               |
+| M10: Production Release     | 22     | App Store + Play Store                         |
 
 #### Cập Nhật Component Library
 
 **Thêm vào Molecules:**
+
 - [ ] MenuItem (image + name + price + add button + popularity badge)
 - [ ] CartItem (image + name + quantity stepper + price + remove)
 - [ ] DeliveryStatusStep (icon + label + time + active/completed/pending state)
@@ -1809,6 +1837,7 @@ Khách đã đặt bàn đến quán
 - [ ] ReservationCard (code + branch + date + time + party size + status badge)
 
 **Thêm vào Organisms:**
+
 - [ ] MenuBrowser (category tabs + search + item grid/list)
 - [ ] CartSheet (bottom sheet: items + subtotal + delivery fee + total + checkout CTA)
 - [ ] DeliveryTracker (map + status timeline + driver info + contact buttons)
@@ -1819,28 +1848,29 @@ Khách đã đặt bàn đến quán
 
 ## Phụ Lục A: Edge Functions API Reference
 
-| Endpoint | Method | Auth | Input | Output |
-|----------|--------|------|-------|--------|
-| `/verify-checkin` | POST | JWT (customer) | `{ qr_payload, device_fingerprint, latitude?, longitude? }` | `{ success, points_earned, new_balance }` |
-| `/earn-points` | POST | JWT (cashier) | `{ member_id, order_id, amount, idempotency_key }` | `{ points_earned, new_balance, tier_change? }` |
-| `/process-cashback` | POST | JWT (system) | `{ member_id, order_id, program_id }` | `{ cashback_amount, new_balance }` |
-| `/get-loyalty-dashboard` | GET | JWT (customer) | — | `{ member, tier, recent_transactions, promotions }` |
-| `/get-promotions` | GET | JWT (customer) | `{ branch_id? }` | `{ active_promotions[] }` |
-| `/redeem-points` | POST | JWT (customer) | `{ points, reward_id, idempotency_key }` | `{ success, new_balance }` |
-| `/crm-sync-worker` | POST | Service key | — | `{ processed, failed, pending }` |
-| `/generate-qr` | GET | JWT (staff) | `{ branch_id }` | `{ qr_payload, expires_at }` |
-| `/check-delivery-zone` | POST | JWT (customer) | `{ latitude, longitude, branch_id? }` | `{ available, branch_id, zone, fee, estimated_minutes }` |
-| `/create-delivery-order` | POST | JWT (customer) | `{ items[], address_id, payment_method, coupon_code?, note? }` | `{ order_id, delivery_order_id, total, fee, estimated_at }` |
-| `/update-delivery-status` | POST | JWT (staff/driver) | `{ delivery_order_id, status, latitude?, longitude? }` | `{ success, new_status }` |
-| `/update-driver-location` | POST | JWT (driver) | `{ delivery_order_id, latitude, longitude }` | `{ success }` |
-| `/rate-delivery` | POST | JWT (customer) | `{ delivery_order_id, rating, comment? }` | `{ success }` |
-| `/get-available-slots` | GET | JWT (customer) | `{ branch_id, date, party_size }` | `{ slots[], branch_info }` |
-| `/create-reservation` | POST | JWT (customer) | `{ branch_id, date, time, party_size, special_requests? }` | `{ reservation_id, code, status }` |
-| `/cancel-reservation` | POST | JWT (customer) | `{ reservation_id, reason? }` | `{ success }` |
+| Endpoint                  | Method | Auth               | Input                                                          | Output                                                      |
+| ------------------------- | ------ | ------------------ | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| `/verify-checkin`         | POST   | JWT (customer)     | `{ qr_payload, device_fingerprint, latitude?, longitude? }`    | `{ success, points_earned, new_balance }`                   |
+| `/earn-points`            | POST   | JWT (cashier)      | `{ member_id, order_id, amount, idempotency_key }`             | `{ points_earned, new_balance, tier_change? }`              |
+| `/process-cashback`       | POST   | JWT (system)       | `{ member_id, order_id, program_id }`                          | `{ cashback_amount, new_balance }`                          |
+| `/get-loyalty-dashboard`  | GET    | JWT (customer)     | —                                                              | `{ member, tier, recent_transactions, promotions }`         |
+| `/get-promotions`         | GET    | JWT (customer)     | `{ branch_id? }`                                               | `{ active_promotions[] }`                                   |
+| `/redeem-points`          | POST   | JWT (customer)     | `{ points, reward_id, idempotency_key }`                       | `{ success, new_balance }`                                  |
+| `/crm-sync-worker`        | POST   | Service key        | —                                                              | `{ processed, failed, pending }`                            |
+| `/generate-qr`            | GET    | JWT (staff)        | `{ branch_id }`                                                | `{ qr_payload, expires_at }`                                |
+| `/check-delivery-zone`    | POST   | JWT (customer)     | `{ latitude, longitude, branch_id? }`                          | `{ available, branch_id, zone, fee, estimated_minutes }`    |
+| `/create-delivery-order`  | POST   | JWT (customer)     | `{ items[], address_id, payment_method, coupon_code?, note? }` | `{ order_id, delivery_order_id, total, fee, estimated_at }` |
+| `/update-delivery-status` | POST   | JWT (staff/driver) | `{ delivery_order_id, status, latitude?, longitude? }`         | `{ success, new_status }`                                   |
+| `/update-driver-location` | POST   | JWT (driver)       | `{ delivery_order_id, latitude, longitude }`                   | `{ success }`                                               |
+| `/rate-delivery`          | POST   | JWT (customer)     | `{ delivery_order_id, rating, comment? }`                      | `{ success }`                                               |
+| `/get-available-slots`    | GET    | JWT (customer)     | `{ branch_id, date, party_size }`                              | `{ slots[], branch_info }`                                  |
+| `/create-reservation`     | POST   | JWT (customer)     | `{ branch_id, date, time, party_size, special_requests? }`     | `{ reservation_id, code, status }`                          |
+| `/cancel-reservation`     | POST   | JWT (customer)     | `{ reservation_id, reason? }`                                  | `{ success }`                                               |
 
 ## Phụ Lục B: Thư Viện Component (Component Library Checklist)
 
 ### Atoms
+
 - [ ] Button (primary, secondary, ghost, danger — 4 sizes)
 - [ ] TextInput (default, error, disabled, with icon)
 - [ ] Badge (loyalty tiers: Đồng, Bạc, Vàng, Kim Cương)
@@ -1851,6 +1881,7 @@ Khách đã đặt bàn đến quán
 - [ ] Skeleton (loading state)
 
 ### Molecules
+
 - [ ] PointsDisplay (animated counter + tier badge)
 - [ ] TransactionItem (icon + description + points + date)
 - [ ] PromotionCard (image + title + cashback info + CTA)
@@ -1861,6 +1892,7 @@ Khách đã đặt bàn đến quán
 - [ ] BottomSheet (reusable modal sheet)
 
 ### Organisms
+
 - [ ] AppHeader (back button + title + optional right action)
 - [ ] BottomTabBar (Home, Check-in, Rewards, Profile)
 - [ ] LoyaltyCard (glass-morphism card showing tier + points + QR)
@@ -1870,6 +1902,6 @@ Khách đã đặt bàn đến quán
 
 ---
 
-*Tài liệu này là living document, sẽ được cập nhật theo tiến trình dự án.*
-*Phiên bản: 1.1 · Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 · Lead Technology Review*
-*Thay đổi v1.1: Thêm Section 0 (Framework Evaluation), Section 5 (Delivery & Đặt Bàn), cập nhật timeline 16→22 tuần*
+_Tài liệu này là living document, sẽ được cập nhật theo tiến trình dự án._
+_Phiên bản: 1.1 · Ngày tạo: 2026-03-08 · Cập nhật: 2026-03-08 · Lead Technology Review_
+_Thay đổi v1.1: Thêm Section 0 (Framework Evaluation), Section 5 (Delivery & Đặt Bàn), cập nhật timeline 16→22 tuần_

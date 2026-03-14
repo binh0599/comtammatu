@@ -40,9 +40,7 @@ export default async function WorkspacePage() {
               </div>
               <div>
                 <p className="font-semibold">Mở POS</p>
-                <p className="text-muted-foreground text-sm">
-                  Giao diện bán hàng & thu ngân
-                </p>
+                <p className="text-muted-foreground text-sm">Giao diện bán hàng & thu ngân</p>
               </div>
             </CardContent>
           </Card>
@@ -58,9 +56,7 @@ export default async function WorkspacePage() {
               </div>
               <div>
                 <p className="font-semibold">Mở KDS</p>
-                <p className="text-muted-foreground text-sm">
-                  Màn hình bếp (Kitchen Display)
-                </p>
+                <p className="text-muted-foreground text-sm">Màn hình bếp (Kitchen Display)</p>
               </div>
             </CardContent>
           </Card>

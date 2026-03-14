@@ -15,10 +15,7 @@ export async function GET() {
   const uptimeS = Math.floor((Date.now() - startTime) / 1000);
 
   // Chạy health checks song song
-  const [dbCheck, supabaseCheck] = await Promise.allSettled([
-    checkDatabase(),
-    checkSupabase(),
-  ]);
+  const [dbCheck, supabaseCheck] = await Promise.allSettled([checkDatabase(), checkSupabase()]);
 
   const dbResult =
     dbCheck.status === "fulfilled"
@@ -31,16 +28,10 @@ export async function GET() {
       : { status: "unhealthy" as const, latency_ms: -1 };
 
   // Xác định trạng thái tổng thể
-  const allHealthy =
-    dbResult.status === "healthy" && supabaseResult.status === "healthy";
-  const allUnhealthy =
-    dbResult.status === "unhealthy" && supabaseResult.status === "unhealthy";
+  const allHealthy = dbResult.status === "healthy" && supabaseResult.status === "healthy";
+  const allUnhealthy = dbResult.status === "unhealthy" && supabaseResult.status === "unhealthy";
 
-  const overallStatus = allHealthy
-    ? "healthy"
-    : allUnhealthy
-      ? "unhealthy"
-      : "degraded";
+  const overallStatus = allHealthy ? "healthy" : allUnhealthy ? "unhealthy" : "degraded";
 
   const statusCode = overallStatus === "unhealthy" ? 503 : 200;
 
@@ -58,7 +49,7 @@ export async function GET() {
     {
       status: statusCode,
       headers: { "Cache-Control": "no-store" },
-    },
+    }
   );
 }
 
@@ -72,10 +63,7 @@ async function checkDatabase(): Promise<{
       await Promise.race([
         prisma.$queryRawUnsafe("SELECT 1"),
         new Promise((_, reject) =>
-          setTimeout(
-            () => reject(new Error("DB probe timeout")),
-            DB_TIMEOUT_MS,
-          ),
+          setTimeout(() => reject(new Error("DB probe timeout")), DB_TIMEOUT_MS)
         ),
       ]);
     });
@@ -96,10 +84,7 @@ async function checkSupabase(): Promise<{
     await Promise.race([
       supabase.from("tenants").select("id").limit(1),
       new Promise((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Supabase probe timeout")),
-          3000,
-        ),
+        setTimeout(() => reject(new Error("Supabase probe timeout")), 3000)
       ),
     ]);
     const latency = Date.now() - start;

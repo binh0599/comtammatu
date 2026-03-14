@@ -22,30 +22,30 @@ import { errorReporter } from "./error-reporter";
  * Use for actions that return a result (mutations, creates, etc.).
  */
 export function withServerAction<TArgs extends unknown[], TResult>(
-    fn: (...args: TArgs) => Promise<TResult>,
+  fn: (...args: TArgs) => Promise<TResult>
 ): (...args: TArgs) => Promise<TResult | { error: string; code: ActionErrorCode }> {
-    return async (...args: TArgs) => {
-        try {
-            return await fn(...args);
-        } catch (error) {
-            if (
-                error instanceof Error &&
-                "digest" in error &&
-                typeof (error as { digest?: string }).digest === "string"
-            ) {
-                throw error;
-            }
+  return async (...args: TArgs) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        "digest" in error &&
+        typeof (error as { digest?: string }).digest === "string"
+      ) {
+        throw error;
+      }
 
-            // Báo cáo lỗi qua error reporter (Sentry khi sẵn sàng)
-            if (error instanceof Error) {
-                errorReporter.captureException(error, {
-                    actionFn: fn.name || "unknown",
-                });
-            }
+      // Báo cáo lỗi qua error reporter (Sentry khi sẵn sàng)
+      if (error instanceof Error) {
+        errorReporter.captureException(error, {
+          actionFn: fn.name || "unknown",
+        });
+      }
 
-            return handleServerActionError(error);
-        }
-    };
+      return handleServerActionError(error);
+    }
+  };
 }
 
 /**
@@ -53,21 +53,21 @@ export function withServerAction<TArgs extends unknown[], TResult>(
  * Re-throws all errors so the page/component can handle them.
  */
 export function withServerQuery<TArgs extends unknown[], TResult>(
-    fn: (...args: TArgs) => Promise<TResult>,
+  fn: (...args: TArgs) => Promise<TResult>
 ): (...args: TArgs) => Promise<TResult> {
-    return async (...args: TArgs) => {
-        try {
-            return await fn(...args);
-        } catch (error) {
-            if (
-                error instanceof Error &&
-                "digest" in error &&
-                typeof (error as { digest?: string }).digest === "string"
-            ) {
-                throw error;
-            }
-            const result = handleServerActionError(error);
-            throw new Error(result.error);
-        }
-    };
+  return async (...args: TArgs) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        "digest" in error &&
+        typeof (error as { digest?: string }).digest === "string"
+      ) {
+        throw error;
+      }
+      const result = handleServerActionError(error);
+      throw new Error(result.error);
+    }
+  };
 }

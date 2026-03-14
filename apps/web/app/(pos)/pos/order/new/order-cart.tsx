@@ -93,8 +93,7 @@ export function OrderCart({
                   (sum, s) => sum + s.unit_price * s.quantity,
                   0
                 );
-                const lineTotal =
-                  item.unit_price * item.quantity + sidesTotal;
+                const lineTotal = item.unit_price * item.quantity + sidesTotal;
 
                 return (
                   <div
@@ -123,16 +122,12 @@ export function OrderCart({
                           variant="outline"
                           size="icon"
                           className="size-11"
-                          onClick={() =>
-                            onRemoveItem(item.menu_item_id, item.variant_id)
-                          }
+                          onClick={() => onRemoveItem(item.menu_item_id, item.variant_id)}
                           aria-label={`Bớt ${item.name}`}
                         >
                           <Minus className="size-3" aria-hidden="true" />
                         </Button>
-                        <span className="w-6 text-center text-sm font-medium">
-                          {item.quantity}
-                        </span>
+                        <span className="w-6 text-center text-sm font-medium">{item.quantity}</span>
                         <Button
                           variant="outline"
                           size="icon"
@@ -153,7 +148,9 @@ export function OrderCart({
                             key={side.menu_item_id}
                             className="text-muted-foreground flex justify-between text-sm"
                           >
-                            <span>+ {side.name} x{side.quantity}</span>
+                            <span>
+                              + {side.name} x{side.quantity}
+                            </span>
                             <span>{formatPrice(side.unit_price * side.quantity)}</span>
                           </div>
                         ))}
@@ -181,9 +178,7 @@ export function OrderCart({
               <span>Tạm tính</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
-            <p className="text-muted-foreground text-xs">
-              Chưa bao gồm thuế và phí dịch vụ
-            </p>
+            <p className="text-muted-foreground text-xs">Chưa bao gồm thuế và phí dịch vụ</p>
           </div>
 
           <DrawerFooter>

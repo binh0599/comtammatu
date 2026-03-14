@@ -3,10 +3,7 @@ import { getAdminOrders, getBranches } from "./actions";
 import { OrdersHistory } from "./orders-history";
 
 export default async function AdminOrdersPage() {
-  const [orders, branches] = await Promise.all([
-    getAdminOrders(),
-    getBranches(),
-  ]);
+  const [orders, branches] = await Promise.all([getAdminOrders(), getBranches()]);
 
   return (
     <>

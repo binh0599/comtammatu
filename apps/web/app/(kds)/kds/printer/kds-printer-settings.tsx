@@ -2,10 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Printer, Trash2 } from "lucide-react";
-import {
-  getPrinterTypeLabel,
-  getPrinterTestStatusLabel,
-} from "@comtammatu/shared";
+import { getPrinterTypeLabel, getPrinterTestStatusLabel } from "@comtammatu/shared";
 import { createPrinter, deletePrinter, updatePrinter } from "./actions";
 import {
   Badge,
@@ -130,18 +127,14 @@ export function KdsPrinterSettings({
     startTransition(async () => {
       const result = await updatePrinter(formData);
       if (!result?.error) {
-        setPrinters((prev) =>
-          prev.map((p) => (p.id === id ? { ...p, auto_print: value } : p)),
-        );
+        setPrinters((prev) => prev.map((p) => (p.id === id ? { ...p, auto_print: value } : p)));
       } else {
         setError(result.error);
       }
     });
   }
 
-  function getTestStatusVariant(
-    status: string | null,
-  ): "default" | "destructive" | "secondary" {
+  function getTestStatusVariant(status: string | null): "default" | "destructive" | "secondary" {
     if (status === "connected") return "default";
     if (status === "error") return "destructive";
     return "secondary";
@@ -162,7 +155,10 @@ export function KdsPrinterSettings({
         </CardHeader>
         <CardContent>
           {error && (
-            <div role="alert" className="mb-4 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+            <div
+              role="alert"
+              className="mb-4 rounded-md bg-destructive/15 p-3 text-sm text-destructive"
+            >
               {error}
             </div>
           )}
@@ -173,64 +169,66 @@ export function KdsPrinterSettings({
             </p>
           ) : (
             <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tên</TableHead>
-                  <TableHead>Loại</TableHead>
-                  <TableHead>Khổ giấy</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>Tự động in</TableHead>
-                  <TableHead className="w-20" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {printers.map((printer) => (
-                  <TableRow key={printer.id}>
-                    <TableCell className="font-medium">{printer.name}</TableCell>
-                    <TableCell>{getPrinterTypeLabel(printer.type)}</TableCell>
-                    <TableCell>{printer.paper_width_mm}mm</TableCell>
-                    <TableCell>
-                      <Badge variant={getTestStatusVariant(printer.test_status)}>
-                        {getPrinterTestStatusLabel(printer.test_status ?? "untested")}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Switch
-                        checked={printer.auto_print}
-                        onCheckedChange={(val) =>
-                          handleToggleAutoPrint(printer.id, val)
-                        }
-                        disabled={isPending}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(printer.id)}
-                        disabled={isPending}
-                        aria-label={`Xóa máy in ${printer.name}`}
-                      >
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    </TableCell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tên</TableHead>
+                    <TableHead>Loại</TableHead>
+                    <TableHead>Khổ giấy</TableHead>
+                    <TableHead>Trạng thái</TableHead>
+                    <TableHead>Tự động in</TableHead>
+                    <TableHead className="w-20" />
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {printers.map((printer) => (
+                    <TableRow key={printer.id}>
+                      <TableCell className="font-medium">{printer.name}</TableCell>
+                      <TableCell>{getPrinterTypeLabel(printer.type)}</TableCell>
+                      <TableCell>{printer.paper_width_mm}mm</TableCell>
+                      <TableCell>
+                        <Badge variant={getTestStatusVariant(printer.test_status)}>
+                          {getPrinterTestStatusLabel(printer.test_status ?? "untested")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Switch
+                          checked={printer.auto_print}
+                          onCheckedChange={(val) => handleToggleAutoPrint(printer.id, val)}
+                          disabled={isPending}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(printer.id)}
+                          disabled={isPending}
+                          aria-label={`Xóa máy in ${printer.name}`}
+                        >
+                          <Trash2 className="size-4 text-destructive" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Dialog open={showAdd} onOpenChange={(open) => { setShowAdd(open); if (!open) setNewPrinterType("browser"); }}>
+      <Dialog
+        open={showAdd}
+        onOpenChange={(open) => {
+          setShowAdd(open);
+          if (!open) setNewPrinterType("browser");
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Thêm máy in KDS</DialogTitle>
-            <DialogDescription>
-              Thêm máy in kết nối với trạm {stationName}.
-            </DialogDescription>
+            <DialogDescription>Thêm máy in kết nối với trạm {stationName}.</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreate}>
             <div className="grid gap-4 py-4">
@@ -246,7 +244,9 @@ export function KdsPrinterSettings({
                   defaultValue="browser"
                   onValueChange={(v) => setNewPrinterType(v as PrinterType)}
                 >
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="browser">In qua trình duyệt</SelectItem>
                     <SelectItem value="thermal_usb">USB (WebUSB)</SelectItem>
@@ -259,11 +259,23 @@ export function KdsPrinterSettings({
                 <>
                   <div className="grid gap-2">
                     <Label htmlFor="vendor_id">Vendor ID</Label>
-                    <Input id="vendor_id" name="vendor_id" type="number" placeholder="1208" required />
+                    <Input
+                      id="vendor_id"
+                      name="vendor_id"
+                      type="number"
+                      placeholder="1208"
+                      required
+                    />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="product_id">Product ID</Label>
-                    <Input id="product_id" name="product_id" type="number" placeholder="514" required />
+                    <Input
+                      id="product_id"
+                      name="product_id"
+                      type="number"
+                      placeholder="514"
+                      required
+                    />
                   </div>
                 </>
               )}
@@ -281,7 +293,9 @@ export function KdsPrinterSettings({
                   <div className="grid gap-2">
                     <Label htmlFor="protocol">Giao thức</Label>
                     <Select name="protocol" defaultValue="http">
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="http">HTTP</SelectItem>
                         <SelectItem value="raw">Raw TCP</SelectItem>
@@ -294,7 +308,9 @@ export function KdsPrinterSettings({
               <div className="grid gap-2">
                 <Label htmlFor="paper_width_mm">Khổ giấy</Label>
                 <Select name="paper_width_mm" defaultValue="80">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="80">80mm</SelectItem>
                     <SelectItem value="58">58mm</SelectItem>

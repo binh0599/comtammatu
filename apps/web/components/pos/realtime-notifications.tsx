@@ -8,6 +8,6 @@ import { useRealtimeBroadcast } from "@/hooks/use-realtime-broadcast";
  * via the useRealtimeBroadcast hook.
  */
 export function RealtimeNotifications({ branchId }: { branchId: number }) {
-    useRealtimeBroadcast(branchId);
-    return null;
+  useRealtimeBroadcast(branchId);
+  return null;
 }

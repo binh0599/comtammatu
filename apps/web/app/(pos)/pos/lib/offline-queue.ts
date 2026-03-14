@@ -18,9 +18,7 @@ const MAX_ATTEMPTS = 5;
  * Queue an order for later sync. Called when the user submits an order while offline.
  * Validates the payload shape client-side before storing.
  */
-export async function queueOfflineOrder(
-  payload: PendingOrder["payload"],
-): Promise<string> {
+export async function queueOfflineOrder(payload: PendingOrder["payload"]): Promise<string> {
   const clientId = crypto.randomUUID();
   const order: PendingOrder = {
     clientId,
@@ -48,10 +46,7 @@ export async function syncPendingOrders(): Promise<SyncResult> {
   if (pending.length === 0) return { synced: 0, failed: 0, errors: [] };
 
   // Sort by creation time (oldest first)
-  pending.sort(
-    (a, b) =>
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-  );
+  pending.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
   const result: SyncResult = { synced: 0, failed: 0, errors: [] };
 

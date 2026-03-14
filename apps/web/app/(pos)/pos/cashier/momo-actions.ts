@@ -86,8 +86,7 @@ async function _createMomoPayment(orderId: number) {
   // Call Momo API
   try {
     const { createMomoPaymentRequest } = await import("@/lib/momo");
-    const appUrl =
-      process.env.NEXT_PUBLIC_APP_URL || "https://comtammatu.vercel.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://comtammatu.vercel.app";
     const result = await createMomoPaymentRequest({
       orderId: `ORDER-${order.id}-${idempotencyKey.slice(0, 8)}`,
       orderInfo: `Thanh toán đơn ${order.order_number}`,
@@ -106,10 +105,7 @@ async function _createMomoPayment(orderId: number) {
     };
   } catch (err) {
     // Cleanup: mark payment as failed
-    await supabase
-      .from("payments")
-      .update({ status: "failed" })
-      .eq("id", payment.id);
+    await supabase.from("payments").update({ status: "failed" }).eq("id", payment.id);
     return { error: err instanceof Error ? err.message : "Lỗi kết nối Momo" };
   }
 }
@@ -213,10 +209,7 @@ async function _queryMomoPaymentStatus(paymentId: number) {
       if (updateErr) return safeDbErrorResult(updateErr, "db");
 
       // Update order status to completed
-      await supabase
-        .from("orders")
-        .update({ status: "completed" })
-        .eq("id", order.id);
+      await supabase.from("orders").update({ status: "completed" }).eq("id", order.id);
 
       return { error: null, status: "completed", changed: true };
     } else if (result.resultCode === 1000) {

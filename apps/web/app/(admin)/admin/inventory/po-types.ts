@@ -75,7 +75,7 @@ export interface ReceivePoData {
 const OUTLINE_STATUSES = ["sent", "partially_received"];
 
 export function getStatusBadgeVariant(
-  status: string,
+  status: string
 ): "secondary" | "outline" | "default" | "destructive" {
   switch (status) {
     case "draft":

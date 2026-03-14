@@ -54,7 +54,7 @@ const METHOD_LABELS: Record<string, string> = {
 export function generateReceiptCommands(
   order: ReceiptOrderData,
   cashierName = "Cashier",
-  lineWidth = 42,
+  lineWidth = 42
 ): Uint8Array {
   const b = new EscposBuilder();
 
@@ -85,11 +85,7 @@ export function generateReceiptCommands(
   b.columns("Mã HĐ:", order.order_number, lineWidth);
   b.columns("Ngày:", fmtDateTime(order.created_at), lineWidth);
   b.columns("Thu ngân:", cashierName, lineWidth);
-  b.columns(
-    "Vị trí:",
-    order.tables ? `Bàn ${order.tables.number}` : "Mang đi",
-    lineWidth,
-  );
+  b.columns("Vị trí:", order.tables ? `Bàn ${order.tables.number}` : "Mang đi", lineWidth);
 
   b.separator();
 
@@ -128,16 +124,11 @@ export function generateReceiptCommands(
   b.size(false, false);
 
   // ===== Payment =====
-  const paymentAmount =
-    order.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
+  const paymentAmount = order.payments?.reduce((sum, p) => sum + p.amount, 0) ?? 0;
   if (paymentAmount > 0) {
     b.separator();
     const method = order.payments?.[0]?.method ?? "cash";
-    b.columns(
-      `Khách đưa (${METHOD_LABELS[method] ?? method})`,
-      fmtPrice(paymentAmount),
-      lineWidth,
-    );
+    b.columns(`Khách đưa (${METHOD_LABELS[method] ?? method})`, fmtPrice(paymentAmount), lineWidth);
 
     const change = paymentAmount > order.total ? paymentAmount - order.total : 0;
     b.bold(true);

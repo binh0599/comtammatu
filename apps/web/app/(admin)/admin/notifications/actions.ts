@@ -1,11 +1,7 @@
 "use server";
 
 import "@/lib/server-bootstrap";
-import {
-  getAdminContext,
-  INVENTORY_ROLES,
-  withServerQuery,
-} from "@comtammatu/shared";
+import { getAdminContext, INVENTORY_ROLES, withServerQuery } from "@comtammatu/shared";
 
 // =====================
 // Notification Queries

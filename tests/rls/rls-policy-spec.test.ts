@@ -25,9 +25,7 @@ const migrationFiles = readdirSync(MIGRATIONS_DIR)
   .filter((f) => f.endsWith(".sql"))
   .sort();
 
-const allSQL = migrationFiles
-  .map((f) => readFileSync(join(MIGRATIONS_DIR, f), "utf-8"))
-  .join("\n");
+const allSQL = migrationFiles.map((f) => readFileSync(join(MIGRATIONS_DIR, f), "utf-8")).join("\n");
 
 // ---------------------------------------------------------------------------
 // Helper functions
@@ -36,16 +34,13 @@ const allSQL = migrationFiles
 function hasRLSEnabled(table: string): boolean {
   const pattern = new RegExp(
     `ALTER\\s+TABLE\\s+${table}\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY`,
-    "i",
+    "i"
   );
   return pattern.test(allSQL);
 }
 
 function getPolicies(table: string): string[] {
-  const pattern = new RegExp(
-    `CREATE\\s+POLICY\\s+"([^"]+)"\\s+ON\\s+${table}`,
-    "gi",
-  );
+  const pattern = new RegExp(`CREATE\\s+POLICY\\s+"([^"]+)"\\s+ON\\s+${table}`, "gi");
   const matches: string[] = [];
   let match;
   while ((match = pattern.exec(allSQL)) !== null) {
@@ -57,7 +52,7 @@ function getPolicies(table: string): string[] {
 function hasPolicyForOperation(table: string, operation: string): boolean {
   const pattern = new RegExp(
     `CREATE\\s+POLICY\\s+"[^"]+"\\s+ON\\s+${table}\\s+FOR\\s+${operation}`,
-    "i",
+    "i"
   );
   return pattern.test(allSQL);
 }
@@ -66,7 +61,7 @@ function hasPolicyWithRole(table: string, role: string): boolean {
   // Check if any policy on this table references the given role
   const policyPattern = new RegExp(
     `CREATE\\s+POLICY\\s+"[^"]+"\\s+ON\\s+${table}[\\s\\S]*?(?=CREATE\\s+POLICY|$)`,
-    "gi",
+    "gi"
   );
   let match;
   while ((match = policyPattern.exec(allSQL)) !== null) {
@@ -88,79 +83,354 @@ interface TableRLSSpec {
 
 const TABLE_SPECS: TableRLSSpec[] = [
   // Tier 1: Core
-  { table: "tenants", expectedPolicyCount: 2, requiredOperations: ["SELECT", "UPDATE"], description: "Tenant isolation: select own, owner can update" },
-  { table: "branches", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Branch isolation by tenant" },
-  { table: "branch_zones", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Zone isolation by branch->tenant" },
-  { table: "tables", expectedPolicyCount: 3, requiredOperations: ["SELECT", "UPDATE", "ALL"], description: "Table access by branch, staff update, manager manage" },
-  { table: "profiles", expectedPolicyCount: 3, requiredOperations: ["SELECT", "UPDATE", "ALL"], description: "Profile: see tenant, update own, manager manage" },
+  {
+    table: "tenants",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "UPDATE"],
+    description: "Tenant isolation: select own, owner can update",
+  },
+  {
+    table: "branches",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Branch isolation by tenant",
+  },
+  {
+    table: "branch_zones",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Zone isolation by branch->tenant",
+  },
+  {
+    table: "tables",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "UPDATE", "ALL"],
+    description: "Table access by branch, staff update, manager manage",
+  },
+  {
+    table: "profiles",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "UPDATE", "ALL"],
+    description: "Profile: see tenant, update own, manager manage",
+  },
 
   // Menu system
-  { table: "menus", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Menu tenant isolation" },
-  { table: "menu_categories", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Category tenant isolation" },
-  { table: "menu_items", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Item tenant isolation" },
-  { table: "menu_item_variants", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Variant tenant isolation" },
-  { table: "menu_item_modifiers", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Modifier tenant isolation" },
-  { table: "menu_branches", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Menu-branch assignment isolation" },
-  { table: "menu_item_available_sides", expectedPolicyCount: 2, requiredOperations: ["SELECT"], description: "Available sides tenant isolation" },
+  {
+    table: "menus",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Menu tenant isolation",
+  },
+  {
+    table: "menu_categories",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Category tenant isolation",
+  },
+  {
+    table: "menu_items",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Item tenant isolation",
+  },
+  {
+    table: "menu_item_variants",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Variant tenant isolation",
+  },
+  {
+    table: "menu_item_modifiers",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Modifier tenant isolation",
+  },
+  {
+    table: "menu_branches",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Menu-branch assignment isolation",
+  },
+  {
+    table: "menu_item_available_sides",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT"],
+    description: "Available sides tenant isolation",
+  },
 
   // POS
-  { table: "pos_terminals", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Terminal tenant isolation" },
-  { table: "pos_sessions", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Session: branch select, cashier insert/update" },
-  { table: "orders", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Order: branch select, staff insert/update" },
-  { table: "order_items", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Order items: branch select, staff manage" },
-  { table: "order_discounts", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Discounts: branch select, cashier manage" },
-  { table: "order_status_history", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Status history: branch select, staff insert" },
-  { table: "payments", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Payments: branch select, cashier insert, manager update" },
+  {
+    table: "pos_terminals",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Terminal tenant isolation",
+  },
+  {
+    table: "pos_sessions",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "Session: branch select, cashier insert/update",
+  },
+  {
+    table: "orders",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "Order: branch select, staff insert/update",
+  },
+  {
+    table: "order_items",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Order items: branch select, staff manage",
+  },
+  {
+    table: "order_discounts",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Discounts: branch select, cashier manage",
+  },
+  {
+    table: "order_status_history",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Status history: branch select, staff insert",
+  },
+  {
+    table: "payments",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "Payments: branch select, cashier insert, manager update",
+  },
 
   // KDS
-  { table: "kds_stations", expectedPolicyCount: 2, requiredOperations: ["SELECT"], description: "KDS stations: branch/manager select" },
-  { table: "kds_tickets", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "KDS tickets: branch select, staff insert, chef update" },
-  { table: "kds_timing_rules", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "KDS timing rules isolation" },
-  { table: "kds_station_categories", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "KDS station categories isolation" },
+  {
+    table: "kds_stations",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT"],
+    description: "KDS stations: branch/manager select",
+  },
+  {
+    table: "kds_tickets",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "KDS tickets: branch select, staff insert, chef update",
+  },
+  {
+    table: "kds_timing_rules",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "KDS timing rules isolation",
+  },
+  {
+    table: "kds_station_categories",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "KDS station categories isolation",
+  },
 
   // Inventory
-  { table: "ingredients", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Ingredients tenant isolation" },
-  { table: "suppliers", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Suppliers tenant isolation" },
-  { table: "recipes", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Recipes tenant isolation" },
-  { table: "recipe_ingredients", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Recipe ingredients isolation" },
-  { table: "stock_levels", expectedPolicyCount: 3, requiredOperations: ["SELECT", "UPDATE", "INSERT"], description: "Stock levels: branch select, inventory update/insert" },
-  { table: "stock_movements", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Stock movements: branch select, inventory insert" },
-  { table: "waste_logs", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Waste logs: branch select, inventory insert" },
-  { table: "purchase_orders", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "PO tenant isolation" },
-  { table: "purchase_order_items", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "PO items tenant isolation" },
+  {
+    table: "ingredients",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Ingredients tenant isolation",
+  },
+  {
+    table: "suppliers",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Suppliers tenant isolation",
+  },
+  {
+    table: "recipes",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Recipes tenant isolation",
+  },
+  {
+    table: "recipe_ingredients",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Recipe ingredients isolation",
+  },
+  {
+    table: "stock_levels",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "UPDATE", "INSERT"],
+    description: "Stock levels: branch select, inventory update/insert",
+  },
+  {
+    table: "stock_movements",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Stock movements: branch select, inventory insert",
+  },
+  {
+    table: "waste_logs",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Waste logs: branch select, inventory insert",
+  },
+  {
+    table: "purchase_orders",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "PO tenant isolation",
+  },
+  {
+    table: "purchase_order_items",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "PO items tenant isolation",
+  },
 
   // CRM
-  { table: "customers", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Customers tenant isolation" },
-  { table: "loyalty_tiers", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Loyalty tiers tenant isolation" },
-  { table: "loyalty_transactions", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Loyalty transactions: tenant select, staff insert" },
-  { table: "vouchers", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Vouchers tenant isolation" },
-  { table: "voucher_branches", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Voucher branches isolation" },
-  { table: "campaigns", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Campaigns tenant isolation" },
-  { table: "customer_feedback", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Feedback: branch select, anyone insert, manager update" },
+  {
+    table: "customers",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Customers tenant isolation",
+  },
+  {
+    table: "loyalty_tiers",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Loyalty tiers tenant isolation",
+  },
+  {
+    table: "loyalty_transactions",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Loyalty transactions: tenant select, staff insert",
+  },
+  {
+    table: "vouchers",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Vouchers tenant isolation",
+  },
+  {
+    table: "voucher_branches",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Voucher branches isolation",
+  },
+  {
+    table: "campaigns",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Campaigns tenant isolation",
+  },
+  {
+    table: "customer_feedback",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "Feedback: branch select, anyone insert, manager update",
+  },
 
   // HR
-  { table: "employees", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Employees: branch select, HR manage" },
-  { table: "shifts", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Shifts: branch select, manager manage" },
-  { table: "shift_assignments", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Shift assignments: branch select, HR manage" },
-  { table: "attendance_records", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Attendance: branch select, staff insert" },
-  { table: "leave_requests", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Leave: own/HR select, employee insert, HR update" },
-  { table: "payroll_periods", expectedPolicyCount: 2, requiredOperations: ["SELECT"], description: "Payroll periods: HR/staff select" },
-  { table: "payroll_items", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Payroll items: HR select/manage" },
+  {
+    table: "employees",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Employees: branch select, HR manage",
+  },
+  {
+    table: "shifts",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Shifts: branch select, manager manage",
+  },
+  {
+    table: "shift_assignments",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Shift assignments: branch select, HR manage",
+  },
+  {
+    table: "attendance_records",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Attendance: branch select, staff insert",
+  },
+  {
+    table: "leave_requests",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "Leave: own/HR select, employee insert, HR update",
+  },
+  {
+    table: "payroll_periods",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT"],
+    description: "Payroll periods: HR/staff select",
+  },
+  {
+    table: "payroll_items",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Payroll items: HR select/manage",
+  },
 
   // System
-  { table: "audit_logs", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Audit: manager select, authenticated insert. NEVER UPDATE/DELETE" },
-  { table: "security_events", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Security events: owner select, authenticated insert. NEVER UPDATE/DELETE" },
-  { table: "deletion_requests", expectedPolicyCount: 2, requiredOperations: ["SELECT", "INSERT"], description: "Deletion requests: manager select, anyone insert" },
-  { table: "notifications", expectedPolicyCount: 3, requiredOperations: ["SELECT", "UPDATE", "INSERT"], description: "Notifications: own select/update, system insert" },
-  { table: "system_settings", expectedPolicyCount: 2, requiredOperations: ["SELECT", "ALL"], description: "Settings: tenant select, owner manage" },
-  { table: "printer_configs", expectedPolicyCount: 2, requiredOperations: ["SELECT"], description: "Printer configs: branch isolation" },
-  { table: "registered_devices", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT"], description: "Devices: tenant select, own insert, manager update" },
+  {
+    table: "audit_logs",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Audit: manager select, authenticated insert. NEVER UPDATE/DELETE",
+  },
+  {
+    table: "security_events",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Security events: owner select, authenticated insert. NEVER UPDATE/DELETE",
+  },
+  {
+    table: "deletion_requests",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Deletion requests: manager select, anyone insert",
+  },
+  {
+    table: "notifications",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "UPDATE", "INSERT"],
+    description: "Notifications: own select/update, system insert",
+  },
+  {
+    table: "system_settings",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT", "ALL"],
+    description: "Settings: tenant select, owner manage",
+  },
+  {
+    table: "printer_configs",
+    expectedPolicyCount: 2,
+    requiredOperations: ["SELECT"],
+    description: "Printer configs: branch isolation",
+  },
+  {
+    table: "registered_devices",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT"],
+    description: "Devices: tenant select, own insert, manager update",
+  },
 
   // Push notifications
-  { table: "push_subscriptions", expectedPolicyCount: 4, requiredOperations: ["SELECT", "INSERT", "UPDATE", "DELETE"], description: "Push subs: own CRUD, service role select/update" },
+  {
+    table: "push_subscriptions",
+    expectedPolicyCount: 4,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE", "DELETE"],
+    description: "Push subs: own CRUD, service role select/update",
+  },
 
   // Payroll
-  { table: "payroll_entries", expectedPolicyCount: 3, requiredOperations: ["SELECT", "INSERT", "UPDATE"], description: "Payroll entries: HR/staff select, HR insert/update" },
+  {
+    table: "payroll_entries",
+    expectedPolicyCount: 3,
+    requiredOperations: ["SELECT", "INSERT", "UPDATE"],
+    description: "Payroll entries: HR/staff select, HR insert/update",
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -196,7 +466,7 @@ describe("RLS Helper Functions", () => {
     // SECURITY DEFINER ensures the function runs with the privileges of
     // the function owner (postgres), not the calling user
     const authFunctions = allSQL.match(
-      /CREATE OR REPLACE FUNCTION auth_(tenant_id|branch_id|role)[\s\S]*?(?=\$\$;)/g,
+      /CREATE OR REPLACE FUNCTION auth_(tenant_id|branch_id|role)[\s\S]*?(?=\$\$;)/g
     );
     expect(authFunctions).not.toBeNull();
     for (const fn of authFunctions!) {
@@ -280,10 +550,22 @@ describe("Role-Based Access Control", () => {
 
 describe("Tenant Isolation", () => {
   const tenantIsolatedTables = [
-    "tenants", "branches", "menus", "menu_categories", "menu_items",
-    "menu_item_variants", "menu_item_modifiers", "pos_terminals",
-    "ingredients", "suppliers", "recipes", "customers",
-    "loyalty_tiers", "vouchers", "campaigns", "system_settings",
+    "tenants",
+    "branches",
+    "menus",
+    "menu_categories",
+    "menu_items",
+    "menu_item_variants",
+    "menu_item_modifiers",
+    "pos_terminals",
+    "ingredients",
+    "suppliers",
+    "recipes",
+    "customers",
+    "loyalty_tiers",
+    "vouchers",
+    "campaigns",
+    "system_settings",
   ];
 
   for (const table of tenantIsolatedTables) {
@@ -292,12 +574,10 @@ describe("Tenant Isolation", () => {
       const policySection = allSQL.match(
         new RegExp(
           `CREATE\\s+POLICY\\s+"[^"]+"\\s+ON\\s+${table}[\\s\\S]*?(?=CREATE\\s+POLICY|ALTER\\s+TABLE|$)`,
-          "gi",
-        ),
+          "gi"
+        )
       );
-      const hastenantCheck = policySection?.some((p) =>
-        p.includes("auth_tenant_id()"),
-      );
+      const hastenantCheck = policySection?.some((p) => p.includes("auth_tenant_id()"));
       expect(hastenantCheck).toBe(true);
     });
   }

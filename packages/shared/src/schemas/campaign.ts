@@ -43,6 +43,4 @@ export const staffPerformanceQuerySchema = z.object({
   branch_id: z.coerce.number().int().positive().optional(),
   role: z.enum(["waiter", "cashier", "chef"]).optional(),
 });
-export type StaffPerformanceQueryInput = z.infer<
-  typeof staffPerformanceQuerySchema
->;
+export type StaffPerformanceQueryInput = z.infer<typeof staffPerformanceQuerySchema>;

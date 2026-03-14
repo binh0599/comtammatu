@@ -4,11 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Calculator, Eye, CheckCircle, Wallet, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
-import {
-  formatDate,
-  formatPrice,
-  getPayrollStatusLabel,
-} from "@comtammatu/shared";
+import { formatDate, formatPrice, getPayrollStatusLabel } from "@comtammatu/shared";
 import {
   createPayrollPeriod,
   calculatePayroll,
@@ -213,9 +209,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
           setEntries(result as unknown as PayrollEntry[]);
         }
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Không thể tải bản ghi lương"
-        );
+        toast.error(err instanceof Error ? err.message : "Không thể tải bản ghi lương");
         setEntries([]);
       } finally {
         setIsLoadingEntries(false);
@@ -269,9 +263,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Bảng lương</h2>
-          <p className="text-muted-foreground">
-            Quản lý kỳ lương và bảng lương nhân viên
-          </p>
+          <p className="text-muted-foreground">Quản lý kỳ lương và bảng lương nhân viên</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -290,14 +282,10 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Tạo kỳ lương mới</DialogTitle>
-                <DialogDescription>
-                  Tạo kỳ lương cho chi nhánh
-                </DialogDescription>
+                <DialogDescription>Tạo kỳ lương cho chi nhánh</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -317,49 +305,25 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="name">Tên kỳ lương</Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="VD: Lương tháng 3/2026"
-                    required
-                  />
+                  <Input id="name" name="name" placeholder="VD: Lương tháng 3/2026" required />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="start_date">Ngày bắt đầu</Label>
-                    <Input
-                      id="start_date"
-                      name="start_date"
-                      type="date"
-                      required
-                    />
+                    <Input id="start_date" name="start_date" type="date" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="end_date">Ngày kết thúc</Label>
-                    <Input
-                      id="end_date"
-                      name="end_date"
-                      type="date"
-                      required
-                    />
+                    <Input id="end_date" name="end_date" type="date" required />
                   </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="notes">Ghi chú</Label>
-                  <Textarea
-                    id="notes"
-                    name="notes"
-                    placeholder="Ghi chú (tùy chọn)"
-                    rows={3}
-                  />
+                  <Textarea id="notes" name="notes" placeholder="Ghi chú (tùy chọn)" rows={3} />
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -388,10 +352,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
           <TableBody>
             {periods.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={5} className="text-muted-foreground h-24 text-center">
                   Chưa có kỳ lương nào
                 </TableCell>
               </TableRow>
@@ -401,8 +362,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                   <TableCell className="font-medium">{period.name}</TableCell>
                   <TableCell>{period.branches.name}</TableCell>
                   <TableCell>
-                    {formatDate(period.start_date)} &mdash;{" "}
-                    {formatDate(period.end_date)}
+                    {formatDate(period.start_date)} &mdash; {formatDate(period.end_date)}
                   </TableCell>
                   <TableCell>{getStatusBadge(period.status)}</TableCell>
                   <TableCell className="text-right">
@@ -491,9 +451,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
       >
         <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              Chi tiết: {detailPeriod?.name}
-            </DialogTitle>
+            <DialogTitle>Chi tiết: {detailPeriod?.name}</DialogTitle>
             <DialogDescription>
               {detailPeriod
                 ? `${detailPeriod.branches.name} | ${formatDate(detailPeriod.start_date)} — ${formatDate(detailPeriod.end_date)}`
@@ -507,9 +465,7 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
             </div>
           ) : entries.length === 0 ? (
             <div className="flex items-center justify-center py-8">
-              <p className="text-muted-foreground">
-                Chưa có dữ liệu lương. Hãy tính lương trước.
-              </p>
+              <p className="text-muted-foreground">Chưa có dữ liệu lương. Hãy tính lương trước.</p>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-md border">
@@ -517,16 +473,34 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead scope="col">Nhân viên</TableHead>
-                    <TableHead scope="col" className="text-right">Tổng giờ</TableHead>
-                    <TableHead scope="col" className="text-right">Lương giờ</TableHead>
-                    <TableHead scope="col" className="text-right">Lương tháng</TableHead>
-                    <TableHead scope="col" className="text-right">Lương cơ bản</TableHead>
-                    <TableHead scope="col" className="text-right">Tăng ca</TableHead>
-                    <TableHead scope="col" className="text-right">Thưởng</TableHead>
-                    <TableHead scope="col" className="text-right">Khấu trừ</TableHead>
-                    <TableHead scope="col" className="text-right">Thực nhận</TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Tổng giờ
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Lương giờ
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Lương tháng
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Lương cơ bản
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Tăng ca
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Thưởng
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Khấu trừ
+                    </TableHead>
+                    <TableHead scope="col" className="text-right">
+                      Thực nhận
+                    </TableHead>
                     {detailPeriod?.status === "calculated" && (
-                      <TableHead scope="col" className="text-right">Thao tác</TableHead>
+                      <TableHead scope="col" className="text-right">
+                        Thao tác
+                      </TableHead>
                     )}
                   </TableRow>
                 </TableHeader>
@@ -536,31 +510,19 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
                       <TableCell className="font-medium">
                         {entry.employees.profiles.full_name}
                       </TableCell>
+                      <TableCell className="text-right">{entry.total_hours}</TableCell>
                       <TableCell className="text-right">
-                        {entry.total_hours}
+                        {entry.hourly_rate != null ? formatPrice(entry.hourly_rate) : "-"}
                       </TableCell>
                       <TableCell className="text-right">
-                        {entry.hourly_rate != null
-                          ? formatPrice(entry.hourly_rate)
-                          : "-"}
+                        {entry.monthly_salary != null ? formatPrice(entry.monthly_salary) : "-"}
                       </TableCell>
-                      <TableCell className="text-right">
-                        {entry.monthly_salary != null
-                          ? formatPrice(entry.monthly_salary)
-                          : "-"}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatPrice(entry.base_pay)}
-                      </TableCell>
+                      <TableCell className="text-right">{formatPrice(entry.base_pay)}</TableCell>
                       <TableCell className="text-right">
                         {formatPrice(entry.overtime_pay)}
                       </TableCell>
-                      <TableCell className="text-right">
-                        {formatPrice(entry.bonuses)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatPrice(entry.deductions)}
-                      </TableCell>
+                      <TableCell className="text-right">{formatPrice(entry.bonuses)}</TableCell>
+                      <TableCell className="text-right">{formatPrice(entry.deductions)}</TableCell>
                       <TableCell className="text-right font-semibold">
                         {formatPrice(entry.net_pay)}
                       </TableCell>
@@ -604,14 +566,10 @@ export function PayrollTab({ periods, branches }: PayrollTabProps) {
             <form action={handleUpdateEntry}>
               <DialogHeader>
                 <DialogTitle>Chỉnh sửa bản ghi lương</DialogTitle>
-                <DialogDescription>
-                  {editingEntry.employees.profiles.full_name}
-                </DialogDescription>
+                <DialogDescription>{editingEntry.employees.profiles.full_name}</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">

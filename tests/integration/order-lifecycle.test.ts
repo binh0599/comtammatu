@@ -4,12 +4,7 @@
  * Tests the full order flow: creation -> status updates -> payment -> completion.
  */
 
-import {
-  createAuthClient,
-  createServiceClient,
-  cleanupRows,
-  SEED,
-} from "./helpers";
+import { createAuthClient, createServiceClient, cleanupRows, SEED } from "./helpers";
 import { randomUUID } from "crypto";
 
 describe("Order Lifecycle", () => {

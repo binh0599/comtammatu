@@ -15,10 +15,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import {
-  getKdsPerformance,
-  type KdsPerformanceData,
-} from "./kds-actions";
+import { getKdsPerformance, type KdsPerformanceData } from "./kds-actions";
 import {
   Button,
   Calendar,
@@ -53,14 +50,10 @@ function SlaIndicator({ value }: { value: number }) {
           ? "bg-green-100 text-green-700"
           : value >= 70
             ? "bg-yellow-100 text-yellow-700"
-            : "bg-red-100 text-red-700",
+            : "bg-red-100 text-red-700"
       )}
     >
-      {value >= 90 ? (
-        <CheckCircle2 className="size-3" />
-      ) : (
-        <AlertTriangle className="size-3" />
-      )}
+      {value >= 90 ? <CheckCircle2 className="size-3" /> : <AlertTriangle className="size-3" />}
       {value}%
     </span>
   );
@@ -101,7 +94,7 @@ export function KdsTab() {
               variant="outline"
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !startDate && "text-muted-foreground",
+                !startDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -126,7 +119,7 @@ export function KdsTab() {
               variant="outline"
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !endDate && "text-muted-foreground",
+                !endDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -172,15 +165,11 @@ export function KdsTab() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">
-                  Thời gian chế biến TB
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Thời gian chế biến TB</CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {data.overallAvgPrep} phút
-                </div>
+                <div className="text-2xl font-bold">{data.overallAvgPrep} phút</div>
               </CardContent>
             </Card>
 
@@ -218,18 +207,10 @@ export function KdsTab() {
                     <TableBody>
                       {data.stationStats.map((station) => (
                         <TableRow key={station.station_name}>
-                          <TableCell className="font-medium">
-                            {station.station_name}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {station.total_tickets}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {station.avg_prep_time_min}p
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {station.avg_wait_time_min}p
-                          </TableCell>
+                          <TableCell className="font-medium">{station.station_name}</TableCell>
+                          <TableCell className="text-right">{station.total_tickets}</TableCell>
+                          <TableCell className="text-right">{station.avg_prep_time_min}p</TableCell>
+                          <TableCell className="text-right">{station.avg_wait_time_min}p</TableCell>
                           <TableCell className="text-right">
                             <SlaIndicator value={station.sla_compliance} />
                           </TableCell>
@@ -249,24 +230,13 @@ export function KdsTab() {
                   <CardContent>
                     <ResponsiveContainer width="100%" height={280}>
                       <BarChart data={data.stationStats}>
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          className="stroke-muted"
-                        />
-                        <XAxis
-                          dataKey="station_name"
-                          tick={{ fontSize: 11 }}
-                        />
-                        <YAxis
-                          tick={{ fontSize: 11 }}
-                          tickFormatter={(v: number) => `${v}p`}
-                        />
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis dataKey="station_name" tick={{ fontSize: 11 }} />
+                        <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `${v}p`} />
                         <Tooltip
                           formatter={(value, name) => [
                             `${(value as number) ?? 0} phút`,
-                            (name as string) === "avg_prep_time_min"
-                              ? "Chế biến"
-                              : "Chờ nhận",
+                            (name as string) === "avg_prep_time_min" ? "Chế biến" : "Chờ nhận",
                           ]}
                           contentStyle={TOOLTIP_STYLE}
                         />
@@ -301,33 +271,26 @@ export function KdsTab() {
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
                   <LineChart data={chartDailyData}>
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      className="stroke-muted"
-                    />
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis
                       dataKey="label"
                       tick={{ fontSize: 11 }}
-                      interval={chartDailyData.length > 15 ? Math.floor(chartDailyData.length / 10) : 0}
+                      interval={
+                        chartDailyData.length > 15 ? Math.floor(chartDailyData.length / 10) : 0
+                      }
                     />
                     <YAxis
                       yAxisId="left"
                       tick={{ fontSize: 11 }}
                       tickFormatter={(v: number) => `${v}p`}
                     />
-                    <YAxis
-                      yAxisId="right"
-                      orientation="right"
-                      tick={{ fontSize: 11 }}
-                    />
+                    <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
                     <Tooltip
                       formatter={(value, name) => [
                         (name as string) === "avg_prep_min"
                           ? `${(value as number) ?? 0} phút`
                           : `${(value as number) ?? 0} ticket`,
-                        (name as string) === "avg_prep_min"
-                          ? "TB chế biến"
-                          : "Số ticket",
+                        (name as string) === "avg_prep_min" ? "TB chế biến" : "Số ticket",
                       ]}
                       labelFormatter={(label) => `Ngày ${String(label)}`}
                       contentStyle={TOOLTIP_STYLE}

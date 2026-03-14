@@ -16,11 +16,7 @@ export default async function MenuDetailPage({ params }: Props) {
 
   // Fetch menu info
   const supabase = await createSupabaseServer();
-  const { data: menu } = await supabase
-    .from("menus")
-    .select("*")
-    .eq("id", menuIdNum)
-    .single();
+  const { data: menu } = await supabase.from("menus").select("*").eq("id", menuIdNum).single();
 
   if (!menu) notFound();
 
@@ -32,22 +28,14 @@ export default async function MenuDetailPage({ params }: Props) {
     categories.map(async (cat: any) => {
       const items = await getMenuItems(cat.id);
       return { ...cat, items };
-    }),
+    })
   );
 
   return (
     <>
-      <Header
-        breadcrumbs={[
-          { label: "Thực đơn", href: "/admin/menu" },
-          { label: menu.name },
-        ]}
-      />
+      <Header breadcrumbs={[{ label: "Thực đơn", href: "/admin/menu" }, { label: menu.name }]} />
       <div className="flex flex-1 flex-col gap-4 p-4">
-        <MenuDetail
-          menu={menu}
-          categories={categoriesWithItems}
-        />
+        <MenuDetail menu={menu} categories={categoriesWithItems} />
       </div>
     </>
   );

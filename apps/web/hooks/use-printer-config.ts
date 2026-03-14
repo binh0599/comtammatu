@@ -35,7 +35,7 @@ export function usePrinterForStation(stationId: number | null) {
 
 function usePrinterConfig(
   assignedToType: "pos_terminal" | "kds_station",
-  assignedToId: number | null,
+  assignedToId: number | null
 ) {
   const [config, setConfig] = useState<PrinterConfig | null>(null);
   const [loading, setLoading] = useState(true);

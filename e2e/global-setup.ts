@@ -8,8 +8,6 @@ setup("verify app is running", async ({ request }) => {
   // Check login page reachability (health endpoint requires DB which may be unavailable locally)
   const response = await request.get("/login");
   if (!response.ok()) {
-    throw new Error(
-      `App is not reachable: ${response.status()} ${response.statusText()}`
-    );
+    throw new Error(`App is not reachable: ${response.status()} ${response.statusText()}`);
   }
 });

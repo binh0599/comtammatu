@@ -40,10 +40,7 @@ export interface KdsPerformanceData {
 // getKdsPerformance
 // ---------------------------------------------------------------------------
 
-async function _getKdsPerformance(
-  startDate: string,
-  endDate: string,
-): Promise<KdsPerformanceData> {
+async function _getKdsPerformance(startDate: string, endDate: string): Promise<KdsPerformanceData> {
   const parsed = analyticsQuerySchema.parse({ startDate, endDate });
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
@@ -82,9 +79,7 @@ async function _getKdsPerformance(
   }
 
   const stationIds = stations.map((s: { id: number }) => s.id);
-  const stationNameMap = new Map(
-    stations.map((s: { id: number; name: string }) => [s.id, s.name]),
-  );
+  const stationNameMap = new Map(stations.map((s: { id: number; name: string }) => [s.id, s.name]));
 
   // Fetch completed tickets in date range
   const { data: tickets, error: ticketsErr } = await supabase
@@ -148,9 +143,7 @@ async function _getKdsPerformance(
     if (!agg) continue;
 
     const createdAt = new Date(ticket.created_at).getTime();
-    const acceptedAt = ticket.accepted_at
-      ? new Date(ticket.accepted_at).getTime()
-      : createdAt;
+    const acceptedAt = ticket.accepted_at ? new Date(ticket.accepted_at).getTime() : createdAt;
     if (!ticket.completed_at) continue;
     const completedAt = new Date(ticket.completed_at).getTime();
 
@@ -183,45 +176,34 @@ async function _getKdsPerformance(
     dayAgg.set(dayKey, dayEntry);
   }
 
-  const avg = (arr: number[]) =>
-    arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  const avg = (arr: number[]) => (arr.length > 0 ? arr.reduce((a, b) => a + b, 0) / arr.length : 0);
 
-  const stationStats: StationStat[] = stations.map(
-    (s: { id: number; name: string }) => {
-      const agg = stationAgg.get(s.id)!;
-      const total = agg.prepTimes.length;
-      return {
-        station_name: s.name,
-        total_tickets: total,
-        avg_prep_time_min: Math.round(avg(agg.prepTimes) * 10) / 10,
-        avg_wait_time_min: Math.round(avg(agg.waitTimes) * 10) / 10,
-        sla_compliance:
-          total > 0 ? Math.round((agg.slaHits / total) * 100) : 100,
-      };
-    },
-  );
+  const stationStats: StationStat[] = stations.map((s: { id: number; name: string }) => {
+    const agg = stationAgg.get(s.id)!;
+    const total = agg.prepTimes.length;
+    return {
+      station_name: s.name,
+      total_tickets: total,
+      avg_prep_time_min: Math.round(avg(agg.prepTimes) * 10) / 10,
+      avg_wait_time_min: Math.round(avg(agg.waitTimes) * 10) / 10,
+      sla_compliance: total > 0 ? Math.round((agg.slaHits / total) * 100) : 100,
+    };
+  });
 
   const dailyTrend: KdsDailyTrend[] = Array.from(dayAgg.entries())
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, d]) => ({
       date,
       tickets: d.count,
-      avg_prep_min:
-        d.count > 0 ? Math.round((d.prepSum / d.count) * 10) / 10 : 0,
+      avg_prep_min: d.count > 0 ? Math.round((d.prepSum / d.count) * 10) / 10 : 0,
     }));
 
   return {
     stationStats,
     dailyTrend,
     totalTickets: tickets.length,
-    overallAvgPrep:
-      tickets.length > 0
-        ? Math.round((totalPrepSum / tickets.length) * 10) / 10
-        : 0,
-    overallSla:
-      tickets.length > 0
-        ? Math.round((totalSlaHits / tickets.length) * 100)
-        : 100,
+    overallAvgPrep: tickets.length > 0 ? Math.round((totalPrepSum / tickets.length) * 10) / 10 : 0,
+    overallSla: tickets.length > 0 ? Math.round((totalSlaHits / tickets.length) * 100) : 100,
   };
 }
 

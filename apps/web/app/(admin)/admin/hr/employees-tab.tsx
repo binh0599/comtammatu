@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react";
 import { Plus, Pencil } from "lucide-react";
 import { createStaffAccount, updateEmployee } from "./actions";
-import {
-  getEmploymentTypeLabel,
-  getEmployeeStatusLabel,
-  formatPrice,
-} from "@comtammatu/shared";
+import { getEmploymentTypeLabel, getEmployeeStatusLabel, formatPrice } from "@comtammatu/shared";
 import { toast } from "sonner";
 import {
   Badge,
@@ -179,9 +175,7 @@ export function EmployeesTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Nhân viên</h2>
-          <p className="text-muted-foreground">
-            Quản lý thông tin nhân viên của nhà hàng
-          </p>
+          <p className="text-muted-foreground">Quản lý thông tin nhân viên của nhà hàng</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -200,14 +194,10 @@ export function EmployeesTab({
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Thêm nhân viên mới</DialogTitle>
-                <DialogDescription>
-                  Tạo tài khoản đăng nhập và hồ sơ nhân viên
-                </DialogDescription>
+                <DialogDescription>Tạo tài khoản đăng nhập và hồ sơ nhân viên</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 {/* Account info */}
@@ -278,31 +268,17 @@ export function EmployeesTab({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="position">Vị trí</Label>
-                    <Input
-                      id="position"
-                      name="position"
-                      placeholder="VD: Bếp trưởng"
-                      required
-                    />
+                    <Input id="position" name="position" placeholder="VD: Bếp trưởng" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="department">Bộ phận</Label>
-                    <Input
-                      id="department"
-                      name="department"
-                      placeholder="VD: Bếp"
-                    />
+                    <Input id="department" name="department" placeholder="VD: Bếp" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="hire_date">Ngày vào làm</Label>
-                    <Input
-                      id="hire_date"
-                      name="hire_date"
-                      type="date"
-                      required
-                    />
+                    <Input id="hire_date" name="hire_date" type="date" required />
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="employment_type">Loại hợp đồng</Label>
@@ -342,11 +318,7 @@ export function EmployeesTab({
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -359,9 +331,7 @@ export function EmployeesTab({
       </div>
 
       {error && !isCreateOpen && !editingEmployee && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="overflow-x-auto rounded-md border">
@@ -376,35 +346,28 @@ export function EmployeesTab({
               <TableHead scope="col">Loại HĐ</TableHead>
               <TableHead scope="col">Lương</TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {employees.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={9} className="text-muted-foreground h-24 text-center">
                   Chưa có nhân viên nào
                 </TableCell>
               </TableRow>
             ) : (
               employees.map((emp) => (
                 <TableRow key={emp.id}>
-                  <TableCell className="font-medium">
-                    {emp.profiles.full_name}
-                  </TableCell>
-                  <TableCell>
-                    {ROLE_LABELS[emp.profiles.role] ?? emp.profiles.role}
-                  </TableCell>
+                  <TableCell className="font-medium">{emp.profiles.full_name}</TableCell>
+                  <TableCell>{ROLE_LABELS[emp.profiles.role] ?? emp.profiles.role}</TableCell>
                   <TableCell>{emp.position}</TableCell>
                   <TableCell>{emp.department ?? "-"}</TableCell>
                   <TableCell>{emp.branches.name}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">
-                      {getEmploymentTypeLabel(emp.employment_type)}
-                    </Badge>
+                    <Badge variant="outline">{getEmploymentTypeLabel(emp.employment_type)}</Badge>
                   </TableCell>
                   <TableCell>
                     {emp.monthly_salary
@@ -442,9 +405,7 @@ export function EmployeesTab({
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="max-w-lg">
-                        <form
-                          action={(formData) => handleUpdate(emp.id, formData)}
-                        >
+                        <form action={(formData) => handleUpdate(emp.id, formData)}>
                           <DialogHeader>
                             <DialogTitle>Sửa nhân viên</DialogTitle>
                             <DialogDescription>
@@ -469,10 +430,7 @@ export function EmployeesTab({
                                 </SelectTrigger>
                                 <SelectContent>
                                   {branches.map((branch) => (
-                                    <SelectItem
-                                      key={branch.id}
-                                      value={String(branch.id)}
-                                    >
+                                    <SelectItem key={branch.id} value={String(branch.id)}>
                                       {branch.name}
                                     </SelectItem>
                                   ))}
@@ -500,9 +458,7 @@ export function EmployeesTab({
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div className="grid gap-2">
-                                <Label htmlFor="edit-employment_type">
-                                  Loại hợp đồng
-                                </Label>
+                                <Label htmlFor="edit-employment_type">Loại hợp đồng</Label>
                                 <Select
                                   name="employment_type"
                                   defaultValue={emp.employment_type}
@@ -512,50 +468,30 @@ export function EmployeesTab({
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="full">
-                                      Toàn thời gian
-                                    </SelectItem>
-                                    <SelectItem value="part">
-                                      Bán thời gian
-                                    </SelectItem>
-                                    <SelectItem value="contract">
-                                      Hợp đồng
-                                    </SelectItem>
+                                    <SelectItem value="full">Toàn thời gian</SelectItem>
+                                    <SelectItem value="part">Bán thời gian</SelectItem>
+                                    <SelectItem value="contract">Hợp đồng</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                               <div className="grid gap-2">
                                 <Label htmlFor="edit-status">Trạng thái</Label>
-                                <Select
-                                  name="status"
-                                  defaultValue={emp.status}
-                                  required
-                                >
+                                <Select name="status" defaultValue={emp.status} required>
                                   <SelectTrigger>
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="active">
-                                      Đang làm
-                                    </SelectItem>
-                                    <SelectItem value="inactive">
-                                      Nghỉ
-                                    </SelectItem>
-                                    <SelectItem value="on_leave">
-                                      Nghỉ phép
-                                    </SelectItem>
-                                    <SelectItem value="terminated">
-                                      Đã nghỉ
-                                    </SelectItem>
+                                    <SelectItem value="active">Đang làm</SelectItem>
+                                    <SelectItem value="inactive">Nghỉ</SelectItem>
+                                    <SelectItem value="on_leave">Nghỉ phép</SelectItem>
+                                    <SelectItem value="terminated">Đã nghỉ</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                               <div className="grid gap-2">
-                                <Label htmlFor="edit-monthly_salary">
-                                  Lương tháng (VND)
-                                </Label>
+                                <Label htmlFor="edit-monthly_salary">Lương tháng (VND)</Label>
                                 <Input
                                   id="edit-monthly_salary"
                                   name="monthly_salary"
@@ -565,9 +501,7 @@ export function EmployeesTab({
                                 />
                               </div>
                               <div className="grid gap-2">
-                                <Label htmlFor="edit-hourly_rate">
-                                  Lương giờ (VND)
-                                </Label>
+                                <Label htmlFor="edit-hourly_rate">Lương giờ (VND)</Label>
                                 <Input
                                   id="edit-hourly_rate"
                                   name="hourly_rate"

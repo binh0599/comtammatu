@@ -9,12 +9,5 @@ export default function AdminError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <ErrorFallback
-      error={error}
-      reset={reset}
-      homeHref="/admin"
-      variant="card"
-    />
-  );
+  return <ErrorFallback error={error} reset={reset} homeHref="/admin" variant="card" />;
 }

@@ -240,16 +240,14 @@ async function _adjustLoyaltyPoints(input: {
     return { error: MSG.INSUFFICIENT_POINTS };
   }
 
-  const { error: txError } = await supabase
-    .from("loyalty_transactions")
-    .insert({
-      customer_id: parsed.data.customer_id,
-      points: parsed.data.points,
-      type: parsed.data.type,
-      balance_after: newBalance,
-      reference_type: parsed.data.reference_type || null,
-      reference_id: parsed.data.reference_id ?? null,
-    });
+  const { error: txError } = await supabase.from("loyalty_transactions").insert({
+    customer_id: parsed.data.customer_id,
+    points: parsed.data.points,
+    type: parsed.data.type,
+    balance_after: newBalance,
+    reference_type: parsed.data.reference_type || null,
+    reference_id: parsed.data.reference_id ?? null,
+  });
 
   if (txError) return safeDbErrorResult(txError, "db");
 

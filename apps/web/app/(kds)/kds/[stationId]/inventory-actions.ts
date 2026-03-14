@@ -54,7 +54,7 @@ export async function getMenuPortions(): Promise<MenuPortionInfo[]> {
 async function _toggleMenuItemAvailability(
   menuItemId: number,
   isAvailable: boolean,
-  reason?: string,
+  reason?: string
 ) {
   const { supabase, profile, userId } = await getKdsBranchContext(KDS_ROLES);
 
@@ -72,20 +72,18 @@ async function _toggleMenuItemAvailability(
 
   // Upsert the branch availability record
   const now = new Date().toISOString();
-  const { error } = await supabase
-    .from("menu_item_branch_availability")
-    .upsert(
-      {
-        menu_item_id: menuItemId,
-        branch_id: profile.branch_id,
-        is_available: isAvailable,
-        reason: isAvailable ? null : (reason || null),
-        disabled_by: isAvailable ? null : userId,
-        disabled_at: isAvailable ? null : now,
-        updated_at: now,
-      },
-      { onConflict: "menu_item_id,branch_id" },
-    );
+  const { error } = await supabase.from("menu_item_branch_availability").upsert(
+    {
+      menu_item_id: menuItemId,
+      branch_id: profile.branch_id,
+      is_available: isAvailable,
+      reason: isAvailable ? null : reason || null,
+      disabled_by: isAvailable ? null : userId,
+      disabled_at: isAvailable ? null : now,
+      updated_at: now,
+    },
+    { onConflict: "menu_item_id,branch_id" }
+  );
 
   if (error) return safeDbErrorResult(error, "db");
 
@@ -97,7 +95,7 @@ async function _toggleMenuItemAvailability(
 export async function toggleMenuItemAvailability(
   menuItemId: number,
   isAvailable: boolean,
-  reason?: string,
+  reason?: string
 ) {
   const parsed = toggleMenuItemAvailabilitySchema.safeParse({
     menu_item_id: menuItemId,
@@ -112,7 +110,7 @@ export async function toggleMenuItemAvailability(
     return await _toggleMenuItemAvailability(
       parsed.data.menu_item_id,
       parsed.data.is_available,
-      parsed.data.reason || undefined,
+      parsed.data.reason || undefined
     );
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
@@ -157,7 +155,7 @@ async function _logWaste(
   ingredientId: number,
   quantity: number,
   reason: "expired" | "spoiled" | "overproduction" | "other",
-  notes?: string,
+  notes?: string
 ) {
   const { supabase, profile, userId } = await getKdsBranchContext(KDS_ROLES);
 
@@ -186,16 +184,14 @@ async function _logWaste(
   if (wasteError) return safeDbErrorResult(wasteError, "db");
 
   // 2. Insert stock_movement record (type='waste')
-  const { error: movementError } = await supabase
-    .from("stock_movements")
-    .insert({
-      ingredient_id: ingredientId,
-      branch_id: profile.branch_id,
-      type: "waste",
-      quantity,
-      notes: `Hao hụt: ${reason}${notes ? ` — ${notes}` : ""}`,
-      created_by: userId,
-    });
+  const { error: movementError } = await supabase.from("stock_movements").insert({
+    ingredient_id: ingredientId,
+    branch_id: profile.branch_id,
+    type: "waste",
+    quantity,
+    notes: `Hao hụt: ${reason}${notes ? ` — ${notes}` : ""}`,
+    created_by: userId,
+  });
 
   if (movementError) return safeDbErrorResult(movementError, "db");
 
@@ -242,7 +238,7 @@ export async function logWaste(
   ingredientId: number,
   quantity: number,
   reason: "expired" | "spoiled" | "overproduction" | "other",
-  notes?: string,
+  notes?: string
 ) {
   const parsed = quickWasteLogSchema.safeParse({
     ingredient_id: ingredientId,
@@ -259,7 +255,7 @@ export async function logWaste(
       parsed.data.ingredient_id,
       parsed.data.quantity,
       parsed.data.reason,
-      parsed.data.notes || undefined,
+      parsed.data.notes || undefined
     );
   } catch (error) {
     if (error instanceof Error && "digest" in error) throw error;
@@ -291,9 +287,7 @@ async function _getPrepList(targetPortions?: number): Promise<PrepListItem[]> {
   return (data ?? []) as unknown as PrepListItem[];
 }
 
-export async function getPrepList(
-  targetPortions?: number,
-): Promise<PrepListItem[]> {
+export async function getPrepList(targetPortions?: number): Promise<PrepListItem[]> {
   const parsed = prepListQuerySchema.safeParse({ target_portions: targetPortions });
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
@@ -318,9 +312,7 @@ export interface ExpiringBatch {
   ingredients: { name: string; unit: string } | null;
 }
 
-async function _getExpiringBatches(
-  daysAhead: number = 3,
-): Promise<ExpiringBatch[]> {
+async function _getExpiringBatches(daysAhead: number = 3): Promise<ExpiringBatch[]> {
   const { supabase, profile } = await getKdsBranchContext(KDS_ROLES);
 
   const futureDate = new Date();
@@ -339,9 +331,7 @@ async function _getExpiringBatches(
   return (data ?? []) as ExpiringBatch[];
 }
 
-export async function getExpiringBatches(
-  daysAhead?: number,
-): Promise<ExpiringBatch[]> {
+export async function getExpiringBatches(daysAhead?: number): Promise<ExpiringBatch[]> {
   const parsed = expiringBatchesQuerySchema.safeParse({ days_ahead: daysAhead });
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ");
@@ -445,15 +435,10 @@ async function _requestUrgentRestock(input: {
     received_qty: 0,
   }));
 
-  const { error: itemsError } = await supabase
-    .from("purchase_order_items")
-    .insert(itemRows);
+  const { error: itemsError } = await supabase.from("purchase_order_items").insert(itemRows);
 
   if (itemsError) {
-    const { error: cleanupError } = await supabase
-      .from("purchase_orders")
-      .delete()
-      .eq("id", po.id);
+    const { error: cleanupError } = await supabase.from("purchase_orders").delete().eq("id", po.id);
     if (cleanupError) {
       console.error(`Failed to clean up PO #${po.id} after items insert failure:`, cleanupError);
       return { error: "Đã xảy ra lỗi khi xử lý đơn hàng. Vui lòng thử lại hoặc liên hệ hỗ trợ." };

@@ -4,11 +4,7 @@ export const createSupplierSchema = z.object({
   name: z.string().min(1, "Tên nhà cung cấp không được để trống").max(200),
   contact_name: z.string().max(200).optional().or(z.literal("")),
   phone: z.string().max(20).optional().or(z.literal("")),
-  email: z
-    .string()
-    .email("Email không hợp lệ")
-    .optional()
-    .or(z.literal("")),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   address: z.string().max(500).optional().or(z.literal("")),
   payment_terms: z.string().max(200).optional().or(z.literal("")),
   rating: z.coerce.number().int().min(1).max(5).optional(),
@@ -33,9 +29,7 @@ export const createPurchaseOrderSchema = z.object({
     )
     .min(1, "Đơn mua hàng phải có ít nhất 1 mục"),
 });
-export type CreatePurchaseOrderInput = z.infer<
-  typeof createPurchaseOrderSchema
->;
+export type CreatePurchaseOrderInput = z.infer<typeof createPurchaseOrderSchema>;
 
 const receiveItemSchema = z
   .object({
@@ -51,18 +45,18 @@ const receiveItemSchema = z
       .default("accepted"),
     expiry_date: z.string().optional().or(z.literal("")),
   })
-  .refine(
-    (data) => data.reject_qty + data.received_qty <= data.ordered_qty,
-    { message: "Tổng nhận + từ chối không thể vượt quá số lượng đặt", path: ["reject_qty"] },
-  )
-  .refine(
-    (data) => !(data.quality_status === "accepted" && data.reject_qty > 0),
-    { message: "Không thể từ chối khi chất lượng 'Đạt'", path: ["reject_qty"] },
-  )
-  .refine(
-    (data) => !(data.quality_status === "rejected" && data.received_qty > 0),
-    { message: "Không thể nhận khi chất lượng 'Từ chối'", path: ["received_qty"] },
-  );
+  .refine((data) => data.reject_qty + data.received_qty <= data.ordered_qty, {
+    message: "Tổng nhận + từ chối không thể vượt quá số lượng đặt",
+    path: ["reject_qty"],
+  })
+  .refine((data) => !(data.quality_status === "accepted" && data.reject_qty > 0), {
+    message: "Không thể từ chối khi chất lượng 'Đạt'",
+    path: ["reject_qty"],
+  })
+  .refine((data) => !(data.quality_status === "rejected" && data.received_qty > 0), {
+    message: "Không thể nhận khi chất lượng 'Từ chối'",
+    path: ["received_qty"],
+  });
 
 export const receivePurchaseOrderSchema = z.object({
   po_id: z.coerce.number().int().positive(),
@@ -74,9 +68,7 @@ export const receivePurchaseOrderSchema = z.object({
         const ids = items.map((i) => i.po_item_id);
         return new Set(ids).size === ids.length;
       },
-      { message: "po_item_id phải là duy nhất trong danh sách" },
+      { message: "po_item_id phải là duy nhất trong danh sách" }
     ),
 });
-export type ReceivePurchaseOrderInput = z.infer<
-  typeof receivePurchaseOrderSchema
->;
+export type ReceivePurchaseOrderInput = z.infer<typeof receivePurchaseOrderSchema>;

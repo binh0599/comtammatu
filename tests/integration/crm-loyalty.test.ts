@@ -4,12 +4,7 @@
  * Tests customer loyalty point flow: read balance, verify tiers, earn points.
  */
 
-import {
-  createAuthClient,
-  createServiceClient,
-  cleanupRows,
-  SEED,
-} from "./helpers";
+import { createAuthClient, createServiceClient, cleanupRows, SEED } from "./helpers";
 
 describe("CRM Loyalty", () => {
   const createdTransactionIds: number[] = [];
@@ -82,8 +77,7 @@ describe("CRM Loyalty", () => {
       .order("created_at", { ascending: false })
       .limit(1);
 
-    const currentBalance =
-      existing && existing.length > 0 ? existing[0]!.balance_after ?? 0 : 0;
+    const currentBalance = existing && existing.length > 0 ? (existing[0]!.balance_after ?? 0) : 0;
 
     const { data: txn, error } = await service
       .from("loyalty_transactions")

@@ -124,7 +124,7 @@ async function _createPrinter(formData: FormData) {
     if (!station) return { error: "Trạm bếp không thuộc chi nhánh" };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error } = await supabase
     .from("printer_configs")
     .insert({ ...parsed.data, branch_id: branchId } as any);
@@ -170,7 +170,7 @@ async function _updatePrinter(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error } = await supabase
     .from("printer_configs")
     .update(parsed.data as any)

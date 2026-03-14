@@ -8,16 +8,8 @@ export const createVoucherSchema = z.object({
     .transform((v) => v.toUpperCase().trim()),
   type: z.enum(["percent", "fixed", "free_item"]),
   value: z.coerce.number().min(0, "Giá trị phải >= 0"),
-  min_order: z.coerce
-    .number()
-    .min(0, "Đơn tối thiểu phải >= 0")
-    .optional()
-    .nullable(),
-  max_discount: z.coerce
-    .number()
-    .min(0, "Giảm tối đa phải >= 0")
-    .optional()
-    .nullable(),
+  min_order: z.coerce.number().min(0, "Đơn tối thiểu phải >= 0").optional().nullable(),
+  max_discount: z.coerce.number().min(0, "Giảm tối đa phải >= 0").optional().nullable(),
   valid_from: z.string().min(1, "Ngày bắt đầu không được để trống"),
   valid_to: z.string().min(1, "Ngày kết thúc không được để trống"),
   max_uses: z.coerce.number().int().min(1, "Số lần sử dụng tối thiểu 1").optional().nullable(),

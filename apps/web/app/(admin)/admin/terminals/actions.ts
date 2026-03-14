@@ -44,7 +44,9 @@ async function _approveDevice(id: number) {
   // Verify device belongs to caller's tenant
   const { data: device, error: deviceError } = await supabase
     .from("registered_devices")
-    .select("id, status, tenant_id, branch_id, device_name, device_type, terminal_type, approval_code, device_fingerprint")
+    .select(
+      "id, status, tenant_id, branch_id, device_name, device_type, terminal_type, approval_code, device_fingerprint"
+    )
     .eq("id", id)
     .eq("tenant_id", tenantId)
     .single();
@@ -258,7 +260,7 @@ async function _updateDeviceCategories(formData: FormData) {
 
   let categoryIds: unknown;
   try {
-    categoryIds = JSON.parse(formData.get("category_ids") as string || "[]");
+    categoryIds = JSON.parse((formData.get("category_ids") as string) || "[]");
   } catch {
     return { error: "Dữ liệu danh mục không hợp lệ" };
   }
@@ -301,9 +303,7 @@ async function _updateDeviceCategories(formData: FormData) {
     category_id: categoryId,
   }));
 
-  const { error } = await supabase
-    .from("kds_station_categories")
-    .insert(stationCategories);
+  const { error } = await supabase.from("kds_station_categories").insert(stationCategories);
 
   if (error) return safeDbErrorResult(error, "db");
 

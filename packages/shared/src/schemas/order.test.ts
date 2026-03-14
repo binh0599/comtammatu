@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  createOrderSchema,
-  updateOrderStatusSchema,
-  addOrderItemsSchema,
-} from "./order";
+import { createOrderSchema, updateOrderStatusSchema, addOrderItemsSchema } from "./order";
 
 // ===== Helper Factories =====
 
@@ -135,9 +131,7 @@ describe("createOrderSchema", () => {
       const result = createOrderSchema.safeParse(data);
       expect(result.success).toBe(false);
       if (!result.success) {
-        const tableIssue = result.error.issues.find(
-          (i) => i.path.includes("table_id"),
-        );
+        const tableIssue = result.error.issues.find((i) => i.path.includes("table_id"));
         expect(tableIssue).toBeDefined();
       }
     });
@@ -151,9 +145,7 @@ describe("createOrderSchema", () => {
       const result = createOrderSchema.safeParse(data);
       expect(result.success).toBe(false);
       if (!result.success) {
-        const guestIssue = result.error.issues.find(
-          (i) => i.path.includes("guest_count"),
-        );
+        const guestIssue = result.error.issues.find((i) => i.path.includes("guest_count"));
         expect(guestIssue).toBeDefined();
       }
     });
@@ -351,14 +343,7 @@ describe("updateOrderStatusSchema", () => {
   });
 
   it("accepts all valid statuses", () => {
-    const validStatuses = [
-      "confirmed",
-      "preparing",
-      "ready",
-      "served",
-      "completed",
-      "cancelled",
-    ];
+    const validStatuses = ["confirmed", "preparing", "ready", "served", "completed", "cancelled"];
     for (const status of validStatuses) {
       const result = updateOrderStatusSchema.safeParse({
         order_id: 1,

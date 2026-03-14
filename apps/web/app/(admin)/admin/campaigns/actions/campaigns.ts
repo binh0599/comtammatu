@@ -128,7 +128,7 @@ async function _updateCampaign(
       gender?: string;
     };
     scheduled_at?: string;
-  },
+  }
 ) {
   validateId(id);
   const parsed = updateCampaignSchema.safeParse(input);
@@ -295,7 +295,7 @@ async function _sendCampaign(id: number) {
   if (!rlSuccess) {
     throw new ActionError(
       "Bạn đã gửi quá nhiều chiến dịch. Vui lòng thử lại sau 5 phút.",
-      "VALIDATION_ERROR",
+      "VALIDATION_ERROR"
     );
   }
 
@@ -409,11 +409,15 @@ async function _sendCampaign(id: number) {
       // Send push notifications (fire-and-forget)
       for (const c of customers) {
         if (c.auth_user_id) {
-          void sendPushToUser(c.auth_user_id, {
-            title: existing.name ?? "Ưu đãi mới",
-            body: (existing.content as unknown as string) ?? "Bạn có ưu đãi mới!",
-            type: "campaign",
-          }, "campaign");
+          void sendPushToUser(
+            c.auth_user_id,
+            {
+              title: existing.name ?? "Ưu đãi mới",
+              body: (existing.content as unknown as string) ?? "Bạn có ưu đãi mới!",
+              type: "campaign",
+            },
+            "campaign"
+          );
         }
       }
     });

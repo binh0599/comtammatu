@@ -4,11 +4,7 @@ import { EmployeeNav } from "@/components/employee/employee-nav";
 import { EmployeeHeader } from "@/components/employee/employee-header";
 import { Toaster } from "@comtammatu/ui";
 
-export default async function EmployeeLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function EmployeeLayout({ children }: { children: React.ReactNode }) {
   const { profile } = await requireLayoutAuth<{
     full_name: string | null;
     branch_id: number | null;
@@ -16,10 +12,7 @@ export default async function EmployeeLayout({
 
   return (
     <div data-route-group="employee" className="bg-background min-h-screen pb-16">
-      <EmployeeHeader
-        employeeName={profile.full_name ?? "Nhân viên"}
-        role={profile.role}
-      />
+      <EmployeeHeader employeeName={profile.full_name ?? "Nhân viên"} role={profile.role} />
       <main id="main-content" className="mx-auto max-w-lg px-4 py-4 animate-page-in">
         {children}
       </main>

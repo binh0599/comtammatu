@@ -21,21 +21,21 @@ export interface AuditLogEntry {
  * Insert an audit log entry. Fire-and-forget: does not throw on failure
  * (audit logging should never break the primary operation).
  */
-export async function auditLog(
-  supabase: SupabaseClient,
-  entry: AuditLogEntry,
-): Promise<void> {
+export async function auditLog(supabase: SupabaseClient, entry: AuditLogEntry): Promise<void> {
   try {
     await supabase.from("audit_logs").insert({
       tenant_id: entry.tenant_id,
       user_id: entry.user_id,
       action: entry.action,
       resource_type: entry.resource_type,
-      resource_id: typeof entry.resource_id === "string" ? Number(entry.resource_id) : entry.resource_id,
+      resource_id:
+        typeof entry.resource_id === "string" ? Number(entry.resource_id) : entry.resource_id,
       new_value: entry.changes
-        ? JSON.parse(JSON.stringify(entry.changes, (_key, value) =>
-            typeof value === "bigint" ? value.toString() : value,
-          ))
+        ? JSON.parse(
+            JSON.stringify(entry.changes, (_key, value) =>
+              typeof value === "bigint" ? value.toString() : value
+            )
+          )
         : null,
       ip_address: entry.ip_address ?? null,
     });
@@ -60,7 +60,7 @@ export interface SecurityEventEntry {
  */
 export async function logSecurityEvent(
   supabase: SupabaseClient,
-  entry: SecurityEventEntry,
+  entry: SecurityEventEntry
 ): Promise<void> {
   try {
     await supabase.from("security_events").insert({

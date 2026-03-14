@@ -4,14 +4,7 @@ import { useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { formatTime, getShiftAssignmentStatusLabel } from "@comtammatu/shared";
 import { getMyShiftAssignments } from "@/app/(employee)/employee/actions";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@comtammatu/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@comtammatu/ui";
 
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
@@ -23,12 +16,21 @@ function toLocalDateString(date: Date): string {
 }
 
 const MONTH_NAMES = [
-  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
-  "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
-  "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
+  "Tháng 1",
+  "Tháng 2",
+  "Tháng 3",
+  "Tháng 4",
+  "Tháng 5",
+  "Tháng 6",
+  "Tháng 7",
+  "Tháng 8",
+  "Tháng 9",
+  "Tháng 10",
+  "Tháng 11",
+  "Tháng 12",
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 interface ScheduleCalendarProps {
   initialAssignments: any[];
   initialYear: number;
@@ -92,7 +94,7 @@ export function ScheduleCalendar({
     });
   }
 
-  const selectedAssignments = selectedDate ? assignmentsByDate.get(selectedDate) ?? [] : [];
+  const selectedAssignments = selectedDate ? (assignmentsByDate.get(selectedDate) ?? []) : [];
 
   // Compute prev/next month labels for aria
   const prevMonth = month === 0 ? 11 : month - 1;
@@ -167,7 +169,9 @@ export function ScheduleCalendar({
                 >
                   {dayNum}
                   {hasShift && (
-                    <span className={`absolute bottom-1 h-1.5 w-1.5 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`} />
+                    <span
+                      className={`absolute bottom-1 h-1.5 w-1.5 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`}
+                    />
                   )}
                 </button>
               );
@@ -194,8 +198,11 @@ export function ScheduleCalendar({
               <p className="text-muted-foreground text-sm">Không có ca làm ngày này.</p>
             ) : (
               <div className="flex flex-col gap-3">
-                {selectedAssignments.map((a: typeof assignments[number]) => (
-                  <div key={a.id} className="flex items-center justify-between rounded-lg border p-3">
+                {selectedAssignments.map((a: (typeof assignments)[number]) => (
+                  <div
+                    key={a.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div>
                       <p className="font-medium">{a.shifts?.name}</p>
                       <p className="text-muted-foreground text-sm">
@@ -204,13 +211,9 @@ export function ScheduleCalendar({
                       {a.shifts?.branches?.name && (
                         <p className="text-muted-foreground text-xs">{a.shifts.branches.name}</p>
                       )}
-                      {a.notes && (
-                        <p className="text-muted-foreground text-xs mt-1">{a.notes}</p>
-                      )}
+                      {a.notes && <p className="text-muted-foreground text-xs mt-1">{a.notes}</p>}
                     </div>
-                    <Badge variant="outline">
-                      {getShiftAssignmentStatusLabel(a.status)}
-                    </Badge>
+                    <Badge variant="outline">{getShiftAssignmentStatusLabel(a.status)}</Badge>
                   </div>
                 ))}
               </div>

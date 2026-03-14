@@ -9,11 +9,9 @@ import { useEffect } from "react";
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js", { scope: "/pos" })
-        .catch(() => {
-          // SW registration failed — non-critical, POS works without it
-        });
+      navigator.serviceWorker.register("/sw.js", { scope: "/pos" }).catch(() => {
+        // SW registration failed — non-critical, POS works without it
+      });
     }
   }, []);
 

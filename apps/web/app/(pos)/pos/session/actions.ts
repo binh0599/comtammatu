@@ -289,10 +289,7 @@ async function _getSessionSummary(sessionId: number) {
     .filter((p) => p.method === "cash")
     .reduce((sum, p) => sum + p.amount + p.tip, 0);
 
-  const totalPayments = typedPayments.reduce(
-    (sum, p) => sum + p.amount + p.tip,
-    0
-  );
+  const totalPayments = typedPayments.reduce((sum, p) => sum + p.amount + p.tip, 0);
 
   return {
     totalPayments,

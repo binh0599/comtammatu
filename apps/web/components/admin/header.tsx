@@ -31,9 +31,7 @@ export function Header({ breadcrumbs }: HeaderProps) {
                 {i === (breadcrumbs?.length ?? 0) - 1 ? (
                   <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink href={crumb.href}>
-                    {crumb.label}
-                  </BreadcrumbLink>
+                  <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
                 )}
               </BreadcrumbItem>
             </Fragment>

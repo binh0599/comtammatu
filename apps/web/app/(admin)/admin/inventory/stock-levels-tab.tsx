@@ -107,9 +107,7 @@ export function StockLevelsTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Tồn kho</h2>
-          <p className="text-muted-foreground">
-            Theo dõi số lượng nguyên liệu tại từng chi nhánh
-          </p>
+          <p className="text-muted-foreground">Theo dõi số lượng nguyên liệu tại từng chi nhánh</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -133,9 +131,7 @@ export function StockLevelsTab({
                 </DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -181,11 +177,7 @@ export function StockLevelsTab({
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -198,9 +190,7 @@ export function StockLevelsTab({
       </div>
 
       {error && !isCreateOpen && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="rounded-md border">
@@ -210,49 +200,42 @@ export function StockLevelsTab({
               <TableHead scope="col">Nguyên liệu</TableHead>
               <TableHead scope="col">Đơn vị</TableHead>
               <TableHead scope="col">Chi nhánh</TableHead>
-              <TableHead scope="col" className="text-right">Số lượng</TableHead>
-              <TableHead scope="col" className="text-right">Tối thiểu</TableHead>
-              <TableHead scope="col" className="text-right">Tối đa</TableHead>
+              <TableHead scope="col" className="text-right">
+                Số lượng
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Tối thiểu
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Tối đa
+              </TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stockLevels.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground h-24 text-center">
                   Chưa có dữ liệu tồn kho
                 </TableCell>
               </TableRow>
             ) : (
               stockLevels.map((sl) => {
                 const isLow =
-                  sl.ingredients.min_stock != null &&
-                  sl.quantity <= sl.ingredients.min_stock;
+                  sl.ingredients.min_stock != null && sl.quantity <= sl.ingredients.min_stock;
                 return (
                   <TableRow key={sl.id}>
-                    <TableCell className="font-medium">
-                      {sl.ingredients.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{sl.ingredients.name}</TableCell>
                     <TableCell>{sl.ingredients.unit}</TableCell>
                     <TableCell>{sl.branches.name}</TableCell>
                     <TableCell className="text-right">{sl.quantity}</TableCell>
-                    <TableCell className="text-right">
-                      {sl.ingredients.min_stock ?? "-"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {sl.ingredients.max_stock ?? "-"}
-                    </TableCell>
+                    <TableCell className="text-right">{sl.ingredients.min_stock ?? "-"}</TableCell>
+                    <TableCell className="text-right">{sl.ingredients.max_stock ?? "-"}</TableCell>
                     <TableCell>
                       {isLow ? (
                         <Badge variant="destructive">Sắp hết</Badge>
                       ) : (
-                        <Badge
-                          variant="default"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
+                        <Badge variant="default" className="bg-green-600 hover:bg-green-700">
                           Đủ hàng
                         </Badge>
                       )}
@@ -291,9 +274,7 @@ function ReorderSuggestionsSection() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Gợi ý đặt hàng</h3>
-          <p className="text-muted-foreground text-sm">
-            Nguyên liệu dưới mức tồn kho tối thiểu
-          </p>
+          <p className="text-muted-foreground text-sm">Nguyên liệu dưới mức tồn kho tối thiểu</p>
         </div>
         <Button variant="outline" onClick={handleLoad} disabled={isPending}>
           <ShoppingCart className="mr-2 h-4 w-4" />
@@ -323,10 +304,18 @@ function ReorderSuggestionsSection() {
                 <TableRow>
                   <TableHead scope="col">Nguyên liệu</TableHead>
                   <TableHead scope="col">Chi nhánh</TableHead>
-                  <TableHead scope="col" className="text-right">Hiện tại</TableHead>
-                  <TableHead scope="col" className="text-right">Tối thiểu</TableHead>
-                  <TableHead scope="col" className="text-right">Tối đa</TableHead>
-                  <TableHead scope="col" className="text-right">Đề xuất đặt</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Hiện tại
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Tối thiểu
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Tối đa
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Đề xuất đặt
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

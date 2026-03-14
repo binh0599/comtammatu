@@ -24,17 +24,14 @@ export async function GET(_req: NextRequest) {
         is_available,
         category_id,
         menu_categories!inner(id, name, display_order)
-      `,
+      `
       )
       .eq("is_available", true)
       .order("display_order", { ascending: true });
 
     if (itemsError) {
       console.error("Error fetching menu items:", itemsError);
-      return jsonError(
-        "Không thể tải menu. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải menu. Vui lòng thử lại sau.", 500);
     }
 
     // Fetch all menu categories
@@ -45,10 +42,7 @@ export async function GET(_req: NextRequest) {
 
     if (categoriesError) {
       console.error("Error fetching menu categories:", categoriesError);
-      return jsonError(
-        "Không thể tải danh mục menu. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải danh mục menu. Vui lòng thử lại sau.", 500);
     }
 
     return jsonOk({
@@ -57,9 +51,6 @@ export async function GET(_req: NextRequest) {
     });
   } catch (error) {
     console.error("[GET /api/mobile/menu]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }

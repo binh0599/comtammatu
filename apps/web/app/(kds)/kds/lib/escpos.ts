@@ -45,8 +45,8 @@ function concat(...buffers: Uint8Array[]): Uint8Array {
 /** Initialize printer -- ESC @ + select UTF-8 charset (FS C 0 0 48 for multilingual UTF-8 mode) */
 export function escposInit(): Uint8Array {
   return concat(
-    bytes(ESC, 0x40),       // ESC @ — hardware reset
-    bytes(0x1c, 0x43, 0x00, 0x00, 48), // FS C 0 0 48 — UTF-8 multilingual mode
+    bytes(ESC, 0x40), // ESC @ — hardware reset
+    bytes(0x1c, 0x43, 0x00, 0x00, 48) // FS C 0 0 48 — UTF-8 multilingual mode
   );
 }
 
@@ -176,9 +176,7 @@ export function buildKdsTicket(ticket: {
 
   // Table
   parts.push(escposAlignLeft());
-  parts.push(escposTextLn(
-    ticket.tableNumber ? `Bàn: ${ticket.tableNumber}` : "Mang về",
-  ));
+  parts.push(escposTextLn(ticket.tableNumber ? `Bàn: ${ticket.tableNumber}` : "Mang về"));
 
   // Separator
   parts.push(escposLine(lineWidth));
@@ -271,22 +269,20 @@ export function buildPosReceipt(receipt: {
   parts.push(escposColumns("Mã HĐ:", receipt.orderNumber, lineWidth));
   parts.push(escposColumns("Ngày:", fmtDateTime(receipt.createdAt), lineWidth));
   parts.push(escposColumns("Thu ngân:", receipt.cashierName, lineWidth));
-  parts.push(escposColumns(
-    "Vị trí:",
-    receipt.tableNumber ? `Bàn ${receipt.tableNumber}` : "Mang đi",
-    lineWidth,
-  ));
+  parts.push(
+    escposColumns(
+      "Vị trí:",
+      receipt.tableNumber ? `Bàn ${receipt.tableNumber}` : "Mang đi",
+      lineWidth
+    )
+  );
 
   parts.push(escposLine(lineWidth));
 
   // Items
   for (const item of receipt.items) {
     parts.push(escposTextLn(item.name));
-    parts.push(escposColumns(
-      `  x${item.quantity}`,
-      fmtPrice(item.total),
-      lineWidth,
-    ));
+    parts.push(escposColumns(`  x${item.quantity}`, fmtPrice(item.total), lineWidth));
   }
 
   parts.push(escposLine(lineWidth));
@@ -312,7 +308,8 @@ export function buildPosReceipt(receipt: {
 
   // Payment method
   parts.push(escposLine(lineWidth));
-  const methodLabel = PAYMENT_METHOD_LABELS[receipt.paymentMethod] ?? receipt.paymentMethod.toUpperCase();
+  const methodLabel =
+    PAYMENT_METHOD_LABELS[receipt.paymentMethod] ?? receipt.paymentMethod.toUpperCase();
   parts.push(escposColumns("Thanh toán:", methodLabel, lineWidth));
 
   // Footer

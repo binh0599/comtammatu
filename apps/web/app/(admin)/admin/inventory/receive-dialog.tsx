@@ -43,16 +43,21 @@ export function ReceiveDialog({
       }
     >
   >(() => {
-    const initial: Record<number, {
-      received_qty: string;
-      reject_qty: string;
-      reject_reason: string;
-      quality_status: "accepted" | "partial" | "rejected";
-      expiry_date: string;
-    }> = {};
+    const initial: Record<
+      number,
+      {
+        received_qty: string;
+        reject_qty: string;
+        reject_reason: string;
+        quality_status: "accepted" | "partial" | "rejected";
+        expiry_date: string;
+      }
+    > = {};
     for (const item of po.purchase_order_items) {
       initial[item.id] = {
-        received_qty: String(item.received_qty != null && item.received_qty > 0 ? item.received_qty : item.quantity),
+        received_qty: String(
+          item.received_qty != null && item.received_qty > 0 ? item.received_qty : item.quantity
+        ),
         reject_qty: String(item.reject_qty ?? 0),
         reject_reason: item.reject_reason ?? "",
         quality_status: (item.quality_status ?? "accepted") as "accepted" | "partial" | "rejected",
@@ -139,23 +144,27 @@ export function ReceiveDialog({
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       <div className="py-4">
         <div className="rounded-md border overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead scope="col">Nguyên liệu</TableHead>
-                <TableHead scope="col" className="text-right">Đặt hàng</TableHead>
+                <TableHead scope="col" className="text-right">
+                  Đặt hàng
+                </TableHead>
                 <TableHead scope="col">Chất lượng</TableHead>
-                <TableHead scope="col" className="w-[110px]">Thực nhận</TableHead>
-                <TableHead scope="col" className="w-[110px]">Từ chối</TableHead>
+                <TableHead scope="col" className="w-[110px]">
+                  Thực nhận
+                </TableHead>
+                <TableHead scope="col" className="w-[110px]">
+                  Từ chối
+                </TableHead>
                 <TableHead scope="col">Lý do từ chối</TableHead>
-                <TableHead scope="col" className="w-[130px]">Hạn sử dụng</TableHead>
+                <TableHead scope="col" className="w-[130px]">
+                  Hạn sử dụng
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -179,13 +188,19 @@ export function ReceiveDialog({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="accepted">
-                            <Badge variant="default" className="text-[10px]">Đạt</Badge>
+                            <Badge variant="default" className="text-[10px]">
+                              Đạt
+                            </Badge>
                           </SelectItem>
                           <SelectItem value="partial">
-                            <Badge className="bg-yellow-100 text-yellow-800 text-[10px]">1 phần</Badge>
+                            <Badge className="bg-yellow-100 text-yellow-800 text-[10px]">
+                              1 phần
+                            </Badge>
                           </SelectItem>
                           <SelectItem value="rejected">
-                            <Badge variant="destructive" className="text-[10px]">Không đạt</Badge>
+                            <Badge variant="destructive" className="text-[10px]">
+                              Không đạt
+                            </Badge>
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -197,9 +212,7 @@ export function ReceiveDialog({
                         step="0.01"
                         className="h-8 text-sm"
                         value={data?.received_qty ?? ""}
-                        onChange={(e) =>
-                          updateItem(item.id, "received_qty", e.target.value)
-                        }
+                        onChange={(e) => updateItem(item.id, "received_qty", e.target.value)}
                       />
                     </TableCell>
                     <TableCell>
@@ -210,9 +223,7 @@ export function ReceiveDialog({
                         className="h-8 text-sm"
                         value={data?.reject_qty ?? ""}
                         disabled={data?.quality_status === "accepted"}
-                        onChange={(e) =>
-                          updateItem(item.id, "reject_qty", e.target.value)
-                        }
+                        onChange={(e) => updateItem(item.id, "reject_qty", e.target.value)}
                       />
                     </TableCell>
                     <TableCell>
@@ -222,9 +233,7 @@ export function ReceiveDialog({
                         placeholder="Lý do..."
                         value={data?.reject_reason ?? ""}
                         disabled={data?.quality_status === "accepted"}
-                        onChange={(e) =>
-                          updateItem(item.id, "reject_reason", e.target.value)
-                        }
+                        onChange={(e) => updateItem(item.id, "reject_reason", e.target.value)}
                       />
                     </TableCell>
                     <TableCell>
@@ -232,9 +241,7 @@ export function ReceiveDialog({
                         type="date"
                         className="h-8 text-sm"
                         value={data?.expiry_date ?? ""}
-                        onChange={(e) =>
-                          updateItem(item.id, "expiry_date", e.target.value)
-                        }
+                        onChange={(e) => updateItem(item.id, "expiry_date", e.target.value)}
                       />
                     </TableCell>
                   </TableRow>

@@ -25,9 +25,7 @@ export function ErrorFallback({
   homeLabel = "Về trang chủ",
   variant = "minimal",
 }: ErrorFallbackProps) {
-  const message = error.digest
-    ? "Lỗi hệ thống. Vui lòng thử lại sau."
-    : error.message;
+  const message = error.digest ? "Lỗi hệ thống. Vui lòng thử lại sau." : error.message;
 
   if (variant === "inline") {
     return (
@@ -70,9 +68,7 @@ export function ErrorFallback({
     <div className="flex flex-col items-center justify-center gap-4 p-8 min-h-[60vh]">
       <AlertCircle className="h-10 w-10 text-destructive" />
       <h2 className="text-lg font-semibold">{title}</h2>
-      <p className="text-sm text-muted-foreground text-center max-w-sm">
-        {message}
-      </p>
+      <p className="text-sm text-muted-foreground text-center max-w-sm">{message}</p>
       <div className="flex gap-3">
         <Button onClick={reset}>Thử lại</Button>
         {homeHref && (

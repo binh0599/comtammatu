@@ -97,17 +97,16 @@ async function _createStaffAccount(data: CreateStaffAccountInput) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { data: newUser, error: createError } =
-    await adminClient.auth.admin.createUser({
-      email: parsed.data.email,
-      password: parsed.data.password,
-      email_confirm: true,
-      user_metadata: {
-        full_name: parsed.data.full_name,
-        tenant_id: tenantId,
-        role: parsed.data.role,
-      },
-    });
+  const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+    email: parsed.data.email,
+    password: parsed.data.password,
+    email_confirm: true,
+    user_metadata: {
+      full_name: parsed.data.full_name,
+      tenant_id: tenantId,
+      role: parsed.data.role,
+    },
+  });
 
   if (createError) {
     if (createError.message.includes("already registered")) {
@@ -198,11 +197,14 @@ async function _updateEmployee(id: number, data: UpdateEmployeeInput) {
   if (parsed.data.position !== undefined) payload.position = parsed.data.position;
   if (parsed.data.department !== undefined) payload.department = parsed.data.department || null;
   if (parsed.data.branch_id !== undefined) payload.branch_id = parsed.data.branch_id;
-  if (parsed.data.employment_type !== undefined) payload.employment_type = parsed.data.employment_type;
+  if (parsed.data.employment_type !== undefined)
+    payload.employment_type = parsed.data.employment_type;
   if (parsed.data.hourly_rate !== undefined) payload.hourly_rate = parsed.data.hourly_rate ?? null;
-  if (parsed.data.monthly_salary !== undefined) payload.monthly_salary = parsed.data.monthly_salary ?? null;
+  if (parsed.data.monthly_salary !== undefined)
+    payload.monthly_salary = parsed.data.monthly_salary ?? null;
   if (parsed.data.status !== undefined) payload.status = parsed.data.status;
-  if (parsed.data.emergency_contact !== undefined) payload.emergency_contact = parsed.data.emergency_contact ?? null;
+  if (parsed.data.emergency_contact !== undefined)
+    payload.emergency_contact = parsed.data.emergency_contact ?? null;
 
   const { error } = await supabase
     .from("employees")

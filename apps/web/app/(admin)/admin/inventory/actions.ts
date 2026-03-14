@@ -18,12 +18,7 @@ export {
   createBranchTransfer,
 } from "./stock-actions";
 
-export {
-  getRecipes,
-  getMenuItemsForRecipe,
-  createRecipe,
-  deleteRecipe,
-} from "./recipe-actions";
+export { getRecipes, getMenuItemsForRecipe, createRecipe, deleteRecipe } from "./recipe-actions";
 
 export {
   getSuppliers,

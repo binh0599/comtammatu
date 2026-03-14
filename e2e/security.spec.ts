@@ -26,9 +26,9 @@ test.describe("Security — RBAC & Access Control", () => {
     await loginAs("owner");
     await expect(page).toHaveURL(/\/admin/, { timeout: 10_000 });
     // Verify admin content loads (sidebar visible)
-    await expect(
-      page.getByRole("navigation").or(page.locator("[data-sidebar]")),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("navigation").or(page.locator("[data-sidebar]"))).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("manager can access /admin", async ({ page, loginAs }) => {
@@ -38,9 +38,7 @@ test.describe("Security — RBAC & Access Control", () => {
 });
 
 test.describe("Security — Login Form", () => {
-  test("login form has CSRF protection via Server Actions", async ({
-    page,
-  }) => {
+  test("login form has CSRF protection via Server Actions", async ({ page }) => {
     await page.goto("/login");
     // Server Actions in Next.js automatically include CSRF tokens
     // Verify form exists and is a proper form element
@@ -86,18 +84,14 @@ test.describe("Security — HTTP Headers", () => {
     expect(headers["x-frame-options"]).toBe("DENY");
 
     // Referrer-Policy
-    expect(headers["referrer-policy"]).toBe(
-      "strict-origin-when-cross-origin",
-    );
+    expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
 
     // HSTS
     expect(headers["strict-transport-security"]).toContain("max-age=");
 
     // CSP
     expect(headers["content-security-policy"]).toContain("default-src 'self'");
-    expect(headers["content-security-policy"]).toContain(
-      "frame-ancestors 'none'",
-    );
+    expect(headers["content-security-policy"]).toContain("frame-ancestors 'none'");
     expect(headers["content-security-policy"]).toContain("object-src 'none'");
   });
 
@@ -128,9 +122,7 @@ test.describe("Security — API Routes", () => {
     expect([401, 403, 302]).toContain(response.status());
   });
 
-  test("privacy deletion-request requires authentication", async ({
-    request,
-  }) => {
+  test("privacy deletion-request requires authentication", async ({ request }) => {
     const response = await request.get("/api/privacy/deletion-request");
     expect([401, 403, 302]).toContain(response.status());
   });

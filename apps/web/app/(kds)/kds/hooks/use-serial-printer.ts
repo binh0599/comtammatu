@@ -61,60 +61,61 @@ export function useSerialPrinter() {
   const writerRef = useRef<WritableStreamDefaultWriter<Uint8Array> | null>(null);
 
   /** Check if Web Serial API is available in this browser */
-  const isSupported =
-    typeof navigator !== "undefined" && "serial" in navigator;
+  const isSupported = typeof navigator !== "undefined" && "serial" in navigator;
 
   /**
    * Connect to a serial printer.
    * Prompts user to select a serial port (requires user gesture).
    * Opens the port at the specified baud rate (default 9600).
    */
-  const connect = useCallback(async (baudRate = DEFAULT_BAUD_RATE) => {
-    if (!isSupported) {
-      setStatus("error");
-      throw new Error(
-        "Web Serial API không được hỗ trợ trên trình duyệt này. Vui lòng sử dụng Chrome hoặc Edge.",
-      );
-    }
-
-    try {
-      setStatus("connecting");
-
-      // Request port from user (shows browser port picker)
-      const port = await navigator.serial!.requestPort();
-
-      // Open the port
-      await port.open({
-        baudRate,
-        dataBits: 8,
-        stopBits: 1,
-        parity: "none",
-        flowControl: "none",
-      });
-
-      portRef.current = port;
-
-      // Get a writer for the writable stream
-      if (port.writable) {
-        writerRef.current = port.writable.getWriter();
-      }
-
-      setStatus("connected");
-    } catch (err) {
-      // User cancelled the port picker or open failed
-      const isDOMException =
-        err instanceof DOMException ||
-        (err instanceof Error && err.name === "NotFoundError");
-
-      if (isDOMException) {
-        // User cancelled — go back to disconnected (not error)
-        setStatus("disconnected");
-      } else {
+  const connect = useCallback(
+    async (baudRate = DEFAULT_BAUD_RATE) => {
+      if (!isSupported) {
         setStatus("error");
-        console.error("Serial connect error:", err);
+        throw new Error(
+          "Web Serial API không được hỗ trợ trên trình duyệt này. Vui lòng sử dụng Chrome hoặc Edge."
+        );
       }
-    }
-  }, [isSupported]);
+
+      try {
+        setStatus("connecting");
+
+        // Request port from user (shows browser port picker)
+        const port = await navigator.serial!.requestPort();
+
+        // Open the port
+        await port.open({
+          baudRate,
+          dataBits: 8,
+          stopBits: 1,
+          parity: "none",
+          flowControl: "none",
+        });
+
+        portRef.current = port;
+
+        // Get a writer for the writable stream
+        if (port.writable) {
+          writerRef.current = port.writable.getWriter();
+        }
+
+        setStatus("connected");
+      } catch (err) {
+        // User cancelled the port picker or open failed
+        const isDOMException =
+          err instanceof DOMException || (err instanceof Error && err.name === "NotFoundError");
+
+        if (isDOMException) {
+          // User cancelled — go back to disconnected (not error)
+          setStatus("disconnected");
+        } else {
+          setStatus("error");
+          console.error("Serial connect error:", err);
+        }
+      }
+    },
+    [isSupported]
+  );
 
   /**
    * Disconnect from the serial printer.
@@ -165,7 +166,7 @@ export function useSerialPrinter() {
         throw err;
       }
     },
-    [status],
+    [status]
   );
 
   return {

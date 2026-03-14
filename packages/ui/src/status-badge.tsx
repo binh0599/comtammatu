@@ -23,11 +23,7 @@ export interface StatusBadgeProps {
  * // Dùng custom color
  * <StatusBadge label="Hoàn thành" className="bg-green-100 text-green-800" />
  */
-export function StatusBadge({
-  label,
-  variant = "secondary",
-  className,
-}: StatusBadgeProps) {
+export function StatusBadge({ label, variant = "secondary", className }: StatusBadgeProps) {
   return (
     <Badge variant={variant} className={cn(className)}>
       {label}
@@ -69,11 +65,5 @@ export function MappedStatusBadge<T extends string>({
   fallback = { label: status, variant: "secondary" },
 }: MappedStatusBadgeProps<T>) {
   const cfg = config[status] ?? fallback;
-  return (
-    <StatusBadge
-      label={cfg.label}
-      variant={cfg.variant}
-      className={cfg.className}
-    />
-  );
+  return <StatusBadge label={cfg.label} variant={cfg.variant} className={cfg.className} />;
 }

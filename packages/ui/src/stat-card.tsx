@@ -28,25 +28,16 @@ export function StatCard({
   return (
     <Card className={className}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         {Icon && (
-          <div
-            className={cn(
-              "flex size-8 items-center justify-center rounded-lg",
-              iconClassName,
-            )}
-          >
+          <div className={cn("flex size-8 items-center justify-center rounded-lg", iconClassName)}>
             <Icon className="size-4" aria-hidden="true" />
           </div>
         )}
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">{value}</div>
-        {sub && (
-          <p className="text-muted-foreground text-xs mt-1">{sub}</p>
-        )}
+        {sub && <p className="text-muted-foreground text-xs mt-1">{sub}</p>}
       </CardContent>
     </Card>
   );
@@ -65,14 +56,6 @@ const columnClasses = {
   4: "sm:grid-cols-2 lg:grid-cols-4",
 } as const;
 
-export function StatCardGrid({
-  children,
-  columns = 4,
-  className,
-}: StatCardGridProps) {
-  return (
-    <div className={cn("grid gap-4", columnClasses[columns], className)}>
-      {children}
-    </div>
-  );
+export function StatCardGrid({ children, columns = 4, className }: StatCardGridProps) {
+  return <div className={cn("grid gap-4", columnClasses[columns], className)}>{children}</div>;
 }

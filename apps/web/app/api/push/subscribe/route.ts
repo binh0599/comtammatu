@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Invalid subscription data", details: parsed.error.issues },
-      { status: 400 },
+      { status: 400 }
     );
   }
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       status: "active",
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "endpoint" },
+    { onConflict: "endpoint" }
   );
 
   if (error) {

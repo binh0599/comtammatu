@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { redirect, notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import {
-  getCurrentTerminal,
-  getPrintersForTerminal,
-  getTerminalsForBranch,
-} from "./actions";
+import { getCurrentTerminal, getPrintersForTerminal, getTerminalsForBranch } from "./actions";
 import { PrinterSettings } from "./printer-settings";
 import { Button } from "@comtammatu/ui";
 
@@ -46,9 +42,7 @@ export default async function PrinterPage({ searchParams }: PrinterPageProps) {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Cài đặt máy in</h1>
-            <p className="text-muted-foreground text-sm">
-              Chọn thiết bị POS để quản lý máy in
-            </p>
+            <p className="text-muted-foreground text-sm">Chọn thiết bị POS để quản lý máy in</p>
           </div>
         </div>
         {terminalList.length === 0 ? (
@@ -90,9 +84,7 @@ export default async function PrinterPage({ searchParams }: PrinterPageProps) {
         )}
         <div>
           <h1 className="text-2xl font-bold">Máy in — {currentTerminal.name}</h1>
-          <p className="text-muted-foreground text-sm">
-            Quản lý máy in kết nối với thiết bị này
-          </p>
+          <p className="text-muted-foreground text-sm">Quản lý máy in kết nối với thiết bị này</p>
         </div>
       </div>
       <PrinterSettings

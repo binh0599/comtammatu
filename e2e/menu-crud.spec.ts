@@ -53,9 +53,7 @@ test.describe("Menu CRUD", () => {
     const itemRow = page.getByText(testItemName);
     await expect(itemRow).toBeVisible({ timeout: 10_000 });
 
-    const editButton = itemRow
-      .locator("..")
-      .getByRole("button", { name: /sửa|edit|chỉnh/i });
+    const editButton = itemRow.locator("..").getByRole("button", { name: /sửa|edit|chỉnh/i });
     await expect(editButton).toBeVisible({ timeout: 3_000 });
     await editButton.click();
 
@@ -70,9 +68,9 @@ test.describe("Menu CRUD", () => {
     await expect(saveButton).toBeVisible({ timeout: 3_000 });
     await saveButton.click();
 
-    await expect(
-      page.getByText(/thành công|success|đã cập nhật/i)
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/thành công|success|đã cập nhật/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("admin can delete a menu item", async ({ page, loginAs }) => {
@@ -82,9 +80,7 @@ test.describe("Menu CRUD", () => {
     const itemRow = page.getByText(testItemName);
     await expect(itemRow).toBeVisible({ timeout: 10_000 });
 
-    const deleteButton = itemRow
-      .locator("..")
-      .getByRole("button", { name: /xóa|delete|remove/i });
+    const deleteButton = itemRow.locator("..").getByRole("button", { name: /xóa|delete|remove/i });
     await expect(deleteButton).toBeVisible({ timeout: 3_000 });
     await deleteButton.click();
 

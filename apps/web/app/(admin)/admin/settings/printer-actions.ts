@@ -21,7 +21,7 @@ import {
 /** Safely parse a JSON FormData field. Returns parsed object or validation error. */
 function parseJsonField(
   value: FormDataEntryValue | null,
-  fallback: Record<string, unknown> | undefined,
+  fallback: Record<string, unknown> | undefined
 ): { ok: true; data: Record<string, unknown> | undefined } | { ok: false; error: string } {
   if (!value || String(value).trim() === "") return { ok: true, data: fallback };
   try {
@@ -152,7 +152,7 @@ async function _createPrinterConfig(formData: FormData) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: created, error } = await supabase
     .from("printer_configs")
     .insert({ ...parsed.data } as any)
@@ -191,9 +191,7 @@ async function _updatePrinterConfig(formData: FormData) {
     type: formData.get("type") || undefined,
     paper_width_mm: formData.get("paper_width_mm") || undefined,
     encoding: formData.get("encoding") || undefined,
-    auto_print: formData.has("auto_print")
-      ? formData.get("auto_print") === "true"
-      : undefined,
+    auto_print: formData.has("auto_print") ? formData.get("auto_print") === "true" : undefined,
     print_delay_ms: formData.get("print_delay_ms") || undefined,
     connection_config: connectionConfigResult.data,
   });
@@ -214,7 +212,7 @@ async function _updatePrinterConfig(formData: FormData) {
 
   if (!existing) return { error: "Không tìm thấy cấu hình máy in" };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: updated, error } = await supabase
     .from("printer_configs")
     .update(parsed.data as any)

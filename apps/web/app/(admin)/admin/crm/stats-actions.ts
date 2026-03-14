@@ -1,11 +1,7 @@
 "use server";
 
 import "@/lib/server-bootstrap";
-import {
-  getActionContext,
-  withServerQuery,
-  safeDbError,
-} from "@comtammatu/shared";
+import { getActionContext, withServerQuery, safeDbError } from "@comtammatu/shared";
 
 // =====================
 // CRM Stats
@@ -24,7 +20,14 @@ export interface CrmStats {
 async function _getCrmStats(): Promise<CrmStats> {
   const { supabase, tenantId } = await getActionContext();
 
-  const [customersResult, activeCustomersResult, vouchersResult, activeVouchersResult, feedbackResult, pendingFeedbackResult] = await Promise.all([
+  const [
+    customersResult,
+    activeCustomersResult,
+    vouchersResult,
+    activeVouchersResult,
+    feedbackResult,
+    pendingFeedbackResult,
+  ] = await Promise.all([
     supabase
       .from("customers")
       .select("id", { count: "exact", head: true })
@@ -62,9 +65,11 @@ async function _getCrmStats(): Promise<CrmStats> {
   if (pendingFeedbackResult.error) throw safeDbError(pendingFeedbackResult.error, "db");
 
   const ratings = feedbackResult.data ?? [];
-  const avgRating = ratings.length > 0
-    ? ratings.reduce((sum: number, r: { rating: number | null }) => sum + (r.rating ?? 0), 0) / ratings.length
-    : 0;
+  const avgRating =
+    ratings.length > 0
+      ? ratings.reduce((sum: number, r: { rating: number | null }) => sum + (r.rating ?? 0), 0) /
+        ratings.length
+      : 0;
 
   return {
     totalCustomers: customersResult.count ?? 0,

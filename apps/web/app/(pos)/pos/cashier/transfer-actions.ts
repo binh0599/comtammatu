@@ -90,12 +90,16 @@ async function _createTransferPayment(orderId: number) {
     .single();
 
   if (!settingRow?.value) {
-    return { error: "Chưa cấu hình phương thức thanh toán. Vui lòng thiết lập trong Admin > Cài đặt." };
+    return {
+      error: "Chưa cấu hình phương thức thanh toán. Vui lòng thiết lập trong Admin > Cài đặt.",
+    };
   }
 
   const parsed = paymentMethodsConfigSchema.safeParse(settingRow.value);
   if (!parsed.success || !parsed.data.bank_transfer) {
-    return { error: "Chưa cấu hình tài khoản ngân hàng. Vui lòng thiết lập trong Admin > Cài đặt." };
+    return {
+      error: "Chưa cấu hình tài khoản ngân hàng. Vui lòng thiết lập trong Admin > Cài đặt.",
+    };
   }
 
   if (!parsed.data.enabled_methods.includes("transfer")) {
@@ -152,9 +156,7 @@ export const createTransferPayment = withServerAction(_createTransferPayment);
 // confirmTransferPayment — cashier manually confirms bank transfer received
 // ---------------------------------------------------------------------------
 
-async function _confirmTransferPayment(
-  input: z.infer<typeof confirmTransferPaymentSchema>,
-) {
+async function _confirmTransferPayment(input: z.infer<typeof confirmTransferPaymentSchema>) {
   const data = confirmTransferPaymentSchema.parse(input);
 
   const ctx = await getActionContext();

@@ -26,11 +26,7 @@ interface ExpiringBatch {
   ingredients: { name: string; unit: string } | null;
 }
 
-export function ExpiryTab({
-  initialData,
-}: {
-  initialData: ExpiringBatch[];
-}) {
+export function ExpiryTab({ initialData }: { initialData: ExpiringBatch[] }) {
   const [batches, setBatches] = useState<ExpiringBatch[]>(initialData);
   const [daysAhead, setDaysAhead] = useState("7");
   const [isPending, startTransition] = useTransition();
@@ -62,24 +58,12 @@ export function ExpiryTab({
       return <Badge variant="destructive">Hết hạn hôm nay</Badge>;
     }
     if (days <= 2) {
-      return (
-        <Badge className="bg-red-500 hover:bg-red-600">
-          Còn {days} ngày
-        </Badge>
-      );
+      return <Badge className="bg-red-500 hover:bg-red-600">Còn {days} ngày</Badge>;
     }
     if (days <= 5) {
-      return (
-        <Badge className="bg-yellow-600 hover:bg-yellow-700">
-          Còn {days} ngày
-        </Badge>
-      );
+      return <Badge className="bg-yellow-600 hover:bg-yellow-700">Còn {days} ngày</Badge>;
     }
-    return (
-      <Badge variant="outline">
-        Còn {days} ngày
-      </Badge>
-    );
+    return <Badge variant="outline">Còn {days} ngày</Badge>;
   }
 
   return (
@@ -87,9 +71,7 @@ export function ExpiryTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Hạn sử dụng</h2>
-          <p className="text-muted-foreground">
-            Theo dõi lô hàng sắp hết hạn sử dụng
-          </p>
+          <p className="text-muted-foreground">Theo dõi lô hàng sắp hết hạn sử dụng</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
@@ -119,7 +101,9 @@ export function ExpiryTab({
             <TableRow>
               <TableHead scope="col">Nguyên liệu</TableHead>
               <TableHead scope="col">Đơn vị</TableHead>
-              <TableHead scope="col" className="text-right">Số lượng</TableHead>
+              <TableHead scope="col" className="text-right">
+                Số lượng
+              </TableHead>
               <TableHead scope="col">Hạn sử dụng</TableHead>
               <TableHead scope="col">Tình trạng</TableHead>
               <TableHead scope="col">Đơn mua hàng</TableHead>
@@ -128,10 +112,7 @@ export function ExpiryTab({
           <TableBody>
             {batches.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={6} className="text-muted-foreground h-24 text-center">
                   Không có lô hàng nào sắp hết hạn
                 </TableCell>
               </TableRow>
@@ -141,17 +122,13 @@ export function ExpiryTab({
                   <TableCell className="font-medium">
                     {batch.ingredients?.name ?? `#${batch.ingredient_id}`}
                   </TableCell>
-                  <TableCell>
-                    {batch.ingredients?.unit ?? "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {Number(batch.quantity).toFixed(2)}
-                  </TableCell>
+                  <TableCell>{batch.ingredients?.unit ?? "-"}</TableCell>
+                  <TableCell className="text-right">{Number(batch.quantity).toFixed(2)}</TableCell>
                   <TableCell>{batch.expiry_date ? formatDate(batch.expiry_date) : "-"}</TableCell>
-                  <TableCell>{batch.expiry_date ? getExpiryBadge(batch.expiry_date) : "-"}</TableCell>
                   <TableCell>
-                    {batch.po_id ? `PO #${batch.po_id}` : "-"}
+                    {batch.expiry_date ? getExpiryBadge(batch.expiry_date) : "-"}
                   </TableCell>
+                  <TableCell>{batch.po_id ? `PO #${batch.po_id}` : "-"}</TableCell>
                 </TableRow>
               ))
             )}

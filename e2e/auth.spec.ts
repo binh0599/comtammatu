@@ -5,9 +5,7 @@ test.describe("Authentication", () => {
     await page.goto("/login");
     await expect(page.getByLabel("Email")).toBeVisible();
     await expect(page.getByLabel("Mật khẩu")).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: "Đăng nhập" })
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: "Đăng nhập" })).toBeVisible();
   });
 
   test("shows error on invalid credentials", async ({ page }) => {

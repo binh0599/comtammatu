@@ -11,10 +11,7 @@ export async function GET() {
   const result = await getAuthenticatedCustomer();
 
   if ("error" in result) {
-    return NextResponse.json(
-      { error: result.error },
-      { status: result.status }
-    );
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
   const { supabase, customer } = result;
@@ -38,22 +35,17 @@ export async function POST(request: Request) {
   const result = await getAuthenticatedCustomer();
 
   if ("error" in result) {
-    return NextResponse.json(
-      { error: result.error },
-      { status: result.status }
-    );
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
   const { supabase, customer } = result;
 
   // Rate limit by customer ID
-  const { success: rateLimitOk } = await apiLimiter.limit(
-    `deletion-request:${customer.id}`,
-  );
+  const { success: rateLimitOk } = await apiLimiter.limit(`deletion-request:${customer.id}`);
   if (!rateLimitOk) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
-      { status: 429 },
+      { status: 429 }
     );
   }
 
@@ -102,10 +94,7 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
   return NextResponse.json({ deletion_request: newRequest }, { status: 201 });

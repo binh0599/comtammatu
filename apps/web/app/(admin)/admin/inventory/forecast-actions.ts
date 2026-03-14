@@ -32,7 +32,7 @@ export interface ForecastRow {
 async function _getDemandForecast(
   days_ahead?: number,
   branch_id?: number,
-  ingredient_id?: number,
+  ingredient_id?: number
 ): Promise<ForecastRow[]> {
   const parsed = forecastQuerySchema.parse({ days_ahead, branch_id, ingredient_id });
   const daysAhead = parsed.days_ahead;
@@ -101,7 +101,7 @@ async function _getDemandForecast(
     if (row.ingredient_id == null) continue;
     usageMap.set(
       row.ingredient_id,
-      (usageMap.get(row.ingredient_id) ?? 0) + Number(row.total_usage),
+      (usageMap.get(row.ingredient_id) ?? 0) + Number(row.total_usage)
     );
   }
 
@@ -109,10 +109,7 @@ async function _getDemandForecast(
   const stockMap = new Map<number, number>();
   for (const sl of stockResult.data ?? []) {
     if (sl.ingredient_id == null) continue;
-    stockMap.set(
-      sl.ingredient_id,
-      (stockMap.get(sl.ingredient_id) ?? 0) + Number(sl.quantity),
-    );
+    stockMap.set(sl.ingredient_id, (stockMap.get(sl.ingredient_id) ?? 0) + Number(sl.quantity));
   }
 
   // Build forecast rows
@@ -130,7 +127,7 @@ async function _getDemandForecast(
     }
 
     const reorderSuggested =
-      dailyAvg > 0 && (daysUntilStockout !== null && daysUntilStockout < daysAhead);
+      dailyAvg > 0 && daysUntilStockout !== null && daysUntilStockout < daysAhead;
 
     rows.push({
       ingredient_id: ing.id,

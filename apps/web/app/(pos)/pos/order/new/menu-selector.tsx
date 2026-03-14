@@ -74,9 +74,7 @@ export function MenuSelector({
   onUpdateItemNotes: (menuItemId: number, variantId: number | null, notes: string) => void;
 }) {
   const [search, setSearch] = useState("");
-  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(
-    null
-  );
+  const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [sidesDialogItem, setSidesDialogItem] = useState<MenuItem | null>(null);
   const [sidesDialogVariantId, setSidesDialogVariantId] = useState<number | null>(null);
   const [sidesDialogVariantPrice, setSidesDialogVariantPrice] = useState<number>(0);
@@ -108,8 +106,7 @@ export function MenuSelector({
       const q = search.toLowerCase().trim();
       items = items.filter(
         (i) =>
-          i.name.toLowerCase().includes(q) ||
-          (i.description?.toLowerCase().includes(q) ?? false)
+          i.name.toLowerCase().includes(q) || (i.description?.toLowerCase().includes(q) ?? false)
       );
     }
 
@@ -121,26 +118,18 @@ export function MenuSelector({
 
   function getCartQuantity(menuItemId: number, variantId: number | null) {
     return (
-      cart.find(
-        (c) =>
-          c.menu_item_id === menuItemId && c.variant_id === variantId
-      )?.quantity ?? 0
+      cart.find((c) => c.menu_item_id === menuItemId && c.variant_id === variantId)?.quantity ?? 0
     );
   }
 
   function getCartItem(menuItemId: number, variantId: number | null) {
-    return cart.find(
-      (c) => c.menu_item_id === menuItemId && c.variant_id === variantId
-    );
+    return cart.find((c) => c.menu_item_id === menuItemId && c.variant_id === variantId);
   }
 
   function handleAdd(item: MenuItem, variantId?: number | null) {
-    const variant = variantId
-      ? item.menu_item_variants?.find((v) => v.id === variantId)
-      : null;
+    const variant = variantId ? item.menu_item_variants?.find((v) => v.id === variantId) : null;
 
-    const unitPrice =
-      item.base_price + (variant?.price_adjustment ?? 0);
+    const unitPrice = item.base_price + (variant?.price_adjustment ?? 0);
 
     // If this main dish has available sides, open sides dialog
     if (
@@ -239,7 +228,10 @@ export function MenuSelector({
     <div className="flex flex-col gap-3">
       {/* Search */}
       <div className="relative">
-        <Search className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+        <Search
+          className="text-muted-foreground absolute left-3 top-1/2 size-4 -translate-y-1/2 pointer-events-none"
+          aria-hidden="true"
+        />
         <Input
           placeholder="Tìm món..."
           value={search}
@@ -282,18 +274,14 @@ export function MenuSelector({
       {/* Menu items grid */}
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {filteredItems.map((item) => {
-          const hasVariants =
-            item.menu_item_variants && item.menu_item_variants.length > 0;
+          const hasVariants = item.menu_item_variants && item.menu_item_variants.length > 0;
           const baseQty = getCartQuantity(item.id, null);
           const baseCartItem = getCartItem(item.id, null);
           const hasSides = item.available_side_ids.length > 0;
           const catType = item.menu_categories?.type;
 
           return (
-            <div
-              key={item.id}
-              className="flex items-center gap-3 rounded-lg border p-3"
-            >
+            <div key={item.id} className="flex items-center gap-3 rounded-lg border p-3">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1">
                   <p className="truncate font-medium">{item.name}</p>
@@ -303,9 +291,7 @@ export function MenuSelector({
                     </Badge>
                   )}
                 </div>
-                <p className="text-primary text-sm font-semibold">
-                  {formatPrice(item.base_price)}
-                </p>
+                <p className="text-primary text-sm font-semibold">{formatPrice(item.base_price)}</p>
                 {hasVariants && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     {item.menu_item_variants!.map((v) => {
@@ -323,8 +309,7 @@ export function MenuSelector({
                             aria-label={`Thêm ${v.name}${v.price_adjustment > 0 ? ` +${formatPrice(v.price_adjustment)}` : ""}${vQty > 0 ? `, ${vQty} trong giỏ` : ""}`}
                           >
                             {v.name}
-                            {v.price_adjustment > 0 &&
-                              ` +${formatPrice(v.price_adjustment)}`}
+                            {v.price_adjustment > 0 && ` +${formatPrice(v.price_adjustment)}`}
                             {vQty > 0 && ` (${vQty})`}
                           </button>
                           {vQty > 0 && (
@@ -336,7 +321,10 @@ export function MenuSelector({
                               aria-label={`Ghi chú cho ${item.name} ${v.name}`}
                               title="Ghi chú cho bếp"
                             >
-                              <MessageSquare className={`size-3 ${vCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                              <MessageSquare
+                                className={`size-3 ${vCartItem?.notes ? "text-primary" : ""}`}
+                                aria-hidden="true"
+                              />
                             </Button>
                           )}
                         </div>
@@ -357,24 +345,25 @@ export function MenuSelector({
                   </div>
                 )}
                 {/* Show variant-level sides and notes */}
-                {hasVariants && item.menu_item_variants!.map((v) => {
-                  const vCartItem = getCartItem(item.id, v.id);
-                  if (!vCartItem) return null;
-                  return (
-                    <div key={`info-${v.id}`}>
-                      {vCartItem.side_items.length > 0 && (
-                        <div className="text-muted-foreground mt-1 text-xs">
-                          {v.name} kèm: {vCartItem.side_items.map((s) => s.name).join(", ")}
-                        </div>
-                      )}
-                      {vCartItem.notes && (
-                        <div className="text-muted-foreground mt-0.5 text-xs italic">
-                          {v.name}: &quot;{vCartItem.notes}&quot;
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {hasVariants &&
+                  item.menu_item_variants!.map((v) => {
+                    const vCartItem = getCartItem(item.id, v.id);
+                    if (!vCartItem) return null;
+                    return (
+                      <div key={`info-${v.id}`}>
+                        {vCartItem.side_items.length > 0 && (
+                          <div className="text-muted-foreground mt-1 text-xs">
+                            {v.name} kèm: {vCartItem.side_items.map((s) => s.name).join(", ")}
+                          </div>
+                        )}
+                        {vCartItem.notes && (
+                          <div className="text-muted-foreground mt-0.5 text-xs italic">
+                            {v.name}: &quot;{vCartItem.notes}&quot;
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
               </div>
 
               <div className="flex items-center gap-1">
@@ -388,7 +377,10 @@ export function MenuSelector({
                     aria-label={`Ghi chú cho ${item.name}`}
                     title="Ghi chú cho bếp"
                   >
-                    <MessageSquare className={`size-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`} aria-hidden="true" />
+                    <MessageSquare
+                      className={`size-3.5 ${baseCartItem?.notes ? "text-primary" : ""}`}
+                      aria-hidden="true"
+                    />
                   </Button>
                 )}
 
@@ -405,9 +397,7 @@ export function MenuSelector({
                         >
                           <Minus className="size-3" aria-hidden="true" />
                         </Button>
-                        <span className="w-6 text-center text-sm font-medium">
-                          {baseQty}
-                        </span>
+                        <span className="w-6 text-center text-sm font-medium">{baseQty}</span>
                       </>
                     )}
                     <Button
@@ -428,9 +418,7 @@ export function MenuSelector({
       </div>
 
       {filteredItems.length === 0 && (
-        <div className="text-muted-foreground py-8 text-center text-sm">
-          Không tìm thấy món nào
-        </div>
+        <div className="text-muted-foreground py-8 text-center text-sm">Không tìm thấy món nào</div>
       )}
 
       {/* Sides selection dialog */}
@@ -445,9 +433,7 @@ export function MenuSelector({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Chọn món kèm cho {sidesDialogItem?.name}
-            </DialogTitle>
+            <DialogTitle>Chọn món kèm cho {sidesDialogItem?.name}</DialogTitle>
           </DialogHeader>
           <div className="space-y-2 py-2">
             {sidesDialogItem?.available_side_ids.map((sideId) => {
@@ -459,10 +445,7 @@ export function MenuSelector({
                   key={sideId}
                   className="hover:bg-accent flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
                 >
-                  <Checkbox
-                    checked={isSelected}
-                    onCheckedChange={() => toggleSide(sideId)}
-                  />
+                  <Checkbox checked={isSelected} onCheckedChange={() => toggleSide(sideId)} />
                   <span className="flex-1 font-medium">{side.name}</span>
                   <span className="text-muted-foreground text-sm">
                     +{formatPrice(side.base_price)}
@@ -523,9 +506,7 @@ export function MenuSelector({
             maxLength={200}
             rows={3}
           />
-          <p className="text-muted-foreground text-xs">
-            {notesText.length}/200 ký tự
-          </p>
+          <p className="text-muted-foreground text-xs">{notesText.length}/200 ký tự</p>
           <DialogFooter>
             <Button onClick={handleSaveNotes}>Lưu ghi chú</Button>
           </DialogFooter>

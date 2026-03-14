@@ -25,9 +25,7 @@ export function OfflineFallback() {
         ]);
 
         if (!menuEntry?.data || !categoriesEntry?.data) {
-          setError(
-            "Không có dữ liệu menu được lưu trữ. Vui lòng kết nối mạng và tải lại trang.",
-          );
+          setError("Không có dữ liệu menu được lưu trữ. Vui lòng kết nối mạng và tải lại trang.");
           return;
         }
 
@@ -47,9 +45,7 @@ export function OfflineFallback() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3">
         <Loader2 className="size-8 animate-spin text-muted-foreground" />
-        <p className="text-muted-foreground text-sm">
-          Đang tải dữ liệu từ bộ nhớ cục bộ...
-        </p>
+        <p className="text-muted-foreground text-sm">Đang tải dữ liệu từ bộ nhớ cục bộ...</p>
       </div>
     );
   }
@@ -62,8 +58,7 @@ export function OfflineFallback() {
         </div>
         <h2 className="text-lg font-semibold">Chế độ ngoại tuyến</h2>
         <p className="text-muted-foreground max-w-sm text-center text-sm">
-          {error ??
-            "Không có dữ liệu menu. Kết nối mạng để tải menu lần đầu."}
+          {error ?? "Không có dữ liệu menu. Kết nối mạng để tải menu lần đầu."}
         </p>
       </div>
     );

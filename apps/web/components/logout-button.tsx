@@ -11,7 +11,7 @@ export function LogoutButton({ className }: { className?: string }) {
         type="submit"
         className={cn(
           "flex items-center gap-2 text-sm text-muted-foreground hover:text-destructive transition-colors",
-          className,
+          className
         )}
         aria-label="Đăng xuất"
       >

@@ -50,14 +50,10 @@ function getTerminalTypeForRole(role: string): DeviceTerminalType | null {
 async function _login(formData: FormData) {
   // Rate limit by IP
   const headersList = await headers();
-  const ip =
-    headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const ip = headersList.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const { success } = await authLimiter.limit(ip);
   if (!success) {
-    throw new ActionError(
-      "Quá nhiều lần đăng nhập. Vui lòng thử lại sau.",
-      "VALIDATION_ERROR",
-    );
+    throw new ActionError("Quá nhiều lần đăng nhập. Vui lòng thử lại sau.", "VALIDATION_ERROR");
   }
 
   const parsed = loginSchema.safeParse({
@@ -70,7 +66,7 @@ async function _login(formData: FormData) {
   if (!parsed.success) {
     throw new ActionError(
       parsed.error.issues[0]?.message ?? "Thông tin đăng nhập không hợp lệ",
-      "VALIDATION_ERROR",
+      "VALIDATION_ERROR"
     );
   }
 
@@ -83,7 +79,7 @@ async function _login(formData: FormData) {
       : 15;
     throw new ActionError(
       `Tài khoản tạm khóa do đăng nhập sai quá nhiều lần. Thử lại sau ${minutesLeft} phút.`,
-      "VALIDATION_ERROR",
+      "VALIDATION_ERROR"
     );
   }
 
@@ -100,13 +96,13 @@ async function _login(formData: FormData) {
     if (result.locked) {
       throw new ActionError(
         "Tài khoản tạm khóa do đăng nhập sai quá nhiều lần. Thử lại sau 15 phút.",
-        "VALIDATION_ERROR",
+        "VALIDATION_ERROR"
       );
     }
     // Generic error — never reveal whether user exists
     throw new ActionError(
       `Email hoặc mật khẩu không chính xác. Còn ${result.attemptsRemaining} lần thử.`,
-      "UNAUTHORIZED",
+      "UNAUTHORIZED"
     );
   }
 
@@ -124,7 +120,7 @@ async function _login(formData: FormData) {
   if (!role) {
     throw new ActionError(
       "Tài khoản chưa được gán vai trò. Vui lòng liên hệ quản lý.",
-      "UNAUTHORIZED",
+      "UNAUTHORIZED"
     );
   }
 
@@ -134,16 +130,12 @@ async function _login(formData: FormData) {
     await supabase.auth.signOut();
     throw new ActionError(
       "Tài khoản khách hàng không thể đăng nhập vào hệ thống quản lý. Vui lòng sử dụng ứng dụng Cơm tấm Má Tư trên điện thoại.",
-      "UNAUTHORIZED",
+      "UNAUTHORIZED"
     );
   }
 
   // Non-device roles (owner, manager, hr): skip device check, redirect directly
-  if (
-    !DEVICE_CHECK_ROLES.includes(
-      role as (typeof DEVICE_CHECK_ROLES)[number],
-    )
-  ) {
+  if (!DEVICE_CHECK_ROLES.includes(role as (typeof DEVICE_CHECK_ROLES)[number])) {
     redirect(getRoleRedirectPath(role));
   }
 
@@ -151,10 +143,7 @@ async function _login(formData: FormData) {
   const fingerprint = parsed.data.device_fingerprint;
   if (!fingerprint || !profile?.tenant_id || !profile?.branch_id) {
     // Missing fingerprint or incomplete profile — show error instead of bypassing
-    throw new ActionError(
-      "Thiết bị chưa được nhận diện. Vui lòng thử lại.",
-      "VALIDATION_ERROR",
-    );
+    throw new ActionError("Thiết bị chưa được nhận diện. Vui lòng thử lại.", "VALIDATION_ERROR");
   }
 
   // Derive device_type and terminal_type from role
@@ -174,7 +163,7 @@ async function _login(formData: FormData) {
       if (existingDevice.branch_id !== profile.branch_id) {
         throw new ActionError(
           "Thiết bị đã được duyệt ở chi nhánh khác. Liên hệ quản lý để chuyển.",
-          "VALIDATION_ERROR",
+          "VALIDATION_ERROR"
         );
       }
       // Backfill device_type for legacy approved devices
@@ -227,7 +216,7 @@ async function _login(formData: FormData) {
     if (reregError) {
       throw new ActionError(
         "Không thể đăng ký lại thiết bị. Vui lòng liên hệ quản lý.",
-        "VALIDATION_ERROR",
+        "VALIDATION_ERROR"
       );
     }
 
@@ -271,13 +260,10 @@ async function _login(formData: FormData) {
     if (insertError.code === "23505") {
       throw new ActionError(
         "Thiết bị đã được đăng ký ở chi nhánh khác. Vui lòng liên hệ quản lý.",
-        "VALIDATION_ERROR",
+        "VALIDATION_ERROR"
       );
     }
-    throw new ActionError(
-      "Không thể đăng ký thiết bị. Vui lòng thử lại.",
-      "VALIDATION_ERROR",
-    );
+    throw new ActionError("Không thể đăng ký thiết bị. Vui lòng thử lại.", "VALIDATION_ERROR");
   }
 
   return {

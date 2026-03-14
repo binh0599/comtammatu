@@ -7,13 +7,7 @@ test.describe("Customer Loyalty Flow", () => {
     await expect(page).toHaveURL(/\/admin\/crm/);
 
     // Verify all 5 tabs are visible
-    const tabs = [
-      /khách hàng/i,
-      /hạng thành viên/i,
-      /tích điểm/i,
-      /voucher/i,
-      /phản hồi/i,
-    ];
+    const tabs = [/khách hàng/i, /hạng thành viên/i, /tích điểm/i, /voucher/i, /phản hồi/i];
 
     for (const tabName of tabs) {
       await expect(page.getByRole("tab", { name: tabName })).toBeVisible({
@@ -33,14 +27,10 @@ test.describe("Customer Loyalty Flow", () => {
     await expect(earnRulesTab).toHaveAttribute("data-state", "active");
 
     // Verify earn rules content renders
-    await expect(
-      page.getByText(/quy tắc tích điểm/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/quy tắc tích điểm/i).first()).toBeVisible({ timeout: 10_000 });
 
     // Verify "Thêm quy tắc" button is visible
-    await expect(
-      page.getByRole("button", { name: /thêm quy tắc/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /thêm quy tắc/i })).toBeVisible();
   });
 
   test("can open create earn rule dialog", async ({ page, loginAs }) => {
@@ -73,9 +63,7 @@ test.describe("Customer Loyalty Flow", () => {
     await loyaltyTab.click();
 
     await expect(loyaltyTab).toHaveAttribute("data-state", "active");
-    await expect(
-      page.getByText(/hạng thành viên/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/hạng thành viên/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("vouchers tab loads", async ({ page, loginAs }) => {
@@ -97,8 +85,6 @@ test.describe("Customer Loyalty Flow", () => {
     await page.goto("/admin/crm");
 
     // Stats cards should be visible at the top
-    await expect(
-      page.getByText(/tổng khách hàng/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/tổng khách hàng/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

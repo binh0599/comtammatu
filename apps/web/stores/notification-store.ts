@@ -14,9 +14,7 @@ interface NotificationState {
   notifications: Notification[];
   unreadCount: number;
 
-  addNotification: (
-    notification: Omit<Notification, "id" | "timestamp" | "read">,
-  ) => void;
+  addNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   removeNotification: (id: string) => void;
@@ -43,13 +41,10 @@ export const useNotificationStore = create<NotificationState>((set) => ({
 
   markAsRead: (id) =>
     set((state) => ({
-      notifications: state.notifications.map((n) =>
-        n.id === id ? { ...n, read: true } : n,
-      ),
+      notifications: state.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
       unreadCount: Math.max(
         0,
-        state.unreadCount -
-          (state.notifications.find((n) => n.id === id && !n.read) ? 1 : 0),
+        state.unreadCount - (state.notifications.find((n) => n.id === id && !n.read) ? 1 : 0)
       ),
     })),
 
@@ -63,8 +58,7 @@ export const useNotificationStore = create<NotificationState>((set) => ({
     set((state) => ({
       notifications: state.notifications.filter((n) => n.id !== id),
       unreadCount:
-        state.unreadCount -
-        (state.notifications.find((n) => n.id === id && !n.read) ? 1 : 0),
+        state.unreadCount - (state.notifications.find((n) => n.id === id && !n.read) ? 1 : 0),
     })),
 
   clearAll: () => set({ notifications: [], unreadCount: 0 }),

@@ -59,6 +59,7 @@ GET /api/health
 **Mô tả:** Kiểm tra trạng thái hệ thống và kết nối database.
 
 **Response 200:**
+
 ```json
 {
   "status": "healthy",
@@ -118,11 +119,13 @@ GET /api/auth/callback
 | `responseTime` | number | Unix timestamp (ms) |
 
 **Bảo mật:**
+
 - Xác minh HMAC signature với `MOMO_SECRET_KEY`
 - Từ chối webhook cũ hơn 1 giờ
 - Ghi log `security_events` khi HMAC thất bại
 
 **Response:**
+
 ```json
 { "resultCode": 0, "message": "ok" }
 ```
@@ -142,6 +145,7 @@ GET /api/auth/callback
 **Mô tả:** Xử lý các yêu cầu xóa dữ liệu GDPR đã quá hạn 30 ngày.
 
 **Hành vi:**
+
 1. Tìm `deletion_requests` có `status=pending` và `scheduled_deletion_at <= NOW()`
 2. Ẩn danh hóa PII khách hàng (`full_name` → `[Đã xóa]`, `phone` → `[Đã xóa]`)
 3. Null hóa `customer_id` trên đơn hàng (giữ dữ liệu kế toán)
@@ -149,6 +153,7 @@ GET /api/auth/callback
 5. Ghi `security_events` cho compliance tracking
 
 **Response:**
+
 ```json
 {
   "message": "Processed 3 deletion requests",
@@ -167,12 +172,14 @@ GET /api/auth/callback
 **Mô tả:** Kiểm tra tồn kho thấp và nguyên liệu sắp hết hạn cho tất cả chi nhánh.
 
 **Hành vi:**
+
 - Kiểm tra `stock_levels.quantity <= ingredients.min_stock` → cảnh báo tồn kho thấp
 - Kiểm tra `stock_batches.expiry_date` trong vòng 3 ngày → cảnh báo hết hạn
 - Tự động loại trùng (mỗi cảnh báo chỉ tạo 1 lần/ngày)
 - Gửi push notification cho vai trò `owner`, `manager`, `inventory`
 
 **Response:**
+
 ```json
 {
   "message": "Created 5 alerts across 2 branches",
@@ -190,6 +197,7 @@ GET /api/auth/callback
 **Mô tả:** Tự động nâng hạng loyalty cho khách hàng dựa trên điểm tích lũy.
 
 **Response:**
+
 ```json
 {
   "message": "Checked 150 customers, upgraded 3",
@@ -211,6 +219,7 @@ GET /api/auth/callback
 **Mô tả:** Xuất toàn bộ dữ liệu cá nhân của khách hàng (DSAR compliance).
 
 **Response:** JSON file download (`Content-Disposition: attachment`) chứa:
+
 - Thông tin khách hàng
 - Lịch sử giao dịch loyalty
 - Phản hồi/đánh giá
@@ -225,6 +234,7 @@ GET /api/auth/callback
 **Mô tả:** Kiểm tra trạng thái yêu cầu xóa dữ liệu mới nhất.
 
 **Response:**
+
 ```json
 {
   "deletion_request": {
@@ -256,6 +266,7 @@ GET /api/auth/callback
 **Validation Schema:** `deletionRequestSchema` (Zod)
 
 **Response 201:**
+
 ```json
 {
   "deletion_request": {
@@ -331,6 +342,7 @@ GET /api/auth/callback
 | `device_name` | string | Không | Tên thiết bị |
 
 **Hành vi:**
+
 - Owner/Manager/HR/Customer → redirect thẳng theo vai trò
 - Waiter/Cashier/Chef → kiểm tra device fingerprint:
   - Thiết bị đã approved → redirect
@@ -390,6 +402,7 @@ GET /api/auth/callback
 | `items[].side_items` | array | Không | Món kèm `{ menu_item_id, quantity, notes }` |
 
 **Hành vi:**
+
 - Kiểm tra terminal thuộc chi nhánh, đã approved, đúng loại (mobile_order/cashier_station)
 - Kiểm tra tồn kho ở cấp global và branch (86'd items)
 - Kiểm tra side items phải nằm trong danh sách cho phép
@@ -397,6 +410,7 @@ GET /api/auth/callback
 - Đánh dấu bàn `occupied` nếu dine-in
 
 **Return:**
+
 ```json
 {
   "error": null,
@@ -424,6 +438,7 @@ GET /api/auth/callback
 | `status` | string | Có | Trạng thái mới |
 
 **State Machine (Order):**
+
 ```
 draft → confirmed → preparing → ready → served → completed
                                                  ↘ cancelled
@@ -432,6 +447,7 @@ confirmed → cancelled
 ```
 
 **Hành vi:**
+
 - Kiểm tra quyền chi nhánh
 - Validate state transition
 - Broadcast realtime notification
@@ -451,6 +467,7 @@ confirmed → cancelled
 | `items` | array | Có | Danh sách món mới (cấu trúc giống `createOrder`) |
 
 **Hành vi:**
+
 - Từ chối nếu đơn đã completed/cancelled
 - Tính giá tự động (base + variant + modifiers)
 - Cập nhật tổng đơn hàng
@@ -519,10 +536,12 @@ confirmed → cancelled
 **Bắt buộc:** Phải có ca mở (`pos_sessions.status=open`) trên terminal `cashier_station`.
 
 **Hành vi:**
+
 - Cash: hoàn thành ngay, tính tiền thừa, giải phóng bàn, tăng `voucher.used_count` nếu có
 - QR: tạo payment pending, chờ webhook IPN
 
 **Return:**
+
 ```json
 {
   "error": null,
@@ -543,6 +562,7 @@ confirmed → cancelled
 **Mô tả:** Tạo yêu cầu thanh toán Momo, trả về QR code URL.
 
 **Return:**
+
 ```json
 {
   "error": null,
@@ -560,6 +580,7 @@ confirmed → cancelled
 **Vai trò:** Cashier roles
 
 **Return:**
+
 ```json
 {
   "error": null,
@@ -585,6 +606,7 @@ confirmed → cancelled
 **Kiểm tra:** Hạn sử dụng, lượt dùng, chi nhánh áp dụng, đơn tối thiểu.
 
 **Return:**
+
 ```json
 {
   "error": null,
@@ -659,6 +681,7 @@ confirmed → cancelled
 | `opening_amount` | number | Có | Số tiền đầu ca |
 
 **Kiểm tra:**
+
 - Terminal phải là `cashier_station`, active, approved, cùng chi nhánh
 - Cashier chưa có ca mở
 - Terminal chưa có ca mở bởi người khác
@@ -683,6 +706,7 @@ confirmed → cancelled
 #### getSessionSummary(sessionId: number)
 
 **Return:**
+
 ```json
 {
   "totalPayments": 1500000,
@@ -699,16 +723,16 @@ confirmed → cancelled
 
 **Vai trò:** POS roles
 
-| Action | Mô tả |
-|--------|-------|
-| `getCurrentTerminal()` | Lấy terminal hiện tại từ ca đang mở |
-| `getPrintersForTerminal(terminalId)` | Danh sách máy in gán cho terminal |
-| `getPrintersForBranch()` | Danh sách máy in của chi nhánh |
-| `getTerminalsForBranch()` | Danh sách terminal đã approved |
-| `getKdsStationsForBranch()` | Danh sách trạm KDS active |
-| `createPrinter(formData)` | Tạo cấu hình máy in (schema: `createPrinterConfigSchema`) |
-| `updatePrinter(formData)` | Cập nhật máy in (schema: `updatePrinterConfigSchema`) |
-| `deletePrinter(formData)` | Xóa máy in |
+| Action                               | Mô tả                                                     |
+| ------------------------------------ | --------------------------------------------------------- |
+| `getCurrentTerminal()`               | Lấy terminal hiện tại từ ca đang mở                       |
+| `getPrintersForTerminal(terminalId)` | Danh sách máy in gán cho terminal                         |
+| `getPrintersForBranch()`             | Danh sách máy in của chi nhánh                            |
+| `getTerminalsForBranch()`            | Danh sách terminal đã approved                            |
+| `getKdsStationsForBranch()`          | Danh sách trạm KDS active                                 |
+| `createPrinter(formData)`            | Tạo cấu hình máy in (schema: `createPrinterConfigSchema`) |
+| `updatePrinter(formData)`            | Cập nhật máy in (schema: `updatePrinterConfigSchema`)     |
+| `deletePrinter(formData)`            | Xóa máy in                                                |
 
 ---
 
@@ -716,12 +740,12 @@ confirmed → cancelled
 
 > File: `apps/web/app/(pos)/pos/notifications/actions.ts`
 
-| Action | Mô tả |
-|--------|-------|
-| `getNotifications()` | 20 thông báo mới nhất của user |
-| `getUnreadCount()` | Số thông báo chưa đọc |
-| `markNotificationRead(id)` | Đánh dấu đã đọc |
-| `markAllRead()` | Đánh dấu tất cả đã đọc |
+| Action                     | Mô tả                          |
+| -------------------------- | ------------------------------ |
+| `getNotifications()`       | 20 thông báo mới nhất của user |
+| `getUnreadCount()`         | Số thông báo chưa đọc          |
+| `markNotificationRead(id)` | Đánh dấu đã đọc                |
+| `markAllRead()`            | Đánh dấu tất cả đã đọc         |
 
 ---
 
@@ -754,12 +778,14 @@ confirmed → cancelled
 **Validation:** `bumpTicketSchema`
 
 **State Machine (KDS Ticket):**
+
 ```
 pending → preparing → ready
 pending → ready (nhảy cóc)
 ```
 
 **Hành vi:**
+
 - Cập nhật `accepted_at` khi bắt đầu chế biến
 - Cập nhật `completed_at` khi hoàn thành
 - Broadcast notification `order_ready` đến POS clients khi `ready`
@@ -782,16 +808,16 @@ Tương tự POS Printer nhưng scoped cho KDS roles và `assigned_to_type=kds_s
 
 **Vai trò:** `owner`, `manager`
 
-| Action | Input | Mô tả |
-|--------|-------|-------|
-| `getDashboardStats()` | — | Doanh thu hôm nay/tuần/tháng, số đơn, giá trị trung bình |
-| `getRecentOrders(limit?)` | limit: 1-50 | N đơn hàng gần nhất (mặc định 10) |
-| `getTopSellingItems(limit?)` | limit: 1-50 | Top món bán chạy 30 ngày qua |
-| `getOrderStatusCounts()` | — | Số đơn theo trạng thái (hôm nay) |
-| `getRevenueTrend(days?)` | days: 1-90 | Doanh thu & đơn theo ngày (mặc định 7) |
-| `getHourlyOrderVolume()` | — | Biểu đồ đơn hàng theo giờ (6h-23h, hôm nay) |
-| `getOrderStatusDistribution()` | — | Phân bố trạng thái đơn (cho pie chart) |
-| `getBranchComparison(startDate, endDate)` | `YYYY-MM-DD` | So sánh doanh thu/đơn giữa các chi nhánh |
+| Action                                    | Input        | Mô tả                                                    |
+| ----------------------------------------- | ------------ | -------------------------------------------------------- |
+| `getDashboardStats()`                     | —            | Doanh thu hôm nay/tuần/tháng, số đơn, giá trị trung bình |
+| `getRecentOrders(limit?)`                 | limit: 1-50  | N đơn hàng gần nhất (mặc định 10)                        |
+| `getTopSellingItems(limit?)`              | limit: 1-50  | Top món bán chạy 30 ngày qua                             |
+| `getOrderStatusCounts()`                  | —            | Số đơn theo trạng thái (hôm nay)                         |
+| `getRevenueTrend(days?)`                  | days: 1-90   | Doanh thu & đơn theo ngày (mặc định 7)                   |
+| `getHourlyOrderVolume()`                  | —            | Biểu đồ đơn hàng theo giờ (6h-23h, hôm nay)              |
+| `getOrderStatusDistribution()`            | —            | Phân bố trạng thái đơn (cho pie chart)                   |
+| `getBranchComparison(startDate, endDate)` | `YYYY-MM-DD` | So sánh doanh thu/đơn giữa các chi nhánh                 |
 
 ---
 
@@ -802,36 +828,40 @@ Tương tự POS Printer nhưng scoped cho KDS roles và `assigned_to_type=kds_s
 **Vai trò:** Admin (owner/manager)
 
 #### Menu CRUD
-| Action | Input | Validation | Mô tả |
-|--------|-------|------------|-------|
-| `getMenus()` | — | — | Danh sách thực đơn |
-| `createMenu(formData)` | name, type, is_active | `menuSchema` | Tạo thực đơn |
-| `updateMenu(id, formData)` | name, type, is_active | `menuSchema` | Cập nhật thực đơn |
-| `deleteMenu(id)` | — | — | Xóa thực đơn (chặn nếu có đơn hàng liên quan) |
+
+| Action                     | Input                 | Validation   | Mô tả                                         |
+| -------------------------- | --------------------- | ------------ | --------------------------------------------- |
+| `getMenus()`               | —                     | —            | Danh sách thực đơn                            |
+| `createMenu(formData)`     | name, type, is_active | `menuSchema` | Tạo thực đơn                                  |
+| `updateMenu(id, formData)` | name, type, is_active | `menuSchema` | Cập nhật thực đơn                             |
+| `deleteMenu(id)`           | —                     | —            | Xóa thực đơn (chặn nếu có đơn hàng liên quan) |
 
 #### Category CRUD
-| Action | Input | Validation | Mô tả |
-|--------|-------|------------|-------|
-| `getCategories(menuId)` | — | — | Danh mục theo menu |
-| `createCategory(formData)` | menu_id, name, sort_order, type | `menuCategorySchema` | Tạo danh mục |
-| `deleteCategory(id)` | — | — | Xóa danh mục |
+
+| Action                     | Input                           | Validation           | Mô tả              |
+| -------------------------- | ------------------------------- | -------------------- | ------------------ |
+| `getCategories(menuId)`    | —                               | —                    | Danh mục theo menu |
+| `createCategory(formData)` | menu_id, name, sort_order, type | `menuCategorySchema` | Tạo danh mục       |
+| `deleteCategory(id)`       | —                               | —                    | Xóa danh mục       |
 
 **Loại danh mục (`type`):** `main_dish`, `side_dish`
 
 #### Menu Item CRUD
-| Action | Input | Validation | Mô tả |
-|--------|-------|------------|-------|
-| `getMenuItems(categoryId)` | — | — | Món ăn theo danh mục (kèm variants, modifiers) |
-| `createMenuItem(formData)` | category_id, name, description, base_price, is_available | `menuItemSchema` | Tạo món ăn |
-| `updateMenuItem(id, formData)` | — | `menuItemSchema` | Cập nhật món ăn |
-| `deleteMenuItem(id)` | — | — | Xóa món ăn (chặn nếu có đơn hàng liên quan) |
+
+| Action                         | Input                                                    | Validation       | Mô tả                                          |
+| ------------------------------ | -------------------------------------------------------- | ---------------- | ---------------------------------------------- |
+| `getMenuItems(categoryId)`     | —                                                        | —                | Món ăn theo danh mục (kèm variants, modifiers) |
+| `createMenuItem(formData)`     | category_id, name, description, base_price, is_available | `menuItemSchema` | Tạo món ăn                                     |
+| `updateMenuItem(id, formData)` | —                                                        | `menuItemSchema` | Cập nhật món ăn                                |
+| `deleteMenuItem(id)`           | —                                                        | —                | Xóa món ăn (chặn nếu có đơn hàng liên quan)    |
 
 #### Side Items Management
-| Action | Input | Mô tả |
-|--------|-------|-------|
-| `getAvailableSides(menuItemId)` | — | Danh sách món kèm cho phép |
-| `getSideItems(menuId)` | — | Tất cả side_dish items trong menu |
-| `updateAvailableSides({ menu_item_id, side_item_ids })` | — | Cập nhật danh sách món kèm cho phép |
+
+| Action                                                  | Input | Mô tả                               |
+| ------------------------------------------------------- | ----- | ----------------------------------- |
+| `getAvailableSides(menuItemId)`                         | —     | Danh sách món kèm cho phép          |
+| `getSideItems(menuId)`                                  | —     | Tất cả side_dish items trong menu   |
+| `updateAvailableSides({ menu_item_id, side_item_ids })` | —     | Cập nhật danh sách món kèm cho phép |
 
 ---
 
@@ -839,9 +869,9 @@ Tương tự POS Printer nhưng scoped cho KDS roles và `assigned_to_type=kds_s
 
 > File: `apps/web/app/(admin)/admin/orders/actions.ts`
 
-| Action | Mô tả |
-|--------|-------|
-| `getBranches()` | Danh sách chi nhánh |
+| Action             | Mô tả                                                                    |
+| ------------------ | ------------------------------------------------------------------------ |
+| `getBranches()`    | Danh sách chi nhánh                                                      |
 | `getAdminOrders()` | 500 đơn hàng mới nhất (tất cả chi nhánh), kèm chi tiết món và thanh toán |
 
 ---
@@ -851,56 +881,62 @@ Tương tự POS Printer nhưng scoped cho KDS roles và `assigned_to_type=kds_s
 > File: `apps/web/app/(admin)/admin/inventory/actions.ts` (barrel)
 
 #### Nguyên liệu (Ingredients)
-| Action | Mô tả |
-|--------|-------|
-| `getIngredients()` | Danh sách nguyên liệu |
-| `createIngredient(formData)` | Tạo nguyên liệu |
-| `updateIngredient(id, formData)` | Cập nhật nguyên liệu |
-| `deleteIngredient(id)` | Xóa nguyên liệu |
+
+| Action                           | Mô tả                 |
+| -------------------------------- | --------------------- |
+| `getIngredients()`               | Danh sách nguyên liệu |
+| `createIngredient(formData)`     | Tạo nguyên liệu       |
+| `updateIngredient(id, formData)` | Cập nhật nguyên liệu  |
+| `deleteIngredient(id)`           | Xóa nguyên liệu       |
 
 #### Tồn kho (Stock)
-| Action | Mô tả |
-|--------|-------|
-| `getStockLevels(branchId?)` | Mức tồn kho theo chi nhánh |
-| `initStockLevel(data)` | Khởi tạo mức tồn kho |
-| `getStockMovements(ingredientId, branchId)` | Lịch sử nhập/xuất kho |
-| `createStockMovement(data)` | Tạo phiếu nhập/xuất kho |
+
+| Action                                      | Mô tả                      |
+| ------------------------------------------- | -------------------------- |
+| `getStockLevels(branchId?)`                 | Mức tồn kho theo chi nhánh |
+| `initStockLevel(data)`                      | Khởi tạo mức tồn kho       |
+| `getStockMovements(ingredientId, branchId)` | Lịch sử nhập/xuất kho      |
+| `createStockMovement(data)`                 | Tạo phiếu nhập/xuất kho    |
 
 #### Công thức (Recipes)
-| Action | Mô tả |
-|--------|-------|
-| `getRecipes()` | Danh sách công thức |
+
+| Action                    | Mô tả                     |
+| ------------------------- | ------------------------- |
+| `getRecipes()`            | Danh sách công thức       |
 | `getMenuItemsForRecipe()` | Món ăn cho chọn công thức |
-| `createRecipe(data)` | Tạo công thức |
-| `deleteRecipe(id)` | Xóa công thức |
+| `createRecipe(data)`      | Tạo công thức             |
+| `deleteRecipe(id)`        | Xóa công thức             |
 
 #### Nhà cung cấp (Suppliers)
-| Action | Mô tả |
-|--------|-------|
-| `getSuppliers()` | Danh sách NCC |
-| `createSupplier(data)` | Tạo NCC |
-| `updateSupplier(id, data)` | Cập nhật NCC |
-| `deleteSupplier(id)` | Xóa NCC |
+
+| Action                     | Mô tả         |
+| -------------------------- | ------------- |
+| `getSuppliers()`           | Danh sách NCC |
+| `createSupplier(data)`     | Tạo NCC       |
+| `updateSupplier(id, data)` | Cập nhật NCC  |
+| `deleteSupplier(id)`       | Xóa NCC       |
 
 #### Đơn đặt hàng (Purchase Orders)
-| Action | Mô tả |
-|--------|-------|
-| `getPurchaseOrders()` | Danh sách PO |
-| `createPurchaseOrder(data)` | Tạo PO |
-| `sendPurchaseOrder(id)` | Gửi PO |
+
+| Action                           | Mô tả             |
+| -------------------------------- | ----------------- |
+| `getPurchaseOrders()`            | Danh sách PO      |
+| `createPurchaseOrder(data)`      | Tạo PO            |
+| `sendPurchaseOrder(id)`          | Gửi PO            |
 | `receivePurchaseOrder(id, data)` | Nhận hàng theo PO |
-| `cancelPurchaseOrder(id)` | Hủy PO |
+| `cancelPurchaseOrder(id)`        | Hủy PO            |
 
 #### Vận hành kho (Inventory Ops)
-| Action | Mô tả |
-|--------|-------|
-| `getPrepList()` | Danh sách chuẩn bị nguyên liệu |
-| `getFoodCostReport()` | Báo cáo chi phí nguyên liệu |
-| `getStockCounts()` | Danh sách kiểm kê |
-| `createStockCount(data)` | Tạo phiên kiểm kê |
-| `approveStockCount(id)` | Duyệt kiểm kê |
-| `getExpiringBatches()` | Lô hàng sắp hết hạn |
-| `getPriceAnomalies()` | Phát hiện biến động giá |
+
+| Action                   | Mô tả                          |
+| ------------------------ | ------------------------------ |
+| `getPrepList()`          | Danh sách chuẩn bị nguyên liệu |
+| `getFoodCostReport()`    | Báo cáo chi phí nguyên liệu    |
+| `getStockCounts()`       | Danh sách kiểm kê              |
+| `createStockCount(data)` | Tạo phiên kiểm kê              |
+| `approveStockCount(id)`  | Duyệt kiểm kê                  |
+| `getExpiringBatches()`   | Lô hàng sắp hết hạn            |
+| `getPriceAnomalies()`    | Phát hiện biến động giá        |
 
 ---
 
@@ -911,14 +947,15 @@ Tương tự POS Printer nhưng scoped cho KDS roles và `assigned_to_type=kds_s
 **Vai trò:** `owner`, `manager`, `hr`
 
 #### Nhân viên
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getEmployees(branchId?)` | — | Danh sách nhân viên (tối đa 50) |
-| `getCreatableRoles()` | — | Vai trò được phép tạo theo quyền hiện tại |
+
+| Action                     | Validation                 | Mô tả                                               |
+| -------------------------- | -------------------------- | --------------------------------------------------- |
+| `getEmployees(branchId?)`  | —                          | Danh sách nhân viên (tối đa 50)                     |
+| `getCreatableRoles()`      | —                          | Vai trò được phép tạo theo quyền hiện tại           |
 | `createStaffAccount(data)` | `createStaffAccountSchema` | Tạo tài khoản + employee record (kèm Supabase Auth) |
-| `createEmployee(data)` | `createEmployeeSchema` | Tạo employee cho profile có sẵn |
-| `updateEmployee(id, data)` | `updateEmployeeSchema` | Cập nhật thông tin nhân viên |
-| `getBranchesForHr()` | — | Danh sách chi nhánh |
+| `createEmployee(data)`     | `createEmployeeSchema`     | Tạo employee cho profile có sẵn                     |
+| `updateEmployee(id, data)` | `updateEmployeeSchema`     | Cập nhật thông tin nhân viên                        |
+| `getBranchesForHr()`       | —                          | Danh sách chi nhánh                                 |
 
 **Quyền tạo tài khoản:**
 | Vai trò | Có thể tạo |
@@ -928,43 +965,49 @@ Tương tự POS Printer nhưng scoped cho KDS roles và `assigned_to_type=kds_s
 | hr | cashier, waiter, chef |
 
 #### Ca làm việc (Shifts)
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getShifts()` | — | Danh sách ca làm việc |
+
+| Action                  | Validation          | Mô tả                                                                    |
+| ----------------------- | ------------------- | ------------------------------------------------------------------------ |
+| `getShifts()`           | —                   | Danh sách ca làm việc                                                    |
 | `createShift(formData)` | `createShiftSchema` | Tạo ca (branch_id, name, start_time, end_time, break_min, max_employees) |
-| `deleteShift(id)` | — | Xóa ca |
+| `deleteShift(id)`       | —                   | Xóa ca                                                                   |
 
 #### Phân ca (Shift Assignments)
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getShiftAssignments(startDate, endDate)` | — | Lịch phân ca theo khoảng thời gian |
-| `createShiftAssignment(data)` | `createShiftAssignmentSchema` | Phân ca cho nhân viên |
+
+| Action                                    | Validation                    | Mô tả                              |
+| ----------------------------------------- | ----------------------------- | ---------------------------------- |
+| `getShiftAssignments(startDate, endDate)` | —                             | Lịch phân ca theo khoảng thời gian |
+| `createShiftAssignment(data)`             | `createShiftAssignmentSchema` | Phân ca cho nhân viên              |
 
 #### Chấm công
-| Action | Mô tả |
-|--------|-------|
+
+| Action                       | Mô tả                    |
+| ---------------------------- | ------------------------ |
 | `getAttendanceRecords(date)` | Bảng chấm công theo ngày |
 
 #### Nghỉ phép
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getLeaveRequests()` | — | Danh sách yêu cầu nghỉ phép |
-| `createLeaveRequest(data)` | `createLeaveRequestSchema` | Tạo yêu cầu nghỉ phép |
-| `approveLeaveRequest(data)` | `approveLeaveRequestSchema` | Duyệt/từ chối nghỉ phép |
+
+| Action                      | Validation                  | Mô tả                       |
+| --------------------------- | --------------------------- | --------------------------- |
+| `getLeaveRequests()`        | —                           | Danh sách yêu cầu nghỉ phép |
+| `createLeaveRequest(data)`  | `createLeaveRequestSchema`  | Tạo yêu cầu nghỉ phép       |
+| `approveLeaveRequest(data)` | `approveLeaveRequestSchema` | Duyệt/từ chối nghỉ phép     |
 
 #### Bảng lương (Payroll)
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getPayrollPeriods(branchId?)` | — | Danh sách kỳ lương |
-| `getPayrollEntries(periodId)` | — | Chi tiết lương theo kỳ |
-| `createPayrollPeriod(data)` | `createPayrollPeriodSchema` | Tạo kỳ lương |
-| `calculatePayroll(periodId)` | — | Tính lương tự động (hourly_rate × hours hoặc monthly_salary) |
-| `updatePayrollEntry(data)` | `updatePayrollEntrySchema` | Chỉnh sửa OT, thưởng, khấu trừ |
-| `approvePayroll(periodId)` | — | Duyệt kỳ lương |
-| `markPayrollPaid(periodId)` | — | Đánh dấu đã trả lương |
-| `deletePayrollPeriod(periodId)` | — | Xóa kỳ lương (chỉ trạng thái draft) |
+
+| Action                          | Validation                  | Mô tả                                                        |
+| ------------------------------- | --------------------------- | ------------------------------------------------------------ |
+| `getPayrollPeriods(branchId?)`  | —                           | Danh sách kỳ lương                                           |
+| `getPayrollEntries(periodId)`   | —                           | Chi tiết lương theo kỳ                                       |
+| `createPayrollPeriod(data)`     | `createPayrollPeriodSchema` | Tạo kỳ lương                                                 |
+| `calculatePayroll(periodId)`    | —                           | Tính lương tự động (hourly_rate × hours hoặc monthly_salary) |
+| `updatePayrollEntry(data)`      | `updatePayrollEntrySchema`  | Chỉnh sửa OT, thưởng, khấu trừ                               |
+| `approvePayroll(periodId)`      | —                           | Duyệt kỳ lương                                               |
+| `markPayrollPaid(periodId)`     | —                           | Đánh dấu đã trả lương                                        |
+| `deletePayrollPeriod(periodId)` | —                           | Xóa kỳ lương (chỉ trạng thái draft)                          |
 
 **State Machine (Payroll):**
+
 ```
 draft → calculated → approved → paid
 ```
@@ -976,45 +1019,50 @@ draft → calculated → approved → paid
 > File: `apps/web/app/(admin)/admin/crm/actions.ts`
 
 #### Thống kê CRM
-| Action | Mô tả |
-|--------|-------|
+
+| Action          | Mô tả                                                         |
+| --------------- | ------------------------------------------------------------- |
 | `getCrmStats()` | Tổng/active khách hàng, vouchers, rating TB, feedback pending |
-| `getBranches()` | Danh sách chi nhánh |
+| `getBranches()` | Danh sách chi nhánh                                           |
 
 #### Khách hàng
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getCustomers()` | — | Danh sách khách hàng (kèm loyalty tier) |
-| `createCustomer(formData)` | `createCustomerSchema` | Tạo khách hàng (full_name, phone, email, gender, birthday, source, notes) |
-| `updateCustomer(id, formData)` | `updateCustomerSchema` | Cập nhật thông tin |
-| `toggleCustomerActive(id)` | — | Bật/tắt trạng thái active |
+
+| Action                         | Validation             | Mô tả                                                                     |
+| ------------------------------ | ---------------------- | ------------------------------------------------------------------------- |
+| `getCustomers()`               | —                      | Danh sách khách hàng (kèm loyalty tier)                                   |
+| `createCustomer(formData)`     | `createCustomerSchema` | Tạo khách hàng (full_name, phone, email, gender, birthday, source, notes) |
+| `updateCustomer(id, formData)` | `updateCustomerSchema` | Cập nhật thông tin                                                        |
+| `toggleCustomerActive(id)`     | —                      | Bật/tắt trạng thái active                                                 |
 
 #### Loyalty
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getCustomerLoyaltyHistory(customerId)` | — | 20 giao dịch loyalty gần nhất |
-| `adjustLoyaltyPoints(data)` | `adjustLoyaltyPointsSchema` | Điều chỉnh điểm (cộng/trừ) |
-| `getLoyaltyTiers()` | — | Danh sách hạng loyalty |
-| `createLoyaltyTier(formData)` | `createLoyaltyTierSchema` | Tạo hạng (name, min_points, discount_pct, benefits) |
-| `updateLoyaltyTier(id, formData)` | — | Cập nhật hạng |
-| `deleteLoyaltyTier(id)` | — | Xóa hạng (chặn nếu có khách đang ở hạng này) |
+
+| Action                                  | Validation                  | Mô tả                                               |
+| --------------------------------------- | --------------------------- | --------------------------------------------------- |
+| `getCustomerLoyaltyHistory(customerId)` | —                           | 20 giao dịch loyalty gần nhất                       |
+| `adjustLoyaltyPoints(data)`             | `adjustLoyaltyPointsSchema` | Điều chỉnh điểm (cộng/trừ)                          |
+| `getLoyaltyTiers()`                     | —                           | Danh sách hạng loyalty                              |
+| `createLoyaltyTier(formData)`           | `createLoyaltyTierSchema`   | Tạo hạng (name, min_points, discount_pct, benefits) |
+| `updateLoyaltyTier(id, formData)`       | —                           | Cập nhật hạng                                       |
+| `deleteLoyaltyTier(id)`                 | —                           | Xóa hạng (chặn nếu có khách đang ở hạng này)        |
 
 #### Voucher
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getVouchers()` | — | Danh sách voucher (kèm branch scope) |
-| `createVoucher(data)` | `createVoucherSchema` | Tạo voucher (code, type, value, min_order, max_discount, valid_from/to, max_uses, branch_ids) |
-| `updateVoucher(id, data)` | — | Cập nhật voucher |
-| `deleteVoucher(id)` | — | Xóa voucher |
-| `toggleVoucher(id)` | — | Bật/tắt voucher |
+
+| Action                    | Validation            | Mô tả                                                                                         |
+| ------------------------- | --------------------- | --------------------------------------------------------------------------------------------- |
+| `getVouchers()`           | —                     | Danh sách voucher (kèm branch scope)                                                          |
+| `createVoucher(data)`     | `createVoucherSchema` | Tạo voucher (code, type, value, min_order, max_discount, valid_from/to, max_uses, branch_ids) |
+| `updateVoucher(id, data)` | —                     | Cập nhật voucher                                                                              |
+| `deleteVoucher(id)`       | —                     | Xóa voucher                                                                                   |
+| `toggleVoucher(id)`       | —                     | Bật/tắt voucher                                                                               |
 
 **Loại voucher (`type`):** `percent`, `fixed`
 
 #### Phản hồi (Feedback)
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getFeedback()` | — | Danh sách feedback (kèm thông tin khách, đơn, chi nhánh) |
-| `respondToFeedback(id, { response })` | `respondFeedbackSchema` | Phản hồi feedback |
+
+| Action                                | Validation              | Mô tả                                                    |
+| ------------------------------------- | ----------------------- | -------------------------------------------------------- |
+| `getFeedback()`                       | —                       | Danh sách feedback (kèm thông tin khách, đơn, chi nhánh) |
+| `respondToFeedback(id, { response })` | `respondFeedbackSchema` | Phản hồi feedback                                        |
 
 ---
 
@@ -1024,18 +1072,18 @@ draft → calculated → approved → paid
 
 **Vai trò:** `owner`, `manager`
 
-| Action | Mô tả |
-|--------|-------|
-| `getTerminals()` | Danh sách POS terminals (kèm chi nhánh) |
-| `getBranches()` | Danh sách chi nhánh |
-| `getPendingDevices()` | Thiết bị đang chờ duyệt |
-| `createTerminal(formData)` | Tạo terminal (name, type, branch_id, device_fingerprint) |
-| `approveTerminal(id)` | Phê duyệt terminal |
-| `toggleTerminal(id)` | Bật/tắt terminal |
-| `deleteTerminal(id)` | Vô hiệu hóa terminal (soft delete) |
-| `approveDevice(id)` | Phê duyệt thiết bị + tự động tạo terminal/KDS station liên kết |
-| `rejectDevice(id)` | Từ chối thiết bị |
-| `deleteDevice(id)` | Xóa thiết bị + vô hiệu hóa terminal/station liên kết |
+| Action                     | Mô tả                                                          |
+| -------------------------- | -------------------------------------------------------------- |
+| `getTerminals()`           | Danh sách POS terminals (kèm chi nhánh)                        |
+| `getBranches()`            | Danh sách chi nhánh                                            |
+| `getPendingDevices()`      | Thiết bị đang chờ duyệt                                        |
+| `createTerminal(formData)` | Tạo terminal (name, type, branch_id, device_fingerprint)       |
+| `approveTerminal(id)`      | Phê duyệt terminal                                             |
+| `toggleTerminal(id)`       | Bật/tắt terminal                                               |
+| `deleteTerminal(id)`       | Vô hiệu hóa terminal (soft delete)                             |
+| `approveDevice(id)`        | Phê duyệt thiết bị + tự động tạo terminal/KDS station liên kết |
+| `rejectDevice(id)`         | Từ chối thiết bị                                               |
+| `deleteDevice(id)`         | Xóa thiết bị + vô hiệu hóa terminal/station liên kết           |
 
 ---
 
@@ -1043,13 +1091,13 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/kds-stations/actions.ts`
 
-| Action | Mô tả |
-|--------|-------|
-| `getKdsStations()` | Danh sách trạm KDS |
-| `createKdsStation(formData)` | Tạo trạm KDS (name, branch_id, category_ids) |
-| `updateKdsStation(id, formData)` | Cập nhật trạm |
-| `toggleKdsStation(id)` | Bật/tắt trạm |
-| `deleteKdsStation(id)` | Xóa trạm |
+| Action                           | Mô tả                                        |
+| -------------------------------- | -------------------------------------------- |
+| `getKdsStations()`               | Danh sách trạm KDS                           |
+| `createKdsStation(formData)`     | Tạo trạm KDS (name, branch_id, category_ids) |
+| `updateKdsStation(id, formData)` | Cập nhật trạm                                |
+| `toggleKdsStation(id)`           | Bật/tắt trạm                                 |
+| `deleteKdsStation(id)`           | Xóa trạm                                     |
 
 ---
 
@@ -1057,10 +1105,10 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/payments/actions.ts`
 
-| Action | Mô tả |
-|--------|-------|
-| `getBranches()` | Danh sách chi nhánh |
-| `getPayments()` | 500 thanh toán gần nhất (tất cả chi nhánh, kèm đơn hàng + terminal) |
+| Action                     | Mô tả                                                                       |
+| -------------------------- | --------------------------------------------------------------------------- |
+| `getBranches()`            | Danh sách chi nhánh                                                         |
+| `getPayments()`            | 500 thanh toán gần nhất (tất cả chi nhánh, kèm đơn hàng + terminal)         |
 | `refundPayment(paymentId)` | Hoàn tiền (chỉ cho payment `completed`, atomic update chống race condition) |
 
 ---
@@ -1069,12 +1117,12 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/tables/actions.ts`
 
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getTables()` | — | Danh sách bàn (kèm zone, chi nhánh) |
-| `createTable(formData)` | `createTableSchema` | Tạo bàn |
-| `updateTable(id, formData)` | `updateTableSchema` | Cập nhật bàn |
-| `deleteTable(id)` | — | Xóa bàn |
+| Action                      | Validation          | Mô tả                               |
+| --------------------------- | ------------------- | ----------------------------------- |
+| `getTables()`               | —                   | Danh sách bàn (kèm zone, chi nhánh) |
+| `createTable(formData)`     | `createTableSchema` | Tạo bàn                             |
+| `updateTable(id, formData)` | `updateTableSchema` | Cập nhật bàn                        |
+| `deleteTable(id)`           | —                   | Xóa bàn                             |
 
 ---
 
@@ -1082,12 +1130,12 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/settings/actions.ts`
 
-| Action | Mô tả |
-|--------|-------|
-| `getBranches()` | Danh sách chi nhánh kèm timezone |
-| `getSettings()` | Cài đặt hệ thống (tax_rate, service_charge, ...) |
-| `updateBranch(data)` | Cập nhật thông tin chi nhánh |
-| `updateSetting(data)` | Cập nhật cài đặt (key-value) |
+| Action                | Mô tả                                            |
+| --------------------- | ------------------------------------------------ |
+| `getBranches()`       | Danh sách chi nhánh kèm timezone                 |
+| `getSettings()`       | Cài đặt hệ thống (tax_rate, service_charge, ...) |
+| `updateBranch(data)`  | Cập nhật thông tin chi nhánh                     |
+| `updateSetting(data)` | Cập nhật cài đặt (key-value)                     |
 
 ---
 
@@ -1095,11 +1143,11 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/reports/actions.ts`
 
-| Action | Input | Mô tả |
-|--------|-------|-------|
-| `getRevenueReport(startDate, endDate)` | `YYYY-MM-DD` | Báo cáo doanh thu theo ngày |
-| `getPaymentMethodBreakdown(startDate, endDate)` | — | Phân tích phương thức thanh toán |
-| `getReportSummary(startDate, endDate)` | — | Tổng hợp báo cáo |
+| Action                                          | Input        | Mô tả                            |
+| ----------------------------------------------- | ------------ | -------------------------------- |
+| `getRevenueReport(startDate, endDate)`          | `YYYY-MM-DD` | Báo cáo doanh thu theo ngày      |
+| `getPaymentMethodBreakdown(startDate, endDate)` | —            | Phân tích phương thức thanh toán |
+| `getReportSummary(startDate, endDate)`          | —            | Tổng hợp báo cáo                 |
 
 ---
 
@@ -1107,8 +1155,8 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/security/actions.ts`
 
-| Action | Mô tả |
-|--------|-------|
+| Action                         | Mô tả                                            |
+| ------------------------------ | ------------------------------------------------ |
 | `getSecurityEvents(severity?)` | 100 sự kiện bảo mật gần nhất (lọc theo severity) |
 
 ---
@@ -1119,8 +1167,8 @@ draft → calculated → approved → paid
 
 **Vai trò:** `owner`, `manager`, `inventory`
 
-| Action | Mô tả |
-|--------|-------|
+| Action                     | Mô tả                                                  |
+| -------------------------- | ------------------------------------------------------ |
 | `getNotifications(limit?)` | Cảnh báo kho (inventory_low_stock, inventory_expiring) |
 
 ---
@@ -1129,13 +1177,13 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(admin)/admin/campaigns/actions.ts`
 
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getCampaigns()` | — | Danh sách chiến dịch |
-| `createCampaign(data)` | `createCampaignSchema` | Tạo chiến dịch |
-| `updateCampaign(id, data)` | `updateCampaignSchema` | Cập nhật chiến dịch |
-| `deleteCampaign(id)` | — | Xóa chiến dịch |
-| `sendCampaign(id)` | — | Gửi chiến dịch (push notification cho khách hàng) |
+| Action                     | Validation             | Mô tả                                             |
+| -------------------------- | ---------------------- | ------------------------------------------------- |
+| `getCampaigns()`           | —                      | Danh sách chiến dịch                              |
+| `createCampaign(data)`     | `createCampaignSchema` | Tạo chiến dịch                                    |
+| `updateCampaign(id, data)` | `updateCampaignSchema` | Cập nhật chiến dịch                               |
+| `deleteCampaign(id)`       | —                      | Xóa chiến dịch                                    |
+| `sendCampaign(id)`         | —                      | Gửi chiến dịch (push notification cho khách hàng) |
 
 ---
 
@@ -1143,16 +1191,16 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(employee)/employee/actions.ts`
 
-| Action | Validation | Mô tả |
-|--------|------------|-------|
-| `getMyProfile()` | — | Thông tin cá nhân của nhân viên |
-| `updateMyProfile(data)` | `updateMyProfileSchema` | Cập nhật hồ sơ cá nhân |
-| `changePassword(data)` | `changePasswordSchema` | Đổi mật khẩu |
-| `getMyShifts(startDate, endDate)` | `dateRangeSchema` | Lịch ca làm việc |
-| `getMyAttendance(startDate, endDate)` | `dateRangeSchema` | Lịch sử chấm công |
-| `getMyLeaveRequests()` | — | Danh sách yêu cầu nghỉ phép |
-| `createMyLeaveRequest(data)` | `createMyLeaveRequestSchema` | Tạo yêu cầu nghỉ phép |
-| `getMyPayslips()` | — | Danh sách phiếu lương |
+| Action                                | Validation                   | Mô tả                           |
+| ------------------------------------- | ---------------------------- | ------------------------------- |
+| `getMyProfile()`                      | —                            | Thông tin cá nhân của nhân viên |
+| `updateMyProfile(data)`               | `updateMyProfileSchema`      | Cập nhật hồ sơ cá nhân          |
+| `changePassword(data)`                | `changePasswordSchema`       | Đổi mật khẩu                    |
+| `getMyShifts(startDate, endDate)`     | `dateRangeSchema`            | Lịch ca làm việc                |
+| `getMyAttendance(startDate, endDate)` | `dateRangeSchema`            | Lịch sử chấm công               |
+| `getMyLeaveRequests()`                | —                            | Danh sách yêu cầu nghỉ phép     |
+| `createMyLeaveRequest(data)`          | `createMyLeaveRequestSchema` | Tạo yêu cầu nghỉ phép           |
+| `getMyPayslips()`                     | —                            | Danh sách phiếu lương           |
 
 ---
 
@@ -1160,14 +1208,14 @@ draft → calculated → approved → paid
 
 > File: `apps/web/app/(customer)/customer/actions.ts`
 
-| Action | Auth | Validation | Mô tả |
-|--------|------|------------|-------|
-| `getPublicMenu()` | Không | — | Xem thực đơn (public) |
-| `getCustomerProfile()` | Có | — | Thông tin cá nhân + loyalty |
-| `getCustomerOrders()` | Có | — | Lịch sử đơn hàng |
-| `placeCustomerOrder(data)` | Có | `customerPlaceOrderSchema` | Đặt hàng từ PWA |
-| `submitFeedback(data)` | Có | `createFeedbackSchema` | Gửi đánh giá |
-| `getCustomerLoyalty()` | Có | — | Thông tin loyalty + lịch sử |
+| Action                     | Auth  | Validation                 | Mô tả                       |
+| -------------------------- | ----- | -------------------------- | --------------------------- |
+| `getPublicMenu()`          | Không | —                          | Xem thực đơn (public)       |
+| `getCustomerProfile()`     | Có    | —                          | Thông tin cá nhân + loyalty |
+| `getCustomerOrders()`      | Có    | —                          | Lịch sử đơn hàng            |
+| `placeCustomerOrder(data)` | Có    | `customerPlaceOrderSchema` | Đặt hàng từ PWA             |
+| `submitFeedback(data)`     | Có    | `createFeedbackSchema`     | Gửi đánh giá                |
+| `getCustomerLoyalty()`     | Có    | —                          | Thông tin loyalty + lịch sử |
 
 ---
 
@@ -1182,40 +1230,40 @@ draft → calculated → approved → paid
 
 ### Vai trò hệ thống
 
-| Vai trò | Cấp quyền | Module truy cập |
-|---------|-----------|-----------------|
-| `owner` | Cao nhất | Admin, POS, KDS, tất cả |
-| `manager` | Quản lý | Admin, POS, KDS |
-| `hr` | Nhân sự | Admin HR |
-| `cashier` | Thu ngân | POS (cashier + orders) |
-| `waiter` | Phục vụ | POS (orders) |
-| `chef` | Đầu bếp | KDS |
-| `inventory` | Kho | Admin Inventory + Notifications |
-| `customer` | Khách hàng | Customer PWA |
+| Vai trò     | Cấp quyền  | Module truy cập                 |
+| ----------- | ---------- | ------------------------------- |
+| `owner`     | Cao nhất   | Admin, POS, KDS, tất cả         |
+| `manager`   | Quản lý    | Admin, POS, KDS                 |
+| `hr`        | Nhân sự    | Admin HR                        |
+| `cashier`   | Thu ngân   | POS (cashier + orders)          |
+| `waiter`    | Phục vụ    | POS (orders)                    |
+| `chef`      | Đầu bếp    | KDS                             |
+| `inventory` | Kho        | Admin Inventory + Notifications |
+| `customer`  | Khách hàng | Customer PWA                    |
 
 ### Guard helpers
 
-| Helper | Mô tả |
-|--------|-------|
-| `getActionContext()` | Lấy user, tenant, branch từ session |
-| `getAdminContext(roles)` | Kiểm tra admin roles |
-| `getKdsBranchContext(roles)` | Kiểm tra KDS roles + branch |
-| `requireBranch(ctx)` | Đảm bảo user có branch_id |
-| `requireRole(role, allowed, action)` | Kiểm tra vai trò |
-| `verifyEntityOwnership(supabase, table, id, tenantId)` | Kiểm tra quyền sở hữu entity |
+| Helper                                                 | Mô tả                               |
+| ------------------------------------------------------ | ----------------------------------- |
+| `getActionContext()`                                   | Lấy user, tenant, branch từ session |
+| `getAdminContext(roles)`                               | Kiểm tra admin roles                |
+| `getKdsBranchContext(roles)`                           | Kiểm tra KDS roles + branch         |
+| `requireBranch(ctx)`                                   | Đảm bảo user có branch_id           |
+| `requireRole(role, allowed, action)`                   | Kiểm tra vai trò                    |
+| `verifyEntityOwnership(supabase, table, id, tenantId)` | Kiểm tra quyền sở hữu entity        |
 
 ---
 
 ## 9. Mã lỗi chung
 
-| Mã | HTTP tương đương | Mô tả |
-|----|-----------------|-------|
-| `VALIDATION_ERROR` | 400 | Dữ liệu đầu vào không hợp lệ |
-| `UNAUTHORIZED` | 401 | Chưa đăng nhập hoặc sai thông tin |
-| `FORBIDDEN` | 403 | Không có quyền truy cập |
-| `NOT_FOUND` | 404 | Không tìm thấy tài nguyên |
-| `CONFLICT` | 409 | Xung đột trạng thái (ví dụ: món đã hết) |
-| `DB_ERROR` | 500 | Lỗi database (sanitized, không lộ chi tiết) |
+| Mã                 | HTTP tương đương | Mô tả                                       |
+| ------------------ | ---------------- | ------------------------------------------- |
+| `VALIDATION_ERROR` | 400              | Dữ liệu đầu vào không hợp lệ                |
+| `UNAUTHORIZED`     | 401              | Chưa đăng nhập hoặc sai thông tin           |
+| `FORBIDDEN`        | 403              | Không có quyền truy cập                     |
+| `NOT_FOUND`        | 404              | Không tìm thấy tài nguyên                   |
+| `CONFLICT`         | 409              | Xung đột trạng thái (ví dụ: món đã hết)     |
+| `DB_ERROR`         | 500              | Lỗi database (sanitized, không lộ chi tiết) |
 
 ### Server Action error format
 
@@ -1233,14 +1281,14 @@ throw new ActionError(message, code, statusCode?)
 
 Sử dụng Upstash Redis (`@comtammatu/security`).
 
-| Endpoint/Action | Giới hạn | Cửa sổ |
-|----------------|----------|--------|
-| Login/Auth | 5 req | 15 phút |
-| GET queries | 100 req | 1 phút |
-| POST/PUT/DELETE | 30 req | 1 phút |
-| Customer app | 20 req | 1 phút |
-| Bulk exports (data-export) | 5 req | 1 giờ |
-| Payment webhooks (Momo IPN) | 1000 req | 1 phút |
+| Endpoint/Action             | Giới hạn | Cửa sổ  |
+| --------------------------- | -------- | ------- |
+| Login/Auth                  | 5 req    | 15 phút |
+| GET queries                 | 100 req  | 1 phút  |
+| POST/PUT/DELETE             | 30 req   | 1 phút  |
+| Customer app                | 20 req   | 1 phút  |
+| Bulk exports (data-export)  | 5 req    | 1 giờ   |
+| Payment webhooks (Momo IPN) | 1000 req | 1 phút  |
 
 ---
 
@@ -1248,24 +1296,24 @@ Sử dụng Upstash Redis (`@comtammatu/security`).
 
 Tất cả schema nằm trong `packages/shared/src/schemas/`:
 
-| File | Schemas |
-|------|---------|
-| `order.ts` | `createOrderSchema`, `updateOrderStatusSchema`, `addOrderItemsSchema` |
-| `payment.ts` | `processPaymentSchema`, `validateVoucherSchema`, `applyVoucherSchema` |
-| `pos.ts` | `openSessionSchema`, `closeSessionSchema` |
-| `menu.ts` | `menuSchema`, `menuCategorySchema`, `menuItemSchema`, `menuItemAvailableSidesSchema` |
-| `kds.ts` | `bumpTicketSchema` |
-| `hr.ts` | `createStaffAccountSchema`, `createEmployeeSchema`, `updateEmployeeSchema`, `createShiftSchema`, `createShiftAssignmentSchema`, `createLeaveRequestSchema`, `approveLeaveRequestSchema` |
-| `payroll.ts` | `createPayrollPeriodSchema`, `updatePayrollEntrySchema`, `payrollPeriodIdSchema` |
-| `crm.ts` | `createCustomerSchema`, `updateCustomerSchema`, `adjustLoyaltyPointsSchema`, `createLoyaltyTierSchema`, `respondFeedbackSchema` |
-| `voucher.ts` | `createVoucherSchema` |
-| `inventory.ts` | Ingredient, stock, recipe schemas |
-| `supplier.ts` | Supplier schemas |
-| `device.ts` | Device-related schemas |
-| `printer.ts` | `createPrinterConfigSchema`, `updatePrinterConfigSchema` |
-| `privacy.ts` | `deletionRequestSchema` |
-| `feedback.ts` | `createFeedbackSchema` |
-| `campaign.ts` | `createCampaignSchema`, `updateCampaignSchema` |
-| `dashboard.ts` | `dashboardLimitSchema`, `dashboardDaysSchema`, `dateRangeSchema` |
-| `table.ts` | `createTableSchema`, `updateTableSchema` |
-| `push-notification.ts` | `subscribePushSchema`, `unsubscribePushSchema` |
+| File                   | Schemas                                                                                                                                                                                 |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `order.ts`             | `createOrderSchema`, `updateOrderStatusSchema`, `addOrderItemsSchema`                                                                                                                   |
+| `payment.ts`           | `processPaymentSchema`, `validateVoucherSchema`, `applyVoucherSchema`                                                                                                                   |
+| `pos.ts`               | `openSessionSchema`, `closeSessionSchema`                                                                                                                                               |
+| `menu.ts`              | `menuSchema`, `menuCategorySchema`, `menuItemSchema`, `menuItemAvailableSidesSchema`                                                                                                    |
+| `kds.ts`               | `bumpTicketSchema`                                                                                                                                                                      |
+| `hr.ts`                | `createStaffAccountSchema`, `createEmployeeSchema`, `updateEmployeeSchema`, `createShiftSchema`, `createShiftAssignmentSchema`, `createLeaveRequestSchema`, `approveLeaveRequestSchema` |
+| `payroll.ts`           | `createPayrollPeriodSchema`, `updatePayrollEntrySchema`, `payrollPeriodIdSchema`                                                                                                        |
+| `crm.ts`               | `createCustomerSchema`, `updateCustomerSchema`, `adjustLoyaltyPointsSchema`, `createLoyaltyTierSchema`, `respondFeedbackSchema`                                                         |
+| `voucher.ts`           | `createVoucherSchema`                                                                                                                                                                   |
+| `inventory.ts`         | Ingredient, stock, recipe schemas                                                                                                                                                       |
+| `supplier.ts`          | Supplier schemas                                                                                                                                                                        |
+| `device.ts`            | Device-related schemas                                                                                                                                                                  |
+| `printer.ts`           | `createPrinterConfigSchema`, `updatePrinterConfigSchema`                                                                                                                                |
+| `privacy.ts`           | `deletionRequestSchema`                                                                                                                                                                 |
+| `feedback.ts`          | `createFeedbackSchema`                                                                                                                                                                  |
+| `campaign.ts`          | `createCampaignSchema`, `updateCampaignSchema`                                                                                                                                          |
+| `dashboard.ts`         | `dashboardLimitSchema`, `dashboardDaysSchema`, `dateRangeSchema`                                                                                                                        |
+| `table.ts`             | `createTableSchema`, `updateTableSchema`                                                                                                                                                |
+| `push-notification.ts` | `subscribePushSchema`, `unsubscribePushSchema`                                                                                                                                          |

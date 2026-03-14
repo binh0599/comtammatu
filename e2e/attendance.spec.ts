@@ -19,9 +19,9 @@ test.describe("Employee Attendance", () => {
     await expect(clockInButton).toBeVisible({ timeout: 10_000 });
     await clockInButton.click();
 
-    await expect(
-      page.getByText(/đã chấm công|đã vào ca|clocked.in|thành công/i)
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/đã chấm công|đã vào ca|clocked.in|thành công/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("employee can clock out", async ({ page, loginAs }) => {
@@ -53,9 +53,7 @@ test.describe("Employee Attendance", () => {
     await page.goto("/employee/schedule");
     await expect(page).toHaveURL(/\/employee\/schedule/);
 
-    await expect(
-      page.getByText(/ca làm|lịch|schedule/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/ca làm|lịch|schedule/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("employee can view payroll", async ({ page, loginAs }) => {
@@ -63,8 +61,8 @@ test.describe("Employee Attendance", () => {
     await page.goto("/employee/payroll");
     await expect(page).toHaveURL(/\/employee\/payroll/);
 
-    await expect(
-      page.getByText(/phiếu lương|lương|payroll/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/phiếu lương|lương|payroll/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });

@@ -22,13 +22,13 @@ interface MenuItem {
   category_id: number;
   menu_categories: { id: number; name: string; menu_id: number; type: string } | null;
   menu_item_variants:
-  | {
-    id: number;
-    name: string;
-    price_adjustment: number;
-    is_available: boolean;
-  }[]
-  | null;
+    | {
+        id: number;
+        name: string;
+        price_adjustment: number;
+        is_available: boolean;
+      }[]
+    | null;
   available_side_ids: number[];
 }
 
@@ -88,9 +88,7 @@ function GuestCountStep({
         <div className="text-center">
           <Users className="mx-auto mb-3 size-10 text-primary" aria-hidden="true" />
           <h3 className="text-lg font-bold">Số khách</h3>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Chọn số khách cho đơn hàng
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">Chọn số khách cho đơn hàng</p>
         </div>
 
         <div className="flex items-center justify-center gap-4">
@@ -169,9 +167,7 @@ export function NewOrderClient({
   const handleAddItem = useCallback((item: CartItem) => {
     setCart((prev) => {
       const existingIdx = prev.findIndex(
-        (c) =>
-          c.menu_item_id === item.menu_item_id &&
-          c.variant_id === item.variant_id
+        (c) => c.menu_item_id === item.menu_item_id && c.variant_id === item.variant_id
       );
 
       if (existingIdx >= 0) {
@@ -187,31 +183,27 @@ export function NewOrderClient({
     });
   }, []);
 
-  const handleRemoveItem = useCallback(
-    (menuItemId: number, variantId: number | null) => {
-      setCart((prev) => {
-        const existingIdx = prev.findIndex(
-          (c) =>
-            c.menu_item_id === menuItemId && c.variant_id === variantId
-        );
+  const handleRemoveItem = useCallback((menuItemId: number, variantId: number | null) => {
+    setCart((prev) => {
+      const existingIdx = prev.findIndex(
+        (c) => c.menu_item_id === menuItemId && c.variant_id === variantId
+      );
 
-        if (existingIdx < 0) return prev;
+      if (existingIdx < 0) return prev;
 
-        const existing = prev[existingIdx]!;
-        if (existing.quantity <= 1) {
-          return prev.filter((_, i) => i !== existingIdx);
-        }
+      const existing = prev[existingIdx]!;
+      if (existing.quantity <= 1) {
+        return prev.filter((_, i) => i !== existingIdx);
+      }
 
-        const updated = [...prev];
-        updated[existingIdx] = {
-          ...existing,
-          quantity: existing.quantity - 1,
-        };
-        return updated;
-      });
-    },
-    []
-  );
+      const updated = [...prev];
+      updated[existingIdx] = {
+        ...existing,
+        quantity: existing.quantity - 1,
+      };
+      return updated;
+    });
+  }, []);
 
   const handleClearCart = useCallback(() => {
     setCart([]);
@@ -221,9 +213,7 @@ export function NewOrderClient({
     (menuItemId: number, variantId: number | null, notes: string) => {
       setCart((prev) =>
         prev.map((c) =>
-          c.menu_item_id === menuItemId && c.variant_id === variantId
-            ? { ...c, notes }
-            : c
+          c.menu_item_id === menuItemId && c.variant_id === variantId ? { ...c, notes } : c
         )
       );
     },
@@ -242,18 +232,19 @@ export function NewOrderClient({
       variant_id: item.variant_id,
       quantity: item.quantity,
       notes: item.notes || undefined,
-      side_items: item.side_items.length > 0
-        ? item.side_items.map((s) => ({
-            menu_item_id: s.menu_item_id,
-            quantity: s.quantity,
-            notes: s.notes || undefined,
-          }))
-        : undefined,
+      side_items:
+        item.side_items.length > 0
+          ? item.side_items.map((s) => ({
+              menu_item_id: s.menu_item_id,
+              quantity: s.quantity,
+              notes: s.notes || undefined,
+            }))
+          : undefined,
     }));
 
     const orderPayload = {
       table_id: tableId,
-      type: isDineIn ? "dine_in" as const : "takeaway" as const,
+      type: isDineIn ? ("dine_in" as const) : ("takeaway" as const),
       terminal_id: terminalId,
       guest_count: guestCount ?? undefined,
       items: orderItems,
@@ -284,9 +275,7 @@ export function NewOrderClient({
     if (result.orderId) {
       const confirmResult = await confirmOrder(result.orderId);
       if (confirmResult.error !== null) {
-        toast.error(
-          `Đơn tạo thành công nhưng chưa gửi bếp: ${confirmResult.error}`
-        );
+        toast.error(`Đơn tạo thành công nhưng chưa gửi bếp: ${confirmResult.error}`);
         router.push(`/pos/order/${result.orderId}`);
         return;
       }
@@ -311,10 +300,7 @@ export function NewOrderClient({
             <p className="text-muted-foreground text-sm">Chọn số khách trước khi gọi món</p>
           </div>
         </div>
-        <GuestCountStep
-          tableCapacity={tableCapacity}
-          onConfirm={(count) => setGuestCount(count)}
-        />
+        <GuestCountStep tableCapacity={tableCapacity} onConfirm={(count) => setGuestCount(count)} />
       </div>
     );
   }

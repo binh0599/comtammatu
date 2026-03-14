@@ -56,9 +56,7 @@ function PortionBadge({ portions }: { portions: number }) {
   }
   if (portions <= LOW_PORTION_THRESHOLD) {
     return (
-      <Badge className="bg-yellow-100 text-yellow-800 text-xs font-bold">
-        {portions} phần
-      </Badge>
+      <Badge className="bg-yellow-100 text-yellow-800 text-xs font-bold">{portions} phần</Badge>
     );
   }
   return (
@@ -74,11 +72,7 @@ function MenuItemRow({
   onToggle,
 }: {
   item: MenuPortionInfo;
-  onToggle: (
-    menuItemId: number,
-    isAvailable: boolean,
-    reason?: string,
-  ) => void;
+  onToggle: (menuItemId: number, isAvailable: boolean, reason?: string) => void;
 }) {
   const isDisabledGlobal = !item.is_available_global;
   const isDisabledBranch = !item.is_available_branch;
@@ -107,12 +101,11 @@ function MenuItemRow({
             </Badge>
           )}
         </div>
-        {item.portions_remaining <= LOW_PORTION_THRESHOLD &&
-          item.limiting_ingredient_name && (
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
-              Thiếu: {item.limiting_ingredient_name}
-            </p>
-          )}
+        {item.portions_remaining <= LOW_PORTION_THRESHOLD && item.limiting_ingredient_name && (
+          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            Thiếu: {item.limiting_ingredient_name}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
@@ -128,7 +121,7 @@ function MenuItemRow({
               onToggle(
                 item.menu_item_id,
                 !item.is_available_branch,
-                isDisabledBranch ? undefined : "out_of_stock",
+                isDisabledBranch ? undefined : "out_of_stock"
               )
             }
           >
@@ -154,7 +147,7 @@ function WasteLogDialog({
     ingredientId: number,
     quantity: number,
     reason: "expired" | "spoiled" | "overproduction" | "other",
-    notes?: string,
+    notes?: string
   ) => Promise<void>;
 }) {
   const [ingredientId, setIngredientId] = useState<string>("");
@@ -163,9 +156,7 @@ function WasteLogDialog({
   const [notes, setNotes] = useState("");
   const [isPending, startTransition] = useTransition();
 
-  const selectedIngredient = ingredients.find(
-    (i) => i.id === Number(ingredientId),
-  );
+  const selectedIngredient = ingredients.find((i) => i.id === Number(ingredientId));
 
   function handleSubmit() {
     if (!ingredientId || !quantity || !reason) return;
@@ -175,7 +166,7 @@ function WasteLogDialog({
           Number(ingredientId),
           Number(quantity),
           reason as "expired" | "spoiled" | "overproduction" | "other",
-          notes || undefined,
+          notes || undefined
         );
         setIngredientId("");
         setQuantity("");
@@ -193,9 +184,7 @@ function WasteLogDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Ghi nhận hao hụt</DialogTitle>
-          <DialogDescription>
-            Ghi nhận nguyên liệu hao hụt, hư hỏng hoặc hết hạn
-          </DialogDescription>
+          <DialogDescription>Ghi nhận nguyên liệu hao hụt, hư hỏng hoặc hết hạn</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -219,9 +208,7 @@ function WasteLogDialog({
             <Label>
               Số lượng{" "}
               {selectedIngredient && (
-                <span className="text-muted-foreground">
-                  ({selectedIngredient.unit})
-                </span>
+                <span className="text-muted-foreground">({selectedIngredient.unit})</span>
               )}
             </Label>
             <Input
@@ -241,9 +228,7 @@ function WasteLogDialog({
                 <SelectValue placeholder="Chọn lý do..." />
               </SelectTrigger>
               <SelectContent>
-                {(
-                  ["expired", "spoiled", "overproduction", "other"] as const
-                ).map((r) => (
+                {(["expired", "spoiled", "overproduction", "other"] as const).map((r) => (
                   <SelectItem key={r} value={r}>
                     {getWasteReasonLabel(r)}
                   </SelectItem>
@@ -264,11 +249,7 @@ function WasteLogDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isPending}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
             Hủy
           </Button>
           <Button
@@ -351,9 +332,7 @@ function RestockRequestDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Yêu cầu mua hàng khẩn cấp</DialogTitle>
-          <DialogDescription>
-            Tạo đơn mua hàng nháp để quản lý duyệt
-          </DialogDescription>
+          <DialogDescription>Tạo đơn mua hàng nháp để quản lý duyệt</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -473,49 +452,34 @@ export function InventoryPanel({
     return () => clearInterval(interval);
   }, []);
 
-  const lowStockItems = portions.filter(
-    (p) => p.portions_remaining <= LOW_PORTION_THRESHOLD,
-  );
-  const unavailableItems = portions.filter(
-    (p) => !p.is_available_global || !p.is_available_branch,
-  );
+  const lowStockItems = portions.filter((p) => p.portions_remaining <= LOW_PORTION_THRESHOLD);
+  const unavailableItems = portions.filter((p) => !p.is_available_global || !p.is_available_branch);
 
   // Deduplicate alert count (items can be both low-stock and unavailable)
   const alertIds = new Set<number>();
   for (const p of lowStockItems) alertIds.add(p.menu_item_id);
   for (const p of unavailableItems) alertIds.add(p.menu_item_id);
 
-  const handleToggle = useCallback(
-    (menuItemId: number, isAvailable: boolean, reason?: string) => {
-      startTransition(async () => {
-        const result = await toggleMenuItemAvailability(
-          menuItemId,
-          isAvailable,
-          reason,
-        );
-        if (result.error) {
-          toast.error(result.error);
-          return;
-        }
-        toast.success(
-          isAvailable
-            ? "Đã bật lại món tại chi nhánh"
-            : "Đã tắt món tại chi nhánh",
-        );
-        // Refresh portions
-        const updated = await getMenuPortions();
-        setPortions(updated);
-      });
-    },
-    [],
-  );
+  const handleToggle = useCallback((menuItemId: number, isAvailable: boolean, reason?: string) => {
+    startTransition(async () => {
+      const result = await toggleMenuItemAvailability(menuItemId, isAvailable, reason);
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success(isAvailable ? "Đã bật lại món tại chi nhánh" : "Đã tắt món tại chi nhánh");
+      // Refresh portions
+      const updated = await getMenuPortions();
+      setPortions(updated);
+    });
+  }, []);
 
   const handleWasteSubmit = useCallback(
     async (
       ingredientId: number,
       quantity: number,
       reason: "expired" | "spoiled" | "overproduction" | "other",
-      notes?: string,
+      notes?: string
     ) => {
       const result = await logWaste(ingredientId, quantity, reason, notes);
       if (result.error) {
@@ -527,7 +491,7 @@ export function InventoryPanel({
       const updated = await getMenuPortions();
       setPortions(updated);
     },
-    [],
+    []
   );
 
   // Summary badge count
@@ -550,11 +514,7 @@ export function InventoryPanel({
                 {alertCount}
               </Badge>
             )}
-            {isExpanded ? (
-              <ChevronUp className="size-3.5" />
-            ) : (
-              <ChevronDown className="size-3.5" />
-            )}
+            {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
           </button>
 
           <div className="flex items-center gap-2">
@@ -615,35 +575,29 @@ export function InventoryPanel({
                 </h4>
                 <div className="space-y-1">
                   {unavailableItems.map((item) => (
-                    <MenuItemRow
-                      key={item.menu_item_id}
-                      item={item}
-                      onToggle={handleToggle}
-                    />
+                    <MenuItemRow key={item.menu_item_id} item={item} onToggle={handleToggle} />
                   ))}
                 </div>
               </div>
             )}
 
             {/* Low stock items */}
-            {lowStockItems.filter(
-              (i) => i.is_available_global && i.is_available_branch,
-            ).length > 0 && (
+            {lowStockItems.filter((i) => i.is_available_global && i.is_available_branch).length >
+              0 && (
               <div>
                 <h4 className="text-xs font-semibold text-yellow-700 uppercase mb-1.5">
-                  Sắp hết ({lowStockItems.filter((i) => i.is_available_global && i.is_available_branch).length})
+                  Sắp hết (
+                  {
+                    lowStockItems.filter((i) => i.is_available_global && i.is_available_branch)
+                      .length
+                  }
+                  )
                 </h4>
                 <div className="space-y-1">
                   {lowStockItems
-                    .filter(
-                      (i) => i.is_available_global && i.is_available_branch,
-                    )
+                    .filter((i) => i.is_available_global && i.is_available_branch)
                     .map((item) => (
-                      <MenuItemRow
-                        key={item.menu_item_id}
-                        item={item}
-                        onToggle={handleToggle}
-                      />
+                      <MenuItemRow key={item.menu_item_id} item={item} onToggle={handleToggle} />
                     ))}
                 </div>
               </div>
@@ -660,14 +614,10 @@ export function InventoryPanel({
                     (i) =>
                       i.is_available_global &&
                       i.is_available_branch &&
-                      i.portions_remaining > LOW_PORTION_THRESHOLD,
+                      i.portions_remaining > LOW_PORTION_THRESHOLD
                   )
                   .map((item) => (
-                    <MenuItemRow
-                      key={item.menu_item_id}
-                      item={item}
-                      onToggle={handleToggle}
-                    />
+                    <MenuItemRow key={item.menu_item_id} item={item} onToggle={handleToggle} />
                   ))}
               </div>
             </div>

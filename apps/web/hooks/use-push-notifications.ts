@@ -40,7 +40,16 @@ export function usePushNotifications() {
   }, []);
 
   const subscribe = useCallback(
-    async (notificationTypes: PushNotificationType[] = ["order_status", "low_stock", "campaign", "reservation", "payment", "system"]) => {
+    async (
+      notificationTypes: PushNotificationType[] = [
+        "order_status",
+        "low_stock",
+        "campaign",
+        "reservation",
+        "payment",
+        "system",
+      ]
+    ) => {
       if (!VAPID_PUBLIC_KEY) {
         console.warn("[push] VAPID public key not configured");
         return false;
@@ -91,7 +100,7 @@ export function usePushNotifications() {
         setIsLoading(false);
       }
     },
-    [],
+    []
   );
 
   const unsubscribe = useCallback(async () => {

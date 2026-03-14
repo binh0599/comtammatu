@@ -5,11 +5,7 @@ import { RealtimeNotifications } from "@/components/pos/realtime-notifications";
 import { requireLayoutAuth } from "@/lib/layout-auth";
 import { Toaster } from "@comtammatu/ui";
 
-export default async function KdsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function KdsLayout({ children }: { children: React.ReactNode }) {
   const { user, profile } = await requireLayoutAuth<{
     branch_id: number | null;
     tenant_id: number | null;
@@ -17,11 +13,7 @@ export default async function KdsLayout({
 
   // Staff roles must have an approved device to access KDS.
   // Fail-closed: if tenant_id is missing, redirect to login (incomplete profile).
-  if (
-    DEVICE_CHECK_ROLES.includes(
-      profile.role as (typeof DEVICE_CHECK_ROLES)[number],
-    )
-  ) {
+  if (DEVICE_CHECK_ROLES.includes(profile.role as (typeof DEVICE_CHECK_ROLES)[number])) {
     if (!profile.tenant_id) {
       redirect("/login");
     }
@@ -47,13 +39,8 @@ export default async function KdsLayout({
   }
 
   return (
-    <div
-      data-route-group="kds"
-      className="min-h-screen bg-background text-foreground"
-    >
-      {profile.branch_id && (
-        <RealtimeNotifications branchId={profile.branch_id} />
-      )}
+    <div data-route-group="kds" className="min-h-screen bg-background text-foreground">
+      {profile.branch_id && <RealtimeNotifications branchId={profile.branch_id} />}
       <main id="main-content">{children}</main>
       <Toaster position="top-center" />
     </div>

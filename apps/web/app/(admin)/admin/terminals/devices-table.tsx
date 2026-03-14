@@ -63,9 +63,17 @@ function getTerminalTypeLabel(type: string | null) {
 function getStatusBadge(status: string) {
   switch (status) {
     case "pending":
-      return <Badge variant="secondary" className="bg-orange-100 text-orange-700">Chờ duyệt</Badge>;
+      return (
+        <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+          Chờ duyệt
+        </Badge>
+      );
     case "approved":
-      return <Badge variant="default" className="bg-green-100 text-green-700">Đã duyệt</Badge>;
+      return (
+        <Badge variant="default" className="bg-green-100 text-green-700">
+          Đã duyệt
+        </Badge>
+      );
     case "rejected":
       return <Badge variant="destructive">Từ chối</Badge>;
     default:
@@ -112,7 +120,7 @@ export function DevicesTable({
             });
           }
           handleRealtimeChange();
-        },
+        }
       )
       .on(
         "postgres_changes",
@@ -126,10 +134,17 @@ export function DevicesTable({
           const updated = payload.new as RegisteredDevice;
           setDevices((prev) =>
             prev.map((d) =>
-              d.id === updated.id ? { ...d, status: updated.status, approved_at: updated.approved_at, rejected_at: updated.rejected_at } : d,
-            ),
+              d.id === updated.id
+                ? {
+                    ...d,
+                    status: updated.status,
+                    approved_at: updated.approved_at,
+                    rejected_at: updated.rejected_at,
+                  }
+                : d
+            )
           );
-        },
+        }
       )
       .on(
         "postgres_changes",
@@ -142,7 +157,7 @@ export function DevicesTable({
         (payload) => {
           const deleted = payload.old as { id: number };
           setDevices((prev) => prev.filter((d) => d.id !== deleted.id));
-        },
+        }
       )
       .subscribe();
 
@@ -159,10 +174,8 @@ export function DevicesTable({
       } else {
         setDevices((prev) =>
           prev.map((d) =>
-            d.id === id
-              ? { ...d, status: "approved", approved_at: new Date().toISOString() }
-              : d,
-          ),
+            d.id === id ? { ...d, status: "approved", approved_at: new Date().toISOString() } : d
+          )
         );
         setError(null);
       }
@@ -177,10 +190,8 @@ export function DevicesTable({
       } else {
         setDevices((prev) =>
           prev.map((d) =>
-            d.id === id
-              ? { ...d, status: "rejected", rejected_at: new Date().toISOString() }
-              : d,
-          ),
+            d.id === id ? { ...d, status: "rejected", rejected_at: new Date().toISOString() } : d
+          )
         );
         setError(null);
       }
@@ -224,7 +235,9 @@ export function DevicesTable({
                   <TableHead scope="col">Chi nhánh</TableHead>
                   <TableHead scope="col">IP</TableHead>
                   <TableHead scope="col">Thời gian</TableHead>
-                  <TableHead scope="col" className="text-right">Thao tác</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Thao tác
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -237,9 +250,7 @@ export function DevicesTable({
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">
-                          {device.profiles?.full_name ?? "—"}
-                        </p>
+                        <p className="font-medium">{device.profiles?.full_name ?? "—"}</p>
                         <p className="text-xs text-muted-foreground">
                           {device.profiles?.role ?? ""}
                         </p>
@@ -254,13 +265,9 @@ export function DevicesTable({
                     <TableCell>{getTerminalTypeLabel(device.terminal_type)}</TableCell>
                     <TableCell>{device.branches?.name ?? "—"}</TableCell>
                     <TableCell>
-                      <span className="font-mono text-sm">
-                        {device.ip_address ?? "—"}
-                      </span>
+                      <span className="font-mono text-sm">{device.ip_address ?? "—"}</span>
                     </TableCell>
-                    <TableCell className="text-sm">
-                      {formatDateTime(device.created_at)}
-                    </TableCell>
+                    <TableCell className="text-sm">{formatDateTime(device.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
@@ -293,11 +300,7 @@ export function DevicesTable({
         </div>
       )}
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       {/* All devices history */}
       <div className="space-y-4">
@@ -313,16 +316,15 @@ export function DevicesTable({
                 <TableHead scope="col">IP</TableHead>
                 <TableHead scope="col">Trạng thái</TableHead>
                 <TableHead scope="col">Ngày đăng ký</TableHead>
-                <TableHead scope="col" className="text-right">Thao tác</TableHead>
+                <TableHead scope="col" className="text-right">
+                  Thao tác
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {otherDevices.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={8}
-                    className="h-24 text-center text-muted-foreground"
-                  >
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                     Chưa có thiết bị đã xử lý
                   </TableCell>
                 </TableRow>
@@ -337,46 +339,32 @@ export function DevicesTable({
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {device.profiles?.full_name ?? "—"}
-                    </TableCell>
+                    <TableCell>{device.profiles?.full_name ?? "—"}</TableCell>
                     <TableCell>{getTerminalTypeLabel(device.terminal_type)}</TableCell>
                     <TableCell>{device.branches?.name ?? "—"}</TableCell>
                     <TableCell>
-                      <span className="font-mono text-sm">
-                        {device.ip_address ?? "—"}
-                      </span>
+                      <span className="font-mono text-sm">{device.ip_address ?? "—"}</span>
                     </TableCell>
                     <TableCell>{getStatusBadge(device.status)}</TableCell>
-                    <TableCell className="text-sm">
-                      {formatDateTime(device.created_at)}
-                    </TableCell>
+                    <TableCell className="text-sm">{formatDateTime(device.created_at)}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label="Xóa thiết bị"
-                          >
+                          <Button variant="ghost" size="icon" aria-label="Xóa thiết bị">
                             <Trash2 className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Xóa thiết bị
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>Xóa thiết bị</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Bạn có chắc muốn xóa thiết bị này? Nhân viên sẽ
-                              phải đăng ký lại khi đăng nhập từ thiết bị này.
+                              Bạn có chắc muốn xóa thiết bị này? Nhân viên sẽ phải đăng ký lại khi
+                              đăng nhập từ thiết bị này.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(device.id)}
-                            >
+                            <AlertDialogAction onClick={() => handleDelete(device.id)}>
                               Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>

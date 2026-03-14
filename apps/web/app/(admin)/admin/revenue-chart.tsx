@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { formatPrice } from "@comtammatu/shared";
 
 interface RevenueData {
@@ -37,10 +29,7 @@ export function RevenueChart({ data }: { data: RevenueData[] }) {
           tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
         />
         <Tooltip
-          formatter={(value) => [
-            formatPrice((value as number) ?? 0),
-            "Doanh thu",
-          ]}
+          formatter={(value) => [formatPrice((value as number) ?? 0), "Doanh thu"]}
           labelFormatter={(label) => `Ngày ${label}`}
           contentStyle={{
             backgroundColor: "var(--color-card)",
@@ -48,11 +37,7 @@ export function RevenueChart({ data }: { data: RevenueData[] }) {
             borderRadius: "8px",
           }}
         />
-        <Bar
-          dataKey="revenue"
-          fill="var(--color-primary)"
-          radius={[4, 4, 0, 0]}
-        />
+        <Bar dataKey="revenue" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );

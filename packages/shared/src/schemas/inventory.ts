@@ -27,9 +27,7 @@ export const createStockMovementSchema = z.object({
   cost_at_time: z.coerce.number().min(0).optional(),
   notes: z.string().max(500).optional().or(z.literal("")),
 });
-export type CreateStockMovementInput = z.infer<
-  typeof createStockMovementSchema
->;
+export type CreateStockMovementInput = z.infer<typeof createStockMovementSchema>;
 
 export const createRecipeSchema = z.object({
   menu_item_id: z.coerce.number().int().positive("Chọn món"),
@@ -55,9 +53,7 @@ export const toggleMenuItemAvailabilitySchema = z.object({
   is_available: z.boolean(),
   reason: z.string().max(200).optional().or(z.literal("")),
 });
-export type ToggleMenuItemAvailabilityInput = z.infer<
-  typeof toggleMenuItemAvailabilitySchema
->;
+export type ToggleMenuItemAvailabilityInput = z.infer<typeof toggleMenuItemAvailabilitySchema>;
 
 // ===== KDS Inventory: Quick Waste Log =====
 
@@ -88,7 +84,7 @@ export const createStockCountSchema = z.object({
         const ids = items.map((i) => i.ingredient_id);
         return new Set(ids).size === ids.length;
       },
-      { message: "ingredient_id phải là duy nhất trong danh sách" },
+      { message: "ingredient_id phải là duy nhất trong danh sách" }
     ),
   notes: z.string().max(500).optional().or(z.literal("")),
 });
@@ -101,22 +97,24 @@ export type ApproveStockCountInput = z.infer<typeof approveStockCountSchema>;
 
 // ===== Branch Transfer =====
 
-export const branchTransferSchema = z.object({
-  from_branch_id: z.coerce.number().int().positive("Chọn chi nhánh xuất"),
-  to_branch_id: z.coerce.number().int().positive("Chọn chi nhánh nhận"),
-  items: z
-    .array(
-      z.object({
-        ingredient_id: z.coerce.number().int().positive(),
-        quantity: z.coerce.number().positive("Số lượng phải lớn hơn 0"),
-      })
-    )
-    .min(1, "Phải chuyển ít nhất 1 nguyên liệu"),
-  notes: z.string().max(500).optional().or(z.literal("")),
-}).refine(
-  (data) => data.from_branch_id !== data.to_branch_id,
-  { message: "Chi nhánh xuất và nhận phải khác nhau", path: ["to_branch_id"] },
-);
+export const branchTransferSchema = z
+  .object({
+    from_branch_id: z.coerce.number().int().positive("Chọn chi nhánh xuất"),
+    to_branch_id: z.coerce.number().int().positive("Chọn chi nhánh nhận"),
+    items: z
+      .array(
+        z.object({
+          ingredient_id: z.coerce.number().int().positive(),
+          quantity: z.coerce.number().positive("Số lượng phải lớn hơn 0"),
+        })
+      )
+      .min(1, "Phải chuyển ít nhất 1 nguyên liệu"),
+    notes: z.string().max(500).optional().or(z.literal("")),
+  })
+  .refine((data) => data.from_branch_id !== data.to_branch_id, {
+    message: "Chi nhánh xuất và nhận phải khác nhau",
+    path: ["to_branch_id"],
+  });
 export type BranchTransferInput = z.infer<typeof branchTransferSchema>;
 
 // ===== Urgent Restock Request (from KDS) =====
@@ -153,11 +151,17 @@ export type ExpiringBatchesQueryInput = z.infer<typeof expiringBatchesQuerySchem
 
 export const foodCostQuerySchema = z
   .object({
-    date_from: z.string().min(1, "Chọn ngày bắt đầu").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
-    date_to: z.string().min(1, "Chọn ngày kết thúc").regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
+    date_from: z
+      .string()
+      .min(1, "Chọn ngày bắt đầu")
+      .regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
+    date_to: z
+      .string()
+      .min(1, "Chọn ngày kết thúc")
+      .regex(ISO_DATE_REGEX, "Ngày không hợp lệ (YYYY-MM-DD)"),
   })
-  .refine(
-    (data) => data.date_from <= data.date_to,
-    { message: "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc", path: ["date_from"] },
-  );
+  .refine((data) => data.date_from <= data.date_to, {
+    message: "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc",
+    path: ["date_from"],
+  });
 export type FoodCostQueryInput = z.infer<typeof foodCostQuerySchema>;

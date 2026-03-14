@@ -3,12 +3,7 @@
 import { useState, useTransition } from "react";
 import { Plus, Pencil, Trash2, Star, BarChart3 } from "lucide-react";
 import { formatPrice } from "@comtammatu/shared";
-import {
-  createSupplier,
-  updateSupplier,
-  deleteSupplier,
-  getSupplierAnalytics,
-} from "./actions";
+import { createSupplier, updateSupplier, deleteSupplier, getSupplierAnalytics } from "./actions";
 import type { SupplierAnalytic } from "./actions";
 import {
   AlertDialog,
@@ -70,10 +65,9 @@ function RatingDisplay({ rating }: { rating: number | null }) {
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${i < rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "text-muted-foreground/30"
-            }`}
+          className={`h-4 w-4 ${
+            i < rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground/30"
+          }`}
         />
       ))}
     </div>
@@ -95,17 +89,11 @@ function SupplierForm({
   submitLabel: string;
   pendingLabel: string;
 }) {
-  const [rating, setRating] = useState<string>(
-    defaultValues?.rating?.toString() ?? ""
-  );
+  const [rating, setRating] = useState<string>(defaultValues?.rating?.toString() ?? "");
 
   return (
     <form action={onSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       <div className="grid gap-4 py-4">
         <div className="grid gap-2">
           <Label htmlFor="name">Tên nhà cung cấp *</Label>
@@ -169,10 +157,7 @@ function SupplierForm({
         </div>
         <div className="grid gap-2">
           <Label htmlFor="rating">Đánh giá</Label>
-          <Select
-            value={rating}
-            onValueChange={setRating}
-          >
+          <Select value={rating} onValueChange={setRating}>
             <SelectTrigger>
               <SelectValue placeholder="Chọn đánh giá" />
             </SelectTrigger>
@@ -242,9 +227,7 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Nhà cung cấp</h2>
-          <p className="text-muted-foreground">
-            Quản lý danh sách nhà cung cấp nguyên liệu
-          </p>
+          <p className="text-muted-foreground">Quản lý danh sách nhà cung cấp nguyên liệu</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -262,9 +245,7 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Thêm nhà cung cấp</DialogTitle>
-              <DialogDescription>
-                Tạo nhà cung cấp mới cho nhà hàng
-              </DialogDescription>
+              <DialogDescription>Tạo nhà cung cấp mới cho nhà hàng</DialogDescription>
             </DialogHeader>
             <SupplierForm
               onSubmit={handleCreate}
@@ -278,9 +259,7 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
       </div>
 
       {error && !isCreateOpen && !editingItem && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="rounded-md border">
@@ -294,16 +273,15 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
               <TableHead scope="col">Điều khoản TT</TableHead>
               <TableHead scope="col">Đánh giá</TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {suppliers.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={8} className="text-muted-foreground h-24 text-center">
                   Chưa có nhà cung cấp nào
                 </TableCell>
               </TableRow>
@@ -357,9 +335,7 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                           </DialogHeader>
                           <SupplierForm
                             defaultValues={item}
-                            onSubmit={(formData) =>
-                              handleUpdate(item.id, formData)
-                            }
+                            onSubmit={(formData) => handleUpdate(item.id, formData)}
                             isPending={isPending}
                             error={error}
                             submitLabel="Lưu"
@@ -377,19 +353,15 @@ export function SuppliersTab({ suppliers }: { suppliers: Supplier[] }) {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Xóa nhà cung cấp
-                            </AlertDialogTitle>
+                            <AlertDialogTitle>Xóa nhà cung cấp</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Bạn có chắc muốn xóa &quot;{item.name}&quot;?
-                              Hành động này không thể hoàn tác.
+                              Bạn có chắc muốn xóa &quot;{item.name}&quot;? Hành động này không thể
+                              hoàn tác.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(item.id)}
-                            >
+                            <AlertDialogAction onClick={() => handleDelete(item.id)}>
                               Xóa
                             </AlertDialogAction>
                           </AlertDialogFooter>
@@ -478,10 +450,18 @@ function SupplierAnalyticsSection() {
               <TableHeader>
                 <TableRow>
                   <TableHead scope="col">Nhà cung cấp</TableHead>
-                  <TableHead scope="col" className="text-right">Số ĐH</TableHead>
-                  <TableHead scope="col" className="text-right">Chi tiêu</TableHead>
-                  <TableHead scope="col" className="text-right">TB giao (ngày)</TableHead>
-                  <TableHead scope="col" className="text-right">Đúng hạn</TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Số ĐH
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Chi tiêu
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    TB giao (ngày)
+                  </TableHead>
+                  <TableHead scope="col" className="text-right">
+                    Đúng hạn
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -489,9 +469,7 @@ function SupplierAnalyticsSection() {
                   <TableRow key={a.supplier_id}>
                     <TableCell className="font-medium">{a.supplier_name}</TableCell>
                     <TableCell className="text-right">{a.total_pos}</TableCell>
-                    <TableCell className="text-right">
-                      {formatPrice(a.total_spent)}
-                    </TableCell>
+                    <TableCell className="text-right">{formatPrice(a.total_spent)}</TableCell>
                     <TableCell className="text-right">
                       {a.avg_delivery_days > 0 ? `${a.avg_delivery_days}` : "-"}
                     </TableCell>

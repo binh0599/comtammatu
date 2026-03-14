@@ -33,7 +33,7 @@ export async function GET(_req: NextRequest) {
         data,
         read_at,
         created_at
-      `,
+      `
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
@@ -41,10 +41,7 @@ export async function GET(_req: NextRequest) {
 
     if (error) {
       console.error("Error fetching notifications:", error);
-      return jsonError(
-        "Không thể tải thông báo. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải thông báo. Vui lòng thử lại sau.", 500);
     }
 
     return jsonOk({
@@ -52,9 +49,6 @@ export async function GET(_req: NextRequest) {
     });
   } catch (error) {
     console.error("[GET /api/mobile/notifications]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }

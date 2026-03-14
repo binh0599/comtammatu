@@ -57,11 +57,7 @@ function getPresetRange(preset: DatePreset): DateRange | undefined {
       return { from: firstOfMonth, to: now };
     }
     case "last_month": {
-      const firstOfLastMonth = new Date(
-        now.getFullYear(),
-        now.getMonth() - 1,
-        1
-      );
+      const firstOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       const lastOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
       return { from: firstOfLastMonth, to: lastOfLastMonth };
     }
@@ -91,8 +87,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const dateRange =
-    datePreset === "custom" ? customRange : getPresetRange(datePreset);
+  const dateRange = datePreset === "custom" ? customRange : getPresetRange(datePreset);
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {
@@ -105,8 +100,7 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
           if (orderDate > endOfDay) return false;
         }
       }
-      if (branchFilter !== "all" && o.branch_id !== Number(branchFilter))
-        return false;
+      if (branchFilter !== "all" && o.branch_id !== Number(branchFilter)) return false;
       if (statusFilter !== "all" && o.status !== statusFilter) return false;
       if (typeFilter !== "all" && o.type !== typeFilter) return false;
       if (searchQuery) {
@@ -237,9 +231,12 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
           {filtered.length} đơn &middot;{" "}
           <span className="font-medium text-green-700">{completedCount} hoàn tất</span>
           {cancelledCount > 0 && (
-            <> &middot; <span className="font-medium text-red-600">{cancelledCount} đã huỷ</span></>
-          )}
-          {" "}&middot; Doanh thu:{" "}
+            <>
+              {" "}
+              &middot; <span className="font-medium text-red-600">{cancelledCount} đã huỷ</span>
+            </>
+          )}{" "}
+          &middot; Doanh thu:{" "}
           <span className="font-medium text-black">{formatPrice(totalRevenue)}</span>
         </div>
       </div>
@@ -276,14 +273,23 @@ export function OrdersHistory({ orders, branches }: { orders: Order[]; branches:
                     <Badge className={TYPE_BADGE[o.type] ?? ""}>{getOrderTypeLabel(o.type)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={STATUS_BADGE[o.status] ?? ""}>{getOrderStatusLabel(o.status)}</Badge>
+                    <Badge className={STATUS_BADGE[o.status] ?? ""}>
+                      {getOrderStatusLabel(o.status)}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-center">{o.order_items.length}</TableCell>
-                  <TableCell className="text-right font-medium">{formatPrice(Number(o.total))}</TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatPrice(Number(o.total))}
+                  </TableCell>
                   <TableCell className="text-sm">{getPaymentSummary(o.payments)}</TableCell>
                   <TableCell className="text-sm">{formatDateTime(o.created_at)}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" title="Chi tiết" onClick={() => setDetailOrder(o)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      title="Chi tiết"
+                      onClick={() => setDetailOrder(o)}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                   </TableCell>

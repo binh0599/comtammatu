@@ -2,10 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/query-keys";
-import {
-  getMenuItems,
-  getMenuCategories,
-} from "@/app/(pos)/pos/orders/actions";
+import { getMenuItems, getMenuCategories } from "@/app/(pos)/pos/orders/actions";
 
 export function useMenuItemsQuery() {
   return useQuery({

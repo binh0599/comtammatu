@@ -13,10 +13,7 @@ import {
  * Call this from any POS client component that receives menu data as props.
  * Data is written in the background — does not block rendering.
  */
-export function useMenuCache(
-  menuItems: unknown[],
-  categories: unknown[],
-) {
+export function useMenuCache(menuItems: unknown[], categories: unknown[]) {
   useEffect(() => {
     if (menuItems.length > 0) {
       cacheMenuData("menuItems", menuItems).catch(() => {});

@@ -96,10 +96,7 @@ function openDB(): Promise<IDBDatabase> {
 // Generic helpers
 // ---------------------------------------------------------------------------
 
-async function tx(
-  storeName: string,
-  mode: IDBTransactionMode,
-): Promise<IDBObjectStore> {
+async function tx(storeName: string, mode: IDBTransactionMode): Promise<IDBObjectStore> {
   const db = await openDB();
   return db.transaction(storeName, mode).objectStore(storeName);
 }
@@ -149,10 +146,7 @@ export async function getPendingOrderCount(): Promise<number> {
 // Menu Cache
 // ---------------------------------------------------------------------------
 
-export async function cacheMenuData(
-  key: string,
-  data: unknown,
-): Promise<void> {
+export async function cacheMenuData(key: string, data: unknown): Promise<void> {
   const store = await tx(STORES.MENU_CACHE, "readwrite");
   const entry: MenuCacheEntry = {
     key,
@@ -162,9 +156,7 @@ export async function cacheMenuData(
   await req(store.put(entry));
 }
 
-export async function getCachedMenuData(
-  key: string,
-): Promise<MenuCacheEntry | undefined> {
+export async function getCachedMenuData(key: string): Promise<MenuCacheEntry | undefined> {
   const store = await tx(STORES.MENU_CACHE, "readonly");
   return req(store.get(key));
 }
@@ -173,10 +165,7 @@ export async function getCachedMenuData(
 // Table Cache
 // ---------------------------------------------------------------------------
 
-export async function cacheTableData(
-  key: string,
-  data: unknown,
-): Promise<void> {
+export async function cacheTableData(key: string, data: unknown): Promise<void> {
   const store = await tx(STORES.TABLE_CACHE, "readwrite");
   const entry: TableCacheEntry = {
     key,
@@ -186,9 +175,7 @@ export async function cacheTableData(
   await req(store.put(entry));
 }
 
-export async function getCachedTableData(
-  key: string,
-): Promise<TableCacheEntry | undefined> {
+export async function getCachedTableData(key: string): Promise<TableCacheEntry | undefined> {
   const store = await tx(STORES.TABLE_CACHE, "readonly");
   return req(store.get(key));
 }

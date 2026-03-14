@@ -7,7 +7,7 @@
  */
 export async function measureAsync<T>(
   name: string,
-  fn: () => Promise<T>,
+  fn: () => Promise<T>
 ): Promise<{ result: T; duration_ms: number }> {
   const start = performance.now();
   try {
@@ -30,7 +30,7 @@ export async function measureAsync<T>(
 export function logPerformance(
   action: string,
   duration_ms: number,
-  metadata?: Record<string, unknown>,
+  metadata?: Record<string, unknown>
 ): void {
   const entry = {
     type: "performance" as const,

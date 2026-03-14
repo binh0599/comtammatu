@@ -1,11 +1,7 @@
 "use server";
 
 import "@/lib/server-bootstrap";
-import {
-  getActionContext,
-  withServerQuery,
-  safeDbError,
-} from "@comtammatu/shared";
+import { getActionContext, withServerQuery, safeDbError } from "@comtammatu/shared";
 
 import { getBranchesInternal } from "./employees";
 
@@ -23,9 +19,7 @@ async function _getAttendanceRecords(date: string) {
 
   const { data, error } = await supabase
     .from("attendance_records")
-    .select(
-      "*, employees!inner(profile_id, profiles(full_name)), branches!inner(name)"
-    )
+    .select("*, employees!inner(profile_id, profiles(full_name)), branches!inner(name)")
     .in("branch_id", branchIds)
     .eq("date", date)
     .order("created_at", { ascending: false });

@@ -16,28 +16,18 @@ import { ScheduleTab } from "./schedule-tab";
 import { AttendanceTab } from "./attendance-tab";
 import { LeaveTab } from "./leave-tab";
 import { PayrollTab } from "./payroll-tab";
-import {
-  Skeleton,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@comtammatu/ui";
+import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger } from "@comtammatu/ui";
 
 const PerformanceTab = dynamic(
   () => import("./performance-tab").then((m) => ({ default: m.PerformanceTab })),
-  { loading: () => <Skeleton className="h-[400px] w-full" /> },
+  { loading: () => <Skeleton className="h-[400px] w-full" /> }
 );
 
 export default async function HrPage() {
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
-  const weekStart = new Date(now.getTime() - 7 * 86400000)
-    .toISOString()
-    .slice(0, 10);
-  const weekEnd = new Date(now.getTime() + 7 * 86400000)
-    .toISOString()
-    .slice(0, 10);
+  const weekStart = new Date(now.getTime() - 7 * 86400000).toISOString().slice(0, 10);
+  const weekEnd = new Date(now.getTime() + 7 * 86400000).toISOString().slice(0, 10);
 
   const [
     employees,
@@ -84,11 +74,7 @@ export default async function HrPage() {
             <ShiftsTab shifts={shifts} branches={branches} />
           </TabsContent>
           <TabsContent value="schedule">
-            <ScheduleTab
-              assignments={assignments}
-              employees={employees}
-              shifts={shifts}
-            />
+            <ScheduleTab assignments={assignments} employees={employees} shifts={shifts} />
           </TabsContent>
           <TabsContent value="attendance">
             <AttendanceTab attendance={attendance} />

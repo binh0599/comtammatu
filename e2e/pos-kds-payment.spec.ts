@@ -9,9 +9,9 @@ test.describe("POS → KDS → Payment Flow", () => {
     await expect(page).toHaveURL(/\/pos/, { timeout: 15_000 });
 
     // Verify order creation interface loads
-    await expect(
-      page.getByText(/đơn hàng|order|gọi món/i).first(),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/đơn hàng|order|gọi món/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("cashier can access payment interface", async ({ page, loginAs }) => {
@@ -22,9 +22,9 @@ test.describe("POS → KDS → Payment Flow", () => {
     await expect(page).toHaveURL(/\/pos/, { timeout: 15_000 });
 
     // Verify cashier interface loads
-    await expect(
-      page.getByText(/thanh toán|thu ngân|cashier/i).first(),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/thanh toán|thu ngân|cashier/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("chef can access KDS", async ({ page, loginAs }) => {
@@ -50,15 +50,10 @@ test.describe("POS → KDS → Payment Flow", () => {
 
     // Verify menu categories or items are visible
     // The page should show menu items to select
-    await expect(
-      page.getByText(/danh mục|menu|món/i).first(),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/danh mục|menu|món/i).first()).toBeVisible({ timeout: 15_000 });
   });
 
-  test("cashier payment panel shows voucher input", async ({
-    page,
-    loginAs,
-  }) => {
+  test("cashier payment panel shows voucher input", async ({ page, loginAs }) => {
     await loginAs("cashier");
     await page.goto("/pos/cashier");
     await page.waitForLoadState("networkidle", { timeout: 15_000 });
@@ -66,7 +61,7 @@ test.describe("POS → KDS → Payment Flow", () => {
     // Verify voucher code input exists in the payment interface
     // This confirms the Voucher → POS integration is active
     const voucherInput = page.locator(
-      'input[placeholder*="voucher" i], input[placeholder*="mã giảm" i]',
+      'input[placeholder*="voucher" i], input[placeholder*="mã giảm" i]'
     );
     const hasVoucherInput = await voucherInput.count();
     // Voucher input may be inside the payment panel (might need an order first)
@@ -74,10 +69,7 @@ test.describe("POS → KDS → Payment Flow", () => {
     expect(hasVoucherInput).toBeGreaterThanOrEqual(0);
   });
 
-  test("order flow: waiter → chef → cashier roles accessible", async ({
-    page,
-    loginAs,
-  }) => {
+  test("order flow: waiter → chef → cashier roles accessible", async ({ page, loginAs }) => {
     // This test verifies the complete role chain is accessible
     // In a full E2E test, we'd create an order and follow it through
 

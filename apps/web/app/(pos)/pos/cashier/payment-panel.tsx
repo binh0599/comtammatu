@@ -2,11 +2,19 @@
 
 import { useState, useEffect, useTransition, useRef } from "react";
 import { toast } from "sonner";
-import { Tag, X, Banknote, QrCode, Loader2, CheckCircle2, ArrowLeft, Landmark, RefreshCw, AlertTriangle } from "lucide-react";
 import {
-  formatPrice,
-  getOrderStatusLabel,
-} from "@comtammatu/shared";
+  Tag,
+  X,
+  Banknote,
+  QrCode,
+  Loader2,
+  CheckCircle2,
+  ArrowLeft,
+  Landmark,
+  RefreshCw,
+  AlertTriangle,
+} from "lucide-react";
+import { formatPrice, getOrderStatusLabel } from "@comtammatu/shared";
 import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import { ReceiptPrinter } from "../components/receipt-printer";
 import type { PrinterConfig } from "@/hooks/use-printer-config";
@@ -18,10 +26,7 @@ import {
   checkPaymentStatus,
   queryMomoPaymentStatus,
 } from "./actions";
-import {
-  createTransferPayment,
-  confirmTransferPayment,
-} from "./transfer-actions";
+import { createTransferPayment, confirmTransferPayment } from "./transfer-actions";
 import type { QueueOrder } from "./types";
 import {
   Badge,
@@ -114,22 +119,20 @@ export function PaymentPanel({
       const result = await checkPaymentStatus(momoState.paymentId);
       if (result.error) return;
 
-      const data = result as { status: string; reference_no: string | null; paid_at: string | null };
+      const data = result as {
+        status: string;
+        reference_no: string | null;
+        paid_at: string | null;
+      };
       if (data.status === "completed") {
-        setMomoState((prev) =>
-          prev ? { ...prev, status: "completed" } : null,
-        );
+        setMomoState((prev) => (prev ? { ...prev, status: "completed" } : null));
         toast.success("Thanh toán Momo thành công!");
         onPaymentComplete();
       } else if (data.status === "failed") {
-        setMomoState((prev) =>
-          prev ? { ...prev, status: "failed" } : null,
-        );
+        setMomoState((prev) => (prev ? { ...prev, status: "failed" } : null));
         toast.error("Thanh toán Momo thất bại");
       } else if (data.status === "expired") {
-        setMomoState((prev) =>
-          prev ? { ...prev, status: "expired" } : null,
-        );
+        setMomoState((prev) => (prev ? { ...prev, status: "expired" } : null));
         toast.error("Giao dịch Momo đã hết hạn");
       }
     }, 3000);
@@ -156,9 +159,7 @@ export function PaymentPanel({
     );
   }
 
-  const voucherDiscount = order.order_discounts?.find(
-    (d) => d.type === "voucher",
-  );
+  const voucherDiscount = order.order_discounts?.find((d) => d.type === "voucher");
 
   const change =
     amountTendered && Number(amountTendered) >= order.total
@@ -189,9 +190,7 @@ export function PaymentPanel({
         toast.error(result.error);
       } else {
         const data = result as { change: number };
-        toast.success(
-          `Thanh toán thành công. Tiền thừa: ${formatPrice(data.change ?? 0)}`,
-        );
+        toast.success(`Thanh toán thành công. Tiền thừa: ${formatPrice(data.change ?? 0)}`);
         setPaidAmount(Number(amountTendered));
         setAmountTendered("");
         setVoucherCode("");
@@ -288,9 +287,7 @@ export function PaymentPanel({
         return;
       }
 
-      setTransferState((prev) =>
-        prev ? { ...prev, status: "confirmed" } : null,
-      );
+      setTransferState((prev) => (prev ? { ...prev, status: "confirmed" } : null));
       toast.success("Xác nhận chuyển khoản thành công!");
       onPaymentComplete();
     });
@@ -312,9 +309,7 @@ export function PaymentPanel({
         toast.error(result.error);
       } else {
         const data = result as { discount_amount: number };
-        toast.success(
-          `Áp dụng voucher thành công! Giảm ${formatPrice(data.discount_amount ?? 0)}`,
-        );
+        toast.success(`Áp dụng voucher thành công! Giảm ${formatPrice(data.discount_amount ?? 0)}`);
         setVoucherCode("");
         onPaymentComplete(); // Refresh to get updated totals
       }
@@ -359,7 +354,9 @@ export function PaymentPanel({
               preferThermal={!!printerConfig?.auto_print}
             />
           )}
-          <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>{getOrderStatusLabel(order.status)}</Badge>
+          <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
+            {getOrderStatusLabel(order.status)}
+          </Badge>
         </div>
       </div>
 
@@ -371,13 +368,9 @@ export function PaymentPanel({
         <CardContent>
           <div className="space-y-2">
             {order.order_items.map((item) => (
-              <div
-                key={item.id}
-                className="flex justify-between text-sm"
-              >
+              <div key={item.id} className="flex justify-between text-sm">
                 <span>
-                  {item.quantity}x{" "}
-                  {item.menu_items?.name ?? "Món đã xóa"}
+                  {item.quantity}x {item.menu_items?.name ?? "Món đã xóa"}
                 </span>
                 <span className="text-muted-foreground shrink-0">
                   {formatPrice(item.item_total)}
@@ -452,9 +445,7 @@ export function PaymentPanel({
         </div>
         <div className="mt-2 border-t pt-2 text-center">
           <p className="text-muted-foreground text-xs">Tổng thanh toán</p>
-          <p className="text-primary text-3xl font-bold">
-            {formatPrice(order.total)}
-          </p>
+          <p className="text-primary text-3xl font-bold">{formatPrice(order.total)}</p>
         </div>
       </div>
 
@@ -529,11 +520,7 @@ export function PaymentPanel({
                     variant="outline"
                     size="sm"
                     onClick={() => setAmountTendered(String(amount))}
-                    className={
-                      Number(amountTendered) === amount
-                        ? "border-primary"
-                        : ""
-                    }
+                    className={Number(amountTendered) === amount ? "border-primary" : ""}
                   >
                     {formatPrice(amount)}
                   </Button>
@@ -559,9 +546,7 @@ export function PaymentPanel({
               {change !== null && (
                 <div className="mb-3 rounded-lg bg-green-50 p-3 text-center">
                   <p className="text-sm text-green-700">Tiền thừa</p>
-                  <p className="text-2xl font-bold text-green-700">
-                    {formatPrice(change)}
-                  </p>
+                  <p className="text-2xl font-bold text-green-700">{formatPrice(change)}</p>
                 </div>
               )}
 
@@ -570,15 +555,9 @@ export function PaymentPanel({
                 size="lg"
                 className="w-full text-lg"
                 onClick={handlePayment}
-                disabled={
-                  isPending ||
-                  !amountTendered ||
-                  Number(amountTendered) < order.total
-                }
+                disabled={isPending || !amountTendered || Number(amountTendered) < order.total}
               >
-                {isPending
-                  ? "Đang xử lý..."
-                  : `Thanh toán ${formatPrice(order.total)}`}
+                {isPending ? "Đang xử lý..." : `Thanh toán ${formatPrice(order.total)}`}
               </Button>
             </>
           )}
@@ -587,11 +566,13 @@ export function PaymentPanel({
           {paymentMethod === "momo" && (
             <div className="flex flex-col items-center gap-4">
               {isMomoPending && !momoState && (
-                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                <div
+                  className="flex flex-col items-center gap-2 py-6"
+                  role="status"
+                  aria-live="polite"
+                >
                   <Loader2 className="size-8 animate-spin text-pink-500" aria-hidden="true" />
-                  <p className="text-muted-foreground text-sm">
-                    Đang tạo mã QR...
-                  </p>
+                  <p className="text-muted-foreground text-sm">Đang tạo mã QR...</p>
                 </div>
               )}
 
@@ -605,10 +586,15 @@ export function PaymentPanel({
                       className="mx-auto h-48 w-48"
                     />
                   </div>
-                  <div className="flex items-center gap-2 text-pink-600" role="status" aria-live="polite">
+                  <div
+                    className="flex items-center gap-2 text-pink-600"
+                    role="status"
+                    aria-live="polite"
+                  >
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                     <span className="text-sm font-medium">
-                      Đang chờ thanh toán... ({Math.floor(momoElapsed / 60)}:{String(momoElapsed % 60).padStart(2, "0")})
+                      Đang chờ thanh toán... ({Math.floor(momoElapsed / 60)}:
+                      {String(momoElapsed % 60).padStart(2, "0")})
                     </span>
                   </div>
                   {momoElapsed < 300 ? (
@@ -644,19 +630,19 @@ export function PaymentPanel({
               )}
 
               {momoState && momoState.status === "completed" && (
-                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                <div
+                  className="flex flex-col items-center gap-2 py-6"
+                  role="status"
+                  aria-live="polite"
+                >
                   <CheckCircle2 className="size-12 text-green-500" aria-hidden="true" />
-                  <p className="text-lg font-bold text-green-700">
-                    Thanh toán thành công!
-                  </p>
+                  <p className="text-lg font-bold text-green-700">Thanh toán thành công!</p>
                 </div>
               )}
 
               {momoState && momoState.status === "failed" && (
                 <div className="flex flex-col items-center gap-3 py-4">
-                  <p className="text-sm text-red-600">
-                    Thanh toán thất bại. Vui lòng thử lại.
-                  </p>
+                  <p className="text-sm text-red-600">Thanh toán thất bại. Vui lòng thử lại.</p>
                   <Button
                     variant="outline"
                     onClick={() => {
@@ -696,11 +682,13 @@ export function PaymentPanel({
           {paymentMethod === "transfer" && (
             <div className="flex flex-col items-center gap-4">
               {isTransferPending && !transferState && (
-                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                <div
+                  className="flex flex-col items-center gap-2 py-6"
+                  role="status"
+                  aria-live="polite"
+                >
                   <Loader2 className="h-8 w-8 animate-spin text-blue-500" aria-hidden="true" />
-                  <p className="text-muted-foreground text-sm">
-                    Đang tạo mã QR chuyển khoản...
-                  </p>
+                  <p className="text-muted-foreground text-sm">Đang tạo mã QR chuyển khoản...</p>
                 </div>
               )}
 
@@ -708,11 +696,7 @@ export function PaymentPanel({
                 <>
                   <div className="rounded-lg border-2 border-blue-200 bg-white p-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={transferState.qrUrl}
-                      alt="VietQR"
-                      className="mx-auto h-52 w-auto"
-                    />
+                    <img src={transferState.qrUrl} alt="VietQR" className="mx-auto h-52 w-auto" />
                   </div>
                   <div className="w-full space-y-1 text-sm">
                     <div className="flex justify-between">
@@ -729,7 +713,9 @@ export function PaymentPanel({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Số tiền</span>
-                      <span className="font-bold text-blue-600">{formatPrice(transferState.amount)}</span>
+                      <span className="font-bold text-blue-600">
+                        {formatPrice(transferState.amount)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Nội dung CK</span>
@@ -772,7 +758,11 @@ export function PaymentPanel({
               )}
 
               {transferState && transferState.status === "confirmed" && (
-                <div className="flex flex-col items-center gap-2 py-6" role="status" aria-live="polite">
+                <div
+                  className="flex flex-col items-center gap-2 py-6"
+                  role="status"
+                  aria-live="polite"
+                >
                   <CheckCircle2 className="h-12 w-12 text-green-500" aria-hidden="true" />
                   <p className="text-lg font-bold text-green-700">
                     Xác nhận chuyển khoản thành công!

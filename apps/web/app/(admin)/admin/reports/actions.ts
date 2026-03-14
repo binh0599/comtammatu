@@ -55,10 +55,7 @@ export interface ReportSummary {
 // getReportData — Now reads from materialized views
 // ---------------------------------------------------------------------------
 
-async function _getReportData(
-  startDate: string,
-  endDate: string,
-): Promise<ReportSummary> {
+async function _getReportData(startDate: string, endDate: string): Promise<ReportSummary> {
   const parsed = dateRangeSchema.parse({ startDate, endDate });
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
@@ -153,14 +150,12 @@ async function _getReportData(
     }
   }
 
-  const dailyData: RevenueReportRow[] = Array.from(dayMap.entries()).map(
-    ([date, data]) => ({
-      date,
-      revenue: data.revenue,
-      orders: data.orders,
-      avgTicket: data.orders > 0 ? data.revenue / data.orders : 0,
-    }),
-  );
+  const dailyData: RevenueReportRow[] = Array.from(dayMap.entries()).map(([date, data]) => ({
+    date,
+    revenue: data.revenue,
+    orders: data.orders,
+    avgTicket: data.orders > 0 ? data.revenue / data.orders : 0,
+  }));
 
   // Payment methods (aggregate across branches + days)
   const methodMap = new Map<string, { count: number; total: number }>();
@@ -171,9 +166,9 @@ async function _getReportData(
     entry.total += Number(row.method_total);
     methodMap.set(method, entry);
   }
-  const paymentMethods: PaymentMethodBreakdown[] = Array.from(
-    methodMap.entries(),
-  ).map(([method, data]) => ({ method, ...data }));
+  const paymentMethods: PaymentMethodBreakdown[] = Array.from(methodMap.entries()).map(
+    ([method, data]) => ({ method, ...data })
+  );
 
   // Order type mix (aggregate across branches + days)
   const typeMap = new Map<string, { count: number; revenue: number }>();

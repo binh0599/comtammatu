@@ -12,7 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -36,10 +36,7 @@ export async function GET(request: Request) {
 
   if (fetchError) {
     console.error("[Expire Payments] Failed to fetch:", fetchError.message);
-    return NextResponse.json(
-      { error: "Failed to fetch stale payments" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch stale payments" }, { status: 500 });
   }
 
   if (!stalePayments || stalePayments.length === 0) {
@@ -56,15 +53,10 @@ export async function GET(request: Request) {
 
   if (updateError) {
     console.error("[Expire Payments] Failed to expire:", updateError.message);
-    return NextResponse.json(
-      { error: "Failed to update payment status" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to update payment status" }, { status: 500 });
   }
 
-  console.log(
-    `[Expire Payments] Expired ${count ?? staleIds.length} stale pending payments`,
-  );
+  console.log(`[Expire Payments] Expired ${count ?? staleIds.length} stale pending payments`);
 
   return NextResponse.json({ expired: count ?? staleIds.length });
 }

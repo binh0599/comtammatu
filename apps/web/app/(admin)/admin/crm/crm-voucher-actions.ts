@@ -86,9 +86,7 @@ async function _createVoucher(data: {
       branch_id: branchId,
     }));
 
-    const { error: branchError } = await supabase
-      .from("voucher_branches")
-      .insert(branchRows);
+    const { error: branchError } = await supabase.from("voucher_branches").insert(branchRows);
 
     if (branchError) {
       await supabase.from("vouchers").delete().eq("id", voucher.id);
@@ -103,7 +101,8 @@ async function _createVoucher(data: {
 export const createVoucher = withServerAction(_createVoucher);
 
 async function _updateVoucher(
-  id: number, data: {
+  id: number,
+  data: {
     code?: string;
     type?: string;
     value?: number;
@@ -171,9 +170,7 @@ async function _updateVoucher(
         branch_id: branchId,
       }));
 
-      const { error: branchError } = await supabase
-        .from("voucher_branches")
-        .insert(branchRows);
+      const { error: branchError } = await supabase.from("voucher_branches").insert(branchRows);
 
       if (branchError) return { error: branchError.message };
     }
@@ -200,11 +197,7 @@ async function _deleteVoucher(id: number) {
 
   await supabase.from("voucher_branches").delete().eq("voucher_id", id);
 
-  const { error } = await supabase
-    .from("vouchers")
-    .delete()
-    .eq("id", id)
-    .eq("tenant_id", tenantId);
+  const { error } = await supabase.from("vouchers").delete().eq("id", id).eq("tenant_id", tenantId);
 
   if (error) return safeDbErrorResult(error, "db");
 

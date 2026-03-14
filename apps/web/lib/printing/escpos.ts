@@ -37,10 +37,7 @@ declare global {
     close(): Promise<void>;
     selectConfiguration(configurationValue: number): Promise<void>;
     claimInterface(interfaceNumber: number): Promise<void>;
-    transferOut(
-      endpointNumber: number,
-      data: BufferSource,
-    ): Promise<unknown>;
+    transferOut(endpointNumber: number, data: BufferSource): Promise<unknown>;
   }
   interface USB {
     getDevices(): Promise<USBDevice[]>;
@@ -112,10 +109,7 @@ export class EscposBuilder {
   }
 
   /** Set double width/height — ESC ! n */
-  size(
-    doubleWidth: boolean = false,
-    doubleHeight: boolean = false,
-  ): this {
+  size(doubleWidth: boolean = false, doubleHeight: boolean = false): this {
     let n = 0;
     if (doubleWidth) n |= 0x20;
     if (doubleHeight) n |= 0x10;
@@ -227,7 +221,7 @@ export interface PrintResult {
  */
 export async function printViaUsb(
   commands: Uint8Array,
-  config: { vendor_id: number; product_id: number },
+  config: { vendor_id: number; product_id: number }
 ): Promise<PrintResult> {
   try {
     if (!navigator.usb) {
@@ -259,9 +253,7 @@ export async function printViaUsb(
 
       await device.claimInterface(iface.interfaceNumber);
 
-      const endpoint = iface.alternate.endpoints.find(
-        (e) => e.direction === "out",
-      );
+      const endpoint = iface.alternate.endpoints.find((e) => e.direction === "out");
       if (!endpoint) {
         return { success: false, error: "Không tìm thấy endpoint máy in" };
       }
@@ -287,7 +279,7 @@ export async function printViaUsb(
  */
 export async function printViaUsbAuto(
   commands: Uint8Array,
-  config: { vendor_id: number; product_id: number; device_serial?: string },
+  config: { vendor_id: number; product_id: number; device_serial?: string }
 ): Promise<PrintResult> {
   try {
     if (!navigator.usb) {
@@ -301,13 +293,13 @@ export async function printViaUsbAuto(
     const candidates = devices.filter(
       (d) =>
         (d as unknown as { vendorId: number }).vendorId === config.vendor_id &&
-        (d as unknown as { productId: number }).productId === config.product_id,
+        (d as unknown as { productId: number }).productId === config.product_id
     );
 
     let device: USBDevice | undefined;
     if (config.device_serial && candidates.length > 1) {
       device = candidates.find(
-        (d) => (d as unknown as { serialNumber: string }).serialNumber === config.device_serial,
+        (d) => (d as unknown as { serialNumber: string }).serialNumber === config.device_serial
       );
     }
     // Fall back to first match if no serial or single device
@@ -334,9 +326,7 @@ export async function printViaUsbAuto(
 
       await device.claimInterface(iface.interfaceNumber);
 
-      const endpoint = iface.alternate.endpoints.find(
-        (e) => e.direction === "out",
-      );
+      const endpoint = iface.alternate.endpoints.find((e) => e.direction === "out");
       if (!endpoint) {
         return { success: false, error: "Không tìm thấy endpoint máy in" };
       }
@@ -359,7 +349,7 @@ export async function printViaUsbAuto(
  */
 export async function printViaNetwork(
   commands: Uint8Array,
-  config: { host: string; port: number; protocol: string },
+  config: { host: string; port: number; protocol: string }
 ): Promise<PrintResult> {
   try {
     const url = `${config.protocol}://${config.host}:${config.port}/print`;

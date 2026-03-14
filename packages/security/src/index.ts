@@ -30,8 +30,7 @@ let _redis: Redis | null = null;
 function isUpstashConfigured(): boolean {
   if (_upstashConfigured === null) {
     _upstashConfigured = !!(
-      process.env.UPSTASH_REDIS_REST_URL &&
-      process.env.UPSTASH_REDIS_REST_TOKEN
+      process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN
     );
   }
   return _upstashConfigured;
@@ -180,9 +179,7 @@ export type LockoutResult = {
 /**
  * Check if an account is currently locked out.
  */
-export async function checkAccountLockout(
-  identifier: string,
-): Promise<LockoutResult> {
+export async function checkAccountLockout(identifier: string): Promise<LockoutResult> {
   const redis = getRedis();
   if (!redis) {
     return { locked: false, attemptsRemaining: LOCKOUT_MAX_ATTEMPTS, lockoutUntil: null };
@@ -210,9 +207,7 @@ export async function checkAccountLockout(
 /**
  * Record a failed login attempt. Returns updated lockout status.
  */
-export async function recordFailedLogin(
-  identifier: string,
-): Promise<LockoutResult> {
+export async function recordFailedLogin(identifier: string): Promise<LockoutResult> {
   const redis = getRedis();
   if (!redis) {
     return { locked: false, attemptsRemaining: LOCKOUT_MAX_ATTEMPTS, lockoutUntil: null };

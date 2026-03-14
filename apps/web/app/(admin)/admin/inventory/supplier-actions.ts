@@ -180,7 +180,13 @@ async function _getSupplierAnalytics() {
   // Aggregate per supplier
   const agg = new Map<
     number,
-    { count: number; spent: number; deliveryDays: number[]; onTimeCount: number; receivedCount: number }
+    {
+      count: number;
+      spent: number;
+      deliveryDays: number[];
+      onTimeCount: number;
+      receivedCount: number;
+    }
   >();
 
   for (const s of suppliers) {
@@ -229,9 +235,7 @@ async function _getSupplierAnalytics() {
       total_spent: Math.round(data.spent),
       avg_delivery_days: Math.round(avgDays * 10) / 10,
       on_time_pct:
-        data.receivedCount > 0
-          ? Math.round((data.onTimeCount / data.receivedCount) * 100)
-          : 100,
+        data.receivedCount > 0 ? Math.round((data.onTimeCount / data.receivedCount) * 100) : 100,
     });
   }
 
@@ -286,9 +290,8 @@ async function _getReorderSuggestions() {
     const maxStock = ing.max_stock ?? 0;
 
     if (minStock > 0 && row.quantity <= minStock) {
-      const suggestedQty = maxStock > row.quantity
-        ? maxStock - row.quantity
-        : minStock * 2 - row.quantity;
+      const suggestedQty =
+        maxStock > row.quantity ? maxStock - row.quantity : minStock * 2 - row.quantity;
 
       suggestions.push({
         ingredient_id: row.ingredient_id,

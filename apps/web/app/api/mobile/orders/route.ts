@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest) {
           notes,
           menu_items(id, name, description)
         )
-      `,
+      `
       )
       .eq("customer_id", customer.id)
       .order("created_at", { ascending: false })
@@ -53,10 +53,7 @@ export async function GET(_req: NextRequest) {
 
     if (error) {
       console.error("Error fetching orders:", error);
-      return jsonError(
-        "Không thể tải lịch sử đơn hàng. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải lịch sử đơn hàng. Vui lòng thử lại sau.", 500);
     }
 
     return jsonOk({
@@ -64,10 +61,7 @@ export async function GET(_req: NextRequest) {
     });
   } catch (error) {
     console.error("[GET /api/mobile/orders]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }
 
@@ -76,8 +70,5 @@ export async function GET(_req: NextRequest) {
  * Not implemented yet. Placeholder for future mobile order creation.
  */
 export async function POST(_req: NextRequest) {
-  return jsonError(
-    "Chức năng này chưa được triển khai. Vui lòng liên hệ hỗ trợ.",
-    501,
-  );
+  return jsonError("Chức năng này chưa được triển khai. Vui lòng liên hệ hỗ trợ.", 501);
 }

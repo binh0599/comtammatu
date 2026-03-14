@@ -18,12 +18,14 @@ export function EmployeeNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Employee navigation" className="bg-background fixed bottom-0 left-0 right-0 z-50 border-t">
+    <nav
+      aria-label="Employee navigation"
+      className="bg-background fixed bottom-0 left-0 right-0 z-50 border-t"
+    >
       <div className="mx-auto flex max-w-lg items-center justify-around">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href ||
-            (item.href !== "/employee" && pathname.startsWith(item.href));
+            pathname === item.href || (item.href !== "/employee" && pathname.startsWith(item.href));
 
           return (
             <Link
@@ -32,9 +34,7 @@ export function EmployeeNav() {
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-0.5 px-1 text-[11px]",
-                isActive
-                  ? "text-primary font-medium"
-                  : "text-muted-foreground"
+                isActive ? "text-primary font-medium" : "text-muted-foreground"
               )}
             >
               <item.icon className="h-4 w-4" />

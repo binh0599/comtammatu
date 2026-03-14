@@ -33,10 +33,9 @@ export const createPrinterConfigSchema = z.object({
   name: z.string().min(1).max(100),
   type: z.enum(PRINTER_TYPES),
   connection_config: z.record(z.string(), z.unknown()).default({}),
-  paper_width_mm: z.coerce.number().refine(
-    (v) => v === 58 || v === 80,
-    "Khổ giấy phải là 58mm hoặc 80mm",
-  ),
+  paper_width_mm: z.coerce
+    .number()
+    .refine((v) => v === 58 || v === 80, "Khổ giấy phải là 58mm hoặc 80mm"),
   encoding: z.string().default("utf-8"),
   auto_print: z.boolean().default(false),
   print_delay_ms: z.coerce.number().int().min(0).max(5000).default(500),

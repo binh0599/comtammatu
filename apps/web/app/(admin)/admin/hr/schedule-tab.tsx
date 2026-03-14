@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react";
 import { CalendarPlus } from "lucide-react";
 import { createShiftAssignment } from "./actions";
-import {
-  formatDate,
-  formatTime,
-  getShiftAssignmentStatusLabel,
-} from "@comtammatu/shared";
+import { formatDate, formatTime, getShiftAssignmentStatusLabel } from "@comtammatu/shared";
 import {
   Badge,
   Button,
@@ -124,9 +120,7 @@ export function ScheduleTab({
   }
 
   // Group assignments by date
-  const groupedByDate = assignments.reduce<
-    Record<string, ShiftAssignment[]>
-  >((acc, a) => {
+  const groupedByDate = assignments.reduce<Record<string, ShiftAssignment[]>>((acc, a) => {
     const existing = acc[a.date];
     if (!existing) {
       acc[a.date] = [a];
@@ -143,9 +137,7 @@ export function ScheduleTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Lịch phân ca</h2>
-          <p className="text-muted-foreground">
-            Phân ca làm việc cho nhân viên (2 tuần gần nhất)
-          </p>
+          <p className="text-muted-foreground">Phân ca làm việc cho nhân viên (2 tuần gần nhất)</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -164,14 +156,10 @@ export function ScheduleTab({
             <form action={handleCreate}>
               <DialogHeader>
                 <DialogTitle>Phân ca làm việc</DialogTitle>
-                <DialogDescription>
-                  Chọn nhân viên, ca làm và ngày làm việc
-                </DialogDescription>
+                <DialogDescription>Chọn nhân viên, ca làm và ngày làm việc</DialogDescription>
               </DialogHeader>
               {error && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
@@ -220,11 +208,7 @@ export function ScheduleTab({
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsCreateOpen(false)}
-                >
+                <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Hủy
                 </Button>
                 <Button type="submit" disabled={isPending}>
@@ -237,9 +221,7 @@ export function ScheduleTab({
       </div>
 
       {error && !isCreateOpen && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       {sortedDates.length === 0 ? (
@@ -266,25 +248,15 @@ export function ScheduleTab({
                   <TableBody>
                     {(groupedByDate[date] ?? []).map((assignment) => (
                       <TableRow key={assignment.id}>
-                        <TableCell className="font-medium">
-                          {assignment.shifts.name}
-                        </TableCell>
+                        <TableCell className="font-medium">{assignment.shifts.name}</TableCell>
                         <TableCell>
                           {formatTime(assignment.shifts.start_time)} -{" "}
                           {formatTime(assignment.shifts.end_time)}
                         </TableCell>
+                        <TableCell>{assignment.shifts.branches.name}</TableCell>
+                        <TableCell>{assignment.employees.profiles.full_name}</TableCell>
                         <TableCell>
-                          {assignment.shifts.branches.name}
-                        </TableCell>
-                        <TableCell>
-                          {assignment.employees.profiles.full_name}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={getAssignmentBadgeVariant(
-                              assignment.status
-                            )}
-                          >
+                          <Badge variant={getAssignmentBadgeVariant(assignment.status)}>
                             {getShiftAssignmentStatusLabel(assignment.status)}
                           </Badge>
                         </TableCell>

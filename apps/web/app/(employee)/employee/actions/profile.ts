@@ -117,7 +117,9 @@ async function _changeMyPassword(data: ChangePasswordInput) {
   const supabase = await createSupabaseServer();
 
   // Verify current password by re-authenticating
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user?.email) {
     return { error: "Không thể xác thực người dùng" };
   }

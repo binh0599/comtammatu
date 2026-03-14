@@ -19,11 +19,7 @@ import {
 // validateVoucher
 // ---------------------------------------------------------------------------
 
-async function _validateVoucher(data: {
-  code: string;
-  branch_id: number;
-  subtotal: number;
-}) {
+async function _validateVoucher(data: { code: string; branch_id: number; subtotal: number }) {
   const ctx = await getActionContext();
   const serverBranchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
@@ -40,7 +36,7 @@ async function _validateVoucher(data: {
   const { data: voucher, error: voucherError } = await supabase
     .from("vouchers")
     .select(
-      "id, code, type, value, min_order, max_discount, valid_from, valid_to, max_uses, used_count, is_active",
+      "id, code, type, value, min_order, max_discount, valid_from, valid_to, max_uses, used_count, is_active"
     )
     .eq("tenant_id", tenantId)
     .ilike("code", parsed.data.code)
@@ -52,15 +48,10 @@ async function _validateVoucher(data: {
   if (!voucher.is_active) return { error: "Voucher đã bị vô hiệu hóa" };
 
   const now = new Date();
-  if (new Date(voucher.valid_from) > now)
-    return { error: "Voucher chưa đến thời gian sử dụng" };
-  if (new Date(voucher.valid_to) < now)
-    return { error: "Voucher đã hết hạn" };
+  if (new Date(voucher.valid_from) > now) return { error: "Voucher chưa đến thời gian sử dụng" };
+  if (new Date(voucher.valid_to) < now) return { error: "Voucher đã hết hạn" };
 
-  if (
-    voucher.max_uses !== null &&
-    voucher.used_count >= voucher.max_uses
-  ) {
+  if (voucher.max_uses !== null && voucher.used_count >= voucher.max_uses) {
     return { error: "Voucher đã hết lượt sử dụng" };
   }
 
@@ -78,10 +69,7 @@ async function _validateVoucher(data: {
   }
 
   // Check minimum order
-  if (
-    voucher.min_order !== null &&
-    parsed.data.subtotal < voucher.min_order
-  ) {
+  if (voucher.min_order !== null && parsed.data.subtotal < voucher.min_order) {
     return {
       error: `Đơn hàng tối thiểu ${new Intl.NumberFormat("vi-VN").format(voucher.min_order)}₫ để sử dụng voucher`,
     };
@@ -90,9 +78,7 @@ async function _validateVoucher(data: {
   // Calculate discount
   let discountAmount = 0;
   if (voucher.type === "percent") {
-    discountAmount = Math.round(
-      (parsed.data.subtotal * voucher.value) / 100,
-    );
+    discountAmount = Math.round((parsed.data.subtotal * voucher.value) / 100);
     if (voucher.max_discount !== null) {
       discountAmount = Math.min(discountAmount, voucher.max_discount);
     }
@@ -116,10 +102,7 @@ export const validateVoucher = withServerAction(_validateVoucher);
 // applyVoucherToOrder
 // ---------------------------------------------------------------------------
 
-async function _applyVoucherToOrder(data: {
-  order_id: number;
-  voucher_code: string;
-}) {
+async function _applyVoucherToOrder(data: { order_id: number; voucher_code: string }) {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thực hiện thao tác thu ngân");
@@ -135,9 +118,7 @@ async function _applyVoucherToOrder(data: {
   // Get order — validate branch ownership
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select(
-      "id, subtotal, tax, service_charge, discount_total, total, status, branch_id",
-    )
+    .select("id, subtotal, tax, service_charge, discount_total, total, status, branch_id")
     .eq("id", parsed.data.order_id)
     .eq("branch_id", branchId)
     .single();
@@ -173,16 +154,14 @@ async function _applyVoucherToOrder(data: {
   const discountAmount = validation.discount_amount ?? 0;
 
   // Insert order_discount
-  const { error: discountError } = await supabase
-    .from("order_discounts")
-    .insert({
-      order_id: order.id,
-      type: "voucher",
-      value: discountAmount,
-      reason: validation.code,
-      applied_by: userId,
-      voucher_id: validation.voucher_id,
-    });
+  const { error: discountError } = await supabase.from("order_discounts").insert({
+    order_id: order.id,
+    type: "voucher",
+    value: discountAmount,
+    reason: validation.code,
+    applied_by: userId,
+    voucher_id: validation.voucher_id,
+  });
 
   if (discountError) return safeDbErrorResult(discountError, "db");
 

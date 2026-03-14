@@ -51,7 +51,7 @@ function fmtDateTime(date: string): string {
 export function generateKitchenTicketCommands(
   ticket: KdsTicketData,
   stationName?: string,
-  lineWidth = 42,
+  lineWidth = 42
 ): Uint8Array {
   const b = new EscposBuilder();
   const items = parseItems(ticket.items);

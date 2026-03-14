@@ -17,11 +17,7 @@ interface PosUiState {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   removeFromCart: (menuItemId: number, variantId?: number) => void;
-  updateCartItemQuantity: (
-    menuItemId: number,
-    quantity: number,
-    variantId?: number,
-  ) => void;
+  updateCartItemQuantity: (menuItemId: number, quantity: number, variantId?: number) => void;
   clearCart: () => void;
 
   // Table selection
@@ -47,15 +43,14 @@ export const usePosUiStore = create<PosUiState>((set) => ({
   addToCart: (item) =>
     set((state) => {
       const existing = state.cart.find(
-        (c) =>
-          c.menuItemId === item.menuItemId && c.variantId === item.variantId,
+        (c) => c.menuItemId === item.menuItemId && c.variantId === item.variantId
       );
       if (existing) {
         return {
           cart: state.cart.map((c) =>
             c.menuItemId === item.menuItemId && c.variantId === item.variantId
               ? { ...c, quantity: c.quantity + (item.quantity ?? 1) }
-              : c,
+              : c
           ),
         };
       }
@@ -63,22 +58,15 @@ export const usePosUiStore = create<PosUiState>((set) => ({
     }),
   removeFromCart: (menuItemId, variantId) =>
     set((state) => ({
-      cart: state.cart.filter(
-        (c) => !(c.menuItemId === menuItemId && c.variantId === variantId),
-      ),
+      cart: state.cart.filter((c) => !(c.menuItemId === menuItemId && c.variantId === variantId)),
     })),
   updateCartItemQuantity: (menuItemId, quantity, variantId) =>
     set((state) => ({
       cart:
         quantity <= 0
-          ? state.cart.filter(
-              (c) =>
-                !(c.menuItemId === menuItemId && c.variantId === variantId),
-            )
+          ? state.cart.filter((c) => !(c.menuItemId === menuItemId && c.variantId === variantId))
           : state.cart.map((c) =>
-              c.menuItemId === menuItemId && c.variantId === variantId
-                ? { ...c, quantity }
-                : c,
+              c.menuItemId === menuItemId && c.variantId === variantId ? { ...c, quantity } : c
             ),
     })),
   clearCart: () => set({ cart: [] }),

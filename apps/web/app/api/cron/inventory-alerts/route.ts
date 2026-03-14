@@ -16,7 +16,7 @@ import { sendPushToTenantRole } from "@/lib/push-sender";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -157,9 +157,10 @@ export async function GET(request: Request) {
           } | null;
 
           // Critical if expiring within 1 day, warning otherwise
-          const severity = batch.expiry_date && batch.expiry_date <= criticalThresholdDate
-            ? "critical"
-            : "warning";
+          const severity =
+            batch.expiry_date && batch.expiry_date <= criticalThresholdDate
+              ? "critical"
+              : "warning";
 
           const { error: insertError } = await supabase.from("security_events").insert({
             tenant_id: branch.tenant_id,
@@ -195,17 +196,22 @@ export async function GET(request: Request) {
   // Send push notifications to inventory managers if new alerts were created
   if (alertsCreated > 0) {
     for (const [tenantId, count] of alertsPerTenant) {
-      void sendPushToTenantRole(tenantId, ["owner", "manager", "inventory"], {
-        title: "Cảnh báo kho hàng",
-        body: `Có ${count} cảnh báo mới về tồn kho/hết hạn`,
-        url: "/admin/notifications",
-        type: "low_stock",
-      }, "low_stock");
+      void sendPushToTenantRole(
+        tenantId,
+        ["owner", "manager", "inventory"],
+        {
+          title: "Cảnh báo kho hàng",
+          body: `Có ${count} cảnh báo mới về tồn kho/hết hạn`,
+          url: "/admin/notifications",
+          type: "low_stock",
+        },
+        "low_stock"
+      );
     }
   }
 
   console.log(
-    `[Inventory Alerts Cron] Created ${alertsCreated} alerts across ${branches.length} branches`,
+    `[Inventory Alerts Cron] Created ${alertsCreated} alerts across ${branches.length} branches`
   );
 
   return NextResponse.json({

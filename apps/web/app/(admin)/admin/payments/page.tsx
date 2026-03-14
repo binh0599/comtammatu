@@ -3,10 +3,7 @@ import { getPayments, getBranches } from "./actions";
 import { PaymentsTab } from "./payments-tab";
 
 export default async function PaymentsPage() {
-  const [payments, branches] = await Promise.all([
-    getPayments(),
-    getBranches(),
-  ]);
+  const [payments, branches] = await Promise.all([getPayments(), getBranches()]);
 
   return (
     <>

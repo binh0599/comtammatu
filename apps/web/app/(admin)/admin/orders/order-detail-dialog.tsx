@@ -55,12 +55,8 @@ export function OrderDetailDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Chi tiết đơn hàng {order?.order_number}
-          </DialogTitle>
-          <DialogDescription>
-            Thông tin chi tiết đơn hàng
-          </DialogDescription>
+          <DialogTitle>Chi tiết đơn hàng {order?.order_number}</DialogTitle>
+          <DialogDescription>Thông tin chi tiết đơn hàng</DialogDescription>
         </DialogHeader>
         {order && (
           <div className="space-y-6 py-4">
@@ -68,9 +64,7 @@ export function OrderDetailDialog({
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-muted-foreground">Chi nhánh:</span>{" "}
-                <span className="font-medium">
-                  {order.branches?.name ?? "—"}
-                </span>
+                <span className="font-medium">{order.branches?.name ?? "—"}</span>
               </div>
               <div>
                 <span className="text-muted-foreground">Loại:</span>{" "}
@@ -90,14 +84,12 @@ export function OrderDetailDialog({
               </div>
               {order.table_id && (
                 <div>
-                  <span className="text-muted-foreground">Bàn:</span>{" "}
-                  <span>#{order.table_id}</span>
+                  <span className="text-muted-foreground">Bàn:</span> <span>#{order.table_id}</span>
                 </div>
               )}
               {order.notes && (
                 <div className="col-span-2">
-                  <span className="text-muted-foreground">Ghi chú:</span>{" "}
-                  <span>{order.notes}</span>
+                  <span className="text-muted-foreground">Ghi chú:</span> <span>{order.notes}</span>
                 </div>
               )}
             </div>
@@ -114,9 +106,7 @@ export function OrderDetailDialog({
                       <TableHead>Món</TableHead>
                       <TableHead className="text-center">SL</TableHead>
                       <TableHead className="text-right">Đơn giá</TableHead>
-                      <TableHead className="text-right">
-                        Thành tiền
-                      </TableHead>
+                      <TableHead className="text-right">Thành tiền</TableHead>
                       <TableHead>Trạng thái</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -131,9 +121,7 @@ export function OrderDetailDialog({
                             </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-center">
-                          {item.quantity}
-                        </TableCell>
+                        <TableCell className="text-center">{item.quantity}</TableCell>
                         <TableCell className="text-right">
                           {formatPrice(Number(item.unit_price))}
                         </TableCell>
@@ -141,10 +129,7 @@ export function OrderDetailDialog({
                           {formatPrice(Number(item.item_total))}
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className={STATUS_BADGE[item.status] ?? ""}
-                          >
+                          <Badge variant="outline" className={STATUS_BADGE[item.status] ?? ""}>
                             {getOrderStatusLabel(item.status)}
                           </Badge>
                         </TableCell>
@@ -167,16 +152,12 @@ export function OrderDetailDialog({
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Phí dịch vụ:</span>
-                <span>
-                  {formatPrice(Number(order.service_charge))}
-                </span>
+                <span>{formatPrice(Number(order.service_charge))}</span>
               </div>
               {Number(order.discount_total) > 0 && (
                 <div className="flex justify-between text-red-600">
                   <span>Giảm giá:</span>
-                  <span>
-                    -{formatPrice(Number(order.discount_total))}
-                  </span>
+                  <span>-{formatPrice(Number(order.discount_total))}</span>
                 </div>
               )}
               <div className="flex justify-between border-t pt-1 font-semibold">
@@ -210,9 +191,7 @@ export function OrderDetailDialog({
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <span className="font-medium">
-                          {formatPrice(Number(p.amount))}
-                        </span>
+                        <span className="font-medium">{formatPrice(Number(p.amount))}</span>
                         {p.paid_at && (
                           <span className="text-muted-foreground ml-2 text-xs">
                             {formatDateTime(p.paid_at)}

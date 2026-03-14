@@ -10,12 +10,12 @@
 
 ## Priority Legend
 
-| Priority | Meaning | Timeline |
-|----------|---------|----------|
-| **P0** | Must fix before production — risk of outage or data loss | Before MVP launch |
-| **P1** | Should fix before production — measurable performance impact | During MVP development |
-| **P2** | Fix after launch — long-term scalability concern | Post-launch (Month 2-3) |
-| **P3** | Nice to have — cost savings or DX improvement | When convenient |
+| Priority | Meaning                                                      | Timeline                |
+| -------- | ------------------------------------------------------------ | ----------------------- |
+| **P0**   | Must fix before production — risk of outage or data loss     | Before MVP launch       |
+| **P1**   | Should fix before production — measurable performance impact | During MVP development  |
+| **P2**   | Fix after launch — long-term scalability concern             | Post-launch (Month 2-3) |
+| **P3**   | Nice to have — cost savings or DX improvement                | When convenient         |
 
 ---
 
@@ -44,6 +44,7 @@ DATABASE_URL=postgresql://user:pass@db.xxx.supabase.co:6543/postgres?pgbouncer=t
 ```
 
 **Additional notes:**
+
 - Use `transaction` mode (not `session` mode) for Vercel serverless
 - Prisma requires `?pgbouncer=true&connection_limit=1` in the connection string
 - Supabase Realtime and migrations should still use the direct connection (port 5432)
@@ -57,6 +58,7 @@ DATABASE_URL=postgresql://user:pass@db.xxx.supabase.co:6543/postgres?pgbouncer=t
 
 **Problem:**
 The schema defines ~80+ indexes across all tables. Many are redundant (duplicating UNIQUE constraints or PRIMARY KEYs) or unnecessary at the expected data volume (thousands of rows, not millions). Each index costs:
+
 - Write performance: every INSERT/UPDATE/DELETE must update all indexes
 - Memory: indexes compete with data cache in Supabase Pro's 8GB allocation
 - Vacuum overhead: more indexes = longer autovacuum cycles
@@ -119,11 +121,11 @@ INDEX POLICY:
 **Problem:**
 Three tables use PostgreSQL arrays to store foreign key references:
 
-| Table | Column | Issue |
-|-------|--------|-------|
-| `menus` | `branches BIGINT[]` | No FK constraint, orphan IDs possible |
-| `vouchers` | `branches BIGINT[]` | Same |
-| `kds_stations` | `categories BIGINT[]` | Same |
+| Table          | Column                | Issue                                 |
+| -------------- | --------------------- | ------------------------------------- |
+| `menus`        | `branches BIGINT[]`   | No FK constraint, orphan IDs possible |
+| `vouchers`     | `branches BIGINT[]`   | Same                                  |
+| `kds_stations` | `categories BIGINT[]` | Same                                  |
 
 Arrays with GIN indexes work for containment queries (`@>`), but they break referential integrity, make JOINs awkward (`ANY(branches)`), and cannot participate in standard query planning.
 
@@ -178,6 +180,7 @@ WHERE mb.branch_id = :branch_id;
 
 **Problem:**
 Current design subscribes every device (waiter phones, cashier tablets, KDS screens, customer apps) to `postgres_changes` channels. Each subscription triggers PostgreSQL's logical replication. With 5-10 branches × 5+ devices each = 30-50+ active replication listeners, this causes:
+
 - WAL (Write-Ahead Log) accumulation
 - Replication slot lag
 - Increased CPU on Supabase's Realtime server
@@ -186,10 +189,12 @@ Current design subscribes every device (waiter phones, cashier tablets, KDS scre
 **Change required — Split into two tiers:**
 
 **Tier 1: Postgres Changes (keep — critical for data consistency)**
+
 - KDS tickets: `INSERT/UPDATE on kds_tickets` (kitchen must see every order)
 - Order status for customer app: `UPDATE on orders WHERE id = my_order` (customer tracking)
 
 **Tier 2: Broadcast (switch to — ephemeral notifications)**
+
 - Waiter notifications ("Order #45 ready") → Broadcast to `branch:{id}:waiters`
 - Cashier notifications ("Table 7 requests bill") → Broadcast to `branch:{id}:cashiers`
 - Table status changes → Broadcast to `branch:{id}:tables`
@@ -206,9 +211,9 @@ async function updateOrderStatus(orderId: number, newStatus: string) {
 
   // 2. Broadcast notification to relevant staff (Tier 2 — ephemeral)
   await supabase.channel(`branch:${branchId}:notifications`).send({
-    type: 'broadcast',
-    event: 'order_status',
-    payload: { orderId, orderNumber, newStatus, tableNumber }
+    type: "broadcast",
+    event: "order_status",
+    payload: { orderId, orderNumber, newStatus, tableNumber },
   });
 }
 ```
@@ -224,6 +229,7 @@ async function updateOrderStatus(orderId: number, newStatus: string) {
 
 **Problem:**
 Prisma 7.2 uses a Rust-based query engine binary (~15MB) that runs as a sidecar process. On Vercel serverless:
+
 - Cold start penalty: 200-500ms to load the engine
 - Memory overhead: ~50-80MB per function instance
 - Bundle size: larger deployment artifacts
@@ -241,11 +247,13 @@ For a POS system where cashier taps "Process Payment" and expects instant respon
 ```
 
 **Migration approach:**
+
 - Phase 1: Use `@supabase/supabase-js` directly for hot-path queries (orders, payments, KDS tickets)
 - Phase 2: Migrate admin/reporting queries to Drizzle ORM
 - Phase 3: Remove Prisma entirely
 
 **Drizzle advantages for this project:**
+
 - No binary engine — pure TypeScript
 - Cold start: ~50ms (vs Prisma's 200-500ms)
 - Memory: ~10-20MB (vs Prisma's 50-80MB)
@@ -253,6 +261,7 @@ For a POS system where cashier taps "Process Payment" and expects instant respon
 - SQL-like API — closer to raw SQL, easier for team familiar with PostgreSQL
 
 **If Prisma is kept**, at minimum:
+
 - Enable Prisma Accelerate (edge-compatible, reduces cold starts)
 - Use `@prisma/client/edge` for serverless functions
 - Set `previewFeatures = ["driverAdapters"]` to use Supabase's connection pooler natively
@@ -267,13 +276,13 @@ For a POS system where cashier taps "Process Payment" and expects instant respon
 **Problem:**
 These tables grow indefinitely and are never updated/deleted (append-only):
 
-| Table | Estimated growth | After 1 year |
-|-------|-----------------|--------------|
-| `audit_logs` | ~500-1000 rows/day (5-10 branches) | 180K-365K rows |
-| `security_events` | ~100-500 rows/day | 36K-180K rows |
-| `stock_movements` | ~200-500 rows/day | 73K-180K rows |
-| `order_status_history` | ~300-800 rows/day | 110K-290K rows |
-| `loyalty_transactions` | ~50-200 rows/day | 18K-73K rows |
+| Table                  | Estimated growth                   | After 1 year   |
+| ---------------------- | ---------------------------------- | -------------- |
+| `audit_logs`           | ~500-1000 rows/day (5-10 branches) | 180K-365K rows |
+| `security_events`      | ~100-500 rows/day                  | 36K-180K rows  |
+| `stock_movements`      | ~200-500 rows/day                  | 73K-180K rows  |
+| `order_status_history` | ~300-800 rows/day                  | 110K-290K rows |
+| `loyalty_transactions` | ~50-200 rows/day                   | 18K-73K rows   |
 
 After 2-3 years without partitioning, queries on these tables will slow down, and the data retention cleanup (Section 11) will require expensive DELETE operations.
 
@@ -394,6 +403,7 @@ SELECT cron.schedule('refresh-customer-stats', '0 * * * *',
 
 **Problem:**
 Section 7.3 specifies PBKDF2 with 600,000 iterations (OWASP 2023 minimum for SHA-256). On a mid-range Android phone (waiter device), this takes 2-5 seconds for key derivation. This delays:
+
 - App launch (re-encrypt offline data)
 - Screen unlock after 15-min timeout
 - Any re-authentication flow
@@ -418,6 +428,7 @@ const key = await crypto.subtle.deriveKey({
 ```
 
 **Compensate for lower iterations on mobile:**
+
 - Require minimum 6-digit PIN + device fingerprint (effectively a longer key)
 - Auto-lock after 5 minutes (not 15) on mobile
 - Mobile stores only non-sensitive data (menu items, pending orders — no PII, no payments)
@@ -444,12 +455,12 @@ const key = await crypto.subtle.deriveKey({
 
 ```typescript
 // middleware.ts — runs at the edge, no external dependency
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 export function middleware(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
   const now = Date.now();
   const window = 60_000; // 1 minute
   const limit = 100;
@@ -460,7 +471,7 @@ export function middleware(request: Request) {
     return NextResponse.next();
   }
   if (entry.count >= limit) {
-    return new NextResponse('Too Many Requests', { status: 429 });
+    return new NextResponse("Too Many Requests", { status: 429 });
   }
   entry.count++;
   return NextResponse.next();
@@ -484,6 +495,7 @@ Use a Supabase table or the `pg_net` extension for server-side rate tracking.
 
 **Current cost:** $0-20/month for Resend
 **Problem:** The architecture lists both Resend and Supabase SMTP. For MVP, the only emails needed are:
+
 - Password reset
 - Email verification
 - Deletion request confirmation
@@ -522,24 +534,24 @@ All of these are handled by Supabase Auth's built-in SMTP. The CRM campaigns mod
 // sentry.client.config.ts
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  sampleRate: 0.1,           // Only send 10% of errors (sample)
-  tracesSampleRate: 0.05,    // Only trace 5% of transactions
+  sampleRate: 0.1, // Only send 10% of errors (sample)
+  tracesSampleRate: 0.05, // Only trace 5% of transactions
 
   beforeSend(event) {
     // Drop known non-critical errors
     const ignoredMessages = [
-      'Network request failed',      // Offline POS — expected
-      'ResizeObserver loop',          // Browser noise
-      'Failed to fetch',              // Intermittent network
+      "Network request failed", // Offline POS — expected
+      "ResizeObserver loop", // Browser noise
+      "Failed to fetch", // Intermittent network
     ];
-    if (ignoredMessages.some(msg => event.message?.includes(msg))) {
-      return null;  // Drop event
+    if (ignoredMessages.some((msg) => event.message?.includes(msg))) {
+      return null; // Drop event
     }
 
     // Strip sensitive headers
     if (event.request?.headers) {
-      delete event.request.headers['Authorization'];
-      delete event.request.headers['Cookie'];
+      delete event.request.headers["Authorization"];
+      delete event.request.headers["Cookie"];
     }
     return event;
   },
@@ -547,6 +559,7 @@ Sentry.init({
 ```
 
 **Also consider alternatives if exceeding free tier:**
+
 - **Vercel's built-in error tracking** (included in Pro plan) for basic error capture
 - **BetterStack Logs** (free tier: 1GB/month) for structured logging
 - **Axiom** (free tier: 500MB/month) for observability
@@ -564,15 +577,15 @@ Sentry.init({
 
 **Not recommended for MVP** — Vercel's DX (auto-deploy, preview URLs, serverless functions) accelerates development. However, after launch, evaluate:
 
-| Feature | Vercel Pro ($20/mo) | Cloudflare Pages (Free) |
-|---------|--------------------|-----------------------|
-| Static hosting | Included | Free (unlimited bandwidth) |
-| Serverless functions | Vercel Functions | Cloudflare Workers (100K req/day free) |
-| Edge middleware | Yes | Yes (built-in) |
-| Preview deployments | Yes | Yes |
-| Custom domains | Yes | Yes |
-| Build minutes | 6000 min/mo | 500 min/mo (free), 5000 (paid $5) |
-| Analytics | Basic included | Web Analytics (free) |
+| Feature              | Vercel Pro ($20/mo) | Cloudflare Pages (Free)                |
+| -------------------- | ------------------- | -------------------------------------- |
+| Static hosting       | Included            | Free (unlimited bandwidth)             |
+| Serverless functions | Vercel Functions    | Cloudflare Workers (100K req/day free) |
+| Edge middleware      | Yes                 | Yes (built-in)                         |
+| Preview deployments  | Yes                 | Yes                                    |
+| Custom domains       | Yes                 | Yes                                    |
+| Build minutes        | 6000 min/mo         | 500 min/mo (free), 5000 (paid $5)      |
+| Analytics            | Basic included      | Web Analytics (free)                   |
 
 **Change required (post-MVP evaluation):**
 Add to the Roadmap document:
@@ -593,32 +606,32 @@ Add to the Roadmap document:
 
 ### Before (v2.1)
 
-| Item | Cost/month |
-|------|-----------|
-| Vercel Pro | $20 |
-| Supabase Pro | $25 |
-| Domain | ~$1 |
-| Email (Resend) | $0-20 |
-| Sentry | $0 |
-| Upstash Redis | $0-10 |
-| **TOTAL** | **$45-76 (base) / $76-120 (with extras)** |
+| Item           | Cost/month                                |
+| -------------- | ----------------------------------------- |
+| Vercel Pro     | $20                                       |
+| Supabase Pro   | $25                                       |
+| Domain         | ~$1                                       |
+| Email (Resend) | $0-20                                     |
+| Sentry         | $0                                        |
+| Upstash Redis  | $0-10                                     |
+| **TOTAL**      | **$45-76 (base) / $76-120 (with extras)** |
 
 ### After (v2.2 optimized)
 
-| Item | Cost/month | Change |
-|------|-----------|--------|
-| Vercel Pro | $20 | No change (evaluate Cloudflare post-MVP) |
-| Supabase Pro | $25 | No change |
-| Domain | ~$1 | No change |
-| Email | $0 | Supabase SMTP only (defer Resend to Phase 3) |
-| Sentry | $0 | Add filtering to stay within free tier |
-| Upstash Redis | $0 | Remove — use edge-native rate limiting |
-| **TOTAL** | **$46 (base)** | **Savings: up to $44/month vs v2.1 max** |
+| Item          | Cost/month     | Change                                       |
+| ------------- | -------------- | -------------------------------------------- |
+| Vercel Pro    | $20            | No change (evaluate Cloudflare post-MVP)     |
+| Supabase Pro  | $25            | No change                                    |
+| Domain        | ~$1            | No change                                    |
+| Email         | $0             | Supabase SMTP only (defer Resend to Phase 3) |
+| Sentry        | $0             | Add filtering to stay within free tier       |
+| Upstash Redis | $0             | Remove — use edge-native rate limiting       |
+| **TOTAL**     | **$46 (base)** | **Savings: up to $44/month vs v2.1 max**     |
 
 Post-MVP potential (with Cloudflare migration):
 
 | **TOTAL (optimized)** | **$26-31/month** |
-|-|-|
+| --------------------- | ---------------- |
 
 ---
 
@@ -654,17 +667,17 @@ Post-MVP potential (with Cloudflare migration):
 
 ## APPENDIX: Files to Update
 
-| File | Sections Affected |
-|------|-------------------|
+| File                                       | Sections Affected                                                                                                                                     |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `F&B_CRM_Lightweight_Architecture_v2.1.md` | §2.2 (Tech Stack), §4.x (all schema sections), §5 (Architecture Improvements), §6 (Realtime), §7.3 (Offline Security), §9 (Rate Limiting), §15 (Cost) |
-| `ROADMAP.md` | Add Phase 4 cost optimization milestone |
-| Prisma schema / Drizzle config | ORM migration (if approved) |
-| Supabase migrations | Index cleanup, junction tables, partitioning |
-| Next.js middleware | Edge-native rate limiting |
-| Sentry config | Event filtering |
-| Supabase connection strings | PgBouncer pooler URL |
+| `ROADMAP.md`                               | Add Phase 4 cost optimization milestone                                                                                                               |
+| Prisma schema / Drizzle config             | ORM migration (if approved)                                                                                                                           |
+| Supabase migrations                        | Index cleanup, junction tables, partitioning                                                                                                          |
+| Next.js middleware                         | Edge-native rate limiting                                                                                                                             |
+| Sentry config                              | Event filtering                                                                                                                                       |
+| Supabase connection strings                | PgBouncer pooler URL                                                                                                                                  |
 
 ---
 
-*This review was conducted against F&B_CRM_Lightweight_Architecture_v2.1.md (February 2026).*
-*Next review recommended after MVP launch to reassess based on actual production metrics.*
+_This review was conducted against F&B_CRM_Lightweight_Architecture_v2.1.md (February 2026)._
+_Next review recommended after MVP launch to reassess based on actual production metrics._

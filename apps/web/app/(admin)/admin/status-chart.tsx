@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface StatusData {
   status: string;
@@ -43,19 +36,14 @@ export function StatusChart({ data }: { data: StatusData[] }) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value, name) => [
-            (value as number) ?? 0,
-            (name as string) ?? "",
-          ]}
+          formatter={(value, name) => [(value as number) ?? 0, (name as string) ?? ""]}
           contentStyle={{
             backgroundColor: "var(--color-card)",
             border: "1px solid var(--color-border)",
             borderRadius: "8px",
           }}
         />
-        <Legend
-          formatter={(value) => <span className="text-xs">{value}</span>}
-        />
+        <Legend formatter={(value) => <span className="text-xs">{value}</span>} />
       </PieChart>
     </ResponsiveContainer>
   );

@@ -1,8 +1,7 @@
 export const queryKeys = {
   orders: {
     all: ["orders"] as const,
-    list: (filters?: { status?: string; type?: string }) =>
-      ["orders", "list", filters] as const,
+    list: (filters?: { status?: string; type?: string }) => ["orders", "list", filters] as const,
     detail: (id: number) => ["orders", "detail", id] as const,
   },
   tables: {
@@ -15,14 +14,12 @@ export const queryKeys = {
   },
   employees: {
     all: ["employees"] as const,
-    list: (filters?: Record<string, unknown>) =>
-      ["employees", "list", filters] as const,
+    list: (filters?: Record<string, unknown>) => ["employees", "list", filters] as const,
     detail: (id: number) => ["employees", "detail", id] as const,
   },
   customers: {
     all: ["customers"] as const,
-    list: (filters?: Record<string, unknown>) =>
-      ["customers", "list", filters] as const,
+    list: (filters?: Record<string, unknown>) => ["customers", "list", filters] as const,
     detail: (id: number) => ["customers", "detail", id] as const,
   },
   kds: {

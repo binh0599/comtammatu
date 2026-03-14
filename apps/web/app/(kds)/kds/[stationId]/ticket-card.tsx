@@ -106,7 +106,7 @@ export function TicketCard({
         "flex flex-col rounded-xl border-2 p-4 transition-all",
         colors.border,
         colors.bg,
-        isNew && "animate-pulse ring-2 ring-blue-400",
+        isNew && "animate-pulse ring-2 ring-blue-400"
       )}
     >
       {/* Header */}
@@ -114,9 +114,7 @@ export function TicketCard({
         <div className="flex items-center gap-2">
           <div>
             <p className="text-lg font-bold text-foreground">{orderNumber}</p>
-            {tableNumber && (
-              <p className="text-sm text-muted-foreground">Bàn {tableNumber}</p>
-            )}
+            {tableNumber && <p className="text-sm text-muted-foreground">Bàn {tableNumber}</p>}
           </div>
           {/* Status badge for preparing */}
           {ticket.status === "preparing" && (
@@ -191,13 +189,16 @@ export function TicketCard({
               <div className="ml-6 flex flex-col gap-1 text-sm">
                 {item.modifiers?.map((m, mIdx) => (
                   <span key={mIdx} className="text-muted-foreground">
-                    + {m.name}{m.options ? `: ${m.options.join(", ")}` : m.price ? ` (+${new Intl.NumberFormat("vi-VN").format(m.price)}đ)` : ""}
+                    + {m.name}
+                    {m.options
+                      ? `: ${m.options.join(", ")}`
+                      : m.price
+                        ? ` (+${new Intl.NumberFormat("vi-VN").format(m.price)}đ)`
+                        : ""}
                   </span>
                 ))}
                 {item.notes && (
-                  <span className="font-medium italic text-destructive">
-                    * {item.notes}
-                  </span>
+                  <span className="font-medium italic text-destructive">* {item.notes}</span>
                 )}
               </div>
             )}
@@ -225,7 +226,7 @@ export function TicketCard({
           aria-label={`Đã ra món ${orderNumber}`}
           className={cn(
             "min-h-[56px] bg-green-600 text-base font-bold hover:bg-green-700",
-            ticket.status === "pending" ? "flex-1" : "w-full",
+            ticket.status === "pending" ? "flex-1" : "w-full"
           )}
         >
           {isPending ? "ĐANG CẬP NHẬT..." : "ĐÃ RA MÓN"}

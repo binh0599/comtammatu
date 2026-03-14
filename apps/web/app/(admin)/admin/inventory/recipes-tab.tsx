@@ -155,9 +155,7 @@ export function RecipesTab({
       return;
     }
 
-    const validRows = rows.filter(
-      (r) => r.ingredient_id && r.quantity && r.unit
-    );
+    const validRows = rows.filter((r) => r.ingredient_id && r.quantity && r.unit);
     if (validRows.length === 0) {
       setError("Công thức phải có ít nhất 1 nguyên liệu");
       return;
@@ -198,9 +196,7 @@ export function RecipesTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Công thức</h2>
-          <p className="text-muted-foreground">
-            Quản lý công thức chế biến của từng món ăn
-          </p>
+          <p className="text-muted-foreground">Quản lý công thức chế biến của từng món ăn</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -218,15 +214,9 @@ export function RecipesTab({
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Tạo công thức</DialogTitle>
-              <DialogDescription>
-                Định nghĩa nguyên liệu cần dùng cho một món ăn
-              </DialogDescription>
+              <DialogDescription>Định nghĩa nguyên liệu cần dùng cho một món ăn</DialogDescription>
             </DialogHeader>
-            {error && (
-              <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                {error}
-              </div>
-            )}
+            {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label>Món ăn</Label>
@@ -268,12 +258,7 @@ export function RecipesTab({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Nguyên liệu</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addRow}
-                  >
+                  <Button type="button" variant="outline" size="sm" onClick={addRow}>
                     <Plus className="mr-1 h-3 w-3" />
                     Thêm dòng
                   </Button>
@@ -286,9 +271,7 @@ export function RecipesTab({
                     >
                       <Select
                         value={row.ingredient_id}
-                        onValueChange={(v) =>
-                          updateRow(index, "ingredient_id", v)
-                        }
+                        onValueChange={(v) => updateRow(index, "ingredient_id", v)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Nguyên liệu" />
@@ -307,16 +290,12 @@ export function RecipesTab({
                         min="0.01"
                         placeholder="SL"
                         value={row.quantity}
-                        onChange={(e) =>
-                          updateRow(index, "quantity", e.target.value)
-                        }
+                        onChange={(e) => updateRow(index, "quantity", e.target.value)}
                       />
                       <Input
                         placeholder="DV"
                         value={row.unit}
-                        onChange={(e) =>
-                          updateRow(index, "unit", e.target.value)
-                        }
+                        onChange={(e) => updateRow(index, "unit", e.target.value)}
                       />
                       <Input
                         type="number"
@@ -325,9 +304,7 @@ export function RecipesTab({
                         max="100"
                         placeholder="Hao%"
                         value={row.waste_pct}
-                        onChange={(e) =>
-                          updateRow(index, "waste_pct", e.target.value)
-                        }
+                        onChange={(e) => updateRow(index, "waste_pct", e.target.value)}
                       />
                       <Button
                         type="button"
@@ -344,11 +321,7 @@ export function RecipesTab({
               </div>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreateOpen(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                 Hủy
               </Button>
               <Button onClick={handleCreate} disabled={isPending}>
@@ -360,9 +333,7 @@ export function RecipesTab({
       </div>
 
       {error && !isCreateOpen && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       {recipes.length === 0 ? (
@@ -376,17 +347,13 @@ export function RecipesTab({
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg">
-                      {recipe.menu_items.name}
-                    </CardTitle>
+                    <CardTitle className="text-lg">{recipe.menu_items.name}</CardTitle>
                     <CardDescription>
                       {recipe.yield_qty && recipe.yield_unit
                         ? `Sản lượng: ${recipe.yield_qty} ${recipe.yield_unit}`
                         : "Chưa có sản lượng"}
                       {recipe.total_cost != null && (
-                        <span className="ml-2">
-                          | Giá vốn: {formatPrice(recipe.total_cost)}
-                        </span>
+                        <span className="ml-2">| Giá vốn: {formatPrice(recipe.total_cost)}</span>
                       )}
                     </CardDescription>
                   </div>
@@ -401,15 +368,12 @@ export function RecipesTab({
                         <AlertDialogTitle>Xóa công thức</AlertDialogTitle>
                         <AlertDialogDescription>
                           Bạn có chắc muốn xóa công thức của &quot;
-                          {recipe.menu_items.name}&quot;? Hành động này không
-                          thể hoàn tác.
+                          {recipe.menu_items.name}&quot;? Hành động này không thể hoàn tác.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Hủy</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(recipe.id)}
-                        >
+                        <AlertDialogAction onClick={() => handleDelete(recipe.id)}>
                           Xóa
                         </AlertDialogAction>
                       </AlertDialogFooter>
@@ -422,9 +386,13 @@ export function RecipesTab({
                   <TableHeader>
                     <TableRow>
                       <TableHead scope="col">Nguyên liệu</TableHead>
-                      <TableHead scope="col" className="text-right">Số lượng</TableHead>
+                      <TableHead scope="col" className="text-right">
+                        Số lượng
+                      </TableHead>
                       <TableHead scope="col">Đơn vị</TableHead>
-                      <TableHead scope="col" className="text-right">Hao hụt %</TableHead>
+                      <TableHead scope="col" className="text-right">
+                        Hao hụt %
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -433,9 +401,7 @@ export function RecipesTab({
                         <TableCell className="font-medium">
                           {ri.ingredients?.name ?? `#${ri.ingredient_id}`}
                         </TableCell>
-                        <TableCell className="text-right">
-                          {ri.quantity}
-                        </TableCell>
+                        <TableCell className="text-right">{ri.quantity}</TableCell>
                         <TableCell>{ri.unit}</TableCell>
                         <TableCell className="text-right">
                           {ri.waste_pct > 0 ? (

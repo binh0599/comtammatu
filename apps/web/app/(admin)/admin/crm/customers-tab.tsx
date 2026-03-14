@@ -11,16 +11,8 @@ import {
   Search,
   UserPlus,
 } from "lucide-react";
-import {
-  formatPrice,
-  getCustomerGenderLabel,
-  getCustomerSourceLabel,
-} from "@comtammatu/shared";
-import {
-  createCustomer,
-  updateCustomer,
-  toggleCustomerActive,
-} from "./actions";
+import { formatPrice, getCustomerGenderLabel, getCustomerSourceLabel } from "@comtammatu/shared";
+import { createCustomer, updateCustomer, toggleCustomerActive } from "./actions";
 import type { Customer, LoyaltyTier } from "./crm-types";
 import { CustomerForm } from "./customer-form";
 import { LoyaltyHistoryDialog } from "./loyalty-history-dialog";
@@ -114,9 +106,7 @@ export function CustomersTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Khách hàng</h2>
-          <p className="text-muted-foreground">
-            Quản lý danh sách khách hàng của nhà hàng
-          </p>
+          <p className="text-muted-foreground">Quản lý danh sách khách hàng của nhà hàng</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -134,9 +124,7 @@ export function CustomersTab({
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Thêm khách hàng</DialogTitle>
-              <DialogDescription>
-                Tạo khách hàng mới cho nhà hàng
-              </DialogDescription>
+              <DialogDescription>Tạo khách hàng mới cho nhà hàng</DialogDescription>
             </DialogHeader>
             <CustomerForm
               loyaltyTiers={loyaltyTiers}
@@ -151,9 +139,7 @@ export function CustomersTab({
       </div>
 
       {error && !isCreateOpen && !editingItem && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <Card>
@@ -178,173 +164,156 @@ export function CustomersTab({
           </div>
         </CardHeader>
         <CardContent className="overflow-x-auto p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead scope="col">Tên</TableHead>
-              <TableHead scope="col">SĐT</TableHead>
-              <TableHead scope="col">Email</TableHead>
-              <TableHead scope="col">Giới tính</TableHead>
-              <TableHead scope="col">Nguồn</TableHead>
-              <TableHead scope="col">Hạng</TableHead>
-              <TableHead scope="col" className="text-right">Tổng chi</TableHead>
-              <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredCustomers.length === 0 ? (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="h-32 text-center"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <UserPlus className="text-muted-foreground/50 h-8 w-8" />
-                    <p className="text-muted-foreground text-sm">
-                      {searchQuery
-                        ? "Không tìm thấy khách hàng phù hợp"
-                        : "Chưa có khách hàng nào"}
-                    </p>
-                    {searchQuery && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSearchQuery("")}
-                      >
-                        Xóa bộ lọc
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
+                <TableHead scope="col">Tên</TableHead>
+                <TableHead scope="col">SĐT</TableHead>
+                <TableHead scope="col">Email</TableHead>
+                <TableHead scope="col">Giới tính</TableHead>
+                <TableHead scope="col">Nguồn</TableHead>
+                <TableHead scope="col">Hạng</TableHead>
+                <TableHead scope="col" className="text-right">
+                  Tổng chi
+                </TableHead>
+                <TableHead scope="col">Trạng thái</TableHead>
+                <TableHead scope="col" className="text-right">
+                  Thao tác
+                </TableHead>
               </TableRow>
-            ) : (
-              filteredCustomers.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell className="font-medium">
-                    {customer.full_name}
-                  </TableCell>
-                  <TableCell>{customer.phone}</TableCell>
-                  <TableCell>{customer.email ?? "-"}</TableCell>
-                  <TableCell>
-                    {customer.gender
-                      ? getCustomerGenderLabel(customer.gender)
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {customer.source
-                      ? getCustomerSourceLabel(customer.source)
-                      : "-"}
-                  </TableCell>
-                  <TableCell>
-                    {customer.loyalty_tiers ? (
-                      <Badge variant="outline">
-                        {customer.loyalty_tiers.name}
-                      </Badge>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatPrice(customer.total_spent)}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={customer.is_active ? "default" : "secondary"}
-                    >
-                      {customer.is_active ? "Hoạt động" : "Ngưng"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {/* Loyalty History */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Lịch sử điểm"
-                        onClick={() => setHistoryCustomer(customer)}
-                      >
-                        <History className="h-4 w-4" aria-hidden="true" />
-                      </Button>
-
-                      {/* Adjust Points */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label="Điều chỉnh điểm"
-                        onClick={() => setPointsCustomer(customer)}
-                      >
-                        <Coins className="h-4 w-4" aria-hidden="true" />
-                      </Button>
-
-                      {/* Edit Dialog */}
-                      <Dialog
-                        open={editingItem?.id === customer.id}
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setEditingItem(null);
-                            setError(null);
-                          }
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setError(null);
-                              setEditingItem(customer);
-                            }}
-                            aria-label="Sửa"
-                          >
-                            <Pencil className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-lg">
-                          <DialogHeader>
-                            <DialogTitle>Sửa khách hàng</DialogTitle>
-                            <DialogDescription>
-                              Cập nhật thông tin &quot;{customer.full_name}
-                              &quot;
-                            </DialogDescription>
-                          </DialogHeader>
-                          <CustomerForm
-                            defaultValues={customer}
-                            loyaltyTiers={loyaltyTiers}
-                            onSubmit={(formData) =>
-                              handleUpdate(customer.id, formData)
-                            }
-                            isPending={isPending}
-                            error={error}
-                            submitLabel="Lưu"
-                            pendingLabel="Đang lưu..."
-                            showTierField
-                          />
-                        </DialogContent>
-                      </Dialog>
-
-                      {/* Toggle Active */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={
-                          customer.is_active ? "Vô hiệu hóa" : "Kích hoạt"
-                        }
-                        onClick={() => handleToggleActive(customer.id)}
-                      >
-                        {customer.is_active ? (
-                          <ToggleRight className="h-4 w-4" aria-hidden="true" />
-                        ) : (
-                          <ToggleLeft className="h-4 w-4" aria-hidden="true" />
-                        )}
-                      </Button>
+            </TableHeader>
+            <TableBody>
+              {filteredCustomers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <UserPlus className="text-muted-foreground/50 h-8 w-8" />
+                      <p className="text-muted-foreground text-sm">
+                        {searchQuery
+                          ? "Không tìm thấy khách hàng phù hợp"
+                          : "Chưa có khách hàng nào"}
+                      </p>
+                      {searchQuery && (
+                        <Button variant="ghost" size="sm" onClick={() => setSearchQuery("")}>
+                          Xóa bộ lọc
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredCustomers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell className="font-medium">{customer.full_name}</TableCell>
+                    <TableCell>{customer.phone}</TableCell>
+                    <TableCell>{customer.email ?? "-"}</TableCell>
+                    <TableCell>
+                      {customer.gender ? getCustomerGenderLabel(customer.gender) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {customer.source ? getCustomerSourceLabel(customer.source) : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {customer.loyalty_tiers ? (
+                        <Badge variant="outline">{customer.loyalty_tiers.name}</Badge>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatPrice(customer.total_spent)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={customer.is_active ? "default" : "secondary"}>
+                        {customer.is_active ? "Hoạt động" : "Ngưng"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Loyalty History */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Lịch sử điểm"
+                          onClick={() => setHistoryCustomer(customer)}
+                        >
+                          <History className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+
+                        {/* Adjust Points */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label="Điều chỉnh điểm"
+                          onClick={() => setPointsCustomer(customer)}
+                        >
+                          <Coins className="h-4 w-4" aria-hidden="true" />
+                        </Button>
+
+                        {/* Edit Dialog */}
+                        <Dialog
+                          open={editingItem?.id === customer.id}
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              setEditingItem(null);
+                              setError(null);
+                            }
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setError(null);
+                                setEditingItem(customer);
+                              }}
+                              aria-label="Sửa"
+                            >
+                              <Pencil className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-lg">
+                            <DialogHeader>
+                              <DialogTitle>Sửa khách hàng</DialogTitle>
+                              <DialogDescription>
+                                Cập nhật thông tin &quot;{customer.full_name}
+                                &quot;
+                              </DialogDescription>
+                            </DialogHeader>
+                            <CustomerForm
+                              defaultValues={customer}
+                              loyaltyTiers={loyaltyTiers}
+                              onSubmit={(formData) => handleUpdate(customer.id, formData)}
+                              isPending={isPending}
+                              error={error}
+                              submitLabel="Lưu"
+                              pendingLabel="Đang lưu..."
+                              showTierField
+                            />
+                          </DialogContent>
+                        </Dialog>
+
+                        {/* Toggle Active */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={customer.is_active ? "Vô hiệu hóa" : "Kích hoạt"}
+                          onClick={() => handleToggleActive(customer.id)}
+                        >
+                          {customer.is_active ? (
+                            <ToggleRight className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" aria-hidden="true" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 

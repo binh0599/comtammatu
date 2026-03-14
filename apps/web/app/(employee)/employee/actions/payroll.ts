@@ -1,11 +1,7 @@
 "use server";
 
 import "@/lib/server-bootstrap";
-import {
-  getActionContext,
-  withServerQuery,
-  safeDbError,
-} from "@comtammatu/shared";
+import { getActionContext, withServerQuery, safeDbError } from "@comtammatu/shared";
 import { findMyEmployee } from "./_helpers";
 
 // =====================
@@ -20,9 +16,7 @@ async function _getMyPayrollEntries() {
 
   const { data, error } = await supabase
     .from("payroll_entries")
-    .select(
-      "*, payroll_periods!inner(name, start_date, end_date, status, branches(name))"
-    )
+    .select("*, payroll_periods!inner(name, start_date, end_date, status, branches(name))")
     .eq("employee_id", employee.id)
     .eq("tenant_id", tenantId)
     .in("payroll_periods.status", ["approved", "paid"])

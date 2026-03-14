@@ -31,17 +31,17 @@ function ChartFallback() {
 
 const RevenueChart = dynamic(
   () => import("./revenue-chart").then((m) => ({ default: m.RevenueChart })),
-  { loading: ChartFallback },
+  { loading: ChartFallback }
 );
 
 const StatusChart = dynamic(
   () => import("./status-chart").then((m) => ({ default: m.StatusChart })),
-  { loading: ChartFallback },
+  { loading: ChartFallback }
 );
 
 const HourlyChart = dynamic(
   () => import("./hourly-chart").then((m) => ({ default: m.HourlyChart })),
-  { loading: ChartFallback },
+  { loading: ChartFallback }
 );
 
 const BranchComparison = dynamic(
@@ -49,14 +49,12 @@ const BranchComparison = dynamic(
     import("./branch-comparison").then((m) => ({
       default: m.BranchComparison,
     })),
-  { loading: ChartFallback },
+  { loading: ChartFallback }
 );
 
 export default async function AdminDashboard() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .slice(0, 10);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
 
   const [

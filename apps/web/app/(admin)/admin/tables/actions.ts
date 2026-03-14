@@ -74,8 +74,7 @@ async function _getTableSummary() {
   // Aggregate by branch and status
   const summary: Record<string, Record<string, number>> = {};
   for (const row of data ?? []) {
-    const branchName =
-      (row.branches as unknown as { name: string })?.name ?? "Unknown";
+    const branchName = (row.branches as unknown as { name: string })?.name ?? "Unknown";
     if (!summary[branchName]) {
       summary[branchName] = {};
       for (const s of TABLE_STATUSES) summary[branchName][s] = 0;
@@ -179,10 +178,7 @@ async function _updateTable(id: number, formData: FormData) {
     return { error: "Không có dữ liệu cần cập nhật" };
   }
 
-  const { error } = await supabase
-    .from("tables")
-    .update(updateData)
-    .eq("id", id);
+  const { error } = await supabase.from("tables").update(updateData).eq("id", id);
 
   if (error) {
     if (error.code === "23505") {
@@ -205,25 +201,19 @@ async function _deleteTable(id: number) {
   if (ownership.error) return { error: ownership.error };
 
   // Check table is available before deleting
-  const { data: table } = await supabase
-    .from("tables")
-    .select("status")
-    .eq("id", id)
-    .single();
+  const { data: table } = await supabase.from("tables").select("status").eq("id", id).single();
 
   if (table?.status !== "available") {
     return { error: "Chỉ có thể xoá bàn đang trống (available). Vui lòng đổi trạng thái trước." };
   }
 
-  const { error } = await supabase
-    .from("tables")
-    .delete()
-    .eq("id", id);
+  const { error } = await supabase.from("tables").delete().eq("id", id);
 
   if (error) {
     if (error.code === "23503") {
       return {
-        error: "Không thể xoá bàn này vì đang có đơn hàng liên kết. Vui lòng hoàn tất đơn hàng trước.",
+        error:
+          "Không thể xoá bàn này vì đang có đơn hàng liên kết. Vui lòng hoàn tất đơn hàng trước.",
       };
     }
     return safeDbErrorResult(error, "db");
@@ -246,10 +236,7 @@ async function _updateTableStatus(id: number, status: string) {
   const ownership = await verifyEntityOwnership(supabase, "tables", id, tenantId);
   if (ownership.error) return { error: ownership.error };
 
-  const { error } = await supabase
-    .from("tables")
-    .update({ status })
-    .eq("id", id);
+  const { error } = await supabase.from("tables").update({ status }).eq("id", id);
 
   if (error) return safeDbErrorResult(error, "db");
 

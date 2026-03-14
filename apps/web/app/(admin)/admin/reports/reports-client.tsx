@@ -85,14 +85,10 @@ function GrowthBadge({ value }: { value: number }) {
     <span
       className={cn(
         "inline-flex items-center gap-0.5 text-xs font-medium",
-        isPositive ? "text-green-600" : "text-red-600",
+        isPositive ? "text-green-600" : "text-red-600"
       )}
     >
-      {isPositive ? (
-        <ArrowUpRight className="size-3" />
-      ) : (
-        <ArrowDownRight className="size-3" />
-      )}
+      {isPositive ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
       {Math.abs(value).toFixed(1)}%
     </span>
   );
@@ -112,7 +108,8 @@ function exportCSV(data: ReportSummary) {
   lines.push("=== Phương thức thanh toán ===");
   lines.push("Phương thức,Số lượng,Tổng tiền");
   for (const pm of data.paymentMethods) {
-    const label = PAYMENT_METHOD_LABELS[pm.method as keyof typeof PAYMENT_METHOD_LABELS] ?? pm.method;
+    const label =
+      PAYMENT_METHOD_LABELS[pm.method as keyof typeof PAYMENT_METHOD_LABELS] ?? pm.method;
     lines.push(`${label},${pm.count},${pm.total}`);
   }
 
@@ -153,12 +150,8 @@ export function ReportsClient({
   initialStart: string;
   initialEnd: string;
 }) {
-  const [startDate, setStartDate] = useState<Date>(
-    new Date(initialStart + "T00:00:00"),
-  );
-  const [endDate, setEndDate] = useState<Date>(
-    new Date(initialEnd + "T00:00:00"),
-  );
+  const [startDate, setStartDate] = useState<Date>(new Date(initialStart + "T00:00:00"));
+  const [endDate, setEndDate] = useState<Date>(new Date(initialEnd + "T00:00:00"));
   const [data, setData] = useState<ReportSummary>(initialData);
   const [isPending, startTransition] = useTransition();
 
@@ -211,7 +204,7 @@ export function ReportsClient({
               variant="outline"
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !startDate && "text-muted-foreground",
+                !startDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -236,7 +229,7 @@ export function ReportsClient({
               variant="outline"
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !endDate && "text-muted-foreground",
+                !endDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -336,18 +329,11 @@ export function ReportsClient({
                   tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
-                  formatter={(value) => [
-                    formatVND((value as number) ?? 0),
-                    "Doanh thu",
-                  ]}
+                  formatter={(value) => [formatVND((value as number) ?? 0), "Doanh thu"]}
                   labelFormatter={(label) => `Ngày ${String(label)}`}
                   contentStyle={TOOLTIP_STYLE}
                 />
-                <Bar
-                  dataKey="revenue"
-                  fill="var(--color-primary)"
-                  radius={[4, 4, 0, 0]}
-                />
+                <Bar dataKey="revenue" fill="var(--color-primary)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -381,10 +367,7 @@ export function ReportsClient({
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value) => [
-                      formatVND((value as number) ?? 0),
-                      "Tổng tiền",
-                    ]}
+                    formatter={(value) => [formatVND((value as number) ?? 0), "Tổng tiền"]}
                     contentStyle={TOOLTIP_STYLE}
                   />
                   <Legend />
@@ -410,7 +393,8 @@ export function ReportsClient({
                   {data.paymentMethods.map((pm) => (
                     <TableRow key={pm.method}>
                       <TableCell>
-                        {PAYMENT_METHOD_LABELS[pm.method as keyof typeof PAYMENT_METHOD_LABELS] ?? pm.method}
+                        {PAYMENT_METHOD_LABELS[pm.method as keyof typeof PAYMENT_METHOD_LABELS] ??
+                          pm.method}
                       </TableCell>
                       <TableCell className="text-right">{pm.count}</TableCell>
                       <TableCell className="text-right">{formatVND(pm.total)}</TableCell>
@@ -506,12 +490,8 @@ export function ReportsClient({
                       <TableRow key={row.date}>
                         <TableCell>{row.date}</TableCell>
                         <TableCell className="text-right">{row.orders}</TableCell>
-                        <TableCell className="text-right">
-                          {formatVND(row.revenue)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatVND(row.avgTicket)}
-                        </TableCell>
+                        <TableCell className="text-right">{formatVND(row.revenue)}</TableCell>
+                        <TableCell className="text-right">{formatVND(row.avgTicket)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -533,12 +513,7 @@ export function ReportsClient({
                   <BarChart data={chartTopItems} layout="vertical" margin={{ left: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis type="number" tick={{ fontSize: 11 }} />
-                    <YAxis
-                      type="category"
-                      dataKey="name"
-                      width={130}
-                      tick={{ fontSize: 11 }}
-                    />
+                    <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
                     <Tooltip
                       formatter={(value, _name, props) => [
                         `${(value as number) ?? 0} phần (${formatVND((props as { payload?: { fullName?: string; revenue?: number } })?.payload?.revenue ?? 0)})`,
@@ -564,9 +539,7 @@ export function ReportsClient({
                       <TableRow key={i}>
                         <TableCell>{item.name}</TableCell>
                         <TableCell className="text-right">{item.qty}</TableCell>
-                        <TableCell className="text-right">
-                          {formatVND(item.revenue)}
-                        </TableCell>
+                        <TableCell className="text-right">{formatVND(item.revenue)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

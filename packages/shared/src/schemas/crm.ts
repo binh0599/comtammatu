@@ -3,11 +3,7 @@ import { z } from "zod";
 export const createCustomerSchema = z.object({
   full_name: z.string().min(1, "Tên không được để trống").max(200),
   phone: z.string().min(10, "Số điện thoại không hợp lệ").max(20),
-  email: z
-    .string()
-    .email("Email không hợp lệ")
-    .optional()
-    .or(z.literal("")),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   gender: z.enum(["M", "F", "Other"]).optional(),
   birthday: z.string().optional().or(z.literal("")),
   source: z.enum(["pos", "app", "website"]).optional(),
@@ -18,11 +14,7 @@ export type CreateCustomerInput = z.infer<typeof createCustomerSchema>;
 export const updateCustomerSchema = z.object({
   full_name: z.string().min(1).max(200).optional(),
   phone: z.string().min(10).max(20).optional(),
-  email: z
-    .string()
-    .email("Email không hợp lệ")
-    .optional()
-    .or(z.literal("")),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   gender: z.enum(["M", "F", "Other"]).optional().nullable(),
   birthday: z.string().optional().or(z.literal("")).nullable(),
   source: z.enum(["pos", "app", "website"]).optional().nullable(),
@@ -34,11 +26,7 @@ export type UpdateCustomerInput = z.infer<typeof updateCustomerSchema>;
 export const createLoyaltyTierSchema = z.object({
   name: z.string().min(1, "Tên hạng không được để trống").max(100),
   min_points: z.coerce.number().int().min(0, "Điểm tối thiểu phải >= 0"),
-  discount_pct: z.coerce
-    .number()
-    .min(0)
-    .max(100, "Giảm giá tối đa 100%")
-    .optional(),
+  discount_pct: z.coerce.number().min(0).max(100, "Giảm giá tối đa 100%").optional(),
   benefits: z.string().max(1000).optional().or(z.literal("")),
   sort_order: z.coerce.number().int().min(1).optional(),
 });
@@ -66,6 +54,4 @@ export const adjustLoyaltyPointsSchema = z.object({
   reference_type: z.string().optional(),
   reference_id: z.coerce.number().optional(),
 });
-export type AdjustLoyaltyPointsInput = z.infer<
-  typeof adjustLoyaltyPointsSchema
->;
+export type AdjustLoyaltyPointsInput = z.infer<typeof adjustLoyaltyPointsSchema>;

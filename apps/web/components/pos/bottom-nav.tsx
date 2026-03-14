@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutGrid,
-  ClipboardList,
-  User,
-  Printer,
-  LogOut,
-} from "lucide-react";
+import { LayoutGrid, ClipboardList, User, Printer, LogOut } from "lucide-react";
 import { cn } from "@comtammatu/ui";
 import { logout } from "@/app/login/actions";
 import { NotificationBell } from "@/components/pos/notification-bell";
@@ -24,12 +18,14 @@ export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="POS navigation" className="bg-background fixed bottom-0 left-0 right-0 z-50 border-t">
+    <nav
+      aria-label="POS navigation"
+      className="bg-background fixed bottom-0 left-0 right-0 z-50 border-t"
+    >
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href ||
-            (item.href !== "/pos" && pathname.startsWith(item.href));
+            pathname === item.href || (item.href !== "/pos" && pathname.startsWith(item.href));
 
           return (
             <Link
@@ -38,9 +34,7 @@ export function BottomNav() {
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 text-xs",
-                isActive
-                  ? "text-primary font-medium"
-                  : "text-muted-foreground"
+                isActive ? "text-primary font-medium" : "text-muted-foreground"
               )}
             >
               <item.icon className="h-5 w-5" />

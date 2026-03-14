@@ -49,8 +49,7 @@ export default async function CashierPage() {
         opened_at: session.opened_at,
         cashier_name: profile.full_name,
         terminal_name:
-          (session.pos_terminals as { name: string } | null)?.name ??
-          `Máy #${session.terminal_id}`,
+          (session.pos_terminals as { name: string } | null)?.name ?? `Máy #${session.terminal_id}`,
         terminal_id: session.terminal_id,
       }}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

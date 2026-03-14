@@ -59,9 +59,7 @@ export default async function NotificationsPage() {
           </CardHeader>
           <CardContent>
             {notifications.length === 0 ? (
-              <p className="text-muted-foreground text-center py-8">
-                Không có cảnh báo nào.
-              </p>
+              <p className="text-muted-foreground text-center py-8">Không có cảnh báo nào.</p>
             ) : (
               <div className="rounded-md border">
                 <Table>
@@ -79,19 +77,12 @@ export default async function NotificationsPage() {
                       const severity = String(event.severity ?? "info");
                       const eventType = String(event.event_type ?? "");
                       const details = event.details as Record<string, unknown> | null;
-                      const branchName = details?.branch_name
-                        ? String(details.branch_name)
-                        : "-";
+                      const branchName = details?.branch_name ? String(details.branch_name) : "-";
 
                       return (
-                        <TableRow
-                          key={String(event.id)}
-                          className={getSeverityClass(severity)}
-                        >
+                        <TableRow key={String(event.id)} className={getSeverityClass(severity)}>
                           <TableCell className="text-sm">
-                            {event.created_at
-                              ? formatDateTime(String(event.created_at))
-                              : "-"}
+                            {event.created_at ? formatDateTime(String(event.created_at)) : "-"}
                           </TableCell>
                           <TableCell>{getTypeBadge(eventType)}</TableCell>
                           <TableCell>

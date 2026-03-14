@@ -44,10 +44,7 @@ export const getPrepList = withServerQuery(_getPrepList);
 
 // ===== Food Cost Report =====
 
-async function _getFoodCostReport(input: {
-  date_from: string;
-  date_to: string;
-}) {
+async function _getFoodCostReport(input: { date_from: string; date_to: string }) {
   const parsed = foodCostQuerySchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
@@ -174,9 +171,7 @@ async function _createStockCount(input: {
     notes: item.notes || null,
   }));
 
-  const { error: itemsError } = await supabase
-    .from("stock_count_items")
-    .insert(countItems);
+  const { error: itemsError } = await supabase.from("stock_count_items").insert(countItems);
 
   if (itemsError) {
     // Clean up orphaned header
@@ -349,7 +344,7 @@ export const getExpiringBatches = withServerQuery(_getExpiringBatches);
 
 // ===== Price Anomaly Detection =====
 
-const PRICE_ANOMALY_THRESHOLD = 0.20; // 20% deviation
+const PRICE_ANOMALY_THRESHOLD = 0.2; // 20% deviation
 
 async function _getPriceAnomalies() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
@@ -357,7 +352,8 @@ async function _getPriceAnomalies() {
   // Get all recent PO items with their prices
   const { data: recentItems, error } = await supabase
     .from("purchase_order_items")
-    .select(`
+    .select(
+      `
       id,
       ingredient_id,
       unit_price,
@@ -365,7 +361,8 @@ async function _getPriceAnomalies() {
       po_id,
       ingredients(name, unit),
       purchase_orders!inner(tenant_id, status, created_at)
-    `)
+    `
+    )
     .eq("purchase_orders.tenant_id", tenantId)
     .gt("unit_price", 0)
     .order("po_id", { ascending: false })

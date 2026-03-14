@@ -50,7 +50,9 @@ async function _getCampaignAnalytics(campaignId: number): Promise<CampaignAnalyt
 
   const all: { status: string; conversion_order_id: number | null }[] = recipients ?? [];
   const totalSent = all.length;
-  const totalOpened = all.filter((r) => r.status === "opened" || r.status === "clicked" || r.status === "converted").length;
+  const totalOpened = all.filter(
+    (r) => r.status === "opened" || r.status === "clicked" || r.status === "converted"
+  ).length;
   const convertedRecipients = all.filter((r) => r.status === "converted");
   const totalConverted = convertedRecipients.length;
 
@@ -61,15 +63,12 @@ async function _getCampaignAnalytics(campaignId: number): Promise<CampaignAnalyt
     .filter((id): id is number => id != null);
 
   if (orderIds.length > 0) {
-    const { data: orders } = await supabase
-      .from("orders")
-      .select("total")
-      .in("id", orderIds);
+    const { data: orders } = await supabase.from("orders").select("total").in("id", orderIds);
 
     if (orders) {
       conversionRevenue = (orders as { total: number | null }[]).reduce(
         (sum: number, o) => sum + Number(o.total ?? 0),
-        0,
+        0
       );
     }
   }

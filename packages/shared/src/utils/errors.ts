@@ -20,7 +20,7 @@ export class ActionError extends Error {
   constructor(
     public readonly message: string,
     public readonly code: ActionErrorCode,
-    public readonly httpStatus: number = 400,
+    public readonly httpStatus: number = 400
   ) {
     super(message);
     this.name = "ActionError";
@@ -92,14 +92,10 @@ export function handleServerActionError(error: unknown): {
  */
 export function safeDbError(
   error: { message: string; code?: string },
-  context: string,
+  context: string
 ): ActionError {
   console.error(`[${context}]`, error.message, error.code ?? "");
-  return new ActionError(
-    "Lỗi hệ thống. Vui lòng thử lại sau.",
-    "SERVER_ERROR",
-    500,
-  );
+  return new ActionError("Lỗi hệ thống. Vui lòng thử lại sau.", "SERVER_ERROR", 500);
 }
 
 /**
@@ -108,7 +104,7 @@ export function safeDbError(
  */
 export function safeDbErrorResult(
   error: { message: string; code?: string },
-  context: string,
+  context: string
 ): { error: string } {
   console.error(`[${context}]`, error.message, error.code ?? "");
   return { error: "Lỗi hệ thống. Vui lòng thử lại sau." };
@@ -120,13 +116,9 @@ export function safeDbErrorResult(
 export function requireRole(
   userRole: string,
   allowedRoles: readonly string[],
-  operation: string = "thao tác này",
+  operation: string = "thao tác này"
 ): void {
   if (!allowedRoles.includes(userRole)) {
-    throw new ActionError(
-      `Bạn không có quyền ${operation}`,
-      "UNAUTHORIZED",
-      403,
-    );
+    throw new ActionError(`Bạn không có quyền ${operation}`, "UNAUTHORIZED", 403);
   }
 }

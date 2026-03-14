@@ -1,11 +1,4 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "./table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./table";
 import { cn } from "./lib/utils";
 
 export interface DataTableColumn<T> {
@@ -52,11 +45,7 @@ export function DataTable<T>({
         <TableHeader>
           <TableRow>
             {columns.map((col) => (
-              <TableHead
-                key={col.key}
-                scope={col.scope ?? "col"}
-                className={col.headerClassName}
-              >
+              <TableHead key={col.key} scope={col.scope ?? "col"} className={col.headerClassName}>
                 {col.label}
               </TableHead>
             ))}

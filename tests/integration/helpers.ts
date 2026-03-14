@@ -17,15 +17,14 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 // ---------------------------------------------------------------------------
 
 const SUPABASE_URL =
-  process.env.NEXT_PUBLIC_SUPABASE_URL ??
-  "https://zrlriuednoaqrsvnjjyo.supabase.co";
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "https://zrlriuednoaqrsvnjjyo.supabase.co";
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 
 if (!SUPABASE_ANON_KEY) {
   throw new Error(
     "NEXT_PUBLIC_SUPABASE_ANON_KEY is required for integration tests. " +
-      "Set it in .env.local or environment.",
+      "Set it in .env.local or environment."
   );
 }
 
@@ -75,9 +74,7 @@ export function createServiceClient(): SupabaseClient {
 }
 
 /** Sign in as a specific role and return the authenticated client */
-export async function createAuthClient(
-  role: TestRole,
-): Promise<SupabaseClient> {
+export async function createAuthClient(role: TestRole): Promise<SupabaseClient> {
   const client = createAnonClient();
   const { error } = await client.auth.signInWithPassword({
     email: TEST_ACCOUNTS[role],
@@ -97,10 +94,7 @@ export async function createAuthClient(
  * Delete rows created during test by IDs.
  * Uses service client to bypass RLS.
  */
-export async function cleanupRows(
-  table: string,
-  ids: number[],
-): Promise<void> {
+export async function cleanupRows(table: string, ids: number[]): Promise<void> {
   if (ids.length === 0) return;
   const service = createServiceClient();
   await service.from(table).delete().in("id", ids);
@@ -116,7 +110,7 @@ export async function waitFor(
     timeout = 10_000,
     interval = 500,
     label = "condition",
-  }: { timeout?: number; interval?: number; label?: string } = {},
+  }: { timeout?: number; interval?: number; label?: string } = {}
 ): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < timeout) {
@@ -150,12 +144,10 @@ export function assertBlocked(result: {
 }): void {
   // RLS can manifest as error OR as empty data (silent block)
   const isError = result.error !== null;
-  const isEmpty =
-    result.data === null ||
-    (Array.isArray(result.data) && result.data.length === 0);
+  const isEmpty = result.data === null || (Array.isArray(result.data) && result.data.length === 0);
   if (!isError && !isEmpty) {
     throw new Error(
-      `Expected query to be blocked by RLS, but got data: ${JSON.stringify(result.data).slice(0, 200)}`,
+      `Expected query to be blocked by RLS, but got data: ${JSON.stringify(result.data).slice(0, 200)}`
     );
   }
 }

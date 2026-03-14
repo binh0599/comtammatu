@@ -70,10 +70,7 @@ async function _getSettings(): Promise<SettingsData> {
       .select("id, name, code, address, phone, timezone, operating_hours, is_active")
       .eq("tenant_id", tenantId)
       .order("name"),
-    supabase
-      .from("system_settings")
-      .select("key, value")
-      .eq("tenant_id", tenantId),
+    supabase.from("system_settings").select("key, value").eq("tenant_id", tenantId),
   ]);
 
   if (tenantRes.error) throw safeDbError(tenantRes.error, "db");
@@ -82,7 +79,7 @@ async function _getSettings(): Promise<SettingsData> {
 
   const allSettings = settingsRes.data ?? [];
   const paymentConfigRaw = allSettings.find(
-    (s: { key: string }) => s.key === "payment_methods_config",
+    (s: { key: string }) => s.key === "payment_methods_config"
   );
   let paymentMethodsConfig: PaymentMethodsConfig | null = null;
   if (paymentConfigRaw?.value) {
@@ -154,17 +151,15 @@ async function _updateSystemSetting(input: z.infer<typeof updateSettingSchema>) 
   const data = updateSettingSchema.parse(input);
   const { supabase, tenantId, userId } = await getAdminContext(["owner"]);
 
-  const { error } = await supabase
-    .from("system_settings")
-    .upsert(
-      {
-        tenant_id: tenantId,
-        key: data.key,
-        value: data.value,
-        updated_by: userId,
-      },
-      { onConflict: "tenant_id,key" },
-    );
+  const { error } = await supabase.from("system_settings").upsert(
+    {
+      tenant_id: tenantId,
+      key: data.key,
+      value: data.value,
+      updated_by: userId,
+    },
+    { onConflict: "tenant_id,key" }
+  );
 
   if (error) throw safeDbError(error, "db");
 
@@ -191,23 +186,19 @@ async function _updatePaymentMethodsConfig(input: PaymentMethodsConfig) {
     return { error: "Phải bật ít nhất một phương thức thanh toán" };
   }
 
-  const { error } = await supabase
-    .from("system_settings")
-    .upsert(
-      {
-        tenant_id: tenantId,
-        key: "payment_methods_config",
-        value: data,
-        updated_by: userId,
-      },
-      { onConflict: "tenant_id,key" },
-    );
+  const { error } = await supabase.from("system_settings").upsert(
+    {
+      tenant_id: tenantId,
+      key: "payment_methods_config",
+      value: data,
+      updated_by: userId,
+    },
+    { onConflict: "tenant_id,key" }
+  );
 
   if (error) throw safeDbError(error, "db");
 
   return { error: null };
 }
 
-export const updatePaymentMethodsConfig = withServerAction(
-  _updatePaymentMethodsConfig,
-);
+export const updatePaymentMethodsConfig = withServerAction(_updatePaymentMethodsConfig);

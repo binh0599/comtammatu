@@ -10,31 +10,22 @@ export async function GET() {
   const result = await getAuthenticatedCustomer();
 
   if ("error" in result) {
-    return NextResponse.json(
-      { error: result.error },
-      { status: result.status }
-    );
+    return NextResponse.json({ error: result.error }, { status: result.status });
   }
 
   const { supabase, customer } = result;
 
   // Rate limit by customer ID
-  const { success: rateLimitOk } = await apiLimiter.limit(
-    `data-export:${customer.id}`,
-  );
+  const { success: rateLimitOk } = await apiLimiter.limit(`data-export:${customer.id}`);
   if (!rateLimitOk) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
-      { status: 429 },
+      { status: 429 }
     );
   }
 
   // Collect all customer data in parallel
-  const [
-    { data: loyaltyTransactions },
-    { data: feedback },
-    { data: orders },
-  ] = await Promise.all([
+  const [{ data: loyaltyTransactions }, { data: feedback }, { data: orders }] = await Promise.all([
     supabase
       .from("loyalty_transactions")
       .select("id, type, points, balance_after, reference_type, reference_id, created_at")
@@ -47,7 +38,9 @@ export async function GET() {
       .order("created_at", { ascending: false }),
     supabase
       .from("orders")
-      .select("id, order_number, order_type, status, subtotal, tax, service_charge, total, created_at, order_items(id, menu_item_id, quantity, unit_price, total_price, notes)")
+      .select(
+        "id, order_number, order_type, status, subtotal, tax, service_charge, total, created_at, order_items(id, menu_item_id, quantity, unit_price, total_price, notes)"
+      )
       .eq("customer_id", customer.id)
       .order("created_at", { ascending: false }),
   ]);

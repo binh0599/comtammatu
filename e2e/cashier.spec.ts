@@ -25,9 +25,9 @@ test.describe("Cashier / POS", () => {
     );
 
     // Order queue filter tabs should be visible
-    await expect(
-      page.getByText(/tất cả|chưa thanh toán|sẵn sàng/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/tất cả|chưa thanh toán|sẵn sàng/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test("payment panel elements exist", async ({ page, loginAs }) => {
@@ -41,13 +41,11 @@ test.describe("Cashier / POS", () => {
     );
 
     // Session bar should show terminal/cashier info
-    await expect(
-      page.getByText(/máy|terminal|ca làm|phiên/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/máy|terminal|ca làm|phiên/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Payment panel area should be present (right side)
-    await expect(
-      page.getByText(/thanh toán|payment/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/thanh toán|payment/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

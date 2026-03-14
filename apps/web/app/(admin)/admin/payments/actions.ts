@@ -78,9 +78,7 @@ export const getPayments = withServerQuery(_getPayments);
 // Refund Payment
 // =====================
 
-async function _refundPayment(
-  paymentId: number
-): Promise<{ error?: string }> {
+async function _refundPayment(paymentId: number): Promise<{ error?: string }> {
   entityIdSchema.parse(paymentId);
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 

@@ -13,7 +13,7 @@ import { createClient } from "@supabase/supabase-js";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -38,10 +38,7 @@ export async function GET(request: Request) {
 
   if (fetchError) {
     console.error("[Expire Points] Lỗi truy vấn:", fetchError.message);
-    return NextResponse.json(
-      { error: "Lỗi truy vấn giao dịch hết hạn" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Lỗi truy vấn giao dịch hết hạn" }, { status: 500 });
   }
 
   if (!expiredTxns || expiredTxns.length === 0) {
@@ -58,10 +55,7 @@ export async function GET(request: Request) {
       .eq("id", txn.id);
 
     if (markError) {
-      console.error(
-        `[Expire Points] Lỗi đánh dấu txn ${txn.id}:`,
-        markError.message,
-      );
+      console.error(`[Expire Points] Lỗi đánh dấu txn ${txn.id}:`, markError.message);
       continue;
     }
 
@@ -82,21 +76,19 @@ export async function GET(request: Request) {
       const newBalance = currentBalance - pointsToExpire;
 
       // Insert compensating "expire" transaction
-      const { error: insertError } = await supabase
-        .from("loyalty_transactions")
-        .insert({
-          customer_id: txn.customer_id,
-          points: -pointsToExpire,
-          type: "expire",
-          balance_after: newBalance,
-          reference_type: "loyalty_transaction",
-          reference_id: txn.id,
-        });
+      const { error: insertError } = await supabase.from("loyalty_transactions").insert({
+        customer_id: txn.customer_id,
+        points: -pointsToExpire,
+        type: "expire",
+        balance_after: newBalance,
+        reference_type: "loyalty_transaction",
+        reference_id: txn.id,
+      });
 
       if (insertError) {
         console.error(
           `[Expire Points] Lỗi tạo giao dịch hết hạn cho customer ${txn.customer_id}:`,
-          insertError.message,
+          insertError.message
         );
         continue;
       }
@@ -105,9 +97,7 @@ export async function GET(request: Request) {
     expiredCount++;
   }
 
-  console.log(
-    `[Expire Points] Đã xử lý ${expiredCount}/${expiredTxns.length} giao dịch hết hạn`,
-  );
+  console.log(`[Expire Points] Đã xử lý ${expiredCount}/${expiredTxns.length} giao dịch hết hạn`);
 
   return NextResponse.json({ expired: expiredCount });
 }

@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  openSessionSchema,
-  closeSessionSchema,
-} from "./pos";
+import { openSessionSchema, closeSessionSchema } from "./pos";
 
 // ===== openSessionSchema =====
 

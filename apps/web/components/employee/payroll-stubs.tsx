@@ -1,11 +1,7 @@
 "use client";
 
 import { Wallet } from "lucide-react";
-import {
-  formatDate,
-  formatPrice,
-  getPayrollStatusLabel,
-} from "@comtammatu/shared";
+import { formatDate, formatPrice, getPayrollStatusLabel } from "@comtammatu/shared";
 import { Badge, Card, CardContent } from "@comtammatu/ui";
 
 interface PayrollEntry {
@@ -41,9 +37,7 @@ export function PayrollStubs({ entries }: PayrollStubsProps) {
         <Card>
           <CardContent className="flex flex-col items-center gap-2 py-8">
             <Wallet className="text-muted-foreground h-8 w-8" />
-            <p className="text-muted-foreground text-sm">
-              Chưa có phiếu lương nào.
-            </p>
+            <p className="text-muted-foreground text-sm">Chưa có phiếu lương nào.</p>
           </CardContent>
         </Card>
       </div>
@@ -62,13 +56,10 @@ export function PayrollStubs({ entries }: PayrollStubsProps) {
                 <div>
                   <p className="font-medium">{period.name}</p>
                   <p className="text-muted-foreground text-xs">
-                    {formatDate(period.start_date)} -{" "}
-                    {formatDate(period.end_date)}
+                    {formatDate(period.start_date)} - {formatDate(period.end_date)}
                   </p>
                   {period.branches?.name && (
-                    <p className="text-muted-foreground text-xs">
-                      {period.branches.name}
-                    </p>
+                    <p className="text-muted-foreground text-xs">{period.branches.name}</p>
                   )}
                 </div>
                 <Badge
@@ -104,28 +95,20 @@ export function PayrollStubs({ entries }: PayrollStubsProps) {
                 </div>
                 {entry.overtime_pay > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      Tăng ca ({entry.overtime_hours}h)
-                    </span>
-                    <span className="text-green-600">
-                      +{formatPrice(entry.overtime_pay)}
-                    </span>
+                    <span className="text-muted-foreground">Tăng ca ({entry.overtime_hours}h)</span>
+                    <span className="text-green-600">+{formatPrice(entry.overtime_pay)}</span>
                   </div>
                 )}
                 {entry.bonuses > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Thưởng</span>
-                    <span className="text-green-600">
-                      +{formatPrice(entry.bonuses)}
-                    </span>
+                    <span className="text-green-600">+{formatPrice(entry.bonuses)}</span>
                   </div>
                 )}
                 {entry.deductions > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Khấu trừ</span>
-                    <span className="text-red-600">
-                      -{formatPrice(entry.deductions)}
-                    </span>
+                    <span className="text-red-600">-{formatPrice(entry.deductions)}</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t pt-1 font-semibold">
@@ -134,11 +117,7 @@ export function PayrollStubs({ entries }: PayrollStubsProps) {
                 </div>
               </div>
 
-              {entry.notes && (
-                <p className="text-muted-foreground mt-2 text-xs">
-                  {entry.notes}
-                </p>
-              )}
+              {entry.notes && <p className="text-muted-foreground mt-2 text-xs">{entry.notes}</p>}
             </CardContent>
           </Card>
         );

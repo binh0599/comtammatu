@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Skeleton,
-} from "@comtammatu/ui";
+import { Card, CardContent, CardHeader, Skeleton } from "@comtammatu/ui";
 
 export default function SessionLoading() {
   return (

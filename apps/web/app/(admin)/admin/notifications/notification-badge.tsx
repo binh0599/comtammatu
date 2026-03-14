@@ -6,12 +6,7 @@ import Link from "next/link";
 import { usePushNotifications } from "@/hooks/use-push-notifications";
 import { getUnreadNotificationCount } from "./actions";
 import { toast } from "sonner";
-import {
-  Button,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@comtammatu/ui";
+import { Button, Popover, PopoverContent, PopoverTrigger } from "@comtammatu/ui";
 
 export function NotificationBadge() {
   const [count, setCount] = useState(0);
@@ -74,9 +69,7 @@ export function NotificationBadge() {
           >
             <Bell className="size-4" />
             <span>Xem cảnh báo kho hàng</span>
-            {count > 0 && (
-              <span className="ml-auto text-xs font-medium text-red-600">{count}</span>
-            )}
+            {count > 0 && <span className="ml-auto text-xs font-medium text-red-600">{count}</span>}
           </Link>
 
           {isSupported && (
@@ -97,9 +90,7 @@ export function NotificationBadge() {
                 </Button>
               </div>
               {permission === "denied" && (
-                <p className="text-destructive mt-1 px-2 text-xs">
-                  Đã chặn trong trình duyệt
-                </p>
+                <p className="text-destructive mt-1 px-2 text-xs">Đã chặn trong trình duyệt</p>
               )}
             </div>
           )}

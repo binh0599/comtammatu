@@ -32,9 +32,7 @@ export default async function KdsPrinterPage({ searchParams }: KdsPrinterPagePro
           </Button>
           <div>
             <h1 className="text-2xl font-bold">Cài đặt máy in KDS</h1>
-            <p className="text-muted-foreground text-sm">
-              Chọn trạm bếp để quản lý máy in
-            </p>
+            <p className="text-muted-foreground text-sm">Chọn trạm bếp để quản lý máy in</p>
           </div>
         </div>
         {stationList.length === 0 ? (
@@ -72,10 +70,10 @@ export default async function KdsPrinterPage({ searchParams }: KdsPrinterPagePro
           </Link>
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Máy in — {currentStation?.name ?? `Trạm #${stationId}`}</h1>
-          <p className="text-muted-foreground text-sm">
-            Quản lý máy in kết nối với trạm bếp này
-          </p>
+          <h1 className="text-2xl font-bold">
+            Máy in — {currentStation?.name ?? `Trạm #${stationId}`}
+          </h1>
+          <p className="text-muted-foreground text-sm">Quản lý máy in kết nối với trạm bếp này</p>
         </div>
       </div>
       <KdsPrinterSettings

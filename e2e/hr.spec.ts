@@ -19,9 +19,7 @@ test.describe("HR Module", () => {
     await expect(employeesTab).toBeVisible({ timeout: 10_000 });
     await expect(employeesTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/nhân viên/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/nhân viên/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("shifts tab loads", async ({ page, loginAs }) => {
@@ -34,9 +32,7 @@ test.describe("HR Module", () => {
 
     await expect(shiftsTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/ca làm|shift/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/ca làm|shift/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("schedule tab loads", async ({ page, loginAs }) => {
@@ -49,9 +45,7 @@ test.describe("HR Module", () => {
 
     await expect(scheduleTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/lịch phân ca|schedule/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/lịch phân ca|schedule/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("attendance tab loads", async ({ page, loginAs }) => {
@@ -64,9 +58,7 @@ test.describe("HR Module", () => {
 
     await expect(attendanceTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/chấm công|attendance/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/chấm công|attendance/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("leave tab loads", async ({ page, loginAs }) => {
@@ -79,9 +71,7 @@ test.describe("HR Module", () => {
 
     await expect(leaveTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/nghỉ phép|leave/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/nghỉ phép|leave/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("payroll tab loads", async ({ page, loginAs }) => {
@@ -94,8 +84,6 @@ test.describe("HR Module", () => {
 
     await expect(payrollTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/bảng lương|payroll/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/bảng lương|payroll/i).first()).toBeVisible({ timeout: 10_000 });
   });
 });

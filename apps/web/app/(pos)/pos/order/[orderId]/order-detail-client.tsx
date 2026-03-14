@@ -16,11 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import {
-  formatPrice,
-  formatDateTime,
-  getOrderStatusLabel,
-} from "@comtammatu/shared";
+import { formatPrice, formatDateTime, getOrderStatusLabel } from "@comtammatu/shared";
 import { ORDER_STATUS_VARIANT } from "@/lib/ui-constants";
 import { toast } from "sonner";
 import {
@@ -133,9 +129,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
 
   // Guest count edit state
   const [editingGuests, setEditingGuests] = useState(false);
-  const [guestInput, setGuestInput] = useState(
-    String(order.guest_count ?? ""),
-  );
+  const [guestInput, setGuestInput] = useState(String(order.guest_count ?? ""));
 
   // Notes edit state
   const [notesOpen, setNotesOpen] = useState(false);
@@ -224,7 +218,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
       const tables = await getTables();
       // Show available tables (exclude current table)
       const filtered = (tables as TableInfo[]).filter(
-        (t) => t.id !== order.table_id && t.status !== "occupied",
+        (t) => t.id !== order.table_id && t.status !== "occupied"
       );
       setAvailableTables(filtered);
     } catch {
@@ -302,9 +296,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
 
   const canEdit = isEditable(order.status);
   const orderActive = isActive(order.status);
-  const hasPendingItems = order.order_items.some(
-    (i) => i.status === "pending",
-  );
+  const hasPendingItems = order.order_items.some((i) => i.status === "pending");
 
   return (
     <div className="p-4">
@@ -324,10 +316,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
                 {" · "}
                 Bàn {order.tables.number}
                 {order.tables.branch_zones && (
-                  <span className="text-muted-foreground">
-                    {" "}
-                    ({order.tables.branch_zones.name})
-                  </span>
+                  <span className="text-muted-foreground"> ({order.tables.branch_zones.name})</span>
                 )}
               </>
             )}
@@ -385,18 +374,14 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
                   title={orderActive ? "Chỉnh sửa số khách" : undefined}
                 >
                   {order.guest_count ?? "—"} khách
-                  {orderActive && (
-                    <span className="ml-1 text-xs text-blue-500">✎</span>
-                  )}
+                  {orderActive && <span className="ml-1 text-xs text-blue-500">✎</span>}
                 </button>
               )}
             </div>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {order.status === "completed" && (
-            <ReceiptPrinter order={order} />
-          )}
+          {order.status === "completed" && <ReceiptPrinter order={order} />}
           <Badge variant={ORDER_STATUS_VARIANT[order.status] ?? "secondary"}>
             {getOrderStatusLabel(order.status)}
           </Badge>
@@ -409,9 +394,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
           <StickyNote className="mt-0.5 size-4 shrink-0 text-amber-500" aria-hidden="true" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">Ghi chú</p>
-            <p className="text-muted-foreground text-sm">
-              {order.notes || "Không có ghi chú"}
-            </p>
+            <p className="text-muted-foreground text-sm">{order.notes || "Không có ghi chú"}</p>
           </div>
           {orderActive && (
             <Popover open={notesOpen} onOpenChange={setNotesOpen}>
@@ -439,21 +422,11 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
                     rows={3}
                   />
                   <div className="flex justify-end gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setNotesOpen(false)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setNotesOpen(false)}>
                       Hủy
                     </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveNotes}
-                      disabled={isPending}
-                    >
-                      {isPending ? (
-                        <Loader2 className="mr-1 size-3 animate-spin" />
-                      ) : null}
+                    <Button size="sm" onClick={handleSaveNotes} disabled={isPending}>
+                      {isPending ? <Loader2 className="mr-1 size-3 animate-spin" /> : null}
                       Lưu
                     </Button>
                   </div>
@@ -467,11 +440,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
       {/* Actions */}
       <div className="mb-4 flex flex-wrap gap-2">
         {order.status === "draft" && (
-          <Button
-            onClick={handleConfirm}
-            disabled={isPending}
-            className="flex-1 gap-2"
-          >
+          <Button onClick={handleConfirm} disabled={isPending} className="flex-1 gap-2">
             <Send className="size-4" aria-hidden="true" />
             Gửi bếp
           </Button>
@@ -535,9 +504,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
       {/* Items */}
       <Card className="mb-4">
         <CardHeader>
-          <CardTitle className="text-base">
-            Danh sách món ({order.order_items.length})
-          </CardTitle>
+          <CardTitle className="text-base">Danh sách món ({order.order_items.length})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -545,14 +512,10 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
               const editable = isItemEditable(order.status, item.status);
 
               return (
-                <div
-                  key={item.id}
-                  className="flex items-start justify-between gap-2"
-                >
+                <div key={item.id} className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <p className="font-medium">
-                      {item.quantity}x{" "}
-                      {item.menu_items?.name ?? "Món đã xóa"}
+                      {item.quantity}x {item.menu_items?.name ?? "Món đã xóa"}
                       {item.menu_item_variants && (
                         <span className="text-muted-foreground text-sm">
                           {" "}
@@ -560,11 +523,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
                         </span>
                       )}
                     </p>
-                    {item.notes && (
-                      <p className="text-muted-foreground text-xs">
-                        {item.notes}
-                      </p>
-                    )}
+                    {item.notes && <p className="text-muted-foreground text-xs">{item.notes}</p>}
 
                     {/* Quantity controls — only for editable items */}
                     {editable && (
@@ -573,24 +532,18 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
                           variant="outline"
                           size="icon"
                           className="size-7"
-                          onClick={() =>
-                            handleUpdateQty(item.id, item.quantity, -1)
-                          }
+                          onClick={() => handleUpdateQty(item.id, item.quantity, -1)}
                           disabled={isPending}
                           aria-label="Giảm số lượng"
                         >
                           <Minus className="size-3" />
                         </Button>
-                        <span className="w-8 text-center text-sm font-medium">
-                          {item.quantity}
-                        </span>
+                        <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
                         <Button
                           variant="outline"
                           size="icon"
                           className="size-7"
-                          onClick={() =>
-                            handleUpdateQty(item.id, item.quantity, 1)
-                          }
+                          onClick={() => handleUpdateQty(item.id, item.quantity, 1)}
                           disabled={isPending}
                           aria-label="Tăng số lượng"
                         >
@@ -601,9 +554,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <p className="text-sm font-medium">
-                      {formatPrice(item.item_total)}
-                    </p>
+                    <p className="text-sm font-medium">{formatPrice(item.item_total)}</p>
 
                     {/* Remove button — only for editable items */}
                     {editable && (
@@ -665,25 +616,17 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
           <CardContent>
             <div className="space-y-2">
               {order.order_status_history
-                .sort(
-                  (a, b) =>
-                    new Date(b.created_at).getTime() -
-                    new Date(a.created_at).getTime(),
-                )
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 .map((h) => (
                   <div
                     key={h.id}
                     className="text-muted-foreground flex items-center justify-between text-sm"
                   >
                     <span>
-                      {h.from_status
-                        ? `${getOrderStatusLabel(h.from_status)} → `
-                        : ""}
+                      {h.from_status ? `${getOrderStatusLabel(h.from_status)} → ` : ""}
                       {getOrderStatusLabel(h.to_status)}
                     </span>
-                    <span className="text-xs">
-                      {formatDateTime(h.created_at)}
-                    </span>
+                    <span className="text-xs">{formatDateTime(h.created_at)}</span>
                   </div>
                 ))}
             </div>
@@ -705,9 +648,7 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
               <Loader2 className="size-6 animate-spin text-muted-foreground" />
             </div>
           ) : availableTables.length === 0 ? (
-            <p className="text-muted-foreground py-6 text-center text-sm">
-              Không có bàn trống
-            </p>
+            <p className="text-muted-foreground py-6 text-center text-sm">Không có bàn trống</p>
           ) : (
             <div className="grid grid-cols-3 gap-2">
               {availableTables.map((t) => (
@@ -731,16 +672,10 @@ export function OrderDetailClient({ order }: { order: OrderDetail }) {
           )}
 
           <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => setShowTableDialog(false)}
-            >
+            <Button variant="ghost" onClick={() => setShowTableDialog(false)}>
               Hủy
             </Button>
-            <Button
-              onClick={handleTransferTable}
-              disabled={!selectedTableId || isPending}
-            >
+            <Button onClick={handleTransferTable} disabled={!selectedTableId || isPending}>
               {isPending ? (
                 <Loader2 className="mr-1 size-4 animate-spin" />
               ) : (

@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react";
 import { UserCircle, Shield, Building2, Briefcase, Calendar } from "lucide-react";
 import { updateMyProfile, changeMyPassword } from "@/app/(employee)/employee/actions";
-import {
-  getEmploymentTypeLabel,
-  getEmployeeStatusLabel,
-  formatDate,
-} from "@comtammatu/shared";
+import { getEmploymentTypeLabel, getEmployeeStatusLabel, formatDate } from "@comtammatu/shared";
 import { toast } from "sonner";
 import { ROLE_LABELS } from "@/lib/role-labels";
 import {
@@ -139,19 +135,11 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
 
               <div>
                 <Label htmlFor="ec_name">Tên người liên hệ</Label>
-                <Input
-                  id="ec_name"
-                  value={ecName}
-                  onChange={(e) => setEcName(e.target.value)}
-                />
+                <Input id="ec_name" value={ecName} onChange={(e) => setEcName(e.target.value)} />
               </div>
               <div>
                 <Label htmlFor="ec_phone">Số điện thoại</Label>
-                <Input
-                  id="ec_phone"
-                  value={ecPhone}
-                  onChange={(e) => setEcPhone(e.target.value)}
-                />
+                <Input id="ec_phone" value={ecPhone} onChange={(e) => setEcPhone(e.target.value)} />
               </div>
               <div>
                 <Label htmlFor="ec_relationship">Quan hệ</Label>
@@ -186,7 +174,10 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
             <div className="flex flex-col gap-3">
               <InfoRow label="Họ tên" value={profile?.full_name ?? "—"} />
               <InfoRow label="Email" value={userEmail ?? "—"} />
-              <InfoRow label="Vai trò" value={ROLE_LABELS[profile?.role ?? ""] ?? profile?.role ?? "—"} />
+              <InfoRow
+                label="Vai trò"
+                value={ROLE_LABELS[profile?.role ?? ""] ?? profile?.role ?? "—"}
+              />
 
               {employee && (
                 <>
@@ -201,30 +192,25 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
                     value={employee.position ?? "—"}
                     icon={<Briefcase className="h-3.5 w-3.5" />}
                   />
-                  {employee.department && (
-                    <InfoRow label="Phòng ban" value={employee.department} />
-                  )}
+                  {employee.department && <InfoRow label="Phòng ban" value={employee.department} />}
                   <InfoRow
                     label="Ngày vào làm"
                     value={employee.hire_date ? formatDate(employee.hire_date) : "—"}
                     icon={<Calendar className="h-3.5 w-3.5" />}
                   />
-                  <InfoRow label="Loại HĐ" value={getEmploymentTypeLabel(employee.employment_type)} />
+                  <InfoRow
+                    label="Loại HĐ"
+                    value={getEmploymentTypeLabel(employee.employment_type)}
+                  />
                   <InfoRow label="Trạng thái" value={getEmployeeStatusLabel(employee.status)} />
 
                   {ec && (
                     <>
                       <Separator />
                       <p className="text-xs font-medium text-muted-foreground">Liên hệ khẩn cấp</p>
-                      {ec.name && (
-                        <InfoRow label="Tên" value={ec.name} />
-                      )}
-                      {ec.phone && (
-                        <InfoRow label="SĐT" value={ec.phone} />
-                      )}
-                      {ec.relationship && (
-                        <InfoRow label="Quan hệ" value={ec.relationship} />
-                      )}
+                      {ec.name && <InfoRow label="Tên" value={ec.name} />}
+                      {ec.phone && <InfoRow label="SĐT" value={ec.phone} />}
+                      {ec.relationship && <InfoRow label="Quan hệ" value={ec.relationship} />}
                     </>
                   )}
                 </>
@@ -308,14 +294,8 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
             </form>
           ) : (
             <div>
-              <p className="text-muted-foreground text-sm mb-3">
-                Đổi mật khẩu đăng nhập của bạn.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsEditingPassword(true)}
-              >
+              <p className="text-muted-foreground text-sm mb-3">Đổi mật khẩu đăng nhập của bạn.</p>
+              <Button variant="outline" size="sm" onClick={() => setIsEditingPassword(true)}>
                 Đổi mật khẩu
               </Button>
             </div>
@@ -326,15 +306,7 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ReactNode;
-}) {
+function InfoRow({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground flex items-center gap-1.5">

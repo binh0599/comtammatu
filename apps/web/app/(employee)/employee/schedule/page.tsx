@@ -19,10 +19,6 @@ export default async function SchedulePage() {
   const assignments = await getMyShiftAssignments(startDate, endDate);
 
   return (
-    <ScheduleCalendar
-      initialAssignments={assignments}
-      initialYear={year}
-      initialMonth={month}
-    />
+    <ScheduleCalendar initialAssignments={assignments} initialYear={year} initialMonth={month} />
   );
 }

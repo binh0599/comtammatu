@@ -34,7 +34,11 @@ async function _getCurrentTerminal() {
 
   if (session?.terminal_id) {
     const terminal = session.pos_terminals as { id: number; name: string; type: string } | null;
-    return { id: session.terminal_id, name: terminal?.name ?? `Máy #${session.terminal_id}`, type: terminal?.type ?? "cashier_station" };
+    return {
+      id: session.terminal_id,
+      name: terminal?.name ?? `Máy #${session.terminal_id}`,
+      type: terminal?.type ?? "cashier_station",
+    };
   }
 
   return null;
@@ -175,7 +179,7 @@ async function _createPrinter(formData: FormData) {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error } = await supabase
     .from("printer_configs")
     .insert({ ...parsed.data, branch_id: branchId } as any);
@@ -221,7 +225,7 @@ async function _updatePrinter(formData: FormData) {
     return { error: parsed.error.issues[0]?.message ?? "Dữ liệu không hợp lệ" };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error } = await supabase
     .from("printer_configs")
     .update(parsed.data as any)

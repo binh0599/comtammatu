@@ -25,9 +25,7 @@ export default async function OrdersPage() {
     <div className="p-4">
       <div className="mb-4">
         <h1 className="text-2xl font-bold">Đơn hàng</h1>
-        <p className="text-muted-foreground text-sm">
-          Danh sách đơn hàng chi nhánh
-        </p>
+        <p className="text-muted-foreground text-sm">Danh sách đơn hàng chi nhánh</p>
       </div>
       <OrdersList initialOrders={orders} branchId={profile.branch_id} />
     </div>

@@ -237,14 +237,14 @@ Failure Conditions:
 
 When you touch... you MUST also check:
 
-| File changed | Always check these too |
-| ------------ | ---------------------- |
-| `orders/actions.ts` | `orders/helpers.ts` (transitions) + `kds/actions.ts` (ticket state) + `cashier/actions.ts` (payment check) |
-| `constants.ts` (VALID_TRANSITIONS) | All consumers: `orders/helpers.ts`, `orders/actions.ts`, `shared/src/index.ts` |
-| `supabase/migrations/` | `database.types.ts` (regen) + `generated/prisma/client/` (regen) |
-| `database.types.ts` | Any `.rpc()` call in Server Actions |
-| `app-sidebar.tsx` | The new route being linked (must exist before linking) |
-| `customer/actions.ts` | Auth check: `getAuthenticatedCustomer()` in each action |
-| `api/privacy/` | `api/privacy/helpers.ts` (shared auth helper) |
-| Any realtime hook | UPDATE merge logic (preserve JOIN fields not in payload) |
-| `system_settings` query | Key string must match `constants.ts` — never hardcode |
+| File changed                       | Always check these too                                                                                     |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `orders/actions.ts`                | `orders/helpers.ts` (transitions) + `kds/actions.ts` (ticket state) + `cashier/actions.ts` (payment check) |
+| `constants.ts` (VALID_TRANSITIONS) | All consumers: `orders/helpers.ts`, `orders/actions.ts`, `shared/src/index.ts`                             |
+| `supabase/migrations/`             | `database.types.ts` (regen) + `generated/prisma/client/` (regen)                                           |
+| `database.types.ts`                | Any `.rpc()` call in Server Actions                                                                        |
+| `app-sidebar.tsx`                  | The new route being linked (must exist before linking)                                                     |
+| `customer/actions.ts`              | Auth check: `getAuthenticatedCustomer()` in each action                                                    |
+| `api/privacy/`                     | `api/privacy/helpers.ts` (shared auth helper)                                                              |
+| Any realtime hook                  | UPDATE merge logic (preserve JOIN fields not in payload)                                                   |
+| `system_settings` query            | Key string must match `constants.ts` — never hardcode                                                      |

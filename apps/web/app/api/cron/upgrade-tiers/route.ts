@@ -12,7 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -63,7 +63,10 @@ export async function GET(request: Request) {
       .eq("is_active", true);
 
     if (custError) {
-      console.error(`[Tier Cron] Failed to fetch customers for tenant ${tenantId}:`, custError.message);
+      console.error(
+        `[Tier Cron] Failed to fetch customers for tenant ${tenantId}:`,
+        custError.message
+      );
       continue;
     }
 
@@ -71,8 +74,9 @@ export async function GET(request: Request) {
 
     // Bulk-fetch latest balance for all customers in this tenant
     const customerIds = customers.map((c) => c.id);
-    const { data: balanceRows } = await supabase
-      .rpc("get_latest_loyalty_balances", { customer_ids: customerIds });
+    const { data: balanceRows } = await supabase.rpc("get_latest_loyalty_balances", {
+      customer_ids: customerIds,
+    });
 
     // Build a map of customer_id → balance_after
     const balanceMap = new Map<number, number>();

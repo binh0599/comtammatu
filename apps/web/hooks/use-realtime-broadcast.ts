@@ -22,23 +22,17 @@ export function useRealtimeBroadcast(branchId: number) {
         switch (event.type) {
           case "order_ready":
             toast.success(event.message, {
-              description: event.order_number
-                ? `Đơn ${event.order_number}`
-                : undefined,
+              description: event.order_number ? `Đơn ${event.order_number}` : undefined,
             });
             break;
           case "new_order":
             toast.info(event.message, {
-              description: event.order_number
-                ? `Đơn ${event.order_number}`
-                : undefined,
+              description: event.order_number ? `Đơn ${event.order_number}` : undefined,
             });
             break;
           case "order_cancelled":
             toast.error(event.message, {
-              description: event.order_number
-                ? `Đơn ${event.order_number}`
-                : undefined,
+              description: event.order_number ? `Đơn ${event.order_number}` : undefined,
             });
             break;
           default:

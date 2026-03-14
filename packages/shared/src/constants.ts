@@ -35,13 +35,7 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   transfer: "Chuyển khoản",
 };
 
-export const PAYMENT_STATUSES = [
-  "pending",
-  "completed",
-  "failed",
-  "refunded",
-  "expired",
-] as const;
+export const PAYMENT_STATUSES = ["pending", "completed", "failed", "refunded", "expired"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
 export const TERMINAL_TYPES = ["mobile_order", "cashier_station"] as const;
@@ -57,12 +51,7 @@ export type SessionStatus = (typeof SESSION_STATUSES)[number];
 export const KDS_TICKET_STATUSES = ["pending", "preparing", "ready"] as const;
 export type KdsTicketStatus = (typeof KDS_TICKET_STATUSES)[number];
 
-export const TABLE_STATUSES = [
-  "available",
-  "occupied",
-  "reserved",
-  "maintenance",
-] as const;
+export const TABLE_STATUSES = ["available", "occupied", "reserved", "maintenance"] as const;
 export type TableStatus = (typeof TABLE_STATUSES)[number];
 
 // ===== Roles =====
@@ -114,10 +103,7 @@ export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 // ===== Valid KDS Ticket Transitions =====
 
-export const VALID_KDS_TRANSITIONS: Record<
-  KdsTicketStatus,
-  KdsTicketStatus[]
-> = {
+export const VALID_KDS_TRANSITIONS: Record<KdsTicketStatus, KdsTicketStatus[]> = {
   pending: ["preparing", "ready"],
   preparing: ["ready"],
   ready: [],
@@ -125,21 +111,10 @@ export const VALID_KDS_TRANSITIONS: Record<
 
 // ===== Inventory =====
 
-export const STOCK_MOVEMENT_TYPES = [
-  "in",
-  "out",
-  "transfer",
-  "waste",
-  "adjust",
-] as const;
+export const STOCK_MOVEMENT_TYPES = ["in", "out", "transfer", "waste", "adjust"] as const;
 export type StockMovementType = (typeof STOCK_MOVEMENT_TYPES)[number];
 
-export const WASTE_REASONS = [
-  "expired",
-  "spoiled",
-  "overproduction",
-  "other",
-] as const;
+export const WASTE_REASONS = ["expired", "spoiled", "overproduction", "other"] as const;
 export type WasteReason = (typeof WASTE_REASONS)[number];
 
 // ===== Supplier / Purchase Orders =====
@@ -166,12 +141,7 @@ export const VALID_PO_TRANSITIONS: Record<PoStatus, PoStatus[]> = {
 export const EMPLOYMENT_TYPES = ["full", "part", "contract"] as const;
 export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 
-export const EMPLOYEE_STATUSES = [
-  "active",
-  "inactive",
-  "on_leave",
-  "terminated",
-] as const;
+export const EMPLOYEE_STATUSES = ["active", "inactive", "on_leave", "terminated"] as const;
 export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
 
 export const LEAVE_TYPES = ["annual", "sick", "unpaid", "maternity"] as const;
@@ -186,23 +156,12 @@ export const SHIFT_ASSIGNMENT_STATUSES = [
   "completed",
   "no_show",
 ] as const;
-export type ShiftAssignmentStatus =
-  (typeof SHIFT_ASSIGNMENT_STATUSES)[number];
+export type ShiftAssignmentStatus = (typeof SHIFT_ASSIGNMENT_STATUSES)[number];
 
-export const ATTENDANCE_STATUSES = [
-  "present",
-  "absent",
-  "late",
-  "early_leave",
-] as const;
+export const ATTENDANCE_STATUSES = ["present", "absent", "late", "early_leave"] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
-export const ATTENDANCE_SOURCES = [
-  "qr",
-  "manual",
-  "pos_session",
-  "terminal_login",
-] as const;
+export const ATTENDANCE_SOURCES = ["qr", "manual", "pos_session", "terminal_login"] as const;
 export type AttendanceSource = (typeof ATTENDANCE_SOURCES)[number];
 
 // ===== Payroll =====
@@ -230,14 +189,8 @@ export type CustomerGender = (typeof CUSTOMER_GENDERS)[number];
 export const CUSTOMER_SOURCES = ["pos", "app", "website"] as const;
 export type CustomerSource = (typeof CUSTOMER_SOURCES)[number];
 
-export const LOYALTY_TRANSACTION_TYPES = [
-  "earn",
-  "redeem",
-  "expire",
-  "adjust",
-] as const;
-export type LoyaltyTransactionType =
-  (typeof LOYALTY_TRANSACTION_TYPES)[number];
+export const LOYALTY_TRANSACTION_TYPES = ["earn", "redeem", "expire", "adjust"] as const;
+export type LoyaltyTransactionType = (typeof LOYALTY_TRANSACTION_TYPES)[number];
 
 export const VOUCHER_TYPES = ["percent", "fixed", "free_item"] as const;
 export type VoucherType = (typeof VOUCHER_TYPES)[number];
@@ -245,21 +198,12 @@ export type VoucherType = (typeof VOUCHER_TYPES)[number];
 export const DISCOUNT_TYPES = ["percent", "fixed", "voucher"] as const;
 export type DiscountType = (typeof DISCOUNT_TYPES)[number];
 
-export const DELETION_REQUEST_STATUSES = [
-  "pending",
-  "cancelled",
-  "completed",
-] as const;
-export type DeletionRequestStatus =
-  (typeof DELETION_REQUEST_STATUSES)[number];
+export const DELETION_REQUEST_STATUSES = ["pending", "cancelled", "completed"] as const;
+export type DeletionRequestStatus = (typeof DELETION_REQUEST_STATUSES)[number];
 
 // ===== Menu =====
 
-export const MENU_CATEGORY_TYPES = [
-  "main_dish",
-  "side_dish",
-  "drink",
-] as const;
+export const MENU_CATEGORY_TYPES = ["main_dish", "side_dish", "drink"] as const;
 export type MenuCategoryType = (typeof MENU_CATEGORY_TYPES)[number];
 
 export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
@@ -292,47 +236,26 @@ export const ROLE_TERMINAL_TYPE_MAP: Record<string, DeviceTerminalType | null> =
 
 // ===== Printing =====
 
-export const PRINTER_TYPES = [
-  "thermal_usb",
-  "thermal_network",
-  "browser",
-] as const;
+export const PRINTER_TYPES = ["thermal_usb", "thermal_network", "browser"] as const;
 export type PrinterType = (typeof PRINTER_TYPES)[number];
 
 export const PAPER_WIDTHS = [58, 80] as const;
 export type PaperWidth = (typeof PAPER_WIDTHS)[number];
 
-export const PRINTER_TEST_STATUSES = [
-  "connected",
-  "error",
-  "untested",
-] as const;
+export const PRINTER_TEST_STATUSES = ["connected", "error", "untested"] as const;
 export type PrinterTestStatus = (typeof PRINTER_TEST_STATUSES)[number];
 
-export const PRINTER_ASSIGNED_TYPES = [
-  "pos_terminal",
-  "kds_station",
-  "registered_device",
-] as const;
+export const PRINTER_ASSIGNED_TYPES = ["pos_terminal", "kds_station", "registered_device"] as const;
 export type PrinterAssignedType = (typeof PRINTER_ASSIGNED_TYPES)[number];
 
 // ===== PO Quality Check =====
 
-export const PO_QUALITY_STATUSES = [
-  "pending",
-  "accepted",
-  "partial",
-  "rejected",
-] as const;
+export const PO_QUALITY_STATUSES = ["pending", "accepted", "partial", "rejected"] as const;
 export type PoQualityStatus = (typeof PO_QUALITY_STATUSES)[number];
 
 // ===== Stock Count =====
 
-export const STOCK_COUNT_STATUSES = [
-  "draft",
-  "submitted",
-  "approved",
-] as const;
+export const STOCK_COUNT_STATUSES = ["draft", "submitted", "approved"] as const;
 export type StockCountStatus = (typeof STOCK_COUNT_STATUSES)[number];
 
 // ===== 86'd / Menu Availability Reasons =====
@@ -368,25 +291,21 @@ export const CRM_ROLES = ["manager", "owner"] as const;
 export const CAMPAIGN_TYPES = ["email", "sms", "push"] as const;
 export type CampaignType = (typeof CAMPAIGN_TYPES)[number];
 
-export const CAMPAIGN_STATUSES = [
-  "draft",
-  "scheduled",
-  "sent",
-  "completed",
-] as const;
+export const CAMPAIGN_STATUSES = ["draft", "scheduled", "sent", "completed"] as const;
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
-export const NOTIFICATION_CHANNELS = [
-  "in_app",
-  "push",
-  "email",
-  "sms",
-] as const;
+export const NOTIFICATION_CHANNELS = ["in_app", "push", "email", "sms"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 
 // ===== Reservations =====
 
-export const RESERVATION_STATUSES = ["pending", "confirmed", "seated", "no_show", "cancelled"] as const;
+export const RESERVATION_STATUSES = [
+  "pending",
+  "confirmed",
+  "seated",
+  "no_show",
+  "cancelled",
+] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
 
 export const TABLE_SECTIONS = ["Tầng 1", "Tầng 2", "Sân vườn", "VIP", "Ngoài trời"] as const;

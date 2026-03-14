@@ -114,7 +114,7 @@ export function AnalyticsTab() {
               variant="outline"
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !startDate && "text-muted-foreground",
+                !startDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -139,7 +139,7 @@ export function AnalyticsTab() {
               variant="outline"
               className={cn(
                 "w-[200px] justify-start text-left font-normal",
-                !endDate && "text-muted-foreground",
+                !endDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -194,18 +194,10 @@ export function AnalyticsTab() {
                     <TableBody>
                       {branchData.map((row) => (
                         <TableRow key={row.branch_id}>
-                          <TableCell className="font-medium">
-                            {row.branch_name}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatVND(row.revenue)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {row.orders}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatVND(row.avgTicket)}
-                          </TableCell>
+                          <TableCell className="font-medium">{row.branch_name}</TableCell>
+                          <TableCell className="text-right">{formatVND(row.revenue)}</TableCell>
+                          <TableCell className="text-right">{row.orders}</TableCell>
+                          <TableCell className="text-right">{formatVND(row.avgTicket)}</TableCell>
                           <TableCell>{row.topCategory}</TableCell>
                         </TableRow>
                       ))}
@@ -217,10 +209,7 @@ export function AnalyticsTab() {
                     <div className="mt-4">
                       <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={branchData}>
-                          <CartesianGrid
-                            strokeDasharray="3 3"
-                            className="stroke-muted"
-                          />
+                          <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                           <XAxis
                             dataKey="branch_name"
                             className="text-xs"
@@ -232,10 +221,7 @@ export function AnalyticsTab() {
                             tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`}
                           />
                           <Tooltip
-                            formatter={(value) => [
-                              formatVND((value as number) ?? 0),
-                              "Doanh thu",
-                            ]}
+                            formatter={(value) => [formatVND((value as number) ?? 0), "Doanh thu"]}
                             contentStyle={{
                               backgroundColor: "var(--color-card)",
                               border: "1px solid var(--color-border)",
@@ -278,31 +264,29 @@ export function AnalyticsTab() {
                       </tr>
                     </thead>
                     <tbody>
-                      {Array.from({ length: 18 }, (_, i) => i + 6).map(
-                        (hour) => (
-                          <tr key={hour}>
-                            <td className="p-1 font-medium">{hour}h</td>
-                            {Array.from({ length: 7 }, (_, dow) => {
-                              const cell = peakData.find(
-                                (p) => p.dayOfWeek === dow && p.hour === hour,
-                              );
-                              const count = cell?.count ?? 0;
-                              return (
-                                <td
-                                  key={dow}
-                                  className={cn(
-                                    "p-1 text-center rounded-sm min-w-[32px]",
-                                    getHeatColor(count, maxPeak),
-                                  )}
-                                  title={`${DAY_LABELS[dow]} ${hour}h: ${count} đơn`}
-                                >
-                                  {count > 0 ? count : ""}
-                                </td>
-                              );
-                            })}
-                          </tr>
-                        ),
-                      )}
+                      {Array.from({ length: 18 }, (_, i) => i + 6).map((hour) => (
+                        <tr key={hour}>
+                          <td className="p-1 font-medium">{hour}h</td>
+                          {Array.from({ length: 7 }, (_, dow) => {
+                            const cell = peakData.find(
+                              (p) => p.dayOfWeek === dow && p.hour === hour
+                            );
+                            const count = cell?.count ?? 0;
+                            return (
+                              <td
+                                key={dow}
+                                className={cn(
+                                  "p-1 text-center rounded-sm min-w-[32px]",
+                                  getHeatColor(count, maxPeak)
+                                )}
+                                title={`${DAY_LABELS[dow]} ${hour}h: ${count} đơn`}
+                              >
+                                {count > 0 ? count : ""}
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                   <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -326,9 +310,7 @@ export function AnalyticsTab() {
               </CardHeader>
               <CardContent>
                 {categoryData.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">
-                    Không có dữ liệu
-                  </p>
+                  <p className="text-muted-foreground text-sm">Không có dữ liệu</p>
                 ) : (
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
@@ -344,17 +326,11 @@ export function AnalyticsTab() {
                         }
                       >
                         {categoryData.map((_, i) => (
-                          <Cell
-                            key={i}
-                            fill={PIE_COLORS[i % PIE_COLORS.length]}
-                          />
+                          <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value) => [
-                          formatVND((value as number) ?? 0),
-                          "Doanh thu",
-                        ]}
+                        formatter={(value) => [formatVND((value as number) ?? 0), "Doanh thu"]}
                         contentStyle={{
                           backgroundColor: "var(--color-card)",
                           border: "1px solid var(--color-border)",
@@ -373,9 +349,7 @@ export function AnalyticsTab() {
               </CardHeader>
               <CardContent>
                 {categoryData.length === 0 ? (
-                  <p className="text-muted-foreground text-sm">
-                    Không có dữ liệu
-                  </p>
+                  <p className="text-muted-foreground text-sm">Không có dữ liệu</p>
                 ) : (
                   <Table>
                     <TableHeader>
@@ -388,15 +362,9 @@ export function AnalyticsTab() {
                     <TableBody>
                       {categoryData.map((row) => (
                         <TableRow key={row.category}>
-                          <TableCell className="font-medium">
-                            {row.category}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {row.quantity}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {formatVND(row.revenue)}
-                          </TableCell>
+                          <TableCell className="font-medium">{row.category}</TableCell>
+                          <TableCell className="text-right">{row.quantity}</TableCell>
+                          <TableCell className="text-right">{formatVND(row.revenue)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

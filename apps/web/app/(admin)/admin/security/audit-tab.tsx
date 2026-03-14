@@ -84,20 +84,14 @@ function ActionBadge({ action }: { action: string }) {
     case "create":
     case "insert":
       return (
-        <Badge
-          variant="outline"
-          className="border-green-500 text-green-600"
-        >
+        <Badge variant="outline" className="border-green-500 text-green-600">
           {getActionLabel(action)}
         </Badge>
       );
     case "update":
     case "upsert":
       return (
-        <Badge
-          variant="outline"
-          className="border-blue-500 text-blue-600"
-        >
+        <Badge variant="outline" className="border-blue-500 text-blue-600">
           {getActionLabel(action)}
         </Badge>
       );
@@ -108,20 +102,12 @@ function ActionBadge({ action }: { action: string }) {
   }
 }
 
-export function AuditTab({
-  logs,
-  resourceTypes,
-}: {
-  logs: AuditLog[];
-  resourceTypes: string[];
-}) {
+export function AuditTab({ logs, resourceTypes }: { logs: AuditLog[]; resourceTypes: string[] }) {
   const [resourceFilter, setResourceFilter] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const filteredLogs =
-    resourceFilter === "all"
-      ? logs
-      : logs.filter((l) => l.resource_type === resourceFilter);
+    resourceFilter === "all" ? logs : logs.filter((l) => l.resource_type === resourceFilter);
 
   return (
     <div className="space-y-6">
@@ -141,9 +127,7 @@ export function AuditTab({
             ))}
           </SelectContent>
         </Select>
-        <span className="text-muted-foreground text-sm">
-          {filteredLogs.length} bản ghi
-        </span>
+        <span className="text-muted-foreground text-sm">{filteredLogs.length} bản ghi</span>
       </div>
 
       {/* Audit Log Table */}
@@ -163,10 +147,7 @@ export function AuditTab({
           <TableBody>
             {filteredLogs.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground h-24 text-center">
                   Chưa có nhật ký hoạt động nào.
                 </TableCell>
               </TableRow>
@@ -181,31 +162,19 @@ export function AuditTab({
                       <ActionBadge action={log.action} />
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">
-                        {getResourceTypeLabel(log.resource_type)}
-                      </Badge>
+                      <Badge variant="outline">{getResourceTypeLabel(log.resource_type)}</Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      #{log.resource_id}
-                    </TableCell>
+                    <TableCell className="font-mono text-sm">#{log.resource_id}</TableCell>
                     <TableCell>{log.user_name ?? "—"}</TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {log.ip_address ?? "—"}
-                    </TableCell>
+                    <TableCell className="font-mono text-sm">{log.ip_address ?? "—"}</TableCell>
                     <TableCell>
                       {log.old_value || log.new_value ? (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() =>
-                            setExpandedId(
-                              expandedId === log.id ? null : log.id
-                            )
-                          }
+                          onClick={() => setExpandedId(expandedId === log.id ? null : log.id)}
                         >
-                          {expandedId === log.id
-                            ? "Thu gọn"
-                            : "Xem chi tiết"}
+                          {expandedId === log.id ? "Thu gọn" : "Xem chi tiết"}
                         </Button>
                       ) : (
                         <span className="text-muted-foreground">—</span>
@@ -219,38 +188,26 @@ export function AuditTab({
                           <CardContent className="grid gap-4 p-4 md:grid-cols-2">
                             <div>
                               <CardHeader className="p-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                  Giá trị cũ
-                                </CardTitle>
+                                <CardTitle className="text-sm font-medium">Giá trị cũ</CardTitle>
                               </CardHeader>
                               {log.old_value ? (
                                 <pre className="bg-muted max-h-60 overflow-auto rounded-md p-3 text-xs">
-                                  <code>
-                                    {JSON.stringify(log.old_value, null, 2)}
-                                  </code>
+                                  <code>{JSON.stringify(log.old_value, null, 2)}</code>
                                 </pre>
                               ) : (
-                                <p className="text-muted-foreground text-sm">
-                                  Không có dữ liệu
-                                </p>
+                                <p className="text-muted-foreground text-sm">Không có dữ liệu</p>
                               )}
                             </div>
                             <div>
                               <CardHeader className="p-0 pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                  Giá trị mới
-                                </CardTitle>
+                                <CardTitle className="text-sm font-medium">Giá trị mới</CardTitle>
                               </CardHeader>
                               {log.new_value ? (
                                 <pre className="bg-muted max-h-60 overflow-auto rounded-md p-3 text-xs">
-                                  <code>
-                                    {JSON.stringify(log.new_value, null, 2)}
-                                  </code>
+                                  <code>{JSON.stringify(log.new_value, null, 2)}</code>
                                 </pre>
                               ) : (
-                                <p className="text-muted-foreground text-sm">
-                                  Không có dữ liệu
-                                </p>
+                                <p className="text-muted-foreground text-sm">Không có dữ liệu</p>
                               )}
                             </div>
                           </CardContent>

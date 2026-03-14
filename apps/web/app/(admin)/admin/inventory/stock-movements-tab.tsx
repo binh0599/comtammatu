@@ -73,10 +73,7 @@ interface TransferItem {
   quantity: number;
 }
 
-const TYPE_BADGE_VARIANTS: Record<
-  string,
-  { className: string }
-> = {
+const TYPE_BADGE_VARIANTS: Record<string, { className: string }> = {
   in: { className: "bg-green-600 hover:bg-green-700" },
   out: { className: "bg-red-600 hover:bg-red-700" },
   waste: { className: "bg-yellow-600 hover:bg-yellow-700" },
@@ -158,9 +155,7 @@ export function StockMovementsTab({
       return;
     }
 
-    const validItems = transferItems.filter(
-      (i) => i.ingredient_id > 0 && i.quantity > 0
-    );
+    const validItems = transferItems.filter((i) => i.ingredient_id > 0 && i.quantity > 0);
     if (validItems.length === 0) {
       setError("Vui lòng thêm ít nhất 1 nguyên liệu");
       return;
@@ -190,15 +185,9 @@ export function StockMovementsTab({
     setTransferItems((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function updateTransferItem(
-    index: number,
-    field: keyof TransferItem,
-    value: number
-  ) {
+  function updateTransferItem(index: number, field: keyof TransferItem, value: number) {
     setTransferItems((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      )
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     );
   }
 
@@ -207,9 +196,7 @@ export function StockMovementsTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Nhập / Xuất kho</h2>
-          <p className="text-muted-foreground">
-            Lịch sử nhập, xuất, điều chỉnh tồn kho
-          </p>
+          <p className="text-muted-foreground">Lịch sử nhập, xuất, điều chỉnh tồn kho</p>
         </div>
         <div className="flex gap-2">
           {/* Transfer dialog */}
@@ -234,18 +221,13 @@ export function StockMovementsTab({
                 </DialogDescription>
               </DialogHeader>
               {error && isTransferOpen && (
-                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                  {error}
-                </div>
+                <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
               )}
               <div className="grid gap-4 py-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="grid gap-2">
                     <Label>Chi nhánh xuất</Label>
-                    <Select
-                      value={transferFromBranch}
-                      onValueChange={setTransferFromBranch}
-                    >
+                    <Select value={transferFromBranch} onValueChange={setTransferFromBranch}>
                       <SelectTrigger>
                         <SelectValue placeholder="Chọn chi nhánh" />
                       </SelectTrigger>
@@ -260,10 +242,7 @@ export function StockMovementsTab({
                   </div>
                   <div className="grid gap-2">
                     <Label>Chi nhánh nhận</Label>
-                    <Select
-                      value={transferToBranch}
-                      onValueChange={setTransferToBranch}
-                    >
+                    <Select value={transferToBranch} onValueChange={setTransferToBranch}>
                       <SelectTrigger>
                         <SelectValue placeholder="Chọn chi nhánh" />
                       </SelectTrigger>
@@ -281,12 +260,7 @@ export function StockMovementsTab({
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label>Nguyên liệu chuyển</Label>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={addTransferItem}
-                    >
+                    <Button type="button" variant="ghost" size="sm" onClick={addTransferItem}>
                       <Plus className="mr-1 h-3 w-3" />
                       Thêm dòng
                     </Button>
@@ -296,9 +270,7 @@ export function StockMovementsTab({
                       <div key={idx} className="flex items-center gap-2">
                         <Select
                           value={item.ingredient_id ? String(item.ingredient_id) : ""}
-                          onValueChange={(v) =>
-                            updateTransferItem(idx, "ingredient_id", Number(v))
-                          }
+                          onValueChange={(v) => updateTransferItem(idx, "ingredient_id", Number(v))}
                         >
                           <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Chọn nguyên liệu" />
@@ -319,11 +291,7 @@ export function StockMovementsTab({
                           placeholder="Số lượng"
                           value={item.quantity || ""}
                           onChange={(e) =>
-                            updateTransferItem(
-                              idx,
-                              "quantity",
-                              Number(e.target.value)
-                            )
+                            updateTransferItem(idx, "quantity", Number(e.target.value))
                           }
                         />
                         {transferItems.length > 1 && (
@@ -354,10 +322,7 @@ export function StockMovementsTab({
                 </div>
               </div>
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setIsTransferOpen(false)}
-                >
+                <Button variant="outline" onClick={() => setIsTransferOpen(false)}>
                   Hủy
                 </Button>
                 <Button onClick={handleTransfer} disabled={isPending}>
@@ -385,14 +350,10 @@ export function StockMovementsTab({
               <form action={handleCreate}>
                 <DialogHeader>
                   <DialogTitle>Tạo phiếu nhập/xuất</DialogTitle>
-                  <DialogDescription>
-                    Ghi nhận biến động tồn kho
-                  </DialogDescription>
+                  <DialogDescription>Ghi nhận biến động tồn kho</DialogDescription>
                 </DialogHeader>
                 {error && isCreateOpen && (
-                  <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-                    {error}
-                  </div>
+                  <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
                 )}
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
@@ -465,11 +426,7 @@ export function StockMovementsTab({
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsCreateOpen(false)}
-                  >
+                  <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>
                     Hủy
                   </Button>
                   <Button type="submit" disabled={isPending}>
@@ -483,9 +440,7 @@ export function StockMovementsTab({
       </div>
 
       {error && !isCreateOpen && !isTransferOpen && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <div className="rounded-md border">
@@ -494,7 +449,9 @@ export function StockMovementsTab({
             <TableRow>
               <TableHead scope="col">Loại</TableHead>
               <TableHead scope="col">Nguyên liệu</TableHead>
-              <TableHead scope="col" className="text-right">Số lượng</TableHead>
+              <TableHead scope="col" className="text-right">
+                Số lượng
+              </TableHead>
               <TableHead scope="col">Chi nhánh</TableHead>
               <TableHead scope="col">Ghi chú</TableHead>
               <TableHead scope="col">Người tạo</TableHead>
@@ -504,10 +461,7 @@ export function StockMovementsTab({
           <TableBody>
             {movements.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={7} className="text-muted-foreground h-24 text-center">
                   Chưa có lịch sử nhập/xuất
                 </TableCell>
               </TableRow>
@@ -523,19 +477,13 @@ export function StockMovementsTab({
                         {getStockMovementTypeLabel(mov.type)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-medium">
-                      {mov.ingredients.name}
-                    </TableCell>
+                    <TableCell className="font-medium">{mov.ingredients.name}</TableCell>
                     <TableCell className="text-right">
                       {mov.quantity} {mov.ingredients.unit}
                     </TableCell>
                     <TableCell>{mov.branches.name}</TableCell>
-                    <TableCell className="max-w-[200px] truncate">
-                      {mov.notes ?? "-"}
-                    </TableCell>
-                    <TableCell>
-                      {mov.profiles?.full_name ?? "-"}
-                    </TableCell>
+                    <TableCell className="max-w-[200px] truncate">{mov.notes ?? "-"}</TableCell>
+                    <TableCell>{mov.profiles?.full_name ?? "-"}</TableCell>
                     <TableCell>{formatDateTime(mov.created_at)}</TableCell>
                   </TableRow>
                 );

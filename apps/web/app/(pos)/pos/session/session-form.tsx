@@ -83,14 +83,17 @@ export function OpenSessionForm({
       <form action={handleSubmit}>
         <CardContent className="grid gap-4">
           {error && (
-            <div id="error-opening-session" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div
+              id="error-opening-session"
+              role="alert"
+              className="rounded-md bg-red-50 p-3 text-sm text-red-600"
+            >
               {error}
             </div>
           )}
           {!linkedTerminalId && terminals.length === 0 ? (
             <div className="rounded-md bg-yellow-50 p-3 text-sm text-yellow-700">
-              Chưa có thiết bị thu ngân nào được kích hoạt. Liên hệ quản lý để
-              thiết lập.
+              Chưa có thiết bị thu ngân nào được kích hoạt. Liên hệ quản lý để thiết lập.
             </div>
           ) : (
             <>
@@ -99,7 +102,11 @@ export function OpenSessionForm({
               ) : (
                 <div className="grid gap-2">
                   <Label htmlFor="terminal_id">Thiết bị thu ngân</Label>
-                  <Select name="terminal_id" required aria-describedby={error ? "error-opening-session" : undefined}>
+                  <Select
+                    name="terminal_id"
+                    required
+                    aria-describedby={error ? "error-opening-session" : undefined}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Chọn máy thu ngân" />
                     </SelectTrigger>
@@ -125,9 +132,7 @@ export function OpenSessionForm({
                   required
                   aria-describedby={error ? "error-opening-session" : undefined}
                 />
-                <p className="text-muted-foreground text-xs">
-                  Số tiền mặt có sẵn khi bắt đầu ca
-                </p>
+                <p className="text-muted-foreground text-xs">Số tiền mặt có sẵn khi bắt đầu ca</p>
               </div>
             </>
           )}
@@ -156,9 +161,7 @@ export function ActiveSessionCard({
   const [closingAmount, setClosingAmount] = useState("");
 
   const expectedAmount = session.opening_amount + summary.cashTotal;
-  const difference = closingAmount
-    ? Number(closingAmount) - expectedAmount
-    : null;
+  const difference = closingAmount ? Number(closingAmount) - expectedAmount : null;
 
   const [elapsed, setElapsed] = useState(0);
 
@@ -194,7 +197,11 @@ export function ActiveSessionCard({
       </CardHeader>
       <CardContent className="grid gap-4">
         {error && (
-          <div id="error-close-session" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+          <div
+            id="error-close-session"
+            role="alert"
+            className="rounded-md bg-red-50 p-3 text-sm text-red-600"
+          >
             {error}
           </div>
         )}
@@ -202,9 +209,7 @@ export function ActiveSessionCard({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-muted-foreground text-sm">Tiền đầu ca</p>
-            <p className="text-lg font-semibold">
-              {formatPrice(session.opening_amount)}
-            </p>
+            <p className="text-lg font-semibold">{formatPrice(session.opening_amount)}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">Thời gian</p>
@@ -214,9 +219,7 @@ export function ActiveSessionCard({
           </div>
           <div>
             <p className="text-muted-foreground text-sm">Thu tiền mặt</p>
-            <p className="text-lg font-semibold">
-              {formatPrice(summary.cashTotal)}
-            </p>
+            <p className="text-lg font-semibold">{formatPrice(summary.cashTotal)}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">Số giao dịch</p>
@@ -240,11 +243,7 @@ export function ActiveSessionCard({
           </AlertDialogTrigger>
           <AlertDialogContent>
             <form action={handleClose}>
-              <input
-                type="hidden"
-                name="session_id"
-                value={session.id}
-              />
+              <input type="hidden" name="session_id" value={session.id} />
               <AlertDialogHeader>
                 <AlertDialogTitle>Đóng ca làm việc</AlertDialogTitle>
                 <AlertDialogDescription>
@@ -253,9 +252,7 @@ export function ActiveSessionCard({
               </AlertDialogHeader>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="closing_amount">
-                    Số tiền thực tế (VNĐ)
-                  </Label>
+                  <Label htmlFor="closing_amount">Số tiền thực tế (VNĐ)</Label>
                   <Input
                     id="closing_amount"
                     name="closing_amount"

@@ -2,7 +2,17 @@
 
 import { useEffect, useRef, useCallback, useState } from "react";
 import Link from "next/link";
-import { WifiOff, Printer, Settings, Usb, Volume2, VolumeOff, Clock, ChefHat, Loader2 } from "lucide-react";
+import {
+  WifiOff,
+  Printer,
+  Settings,
+  Usb,
+  Volume2,
+  VolumeOff,
+  Clock,
+  ChefHat,
+  Loader2,
+} from "lucide-react";
 import { LogoutButton } from "@/components/logout-button";
 import { useKdsRealtime, type ConnectionStatus } from "./use-kds-realtime";
 import { TicketCard } from "./ticket-card";
@@ -58,10 +68,8 @@ function StatsBar({ tickets }: { tickets: KdsTicket[] }) {
   const avgWaitMin =
     tickets.length > 0
       ? Math.round(
-          tickets.reduce(
-            (sum, t) => sum + (now - new Date(t.created_at).getTime()) / 60_000,
-            0,
-          ) / tickets.length,
+          tickets.reduce((sum, t) => sum + (now - new Date(t.created_at).getTime()) / 60_000, 0) /
+            tickets.length
         )
       : 0;
 
@@ -112,7 +120,7 @@ export function KdsBoard({
   const { tickets, connectionStatus } = useKdsRealtime(
     stationId,
     initialTickets,
-    getStationTickets,
+    getStationTickets
   );
   const { config: printerConfig } = usePrinterForStation(stationId);
   const serialPrinter = useSerialPrinter();
@@ -151,10 +159,7 @@ export function KdsBoard({
 
     let hasNew = false;
     for (const ticket of tickets) {
-      if (
-        ticket.status === "pending" &&
-        !soundedTicketIds.current.has(ticket.id)
-      ) {
+      if (ticket.status === "pending" && !soundedTicketIds.current.has(ticket.id)) {
         soundedTicketIds.current.add(ticket.id);
         hasNew = true;
       }
@@ -169,17 +174,14 @@ export function KdsBoard({
   }, [tickets, isMuted]);
 
   // --- Recall toast handler ---
-  const handleRecall = useCallback(
-    async (ticketId: number, orderNumber: string) => {
-      const result = await recallTicket(ticketId);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success(`Đã hoàn tác ${orderNumber}`);
-      }
-    },
-    [],
-  );
+  const handleRecall = useCallback(async (ticketId: number, orderNumber: string) => {
+    const result = await recallTicket(ticketId);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(`Đã hoàn tác ${orderNumber}`);
+    }
+  }, []);
 
   const onBumpReady = useCallback(
     (ticketId: number, orderNumber: string) => {
@@ -192,7 +194,7 @@ export function KdsBoard({
         },
       });
     },
-    [handleRecall],
+    [handleRecall]
   );
 
   /** Auto-print a ticket via Web Serial if connected, otherwise fall back to WebUSB/network */
@@ -221,9 +223,7 @@ export function KdsBoard({
         setTimeout(() => {
           serialPrinter
             .print(serialCommands)
-            .catch((err) =>
-              console.warn("KDS serial auto-print error:", err),
-            );
+            .catch((err) => console.warn("KDS serial auto-print error:", err));
         }, delay);
         return;
       }
@@ -257,12 +257,10 @@ export function KdsBoard({
               console.warn(`KDS auto-print failed for ticket ${ticket.id}:`, result.error);
             }
           })
-          .catch((err) =>
-            console.warn("KDS auto-print error:", err),
-          );
+          .catch((err) => console.warn("KDS auto-print error:", err));
       }, printerConfig.print_delay_ms);
     },
-    [printerConfig, stationName, serialPrinter.status, serialPrinter.print],
+    [printerConfig, stationName, serialPrinter.status, serialPrinter.print]
   );
 
   useEffect(() => {
@@ -398,11 +396,7 @@ export function KdsBoard({
                 timingRule={defaultRule}
                 printerConfig={printerConfig}
                 stationName={stationName}
-                serialPrint={
-                  serialPrinter.status === "connected"
-                    ? serialPrinter.print
-                    : undefined
-                }
+                serialPrint={serialPrinter.status === "connected" ? serialPrinter.print : undefined}
                 onBumpReady={onBumpReady}
               />
             ))}

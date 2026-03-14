@@ -85,8 +85,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Permissions-Policy",
-            value:
-              "geolocation=(), microphone=(), camera=(), payment=(), usb=(self)",
+            value: "geolocation=(), microphone=(), camera=(), payment=(), usb=(self)",
           },
           {
             key: "X-XSS-Protection",

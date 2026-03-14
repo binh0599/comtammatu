@@ -109,11 +109,7 @@ async function _deleteMenu(id: number) {
   // If order_items reference any menu_items, the FK constraint (no CASCADE)
   // will block deletion with a 23503 error. We catch that specifically
   // instead of pre-checking order_items (which fails due to branch-scoped RLS).
-  const { error } = await supabase
-    .from("menus")
-    .delete()
-    .eq("id", id)
-    .eq("tenant_id", tenantId);
+  const { error } = await supabase.from("menus").delete().eq("id", id).eq("tenant_id", tenantId);
 
   if (error) {
     if (error.code === "23503") {

@@ -75,9 +75,7 @@ export const createShiftAssignmentSchema = z.object({
   date: z.string().min(1, "Ngày không được để trống"),
   notes: z.string().max(500).optional().or(z.literal("")),
 });
-export type CreateShiftAssignmentInput = z.infer<
-  typeof createShiftAssignmentSchema
->;
+export type CreateShiftAssignmentInput = z.infer<typeof createShiftAssignmentSchema>;
 
 export const createLeaveRequestSchema = z.object({
   employee_id: z.coerce.number().int().positive(),
@@ -95,9 +93,7 @@ export const approveLeaveRequestSchema = z.object({
   id: z.coerce.number().int().positive(),
   status: z.enum(["approved", "rejected"]),
 });
-export type ApproveLeaveRequestInput = z.infer<
-  typeof approveLeaveRequestSchema
->;
+export type ApproveLeaveRequestInput = z.infer<typeof approveLeaveRequestSchema>;
 
 // ===== Shared Validation Schemas =====
 
@@ -160,6 +156,4 @@ export const createMyLeaveRequestSchema = z
     message: "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu",
     path: ["end_date"],
   });
-export type CreateMyLeaveRequestInput = z.infer<
-  typeof createMyLeaveRequestSchema
->;
+export type CreateMyLeaveRequestInput = z.infer<typeof createMyLeaveRequestSchema>;

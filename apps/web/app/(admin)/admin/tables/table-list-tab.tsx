@@ -159,10 +159,17 @@ export function TableListTab({
             <form action={handleCreate} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="create-branch">Chi nhánh</Label>
-                <select name="branch_id" id="create-branch" required className="w-full rounded-md border px-3 py-2 text-sm">
+                <select
+                  name="branch_id"
+                  id="create-branch"
+                  required
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                >
                   <option value="">Chọn chi nhánh</option>
                   {branches.map((b) => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -172,14 +179,26 @@ export function TableListTab({
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-capacity">Sức chứa</Label>
-                <Input name="capacity" id="create-capacity" type="number" min={1} defaultValue={4} />
+                <Input
+                  name="capacity"
+                  id="create-capacity"
+                  type="number"
+                  min={1}
+                  defaultValue={4}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="create-zone">Khu vực</Label>
-                <select name="zone_id" id="create-zone" className="w-full rounded-md border px-3 py-2 text-sm">
+                <select
+                  name="zone_id"
+                  id="create-zone"
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                >
                   <option value="">Chọn khu vực</option>
                   {zones.map((z) => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
+                    <option key={z.id} value={z.id}>
+                      {z.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -274,18 +293,37 @@ export function TableListTab({
             <form action={(fd) => handleUpdate(editTable.id, fd)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-number">Số bàn</Label>
-                <Input name="number" id="edit-number" type="number" min={1} defaultValue={editTable.number} />
+                <Input
+                  name="number"
+                  id="edit-number"
+                  type="number"
+                  min={1}
+                  defaultValue={editTable.number}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-capacity">Sức chứa</Label>
-                <Input name="capacity" id="edit-capacity" type="number" min={1} defaultValue={editTable.capacity ?? 4} />
+                <Input
+                  name="capacity"
+                  id="edit-capacity"
+                  type="number"
+                  min={1}
+                  defaultValue={editTable.capacity ?? 4}
+                />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-zone">Khu vực</Label>
-                <select name="zone_id" id="edit-zone" className="w-full rounded-md border px-3 py-2 text-sm" defaultValue={editTable.zone_id}>
+                <select
+                  name="zone_id"
+                  id="edit-zone"
+                  className="w-full rounded-md border px-3 py-2 text-sm"
+                  defaultValue={editTable.zone_id}
+                >
                   <option value="">Chọn khu vực</option>
                   {zones.map((z) => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
+                    <option key={z.id} value={z.id}>
+                      {z.name}
+                    </option>
                   ))}
                 </select>
               </div>

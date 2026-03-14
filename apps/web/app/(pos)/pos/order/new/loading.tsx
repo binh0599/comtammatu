@@ -1,9 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Skeleton,
-} from "@comtammatu/ui";
+import { Card, CardContent, CardHeader, Skeleton } from "@comtammatu/ui";
 
 export default function NewOrderLoading() {
   return (
@@ -11,7 +6,9 @@ export default function NewOrderLoading() {
       {/* Table grid */}
       <div className="lg:w-1/3">
         <Card>
-          <CardHeader><Skeleton className="h-5 w-24" /></CardHeader>
+          <CardHeader>
+            <Skeleton className="h-5 w-24" />
+          </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-2">
               {Array.from({ length: 9 }).map((_, i) => (

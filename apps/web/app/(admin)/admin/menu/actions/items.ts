@@ -159,24 +159,18 @@ async function _getAvailableSides(menuItemId: number) {
     if (ownershipError.code !== "PGRST116") {
       throw safeDbError(ownershipError, "db");
     }
-    throw new ActionError(
-      "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn",
-      "NOT_FOUND",
-      404,
-    );
+    throw new ActionError("Món ăn không tồn tại hoặc không thuộc đơn vị của bạn", "NOT_FOUND", 404);
   }
 
   if (!item) {
-    throw new ActionError(
-      "Món ăn không tồn tại hoặc không thuộc đơn vị của bạn",
-      "NOT_FOUND",
-      404,
-    );
+    throw new ActionError("Món ăn không tồn tại hoặc không thuộc đơn vị của bạn", "NOT_FOUND", 404);
   }
 
   const { data, error } = await supabase
     .from("menu_item_available_sides")
-    .select("side_item_id, menu_items!menu_item_available_sides_side_item_id_fkey(id, name, base_price)")
+    .select(
+      "side_item_id, menu_items!menu_item_available_sides_side_item_id_fkey(id, name, base_price)"
+    )
     .eq("menu_item_id", menuItemId);
 
   if (error) throw safeDbError(error, "db");
@@ -205,10 +199,7 @@ async function _getSideItems(menuId: number) {
 
 export const getSideItems = withServerQuery(_getSideItems);
 
-async function _updateAvailableSides(data: {
-  menu_item_id: number;
-  side_item_ids: number[];
-}) {
+async function _updateAvailableSides(data: { menu_item_id: number; side_item_ids: number[] }) {
   const parsed = menuItemAvailableSidesSchema.safeParse(data);
   if (!parsed.success) {
     return {
@@ -260,9 +251,7 @@ async function _updateAvailableSides(data: {
       side_item_id: sideId,
     }));
 
-    const { error: insertError } = await supabase
-      .from("menu_item_available_sides")
-      .insert(inserts);
+    const { error: insertError } = await supabase.from("menu_item_available_sides").insert(inserts);
 
     if (insertError) return safeDbErrorResult(insertError, "db");
   }

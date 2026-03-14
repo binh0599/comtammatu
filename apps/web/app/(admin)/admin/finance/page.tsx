@@ -13,14 +13,12 @@ const FinanceDashboardClient = dynamic(
     import("./finance-dashboard-client").then((m) => ({
       default: m.FinanceDashboardClient,
     })),
-  { loading: ChartFallback },
+  { loading: ChartFallback }
 );
 
 export default async function FinanceDashboardPage() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .slice(0, 10);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
 
   const data = await getFinanceDashboardData(monthStart, today);
@@ -33,11 +31,7 @@ export default async function FinanceDashboardPage() {
         <FinanceKPICards kpi={data.kpi} />
 
         {/* Interactive dashboard with charts & tables */}
-        <FinanceDashboardClient
-          initialData={data}
-          initialStart={monthStart}
-          initialEnd={today}
-        />
+        <FinanceDashboardClient initialData={data} initialStart={monthStart} initialEnd={today} />
       </div>
     </>
   );

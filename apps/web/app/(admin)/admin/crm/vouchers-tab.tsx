@@ -1,26 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  ToggleLeft,
-  ToggleRight,
-  Ticket,
-} from "lucide-react";
-import {
-  formatPrice,
-  formatDate,
-  getVoucherTypeLabel,
-  VOUCHER_TYPES,
-} from "@comtammatu/shared";
-import {
-  createVoucher,
-  updateVoucher,
-  deleteVoucher,
-  toggleVoucher,
-} from "./actions";
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Ticket } from "lucide-react";
+import { formatPrice, formatDate, getVoucherTypeLabel, VOUCHER_TYPES } from "@comtammatu/shared";
+import { createVoucher, updateVoucher, deleteVoucher, toggleVoucher } from "./actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -138,9 +121,7 @@ function VoucherForm({
 
   function handleToggleBranch(branchId: number) {
     setSelectedBranches((prev) =>
-      prev.includes(branchId)
-        ? prev.filter((id) => id !== branchId)
-        : [...prev, branchId]
+      prev.includes(branchId) ? prev.filter((id) => id !== branchId) : [...prev, branchId]
     );
   }
 
@@ -152,17 +133,11 @@ function VoucherForm({
       code: formData.get("code") as string,
       type,
       value: Number(formData.get("value")),
-      min_order: formData.get("min_order")
-        ? Number(formData.get("min_order"))
-        : null,
-      max_discount: formData.get("max_discount")
-        ? Number(formData.get("max_discount"))
-        : null,
+      min_order: formData.get("min_order") ? Number(formData.get("min_order")) : null,
+      max_discount: formData.get("max_discount") ? Number(formData.get("max_discount")) : null,
       valid_from: formData.get("valid_from") as string,
       valid_to: formData.get("valid_to") as string,
-      max_uses: formData.get("max_uses")
-        ? Number(formData.get("max_uses"))
-        : null,
+      max_uses: formData.get("max_uses") ? Number(formData.get("max_uses")) : null,
       is_active: true,
       branch_ids: selectedBranches,
     });
@@ -170,11 +145,7 @@ function VoucherForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="grid gap-2">
@@ -206,8 +177,7 @@ function VoucherForm({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="grid gap-2">
             <Label htmlFor="value">
-              Giá trị *{" "}
-              {type === "percent" ? "(%)" : type === "fixed" ? "(VND)" : ""}
+              Giá trị * {type === "percent" ? "(%)" : type === "fixed" ? "(VND)" : ""}
             </Label>
             <Input
               id="value"
@@ -251,11 +221,7 @@ function VoucherForm({
               id="valid_from"
               name="valid_from"
               type="date"
-              defaultValue={
-                defaultValues?.valid_from
-                  ? defaultValues.valid_from.split("T")[0]
-                  : ""
-              }
+              defaultValue={defaultValues?.valid_from ? defaultValues.valid_from.split("T")[0] : ""}
               required
             />
           </div>
@@ -265,11 +231,7 @@ function VoucherForm({
               id="valid_to"
               name="valid_to"
               type="date"
-              defaultValue={
-                defaultValues?.valid_to
-                  ? defaultValues.valid_to.split("T")[0]
-                  : ""
-              }
+              defaultValue={defaultValues?.valid_to ? defaultValues.valid_to.split("T")[0] : ""}
               required
             />
           </div>
@@ -296,18 +258,13 @@ function VoucherForm({
                     checked={selectedBranches.includes(branch.id)}
                     onCheckedChange={() => handleToggleBranch(branch.id)}
                   />
-                  <label
-                    htmlFor={`branch-${branch.id}`}
-                    className="cursor-pointer text-sm"
-                  >
+                  <label htmlFor={`branch-${branch.id}`} className="cursor-pointer text-sm">
                     {branch.name}
                   </label>
                 </div>
               ))}
             </div>
-            <p className="text-muted-foreground text-xs">
-              Không chọn = áp dụng tất cả chi nhánh
-            </p>
+            <p className="text-muted-foreground text-xs">Không chọn = áp dụng tất cả chi nhánh</p>
           </div>
         )}
       </div>
@@ -322,13 +279,7 @@ function VoucherForm({
 
 // --- Main Component ---
 
-export function VouchersTab({
-  vouchers,
-  branches,
-}: {
-  vouchers: Voucher[];
-  branches: Branch[];
-}) {
+export function VouchersTab({ vouchers, branches }: { vouchers: Voucher[]; branches: Branch[] }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<Voucher | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -337,9 +288,7 @@ export function VouchersTab({
   function handleCreate(data: Record<string, unknown>) {
     setError(null);
     startTransition(async () => {
-      const result = await createVoucher(
-        data as Parameters<typeof createVoucher>[0]
-      );
+      const result = await createVoucher(data as Parameters<typeof createVoucher>[0]);
       if (result && "error" in result && result.error) {
         setError(result.error);
       } else {
@@ -352,10 +301,7 @@ export function VouchersTab({
   function handleUpdate(id: number, data: Record<string, unknown>) {
     setError(null);
     startTransition(async () => {
-      const result = await updateVoucher(
-        id,
-        data as Parameters<typeof updateVoucher>[1]
-      );
+      const result = await updateVoucher(id, data as Parameters<typeof updateVoucher>[1]);
       if (result && "error" in result && result.error) {
         setError(result.error);
       } else {
@@ -388,9 +334,7 @@ export function VouchersTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Voucher</h2>
-          <p className="text-muted-foreground">
-            Quản lý mã giảm giá và khuyến mãi
-          </p>
+          <p className="text-muted-foreground">Quản lý mã giảm giá và khuyến mãi</p>
         </div>
         <Dialog
           open={isCreateOpen}
@@ -408,9 +352,7 @@ export function VouchersTab({
           <DialogContent className="max-w-2xl">
             <DialogHeader>
               <DialogTitle>Thêm voucher</DialogTitle>
-              <DialogDescription>
-                Tạo mã giảm giá mới cho khách hàng
-              </DialogDescription>
+              <DialogDescription>Tạo mã giảm giá mới cho khách hàng</DialogDescription>
             </DialogHeader>
             <VoucherForm
               branches={branches}
@@ -425,182 +367,165 @@ export function VouchersTab({
       </div>
 
       {error && !isCreateOpen && !editingItem && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
+        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
       )}
 
       <Card>
         <CardContent className="overflow-x-auto p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead scope="col">Mã</TableHead>
-              <TableHead scope="col">Loại</TableHead>
-              <TableHead scope="col" className="text-right">Giá trị</TableHead>
-              <TableHead scope="col" className="text-right">Đơn tối thiểu</TableHead>
-              <TableHead scope="col" className="text-right">Giảm tối đa</TableHead>
-              <TableHead scope="col">Hiệu lực</TableHead>
-              <TableHead scope="col">Chi nhánh</TableHead>
-              <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {vouchers.length === 0 ? (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={9}
-                  className="h-32 text-center"
-                >
-                  <div className="flex flex-col items-center gap-2">
-                    <Ticket className="text-muted-foreground/50 h-8 w-8" />
-                    <p className="text-muted-foreground text-sm">
-                      Chưa có voucher nào
-                    </p>
-                  </div>
-                </TableCell>
+                <TableHead scope="col">Mã</TableHead>
+                <TableHead scope="col">Loại</TableHead>
+                <TableHead scope="col" className="text-right">
+                  Giá trị
+                </TableHead>
+                <TableHead scope="col" className="text-right">
+                  Đơn tối thiểu
+                </TableHead>
+                <TableHead scope="col" className="text-right">
+                  Giảm tối đa
+                </TableHead>
+                <TableHead scope="col">Hiệu lực</TableHead>
+                <TableHead scope="col">Chi nhánh</TableHead>
+                <TableHead scope="col">Trạng thái</TableHead>
+                <TableHead scope="col" className="text-right">
+                  Thao tác
+                </TableHead>
               </TableRow>
-            ) : (
-              vouchers.map((voucher) => (
-                <TableRow key={voucher.id}>
-                  <TableCell className="font-mono font-medium">
-                    {voucher.code}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn(getTypeBadgeClass(voucher.type))}
-                    >
-                      {getVoucherTypeLabel(voucher.type)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {formatVoucherValue(voucher.type, voucher.value)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {voucher.min_order != null
-                      ? formatPrice(voucher.min_order)
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {voucher.max_discount != null
-                      ? formatPrice(voucher.max_discount)
-                      : "-"}
-                  </TableCell>
-                  <TableCell className="text-sm">
-                    {formatDate(voucher.valid_from)} -{" "}
-                    {formatDate(voucher.valid_to)}
-                  </TableCell>
-                  <TableCell className="max-w-[120px] truncate text-sm">
-                    {voucher.voucher_branches.length === 0
-                      ? "Tất cả"
-                      : voucher.voucher_branches
-                          .map((vb) => vb.branches?.name ?? "")
-                          .filter(Boolean)
-                          .join(", ")}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={voucher.is_active ? "default" : "secondary"}
-                    >
-                      {voucher.is_active ? "Hoạt động" : "Tạm dừng"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {/* Toggle Active */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={
-                          voucher.is_active ? "Tạm dừng" : "Kích hoạt"
-                        }
-                        onClick={() => handleToggle(voucher.id)}
-                      >
-                        {voucher.is_active ? (
-                          <ToggleRight className="h-4 w-4" aria-hidden="true" />
-                        ) : (
-                          <ToggleLeft className="h-4 w-4" aria-hidden="true" />
-                        )}
-                      </Button>
-
-                      {/* Edit Dialog */}
-                      <Dialog
-                        open={editingItem?.id === voucher.id}
-                        onOpenChange={(open) => {
-                          if (!open) {
-                            setEditingItem(null);
-                            setError(null);
-                          }
-                        }}
-                      >
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => {
-                              setError(null);
-                              setEditingItem(voucher);
-                            }}
-                            aria-label="Sửa"
-                          >
-                            <Pencil className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
-                          <DialogHeader>
-                            <DialogTitle>Sửa voucher</DialogTitle>
-                            <DialogDescription>
-                              Cập nhật thông tin &quot;{voucher.code}&quot;
-                            </DialogDescription>
-                          </DialogHeader>
-                          <VoucherForm
-                            defaultValues={voucher}
-                            branches={branches}
-                            onSubmit={(data) =>
-                              handleUpdate(voucher.id, data)
-                            }
-                            isPending={isPending}
-                            error={error}
-                            submitLabel="Lưu"
-                            pendingLabel="Đang lưu..."
-                          />
-                        </DialogContent>
-                      </Dialog>
-
-                      {/* Delete Dialog */}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label="Xóa">
-                            <Trash2 className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Xóa voucher</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Bạn có chắc muốn xóa voucher &quot;{voucher.code}
-                              &quot;? Hành động này không thể hoàn tác.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Hủy</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(voucher.id)}
-                            >
-                              Xóa
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+            </TableHeader>
+            <TableBody>
+              {vouchers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-32 text-center">
+                    <div className="flex flex-col items-center gap-2">
+                      <Ticket className="text-muted-foreground/50 h-8 w-8" />
+                      <p className="text-muted-foreground text-sm">Chưa có voucher nào</p>
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                vouchers.map((voucher) => (
+                  <TableRow key={voucher.id}>
+                    <TableCell className="font-mono font-medium">{voucher.code}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className={cn(getTypeBadgeClass(voucher.type))}>
+                        {getVoucherTypeLabel(voucher.type)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {formatVoucherValue(voucher.type, voucher.value)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {voucher.min_order != null ? formatPrice(voucher.min_order) : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {voucher.max_discount != null ? formatPrice(voucher.max_discount) : "-"}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatDate(voucher.valid_from)} - {formatDate(voucher.valid_to)}
+                    </TableCell>
+                    <TableCell className="max-w-[120px] truncate text-sm">
+                      {voucher.voucher_branches.length === 0
+                        ? "Tất cả"
+                        : voucher.voucher_branches
+                            .map((vb) => vb.branches?.name ?? "")
+                            .filter(Boolean)
+                            .join(", ")}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={voucher.is_active ? "default" : "secondary"}>
+                        {voucher.is_active ? "Hoạt động" : "Tạm dừng"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Toggle Active */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={voucher.is_active ? "Tạm dừng" : "Kích hoạt"}
+                          onClick={() => handleToggle(voucher.id)}
+                        >
+                          {voucher.is_active ? (
+                            <ToggleRight className="h-4 w-4" aria-hidden="true" />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" aria-hidden="true" />
+                          )}
+                        </Button>
+
+                        {/* Edit Dialog */}
+                        <Dialog
+                          open={editingItem?.id === voucher.id}
+                          onOpenChange={(open) => {
+                            if (!open) {
+                              setEditingItem(null);
+                              setError(null);
+                            }
+                          }}
+                        >
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => {
+                                setError(null);
+                                setEditingItem(voucher);
+                              }}
+                              aria-label="Sửa"
+                            >
+                              <Pencil className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>Sửa voucher</DialogTitle>
+                              <DialogDescription>
+                                Cập nhật thông tin &quot;{voucher.code}&quot;
+                              </DialogDescription>
+                            </DialogHeader>
+                            <VoucherForm
+                              defaultValues={voucher}
+                              branches={branches}
+                              onSubmit={(data) => handleUpdate(voucher.id, data)}
+                              isPending={isPending}
+                              error={error}
+                              submitLabel="Lưu"
+                              pendingLabel="Đang lưu..."
+                            />
+                          </DialogContent>
+                        </Dialog>
+
+                        {/* Delete Dialog */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" aria-label="Xóa">
+                              <Trash2 className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Xóa voucher</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Bạn có chắc muốn xóa voucher &quot;{voucher.code}
+                                &quot;? Hành động này không thể hoàn tác.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Hủy</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(voucher.id)}>
+                                Xóa
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

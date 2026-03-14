@@ -63,9 +63,7 @@ async function _getSecurityEvents(severity?: string) {
     ...event,
     source_ip: event.source_ip ? String(event.source_ip) : null,
     user_name: event.user_id ? (profilesMap[event.user_id as string] ?? null) : null,
-    terminal_name: event.terminal_id
-      ? (terminalsMap[event.terminal_id as number] ?? null)
-      : null,
+    terminal_name: event.terminal_id ? (terminalsMap[event.terminal_id as number] ?? null) : null,
   }));
 }
 
@@ -74,9 +72,7 @@ export const getSecurityEvents = withServerQuery(_getSecurityEvents);
 async function _getSecuritySummary() {
   const { supabase, tenantId } = await getActionContext();
 
-  const twentyFourHoursAgo = new Date(
-    Date.now() - 24 * 60 * 60 * 1000
-  ).toISOString();
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
   const { data: events, error } = await supabase
     .from("security_events")
@@ -125,7 +121,9 @@ async function _getAuditLogs(resourceType?: string) {
 
   if (!logs || logs.length === 0) return [];
 
-  const userIds = [...new Set(logs.map((l: Record<string, unknown>) => l.user_id).filter(Boolean))] as string[];
+  const userIds = [
+    ...new Set(logs.map((l: Record<string, unknown>) => l.user_id).filter(Boolean)),
+  ] as string[];
 
   let profilesMap: Record<string, string> = {};
   if (userIds.length > 0) {

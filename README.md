@@ -10,27 +10,27 @@ A multi-tenant, multi-branch restaurant management platform built for the **Cơm
 
 The system is split into five distinct UIs served from a single Next.js application:
 
-| Interface | Path | Who uses it |
-|---|---|---|
-| **Admin Panel** | `/admin` | Owner, Manager |
-| **POS Terminal** | `/pos` | Cashier, Waiter |
-| **Kitchen Display (KDS)** | `/kds/:stationId` | Chef |
-| **Employee Portal** | `/employee` | All staff |
-| **Customer PWA** | `/customer` | Guests |
+| Interface                 | Path              | Who uses it     |
+| ------------------------- | ----------------- | --------------- |
+| **Admin Panel**           | `/admin`          | Owner, Manager  |
+| **POS Terminal**          | `/pos`            | Cashier, Waiter |
+| **Kitchen Display (KDS)** | `/kds/:stationId` | Chef            |
+| **Employee Portal**       | `/employee`       | All staff       |
+| **Customer PWA**          | `/customer`       | Guests          |
 
 ---
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 16.1 App Router · React 19.2 · TypeScript 5.9 strict |
-| Database | Supabase (PostgreSQL) · Prisma 7.2 · `@prisma/adapter-pg` |
-| Auth | Supabase Auth · `@supabase/ssr@0.9.0` — cookie-based sessions |
-| UI | shadcn/ui (new-york) · Tailwind CSS v4.2 · Lucide React |
-| Monorepo | Turborepo 2.8 · pnpm 9.15.0 workspaces |
-| Hosting | Vercel · GitHub Actions CI |
-| Testing | Playwright (E2E) |
+| Layer     | Choice                                                        |
+| --------- | ------------------------------------------------------------- |
+| Framework | Next.js 16.1 App Router · React 19.2 · TypeScript 5.9 strict  |
+| Database  | Supabase (PostgreSQL) · Prisma 7.2 · `@prisma/adapter-pg`     |
+| Auth      | Supabase Auth · `@supabase/ssr@0.9.0` — cookie-based sessions |
+| UI        | shadcn/ui (new-york) · Tailwind CSS v4.2 · Lucide React       |
+| Monorepo  | Turborepo 2.8 · pnpm 9.15.0 workspaces                        |
+| Hosting   | Vercel · GitHub Actions CI                                    |
+| Testing   | Playwright (E2E)                                              |
 
 ---
 
@@ -206,6 +206,7 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 ## Feature Modules
 
 ### Admin Panel (`/admin`)
+
 - Dashboard with revenue charts, order stats, top items
 - Menu management (categories, items, modifiers, sides)
 - Inventory & stock level tracking
@@ -219,6 +220,7 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 - Security event log
 
 ### POS (`/pos`)
+
 - Session management (open/close terminal)
 - Order creation and item selection
 - Real-time order status board
@@ -228,12 +230,14 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 - Receipt printing
 
 ### Kitchen Display System (`/kds/:stationId`)
+
 - Real-time ticket board per station
 - Item-level ready bumping
 - Ticket completion
 - Printer management
 
 ### Employee Portal (`/employee`)
+
 - Personal profile management
 - Work schedule viewing
 - Leave requests
@@ -241,6 +245,7 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 - Workspace dashboard
 
 ### Customer PWA (`/customer`)
+
 - Menu browsing
 - Order placement & status tracking
 - Loyalty points and tier status
@@ -251,11 +256,11 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 
 ## Payments
 
-| Method | Status |
-|---|---|
-| Cash | Live |
-| Momo | Live (HMAC webhook verification) |
-| VNPay | Planned (Priority 1) |
+| Method | Status                           |
+| ------ | -------------------------------- |
+| Cash   | Live                             |
+| Momo   | Live (HMAC webhook verification) |
+| VNPay  | Planned (Priority 1)             |
 
 Payment credentials are stored in **Supabase Vault** — never in environment variables or the database.
 
@@ -263,32 +268,35 @@ Payment credentials are stored in **Supabase Vault** — never in environment va
 
 ## API Routes
 
-| Endpoint | Purpose |
-|---|---|
-| `/api/auth/callback` | Supabase Auth OAuth callback |
-| `/api/health` | Health check |
-| `/api/cron/process-deletions` | GDPR auto-deletion cron job |
-| `/api/privacy/data-export` | GDPR data export |
-| `/api/privacy/deletion-request` | GDPR deletion request |
-| `/api/webhooks/momo` | Momo payment webhook receiver |
+| Endpoint                        | Purpose                       |
+| ------------------------------- | ----------------------------- |
+| `/api/auth/callback`            | Supabase Auth OAuth callback  |
+| `/api/health`                   | Health check                  |
+| `/api/cron/process-deletions`   | GDPR auto-deletion cron job   |
+| `/api/privacy/data-export`      | GDPR data export              |
+| `/api/privacy/deletion-request` | GDPR deletion request         |
+| `/api/webhooks/momo`            | Momo payment webhook receiver |
 
 ---
 
 ## Roadmap
 
 **Priority 1 — Core**
+
 - VNPay integration with HMAC webhook verification
 - Auto loyalty-tier upgrade triggers
 - Thermal receipt printing
 - In-app + push notification system
 
 **Priority 2 — Operations**
+
 - Attendance clock-in/out via QR scan
 - Branch comparison in dashboard
 - Offline support (Service Worker, IndexedDB, AES-256-GCM)
 - Device fingerprinting for terminal registration
 
 **Priority 3 — Quality**
+
 - Playwright end-to-end test suite expansion
 - RLS validation test suite
 - OpenAPI documentation
@@ -299,15 +307,15 @@ Payment credentials are stored in **Supabase Vault** — never in environment va
 
 ## Documentation
 
-| File | Contents |
-|---|---|
-| `CLAUDE.md` | AI agent boot instructions, hard boundaries, task contract template |
-| `docs/REFERENCE.md` | Full dependency list, DB conventions, env vars, import strategy, agent skills map |
-| `docs/TASK_TEMPLATES.md` | Pre-filled task contract templates by domain |
-| `docs/SESSION_PROTOCOL.md` | Session rules and workflow |
-| `tasks/regressions.md` | Rules derived from past failures |
-| `tasks/lessons.md` | Patterns and prevention notes |
-| `tasks/todo.md` | Current sprint progress |
+| File                       | Contents                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| `CLAUDE.md`                | AI agent boot instructions, hard boundaries, task contract template               |
+| `docs/REFERENCE.md`        | Full dependency list, DB conventions, env vars, import strategy, agent skills map |
+| `docs/TASK_TEMPLATES.md`   | Pre-filled task contract templates by domain                                      |
+| `docs/SESSION_PROTOCOL.md` | Session rules and workflow                                                        |
+| `tasks/regressions.md`     | Rules derived from past failures                                                  |
+| `tasks/lessons.md`         | Patterns and prevention notes                                                     |
+| `tasks/todo.md`            | Current sprint progress                                                           |
 
 ---
 

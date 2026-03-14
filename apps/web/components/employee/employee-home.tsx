@@ -4,19 +4,17 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Clock, CalendarDays, CalendarOff, UserCircle, LogIn, LogOut } from "lucide-react";
-import { formatTime, formatDateTime, getShiftAssignmentStatusLabel, getAttendanceStatusLabel } from "@comtammatu/shared";
+import {
+  formatTime,
+  formatDateTime,
+  getShiftAssignmentStatusLabel,
+  getAttendanceStatusLabel,
+} from "@comtammatu/shared";
 import { clockIn, clockOut } from "@/app/(employee)/employee/actions";
 import { toast } from "sonner";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@comtammatu/ui";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@comtammatu/ui";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 interface EmployeeHomeProps {
   todayShifts: any[];
   todayAttendance: any | null;
@@ -35,7 +33,8 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
   });
 
   const canClockIn = employee && !todayAttendance;
-  const canClockOut = employee && todayAttendance && todayAttendance.clock_in && !todayAttendance.clock_out;
+  const canClockOut =
+    employee && todayAttendance && todayAttendance.clock_in && !todayAttendance.clock_out;
 
   function handleClockIn() {
     startTransition(async () => {
@@ -79,14 +78,20 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
           ) : (
             <div className="flex flex-col gap-3">
               {todayShifts.map((assignment) => (
-                <div key={assignment.id} className="flex items-center justify-between rounded-lg border p-3">
+                <div
+                  key={assignment.id}
+                  className="flex items-center justify-between rounded-lg border p-3"
+                >
                   <div>
                     <p className="font-medium">{assignment.shifts?.name}</p>
                     <p className="text-muted-foreground text-sm">
-                      {formatTime(assignment.shifts?.start_time)} - {formatTime(assignment.shifts?.end_time)}
+                      {formatTime(assignment.shifts?.start_time)} -{" "}
+                      {formatTime(assignment.shifts?.end_time)}
                     </p>
                     {assignment.shifts?.branches?.name && (
-                      <p className="text-muted-foreground text-xs">{assignment.shifts.branches.name}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {assignment.shifts.branches.name}
+                      </p>
                     )}
                   </div>
                   <Badge variant="outline">
@@ -113,18 +118,28 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   {todayAttendance.clock_in && (
-                    <p>Vào: <span className="font-medium">{formatDateTime(todayAttendance.clock_in)}</span></p>
+                    <p>
+                      Vào:{" "}
+                      <span className="font-medium">
+                        {formatDateTime(todayAttendance.clock_in)}
+                      </span>
+                    </p>
                   )}
                   {todayAttendance.clock_out && (
-                    <p>Ra: <span className="font-medium">{formatDateTime(todayAttendance.clock_out)}</span></p>
+                    <p>
+                      Ra:{" "}
+                      <span className="font-medium">
+                        {formatDateTime(todayAttendance.clock_out)}
+                      </span>
+                    </p>
                   )}
                   {todayAttendance.hours_worked != null && (
-                    <p>Tổng: <span className="font-medium">{todayAttendance.hours_worked}h</span></p>
+                    <p>
+                      Tổng: <span className="font-medium">{todayAttendance.hours_worked}h</span>
+                    </p>
                   )}
                 </div>
-                <Badge variant="outline">
-                  {getAttendanceStatusLabel(todayAttendance.status)}
-                </Badge>
+                <Badge variant="outline">{getAttendanceStatusLabel(todayAttendance.status)}</Badge>
               </div>
 
               {canClockOut && (
@@ -149,11 +164,7 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
             <div className="flex flex-col gap-3">
               <p className="text-muted-foreground text-sm">Chưa chấm công hôm nay.</p>
               {canClockIn && (
-                <Button
-                  onClick={handleClockIn}
-                  disabled={isPending}
-                  className="w-full"
-                >
+                <Button onClick={handleClockIn} disabled={isPending} className="w-full">
                   <LogIn className="mr-2 h-4 w-4" />
                   {isPending ? "Đang xử lý..." : "Vào ca"}
                 </Button>
@@ -165,15 +176,24 @@ export function EmployeeHome({ todayShifts, todayAttendance, employee }: Employe
 
       {/* Quick links */}
       <div className="grid grid-cols-3 gap-3">
-        <Link href="/employee/schedule" className="flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent">
+        <Link
+          href="/employee/schedule"
+          className="flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent"
+        >
           <CalendarDays className="text-primary h-6 w-6" />
           <span className="text-xs font-medium">Lịch ca làm</span>
         </Link>
-        <Link href="/employee/leave" className="flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent">
+        <Link
+          href="/employee/leave"
+          className="flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent"
+        >
           <CalendarOff className="text-primary h-6 w-6" />
           <span className="text-xs font-medium">Nghỉ phép</span>
         </Link>
-        <Link href="/employee/profile" className="flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent">
+        <Link
+          href="/employee/profile"
+          className="flex flex-col items-center gap-2 rounded-lg border p-4 transition-colors hover:bg-accent"
+        >
           <UserCircle className="text-primary h-6 w-6" />
           <span className="text-xs font-medium">Cá nhân</span>
         </Link>

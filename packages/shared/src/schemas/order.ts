@@ -19,7 +19,7 @@ const orderItemInput = z.object({
       z.object({
         name: z.string(),
         price: z.number().min(0),
-      }),
+      })
     )
     .nullish(),
   notes: z.string().max(200).nullish(),
@@ -34,9 +34,7 @@ export const createOrderSchema = z
     type: z.enum(["dine_in", "takeaway", "delivery"]),
     notes: z.string().max(500).nullish(),
     guest_count: z.number().int().positive().max(20).nullish(),
-    items: z
-      .array(orderItemInput)
-      .min(1, "Đơn hàng phải có ít nhất 1 món"),
+    items: z.array(orderItemInput).min(1, "Đơn hàng phải có ít nhất 1 món"),
     idempotency_key: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
@@ -64,14 +62,7 @@ export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
 export const updateOrderStatusSchema = z.object({
   order_id: z.number().int().positive(),
-  status: z.enum([
-    "confirmed",
-    "preparing",
-    "ready",
-    "served",
-    "completed",
-    "cancelled",
-  ]),
+  status: z.enum(["confirmed", "preparing", "ready", "served", "completed", "cancelled"]),
   reason: z.string().max(500).optional(),
 });
 
@@ -81,9 +72,7 @@ export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 
 export const addOrderItemsSchema = z.object({
   order_id: z.number().int().positive(),
-  items: z
-    .array(orderItemInput)
-    .min(1, "Phải có ít nhất 1 món"),
+  items: z.array(orderItemInput).min(1, "Phải có ít nhất 1 món"),
 });
 
 export type AddOrderItemsInput = z.infer<typeof addOrderItemsSchema>;

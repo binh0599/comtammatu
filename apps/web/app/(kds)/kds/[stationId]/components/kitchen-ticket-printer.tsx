@@ -46,61 +46,67 @@ export function KitchenTicketPrinter({
     },
   });
 
-  const handleThermalPrint = useCallback(async (silent = false) => {
-    if (!printerConfig) return false;
+  const handleThermalPrint = useCallback(
+    async (silent = false) => {
+      if (!printerConfig) return false;
 
-    try {
-      const paperWidth = printerConfig.paper_width_mm ?? 80;
-      const lineWidth = paperWidth === 58 ? 32 : 42;
-      const commands = generateKitchenTicketCommands(ticket, stationName, lineWidth);
-      const connConfig = printerConfig.connection_config;
+      try {
+        const paperWidth = printerConfig.paper_width_mm ?? 80;
+        const lineWidth = paperWidth === 58 ? 32 : 42;
+        const commands = generateKitchenTicketCommands(ticket, stationName, lineWidth);
+        const connConfig = printerConfig.connection_config;
 
-      let result;
-      if (printerConfig.type === "thermal_usb") {
-        const printFn = silent ? printViaUsbAuto : printViaUsb;
-        result = await printFn(commands, {
-          vendor_id: (connConfig.vendor_id as number) ?? 0,
-          product_id: (connConfig.product_id as number) ?? 0,
-          device_serial: (connConfig.device_serial as string) || undefined,
-        });
-      } else if (printerConfig.type === "thermal_network") {
-        result = await printViaNetwork(commands, {
-          host: (connConfig.host as string) ?? "",
-          port: (connConfig.port as number) ?? 9100,
-          protocol: (connConfig.protocol as string) ?? "raw",
-        });
-      } else {
+        let result;
+        if (printerConfig.type === "thermal_usb") {
+          const printFn = silent ? printViaUsbAuto : printViaUsb;
+          result = await printFn(commands, {
+            vendor_id: (connConfig.vendor_id as number) ?? 0,
+            product_id: (connConfig.product_id as number) ?? 0,
+            device_serial: (connConfig.device_serial as string) || undefined,
+          });
+        } else if (printerConfig.type === "thermal_network") {
+          result = await printViaNetwork(commands, {
+            host: (connConfig.host as string) ?? "",
+            port: (connConfig.port as number) ?? 9100,
+            protocol: (connConfig.protocol as string) ?? "raw",
+          });
+        } else {
+          return false;
+        }
+
+        if (result.success) {
+          if (onPrintComplete) onPrintComplete();
+          return true;
+        } else {
+          console.warn("Thermal print failed:", result.error);
+          toast.error(`Lỗi in nhiệt: ${result.error}`);
+          return false;
+        }
+      } catch (err) {
+        console.warn("Thermal print error:", err);
         return false;
       }
+    },
+    [printerConfig, ticket, stationName, onPrintComplete]
+  );
 
-      if (result.success) {
-        if (onPrintComplete) onPrintComplete();
-        return true;
-      } else {
-        console.warn("Thermal print failed:", result.error);
-        toast.error(`Lỗi in nhiệt: ${result.error}`);
-        return false;
+  const handlePrint = useCallback(
+    async (silent = false) => {
+      // If thermal is preferred and available, try it first
+      if (preferThermal && printerConfig && printerConfig.type !== "browser") {
+        const thermalSuccess = await handleThermalPrint(silent);
+        if (thermalSuccess) return;
+        if (silent) {
+          console.warn("Thermal failed in auto-print mode, skipping browser fallback");
+          return;
+        }
+        console.info("Thermal failed, falling back to browser print");
       }
-    } catch (err) {
-      console.warn("Thermal print error:", err);
-      return false;
-    }
-  }, [printerConfig, ticket, stationName, onPrintComplete]);
 
-  const handlePrint = useCallback(async (silent = false) => {
-    // If thermal is preferred and available, try it first
-    if (preferThermal && printerConfig && printerConfig.type !== "browser") {
-      const thermalSuccess = await handleThermalPrint(silent);
-      if (thermalSuccess) return;
-      if (silent) {
-        console.warn("Thermal failed in auto-print mode, skipping browser fallback");
-        return;
-      }
-      console.info("Thermal failed, falling back to browser print");
-    }
-
-    handleBrowserPrint();
-  }, [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]);
+      handleBrowserPrint();
+    },
+    [preferThermal, printerConfig, handleThermalPrint, handleBrowserPrint]
+  );
 
   // Auto-print on mount (only once)
   useEffect(() => {
@@ -134,12 +140,8 @@ export function KitchenTicketPrinter({
         >
           {/* Header */}
           <div className="text-center mb-3">
-            <div className="text-xl font-bold uppercase tracking-wide">
-              ĐƠN BẾP
-            </div>
-            {stationName && (
-              <div className="text-[10px] text-gray-600">{stationName}</div>
-            )}
+            <div className="text-xl font-bold uppercase tracking-wide">ĐƠN BẾP</div>
+            {stationName && <div className="text-[10px] text-gray-600">{stationName}</div>}
           </div>
 
           <div className="border-t-2 border-black border-dashed mb-2" />
@@ -153,9 +155,7 @@ export function KitchenTicketPrinter({
             {tableNumber != null && (
               <div className="flex justify-between">
                 <span>Bàn:</span>
-                <span className="font-bold text-[16px]">
-                  {tableNumber}
-                </span>
+                <span className="font-bold text-[16px]">{tableNumber}</span>
               </div>
             )}
             <div className="flex justify-between text-[10px]">
@@ -176,9 +176,7 @@ export function KitchenTicketPrinter({
                   <span>
                     {item.menu_item_name}
                     {item.variant_name && (
-                      <span className="font-normal text-[12px]">
-                        {" "}— {item.variant_name}
-                      </span>
+                      <span className="font-normal text-[12px]"> — {item.variant_name}</span>
                     )}
                   </span>
                 </div>
@@ -193,9 +191,7 @@ export function KitchenTicketPrinter({
 
                 {/* Special notes — bold, visually prominent */}
                 {item.notes && (
-                  <div className="ml-4 text-[12px] font-bold italic">
-                    ★ {item.notes}
-                  </div>
+                  <div className="ml-4 text-[12px] font-bold italic">★ {item.notes}</div>
                 )}
               </div>
             ))}
@@ -209,7 +205,6 @@ export function KitchenTicketPrinter({
           </div>
         </div>
       </div>
-
     </>
   );
 }

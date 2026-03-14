@@ -9,12 +9,5 @@ export default function KdsStationError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  return (
-    <ErrorFallback
-      error={error}
-      reset={reset}
-      title="KDS gặp lỗi"
-      variant="minimal"
-    />
-  );
+  return <ErrorFallback error={error} reset={reset} title="KDS gặp lỗi" variant="minimal" />;
 }

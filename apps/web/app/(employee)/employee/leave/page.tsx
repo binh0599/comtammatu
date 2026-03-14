@@ -7,10 +7,5 @@ export default async function LeavePage() {
     getMyLeaveSummary(),
   ]);
 
-  return (
-    <LeaveOverview
-      leaveRequests={leaveRequests}
-      leaveSummary={leaveSummary}
-    />
-  );
+  return <LeaveOverview leaveRequests={leaveRequests} leaveSummary={leaveSummary} />;
 }

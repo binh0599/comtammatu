@@ -23,7 +23,7 @@ export async function getAuthenticatedCustomer() {
 
   // Prefer user_id lookup (mobile app creates customers with user_id)
   // Fall back to email lookup (legacy web PWA customers)
-  let customer = null;
+  let customer;
 
   const { data: byUserId } = await supabase
     .from("customers")

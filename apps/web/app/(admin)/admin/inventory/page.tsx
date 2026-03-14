@@ -24,12 +24,7 @@ import { StockCountTab } from "./stock-count-tab";
 import { FoodCostTab } from "./food-cost-tab";
 import { ExpiryTab } from "./expiry-tab";
 import { ForecastTab } from "./forecast-tab";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@comtammatu/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@comtammatu/ui";
 
 export default async function InventoryPage() {
   const [
@@ -118,10 +113,7 @@ export default async function InventoryPage() {
             <PrepListTab initialData={prepList} />
           </TabsContent>
           <TabsContent value="stock-count">
-            <StockCountTab
-              stockCounts={stockCounts}
-              ingredients={ingredients}
-            />
+            <StockCountTab stockCounts={stockCounts} ingredients={ingredients} />
           </TabsContent>
           <TabsContent value="food-cost">
             <FoodCostTab />

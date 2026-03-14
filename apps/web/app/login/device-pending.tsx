@@ -5,14 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@comtammatu/database/src/supabase/client";
 import { Monitor, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { checkDeviceStatus } from "./actions";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@comtammatu/ui";
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@comtammatu/ui";
 
 interface DevicePendingApprovalProps {
   approvalCode: string;
@@ -32,9 +25,7 @@ export function DevicePendingApproval({
   role,
 }: DevicePendingApprovalProps) {
   const router = useRouter();
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected">(
-    "pending",
-  );
+  const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
   // Guard against duplicate redirects from realtime + polling race
   const handledRef = useRef(false);
 
@@ -74,7 +65,7 @@ export function DevicePendingApproval({
           } else if (updated.status === "rejected") {
             handleRejected();
           }
-        },
+        }
       )
       .subscribe();
 
@@ -118,9 +109,7 @@ export function DevicePendingApproval({
           <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-red-100 text-red-600">
             <XCircle className="size-8" />
           </div>
-          <CardTitle className="text-xl font-bold text-red-700">
-            Thiết bị bị từ chối
-          </CardTitle>
+          <CardTitle className="text-xl font-bold text-red-700">Thiết bị bị từ chối</CardTitle>
           <CardDescription>
             Quản lý đã từ chối thiết bị này. Vui lòng liên hệ quản lý.
           </CardDescription>
@@ -147,12 +136,8 @@ export function DevicePendingApproval({
         <div className="mx-auto mb-3 flex size-14 items-center justify-center rounded-full bg-orange-100 text-orange-600">
           <Monitor className="size-8" />
         </div>
-        <CardTitle className="text-xl font-bold">
-          Thiết bị mới
-        </CardTitle>
-        <CardDescription>
-          Báo mã này cho quản lý để duyệt thiết bị
-        </CardDescription>
+        <CardTitle className="text-xl font-bold">Thiết bị mới</CardTitle>
+        <CardDescription>Báo mã này cho quản lý để duyệt thiết bị</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex justify-center">
@@ -169,8 +154,7 @@ export function DevicePendingApproval({
         </div>
 
         <p className="text-center text-xs text-muted-foreground">
-          Khi quản lý duyệt thiết bị, bạn sẽ được tự động chuyển đến trang
-          làm việc.
+          Khi quản lý duyệt thiết bị, bạn sẽ được tự động chuyển đến trang làm việc.
         </p>
       </CardContent>
     </Card>

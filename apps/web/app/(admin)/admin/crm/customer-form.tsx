@@ -42,9 +42,7 @@ export function CustomerForm({
 }) {
   const [gender, setGender] = useState(defaultValues?.gender ?? "");
   const [source, setSource] = useState(defaultValues?.source ?? "");
-  const [tierId, setTierId] = useState(
-    defaultValues?.loyalty_tier_id?.toString() ?? ""
-  );
+  const [tierId, setTierId] = useState(defaultValues?.loyalty_tier_id?.toString() ?? "");
 
   return (
     <form action={onSubmit}>

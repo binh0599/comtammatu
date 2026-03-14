@@ -34,11 +34,7 @@ function mapPrepData(raw: unknown[]): PrepItem[] {
   }));
 }
 
-export function PrepListTab({
-  initialData,
-}: {
-  initialData: unknown[];
-}) {
+export function PrepListTab({ initialData }: { initialData: unknown[] }) {
   const [items, setItems] = useState<PrepItem[]>(() => mapPrepData(initialData));
   const [portions, setPortions] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -58,9 +54,7 @@ export function PrepListTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Danh sách chuẩn bị</h2>
-          <p className="text-muted-foreground">
-            Nguyên liệu cần chuẩn bị cho ca làm việc
-          </p>
+          <p className="text-muted-foreground">Nguyên liệu cần chuẩn bị cho ca làm việc</p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
@@ -90,35 +84,34 @@ export function PrepListTab({
             <TableRow>
               <TableHead scope="col">Nguyên liệu</TableHead>
               <TableHead scope="col">Đơn vị</TableHead>
-              <TableHead scope="col" className="text-right">Tồn kho</TableHead>
-              <TableHead scope="col" className="text-right">Cần dùng</TableHead>
-              <TableHead scope="col" className="text-right">Cần chuẩn bị</TableHead>
+              <TableHead scope="col" className="text-right">
+                Tồn kho
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Cần dùng
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Cần chuẩn bị
+              </TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {items.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={6}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={6} className="text-muted-foreground h-24 text-center">
                   Không có nguyên liệu cần chuẩn bị
                 </TableCell>
               </TableRow>
             ) : (
               items.map((item) => (
                 <TableRow key={item.ingredient_name}>
-                  <TableCell className="font-medium">
-                    {item.ingredient_name}
-                  </TableCell>
+                  <TableCell className="font-medium">{item.ingredient_name}</TableCell>
                   <TableCell>{item.unit}</TableCell>
                   <TableCell className="text-right">
                     {Number(item.current_stock).toFixed(2)}
                   </TableCell>
-                  <TableCell className="text-right">
-                    {Number(item.needed_qty).toFixed(2)}
-                  </TableCell>
+                  <TableCell className="text-right">{Number(item.needed_qty).toFixed(2)}</TableCell>
                   <TableCell className="text-right font-semibold">
                     {Number(item.prep_qty).toFixed(2)}
                   </TableCell>
@@ -126,10 +119,7 @@ export function PrepListTab({
                     {item.prep_qty > 0 ? (
                       <Badge variant="destructive">Thiếu</Badge>
                     ) : (
-                      <Badge
-                        variant="default"
-                        className="bg-green-600 hover:bg-green-700"
-                      >
+                      <Badge variant="default" className="bg-green-600 hover:bg-green-700">
                         Đủ
                       </Badge>
                     )}

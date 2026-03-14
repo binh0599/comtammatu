@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import {
-  getLoyaltyTransactionTypeLabel,
-  LOYALTY_TRANSACTION_TYPES,
-} from "@comtammatu/shared";
+import { getLoyaltyTransactionTypeLabel, LOYALTY_TRANSACTION_TYPES } from "@comtammatu/shared";
 import { adjustLoyaltyPoints } from "./actions";
 import type { Customer } from "./crm-types";
 import {
@@ -78,13 +75,15 @@ export function AdjustPointsDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Điều chỉnh điểm — {customer.full_name}</DialogTitle>
-          <DialogDescription>
-            Thêm hoặc trừ điểm thưởng cho khách hàng
-          </DialogDescription>
+          <DialogDescription>Thêm hoặc trừ điểm thưởng cho khách hàng</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           {error && (
-            <div id="points-adjust-error" role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-600">
+            <div
+              id="points-adjust-error"
+              role="alert"
+              className="rounded-md bg-red-50 p-3 text-sm text-red-600"
+            >
               {error}
             </div>
           )}
@@ -96,9 +95,7 @@ export function AdjustPointsDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {LOYALTY_TRANSACTION_TYPES.filter(
-                    (t) => t !== "expire"
-                  ).map((t) => (
+                  {LOYALTY_TRANSACTION_TYPES.filter((t) => t !== "expire").map((t) => (
                     <SelectItem key={t} value={t}>
                       {getLoyaltyTransactionTypeLabel(t)}
                     </SelectItem>

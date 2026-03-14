@@ -21,9 +21,7 @@ export default async function SessionPage() {
 
   // Try to find user's linked terminal first, then fallback to all terminals
   const linkedTerminal = await getUserLinkedTerminal();
-  const terminals = linkedTerminal
-    ? [linkedTerminal]
-    : await getTerminalsForSession();
+  const terminals = linkedTerminal ? [linkedTerminal] : await getTerminalsForSession();
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center p-4">

@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react";
 import { Check, X } from "lucide-react";
 import { approveLeaveRequest } from "./actions";
-import {
-  formatDate,
-  getLeaveTypeLabel,
-  getLeaveStatusLabel,
-} from "@comtammatu/shared";
+import { formatDate, getLeaveTypeLabel, getLeaveStatusLabel } from "@comtammatu/shared";
 import {
   Badge,
   Button,
@@ -89,9 +85,7 @@ export function LeaveTab({
   const [error, setError] = useState<string | null>(null);
 
   const filtered =
-    filter === "all"
-      ? leaveRequests
-      : leaveRequests.filter((r) => r.status === filter);
+    filter === "all" ? leaveRequests : leaveRequests.filter((r) => r.status === filter);
 
   function handleApprove(id: number, status: "approved" | "rejected") {
     setError(null);
@@ -106,41 +100,26 @@ export function LeaveTab({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Nghỉ phép</h2>
-          <p className="text-muted-foreground">
-            Quản lý yêu cầu nghỉ phép của nhân viên
-          </p>
+          <p className="text-muted-foreground">Quản lý yêu cầu nghỉ phép của nhân viên</p>
         </div>
       </div>
 
-      <Tabs
-        value={filter}
-        onValueChange={setFilter}
-        className="w-full"
-      >
+      <Tabs value={filter} onValueChange={setFilter} className="w-full">
         <TabsList>
-          <TabsTrigger value="all">
-            Tất cả ({leaveRequests.length})
-          </TabsTrigger>
+          <TabsTrigger value="all">Tất cả ({leaveRequests.length})</TabsTrigger>
           <TabsTrigger value="pending">
-            Chờ duyệt (
-            {leaveRequests.filter((r) => r.status === "pending").length})
+            Chờ duyệt ({leaveRequests.filter((r) => r.status === "pending").length})
           </TabsTrigger>
           <TabsTrigger value="approved">
-            Đã duyệt (
-            {leaveRequests.filter((r) => r.status === "approved").length})
+            Đã duyệt ({leaveRequests.filter((r) => r.status === "approved").length})
           </TabsTrigger>
           <TabsTrigger value="rejected">
-            Từ chối (
-            {leaveRequests.filter((r) => r.status === "rejected").length})
+            Từ chối ({leaveRequests.filter((r) => r.status === "rejected").length})
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+      {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>}
 
       <div className="overflow-x-auto rounded-md border">
         <Table>
@@ -153,16 +132,15 @@ export function LeaveTab({
               <TableHead scope="col">Số ngày</TableHead>
               <TableHead scope="col">Lý do</TableHead>
               <TableHead scope="col">Trạng thái</TableHead>
-              <TableHead scope="col" className="text-right">Thao tác</TableHead>
+              <TableHead scope="col" className="text-right">
+                Thao tác
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={8}
-                  className="text-muted-foreground h-24 text-center"
-                >
+                <TableCell colSpan={8} className="text-muted-foreground h-24 text-center">
                   Không có yêu cầu nghỉ phép nào
                 </TableCell>
               </TableRow>
@@ -180,13 +158,9 @@ export function LeaveTab({
                   <TableCell>{formatDate(request.start_date)}</TableCell>
                   <TableCell>{formatDate(request.end_date)}</TableCell>
                   <TableCell>{request.days}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">
-                    {request.reason ?? "-"}
-                  </TableCell>
+                  <TableCell className="max-w-[200px] truncate">{request.reason ?? "-"}</TableCell>
                   <TableCell>
-                    <Badge
-                      variant={getLeaveStatusBadgeVariant(request.status)}
-                    >
+                    <Badge variant={getLeaveStatusBadgeVariant(request.status)}>
                       {getLeaveStatusLabel(request.status)}
                     </Badge>
                   </TableCell>
@@ -216,9 +190,7 @@ export function LeaveTab({
                       </div>
                     ) : (
                       <span className="text-muted-foreground text-sm">
-                        {request.approver
-                          ? `Bởi: ${request.approver.full_name}`
-                          : "-"}
+                        {request.approver ? `Bởi: ${request.approver.full_name}` : "-"}
                       </span>
                     )}
                   </TableCell>

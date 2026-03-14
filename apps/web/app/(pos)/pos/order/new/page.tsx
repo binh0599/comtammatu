@@ -1,9 +1,6 @@
 import { createSupabaseServer } from "@comtammatu/database";
 import { redirect } from "next/navigation";
-import {
-  getMenuItems,
-  getMenuCategories,
-} from "../../orders/actions";
+import { getMenuItems, getMenuCategories } from "../../orders/actions";
 import { NewOrderClient } from "./new-order-client";
 
 export default async function NewOrderPage({
@@ -45,12 +42,10 @@ export default async function NewOrderPage({
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-4">
         <div className="max-w-sm rounded-lg border bg-yellow-50 p-6 text-center">
-          <h2 className="text-lg font-semibold text-yellow-800">
-            Chưa có thiết bị
-          </h2>
+          <h2 className="text-lg font-semibold text-yellow-800">Chưa có thiết bị</h2>
           <p className="text-yellow-700 mt-2 text-sm">
-            Không tìm thấy thiết bị gọi món nào được kích hoạt cho chi nhánh
-            của bạn. Liên hệ quản lý để thiết lập.
+            Không tìm thấy thiết bị gọi món nào được kích hoạt cho chi nhánh của bạn. Liên hệ quản
+            lý để thiết lập.
           </p>
         </div>
       </div>
@@ -71,10 +66,7 @@ export default async function NewOrderPage({
     tableCapacity = tableData?.capacity ?? null;
   }
 
-  const [menuItems, categories] = await Promise.all([
-    getMenuItems(),
-    getMenuCategories(),
-  ]);
+  const [menuItems, categories] = await Promise.all([getMenuItems(), getMenuCategories()]);
 
   return (
     <NewOrderClient

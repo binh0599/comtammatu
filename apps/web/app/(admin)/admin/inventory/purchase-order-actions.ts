@@ -46,10 +46,7 @@ async function _createPurchaseOrder(input: {
 
   const { supabase, tenantId, userId } = await getAdminContext(ADMIN_ROLES);
 
-  const total = parsed.data.items.reduce(
-    (sum, item) => sum + item.quantity * item.unit_price,
-    0
-  );
+  const total = parsed.data.items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0);
 
   const { data: po, error: poError } = await supabase
     .from("purchase_orders")
@@ -76,9 +73,7 @@ async function _createPurchaseOrder(input: {
     received_qty: 0,
   }));
 
-  const { error: itemsError } = await supabase
-    .from("purchase_order_items")
-    .insert(itemRows);
+  const { error: itemsError } = await supabase.from("purchase_order_items").insert(itemRows);
 
   if (itemsError) {
     await supabase.from("purchase_orders").delete().eq("id", po.id);
@@ -176,7 +171,12 @@ async function _receivePurchaseOrder(input: {
 
   if (existingErr) return { error: existingErr.message };
 
-  type ExistingPoItem = { id: number; ingredient_id: number; received_qty: number; reject_qty: number };
+  type ExistingPoItem = {
+    id: number;
+    ingredient_id: number;
+    received_qty: number;
+    reject_qty: number;
+  };
   const existingMap = new Map<number, ExistingPoItem>(
     (existingPoItems ?? []).map((pi: ExistingPoItem) => [pi.id, pi])
   );

@@ -7,7 +7,11 @@ import { getMobileCustomer, checkMobileRateLimit, jsonOk, jsonError } from "../h
  */
 const submitFeedbackSchema = z.object({
   order_id: z.coerce.number().int().positive(),
-  rating: z.coerce.number().int().min(1, "Đánh giá tối thiểu 1 sao").max(5, "Đánh giá tối đa 5 sao"),
+  rating: z.coerce
+    .number()
+    .int()
+    .min(1, "Đánh giá tối thiểu 1 sao")
+    .max(5, "Đánh giá tối đa 5 sao"),
   comment: z.string().max(1000).optional().or(z.literal("")),
 });
 
@@ -57,16 +61,13 @@ export async function POST(req: NextRequest) {
 
     if (orderError) {
       console.error("Error verifying order:", orderError);
-      return jsonError(
-        "Không thể xác minh đơn hàng. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể xác minh đơn hàng. Vui lòng thử lại sau.", 500);
     }
 
     if (!order) {
       return jsonError(
         "Không tìm thấy đơn hàng. Đơn hàng không tồn tại hoặc không thuộc về bạn.",
-        404,
+        404
       );
     }
 
@@ -80,44 +81,30 @@ export async function POST(req: NextRequest) {
 
     if (checkError) {
       console.error("Error checking existing feedback:", checkError);
-      return jsonError(
-        "Không thể kiểm tra phản hồi. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể kiểm tra phản hồi. Vui lòng thử lại sau.", 500);
     }
 
     if (existingFeedback) {
-      return jsonError(
-        "Bạn đã gửi phản hồi cho đơn hàng này rồi.",
-        409,
-      );
+      return jsonError("Bạn đã gửi phản hồi cho đơn hàng này rồi.", 409);
     }
 
     // Insert feedback
-    const { error: insertError } = await supabase
-      .from("customer_feedback")
-      .insert({
-        customer_id: customer.id,
-        order_id: input.order_id,
-        branch_id: order.branch_id,
-        rating: input.rating,
-        comment: input.comment || null,
-      });
+    const { error: insertError } = await supabase.from("customer_feedback").insert({
+      customer_id: customer.id,
+      order_id: input.order_id,
+      branch_id: order.branch_id,
+      rating: input.rating,
+      comment: input.comment || null,
+    });
 
     if (insertError) {
       console.error("Error inserting feedback:", insertError);
-      return jsonError(
-        "Không thể lưu phản hồi. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể lưu phản hồi. Vui lòng thử lại sau.", 500);
     }
 
     return jsonOk({ success: true }, 201);
   } catch (error) {
     console.error("[POST /api/mobile/feedback]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }

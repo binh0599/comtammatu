@@ -20,20 +20,18 @@ export async function updateSession(request: NextRequest) {
             name: string;
             value: string;
             options: CookieOptions;
-          }[],
+          }[]
         ) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, options)
           );
         },
       },
-    },
+    }
   );
 
   // IMPORTANT: Do NOT use getSession() — it reads from storage
@@ -46,9 +44,7 @@ export async function updateSession(request: NextRequest) {
 
   // Public routes that don't require authentication
   const publicRoutes = ["/login", "/api/health", "/api/auth", "/api/webhooks", "/api/mobile"];
-  const isPublicRoute = publicRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
+  const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
 
   // Block customer routes — Customer PWA removed, replaced by Mobile App
   if (pathname.startsWith("/customer")) {

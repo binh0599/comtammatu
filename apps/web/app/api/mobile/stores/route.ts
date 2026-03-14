@@ -24,17 +24,14 @@ export async function GET(_req: NextRequest) {
         latitude,
         longitude,
         is_active
-      `,
+      `
       )
       .eq("is_active", true)
       .order("name", { ascending: true });
 
     if (error) {
       console.error("Error fetching branches:", error);
-      return jsonError(
-        "Không thể tải danh sách chi nhánh. Vui lòng thử lại sau.",
-        500,
-      );
+      return jsonError("Không thể tải danh sách chi nhánh. Vui lòng thử lại sau.", 500);
     }
 
     return jsonOk({
@@ -42,9 +39,6 @@ export async function GET(_req: NextRequest) {
     });
   } catch (error) {
     console.error("[GET /api/mobile/stores]", error);
-    return jsonError(
-      "Lỗi máy chủ. Vui lòng thử lại sau.",
-      500,
-    );
+    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
   }
 }

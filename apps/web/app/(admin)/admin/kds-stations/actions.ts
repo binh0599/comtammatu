@@ -46,11 +46,7 @@ async function _getBranchesAndCategories() {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const [branchesResult, categoriesResult] = await Promise.all([
-    supabase
-      .from("branches")
-      .select("id, name")
-      .eq("tenant_id", tenantId)
-      .order("name"),
+    supabase.from("branches").select("id, name").eq("tenant_id", tenantId).order("name"),
     supabase
       .from("menu_categories")
       .select("id, name, menu_id, menus!inner(tenant_id)")
@@ -63,11 +59,13 @@ async function _getBranchesAndCategories() {
 
   return {
     branches: branchesResult.data ?? [],
-    categories: (categoriesResult.data ?? []).map(({ id, name, menu_id }: { id: number; name: string; menu_id: number }) => ({
-      id,
-      name,
-      menu_id,
-    })),
+    categories: (categoriesResult.data ?? []).map(
+      ({ id, name, menu_id }: { id: number; name: string; menu_id: number }) => ({
+        id,
+        name,
+        menu_id,
+      })
+    ),
   };
 }
 
@@ -167,10 +165,7 @@ async function _updateKdsStation(id: number, formData: FormData) {
 
   const { name, category_ids } = parsed.data;
 
-  const { error: updateError } = await supabase
-    .from("kds_stations")
-    .update({ name })
-    .eq("id", id);
+  const { error: updateError } = await supabase.from("kds_stations").update({ name }).eq("id", id);
 
   if (updateError) return { error: updateError.message };
 
@@ -221,7 +216,10 @@ async function _toggleKdsStation(id: number) {
   const { supabase, tenantId } = await getAdminContext(ADMIN_ROLES);
 
   const ownership = await verifyEntityOwnership<{ id: number; is_active: boolean }>(
-    supabase, "kds_stations", id, tenantId
+    supabase,
+    "kds_stations",
+    id,
+    tenantId
   );
   if (ownership.error) return { error: ownership.error };
 

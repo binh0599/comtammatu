@@ -128,7 +128,10 @@ export function LeaveOverview({ leaveRequests, leaveSummary }: LeaveOverviewProp
           <CardContent className="pt-4 pb-4">
             <p className="text-muted-foreground text-xs">Đã sử dụng (năm nay)</p>
             <p className="text-2xl font-bold">
-              {leaveSummary.annual + leaveSummary.sick + leaveSummary.unpaid + leaveSummary.maternity}
+              {leaveSummary.annual +
+                leaveSummary.sick +
+                leaveSummary.unpaid +
+                leaveSummary.maternity}
             </p>
             <p className="text-muted-foreground text-xs">ngày</p>
           </CardContent>

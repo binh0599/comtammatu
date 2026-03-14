@@ -37,8 +37,7 @@ export function useCreateOrderMutation() {
 export function useUpdateOrderStatusMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (args: { order_id: number; status: string }) =>
-      updateOrderStatus(args),
+    mutationFn: (args: { order_id: number; status: string }) => updateOrderStatus(args),
     onMutate: async (variables) => {
       // Hủy queries đang chạy
       await queryClient.cancelQueries({ queryKey: queryKeys.orders.all });
@@ -54,11 +53,9 @@ export function useUpdateOrderStatusMutation() {
         (old: CachedOrder[] | undefined) => {
           if (!old || !Array.isArray(old)) return old;
           return old.map((order) =>
-            order.id === variables.order_id
-              ? { ...order, status: variables.status }
-              : order,
+            order.id === variables.order_id ? { ...order, status: variables.status } : order
           );
-        },
+        }
       );
 
       return { previousOrders };

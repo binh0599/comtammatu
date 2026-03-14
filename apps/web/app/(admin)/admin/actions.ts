@@ -52,8 +52,7 @@ async function _getDashboardStats(): Promise<DashboardStats> {
     .eq("status", "completed")
     .gte("created_at", earliestDate.toISOString());
 
-  if (orderError)
-    throw safeDbError(orderError, "db");
+  if (orderError) throw safeDbError(orderError, "db");
 
   const orderIds = (orders ?? []).map((o: { id: number }) => o.id);
 
@@ -68,8 +67,7 @@ async function _getDashboardStats(): Promise<DashboardStats> {
       .not("paid_at", "is", null)
       .gte("paid_at", earliestDate.toISOString());
 
-    if (paymentError)
-      throw safeDbError(paymentError, "db");
+    if (paymentError) throw safeDbError(paymentError, "db");
 
     filteredPayments = (paymentsData ?? []) as typeof filteredPayments;
   }
@@ -140,8 +138,7 @@ async function _getRecentOrders(limit = 10): Promise<RecentOrder[]> {
     .order("created_at", { ascending: false })
     .limit(validLimit);
 
-  if (orderError)
-    throw safeDbError(orderError, "db");
+  if (orderError) throw safeDbError(orderError, "db");
 
   return (orders ?? []).map((o: Record<string, unknown>) => ({
     id: o.id as number,
@@ -183,8 +180,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     .eq("status", "completed")
     .gte("created_at", thirtyDaysAgo.toISOString());
 
-  if (orderError)
-    throw safeDbError(orderError, "db");
+  if (orderError) throw safeDbError(orderError, "db");
   if (!completedOrders || completedOrders.length === 0) return [];
 
   const orderIds = completedOrders.map((o: { id: number }) => o.id);
@@ -194,8 +190,7 @@ async function _getTopSellingItems(limit = 10): Promise<TopSellingItem[]> {
     .select("menu_item_id, quantity, item_total, menu_items(name)")
     .in("order_id", orderIds);
 
-  if (itemError)
-    throw safeDbError(itemError, "db");
+  if (itemError) throw safeDbError(itemError, "db");
   if (!items || items.length === 0) return [];
 
   const aggregated = new Map<number, TopSellingItem>();
@@ -243,8 +238,7 @@ async function _getOrderStatusCounts(): Promise<Record<string, number>> {
     .in("branch_id", branchIds)
     .gte("created_at", todayStart.toISOString());
 
-  if (orderError)
-    throw safeDbError(orderError, "db");
+  if (orderError) throw safeDbError(orderError, "db");
   if (!orders || orders.length === 0) return {};
 
   const counts: Record<string, number> = {};
@@ -280,8 +274,7 @@ async function _getRevenueTrend(days: number = 7) {
     .eq("status", "completed")
     .gte("created_at", startDate.toISOString());
 
-  if (ordersError)
-    throw safeDbError(ordersError, "db");
+  if (ordersError) throw safeDbError(ordersError, "db");
 
   const orderIds = (orders ?? []).map((o: { id: number }) => o.id);
 
@@ -295,8 +288,7 @@ async function _getRevenueTrend(days: number = 7) {
       .eq("status", "completed")
       .not("paid_at", "is", null);
 
-    if (paymentsError)
-      throw safeDbError(paymentsError, "db");
+    if (paymentsError) throw safeDbError(paymentsError, "db");
 
     payments = (paymentsData ?? []) as typeof payments;
   }
@@ -359,8 +351,7 @@ async function _getHourlyOrderVolume() {
     .not("status", "in", '("cancelled","draft")')
     .gte("created_at", todayStart.toISOString());
 
-  if (orderError)
-    throw safeDbError(orderError, "db");
+  if (orderError) throw safeDbError(orderError, "db");
 
   const hourMap = new Map<number, number>();
   for (let h = 6; h <= 23; h++) {
@@ -399,8 +390,7 @@ async function _getOrderStatusDistribution() {
     .in("branch_id", branchIds)
     .gte("created_at", todayStart.toISOString());
 
-  if (orderError)
-    throw safeDbError(orderError, "db");
+  if (orderError) throw safeDbError(orderError, "db");
 
   const statusMap = new Map<string, number>();
   for (const order of orders ?? []) {
@@ -450,7 +440,7 @@ async function _getBranchComparison(
     throw new ActionError(
       parsed.error.issues[0]?.message ?? "Khoảng thời gian không hợp lệ",
       "VALIDATION_ERROR",
-      400,
+      400
     );
   }
 

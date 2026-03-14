@@ -81,9 +81,7 @@ export function formatDiscount(type: string, value: number): string {
  * Factory: creates a label-mapper function from a key→label record.
  * Falls back to the raw key if no mapping exists.
  */
-function createLabelMapper(
-  labels: Record<string, string>,
-): (key: string) => string {
+function createLabelMapper(labels: Record<string, string>): (key: string) => string {
   return (key: string) => labels[key] ?? key;
 }
 

@@ -4,12 +4,7 @@
  * Tests payment insertion and validation against real POS sessions.
  */
 
-import {
-  createAuthClient,
-  createServiceClient,
-  cleanupRows,
-  SEED,
-} from "./helpers";
+import { createAuthClient, createServiceClient, cleanupRows, SEED } from "./helpers";
 import { randomUUID } from "crypto";
 
 describe("Payment Processing", () => {

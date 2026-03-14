@@ -110,40 +110,40 @@ Instead of splitting into 9 microservices, the system uses a Modular Monolith pa
 
 All versions as of February 2026.
 
-| Layer               | Technology                             | Description                                                                                  | Cost               |
-| ------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------ |
-| Frontend + API      | Next.js 16.1 LTS (App Router)          | Full-stack: SSR pages + API Routes                                                           | Vercel Pro: $20/mo |
-| POS Mobile (Waiter) | Next.js 16.1 PWA (mobile-first)        | Order-taking app on waiter's phone, offline support, order creation only                     | Included           |
-| POS Cashier Station | Next.js 16.1 PWA (tablet/laptop)       | Cashier: view orders, process payments, print receipts, open/close shifts, printer connected | Included           |
-| KDS Frontend        | Next.js 16.1 + Supabase Realtime       | Kitchen display, real-time from Supabase, per-station display                                | Included           |
-| Customer App        | Next.js 16.1 PWA (Mobile-first)        | Web app for ordering, loyalty (no native app needed)                                         | Included           |
-| Database            | Supabase PostgreSQL (Pro)              | Database + Auth + Realtime + Storage + RLS                                                   | $25/mo             |
-| Auth                | Supabase Auth                          | Email/phone login, OAuth, RBAC via RLS policies                                              | Included           |
-| Real-time           | Supabase Realtime                      | WebSocket for KDS, order tracking, live updates                                              | Included           |
-| File Storage        | Supabase Storage                       | Product images, documents, receipts                                                          | Included (100GB)   |
-| Edge Functions      | Supabase Edge Functions (Deno)         | Webhooks, payment callbacks, async tasks                                                     | Included (500K/mo) |
-| Search              | PostgreSQL Full-Text Search + tsvector | Search for menu items, customers, orders                                                     | Included           |
-| Hosting             | Vercel Pro                             | Auto-deploy, CDN, serverless functions                                                       | $20/mo             |
-| Domain              | Vercel / Cloudflare                    | Custom domain + SSL                                                                          | ~$12/yr            |
-| CI/CD               | GitHub Actions (free tier)             | Lint, test, type-check, auto-deploy via Vercel                                               | Free               |
-| Connection Pool     | Supabase PgBouncer (built-in)          | Transaction-mode pooling for serverless (port 6543)                                          | Included           |
-| Email               | Supabase SMTP (built-in)               | Auth emails, transactional (Resend deferred to Phase 3 for CRM campaigns)                    | Included           |
-| Monitoring          | Vercel Analytics + Sentry (filtered)   | Performance, errors, user analytics (event filtering to stay within 5K/mo free tier)         | Free tier          |
-| Rate Limiting       | Next.js Edge Middleware (in-memory)    | API rate limiting, DDoS protection (no external dependency)                                  | Included           |
+| Layer               | Technology                                       | Description                                                                                  | Cost               |
+| ------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- | ------------------ |
+| Frontend + API      | Next.js 16.1 LTS (App Router)                    | Full-stack: SSR pages + API Routes                                                           | Vercel Pro: $20/mo |
+| POS Mobile (Waiter) | Next.js 16.1 PWA (mobile-first)                  | Order-taking app on waiter's phone, offline support, order creation only                     | Included           |
+| POS Cashier Station | Next.js 16.1 PWA (tablet/laptop)                 | Cashier: view orders, process payments, print receipts, open/close shifts, printer connected | Included           |
+| KDS Frontend        | Next.js 16.1 + Supabase Realtime                 | Kitchen display, real-time from Supabase, per-station display                                | Included           |
+| Customer App        | Next.js 16.1 PWA (Mobile-first)                  | Web app for ordering, loyalty (no native app needed)                                         | Included           |
+| Database            | Supabase PostgreSQL (Pro)                        | Database + Auth + Realtime + Storage + RLS                                                   | $25/mo             |
+| Auth                | Supabase Auth                                    | Email/phone login, OAuth, RBAC via RLS policies                                              | Included           |
+| Real-time           | Supabase Realtime                                | WebSocket for KDS, order tracking, live updates                                              | Included           |
+| File Storage        | Supabase Storage                                 | Product images, documents, receipts                                                          | Included (100GB)   |
+| Edge Functions      | Supabase Edge Functions (Deno)                   | Webhooks, payment callbacks, async tasks                                                     | Included (500K/mo) |
+| Search              | PostgreSQL Full-Text Search + tsvector           | Search for menu items, customers, orders                                                     | Included           |
+| Hosting             | Vercel Pro                                       | Auto-deploy, CDN, serverless functions                                                       | $20/mo             |
+| Domain              | Vercel / Cloudflare                              | Custom domain + SSL                                                                          | ~$12/yr            |
+| CI/CD               | GitHub Actions (free tier)                       | Lint, test, type-check, auto-deploy via Vercel                                               | Free               |
+| Connection Pool     | Supabase PgBouncer (built-in)                    | Transaction-mode pooling for serverless (port 6543)                                          | Included           |
+| Email               | Supabase SMTP (built-in)                         | Auth emails, transactional (Resend deferred to Phase 3 for CRM campaigns)                    | Included           |
+| Monitoring          | Vercel Analytics + Sentry (filtered)             | Performance, errors, user analytics (event filtering to stay within 5K/mo free tier)         | Free tier          |
+| Rate Limiting       | Next.js Edge Middleware (in-memory)              | API rate limiting, DDoS protection (no external dependency)                                  | Included           |
 | ORM                 | Prisma 7.2 (edge client) + @supabase/supabase-js | Type-safe queries + edge-optimized cold starts via `@prisma/client/edge` + `driverAdapters`  | Free               |
-| Language            | TypeScript 5.7 (stable)                | Type-safe across entire codebase                                                             | Free               |
+| Language            | TypeScript 5.7 (stable)                          | Type-safe across entire codebase                                                             | Free               |
 
 ### Estimated Monthly Cost
 
-| Item                | Plan                                                       | Cost/month |
-| ------------------- | ---------------------------------------------------------- | ---------- |
-| Vercel Pro          | 1 project, auto-deploy, CDN, serverless                    | $20        |
-| Supabase Pro        | 8GB DB, 100K MAU, 100GB storage, Realtime, PgBouncer       | $25        |
-| Domain              | Custom domain (yearly)                                     | ~$1 (avg)  |
+| Item                | Plan                                                                 | Cost/month |
+| ------------------- | -------------------------------------------------------------------- | ---------- |
+| Vercel Pro          | 1 project, auto-deploy, CDN, serverless                              | $20        |
+| Supabase Pro        | 8GB DB, 100K MAU, 100GB storage, Realtime, PgBouncer                 | $25        |
+| Domain              | Custom domain (yearly)                                               | ~$1 (avg)  |
 | Email               | Supabase SMTP (built-in for auth emails). Resend deferred to Phase 3 | $0         |
-| Sentry (monitoring) | Free tier (5K events/month) with event filtering           | $0         |
-| Rate Limiting       | Next.js Edge Middleware (no external dependency)           | $0         |
-| **TOTAL**           |                                                            | **$46**    |
+| Sentry (monitoring) | Free tier (5K events/month) with event filtering                     | $0         |
+| Rate Limiting       | Next.js Edge Middleware (no external dependency)                     | $0         |
+| **TOTAL**           |                                                                      | **$46**    |
 
 > **Post-MVP cost optimization:** Evaluate Cloudflare Pages migration (Phase 4, Month 4-6) for potential reduction to ~$26-31/month.
 
@@ -1291,6 +1291,7 @@ Based on the Enterprise v1.0 review and the v2.1 performance review, the Lightwe
 ### 5.0. Index Policy (v2.2 new)
 
 > **INDEX POLICY — apply to all future schema changes:**
+>
 > 1. Do NOT create indexes preemptively for tables expected to remain small (<10K rows)
 > 2. Always create indexes for known hot-path query patterns (POS, KDS, payments)
 > 3. UNIQUE constraints create implicit indexes — never duplicate them
@@ -1317,6 +1318,7 @@ DIRECT_URL=postgresql://user:pass@db.xxx.supabase.co:5432/postgres
 ```
 
 **Rules:**
+
 - All application code uses the pooler URL (port 6543, transaction mode)
 - Prisma schema must set `directUrl` for migrations: `directUrl = env("DIRECT_URL")`
 - Supabase Realtime subscriptions use the direct connection automatically
@@ -1406,9 +1408,9 @@ async function updateOrderStatus(orderId: number, newStatus: string) {
 
   // Tier 2: Broadcast notification to staff (ephemeral, no DB overhead)
   await supabase.channel(`branch:${branchId}:notifications`).send({
-    type: 'broadcast',
-    event: 'order_status',
-    payload: { orderId, orderNumber, newStatus, tableNumber }
+    type: "broadcast",
+    event: "order_status",
+    payload: { orderId, orderNumber, newStatus, tableNumber },
   });
 }
 ```
@@ -1494,8 +1496,8 @@ if (!navigator.onLine && method !== "cash") {
 Iterations are tiered by device type to balance security with mobile UX. Desktop (cashier stations) use full OWASP parameters. Mobile (waiter phones) use OWASP minimum with compensating controls.
 
 ```typescript
-const MOBILE_ITERATIONS = 210_000;   // OWASP minimum for PBKDF2-SHA-256 (2023)
-const DESKTOP_ITERATIONS = 600_000;  // Full OWASP for cashier stations (laptop/tablet)
+const MOBILE_ITERATIONS = 210_000; // OWASP minimum for PBKDF2-SHA-256 (2023)
+const DESKTOP_ITERATIONS = 600_000; // Full OWASP for cashier stations (laptop/tablet)
 
 const key = await crypto.subtle.deriveKey(
   {
@@ -1514,6 +1516,7 @@ const key = await crypto.subtle.deriveKey(
 ```
 
 **Compensating controls for mobile (lower iterations):**
+
 - Require minimum 6-digit PIN + device fingerprint (effectively a longer key)
 - Auto-lock after 5 minutes of inactivity (not 15) on mobile devices
 - Mobile stores only non-sensitive data (menu items, pending orders — no PII, no payments)
@@ -1602,15 +1605,15 @@ Using Next.js Edge Middleware with in-memory rate limiting (no external dependen
 
 ```typescript
 // middleware.ts — runs at the edge, no external dependency
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 
 export function middleware(request: Request) {
-  const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
+  const ip = request.headers.get("x-forwarded-for") ?? "unknown";
   const now = Date.now();
   const window = 60_000; // 1 minute
-  const limit = 100;     // Adjust per endpoint category below
+  const limit = 100; // Adjust per endpoint category below
 
   const entry = rateLimitMap.get(ip);
   if (!entry || now > entry.resetAt) {
@@ -1618,7 +1621,7 @@ export function middleware(request: Request) {
     return NextResponse.next();
   }
   if (entry.count >= limit) {
-    return new NextResponse('Too Many Requests', { status: 429 });
+    return new NextResponse("Too Many Requests", { status: 429 });
   }
   entry.count++;
   return NextResponse.next();
@@ -1789,18 +1792,18 @@ Sentry is configured with event filtering to stay within the free tier (5K event
 ```typescript
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
-  sampleRate: 1.0,            // Start at 100%, reduce if approaching 5K limit
-  tracesSampleRate: 0.1,      // Trace 10% of transactions
+  sampleRate: 1.0, // Start at 100%, reduce if approaching 5K limit
+  tracesSampleRate: 0.1, // Trace 10% of transactions
 
   beforeSend(event) {
     // Drop known non-critical errors (POS offline is expected behavior)
     const ignoredMessages = [
-      'Network request failed',      // Offline POS — expected
-      'ResizeObserver loop',          // Browser noise
-      'Failed to fetch',              // Intermittent network
+      "Network request failed", // Offline POS — expected
+      "ResizeObserver loop", // Browser noise
+      "Failed to fetch", // Intermittent network
     ];
-    if (ignoredMessages.some(msg => event.message?.includes(msg))) {
-      return null;  // Drop event
+    if (ignoredMessages.some((msg) => event.message?.includes(msg))) {
+      return null; // Drop event
     }
 
     // Strip sensitive headers

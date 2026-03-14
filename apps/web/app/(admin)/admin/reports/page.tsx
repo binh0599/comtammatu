@@ -2,29 +2,20 @@ import dynamic from "next/dynamic";
 import { Header } from "@/components/admin/header";
 import { getReportData } from "./actions";
 import { ReportsClient } from "./reports-client";
-import {
-  Skeleton,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@comtammatu/ui";
+import { Skeleton, Tabs, TabsContent, TabsList, TabsTrigger } from "@comtammatu/ui";
 
 const AnalyticsTab = dynamic(
   () => import("./analytics-tab").then((m) => ({ default: m.AnalyticsTab })),
-  { loading: () => <Skeleton className="h-[400px] w-full" /> },
+  { loading: () => <Skeleton className="h-[400px] w-full" /> }
 );
 
-const KdsTab = dynamic(
-  () => import("./kds-tab").then((m) => ({ default: m.KdsTab })),
-  { loading: () => <Skeleton className="h-[400px] w-full" /> },
-);
+const KdsTab = dynamic(() => import("./kds-tab").then((m) => ({ default: m.KdsTab })), {
+  loading: () => <Skeleton className="h-[400px] w-full" />,
+});
 
 export default async function ReportsPage() {
   const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .slice(0, 10);
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
   const today = now.toISOString().slice(0, 10);
 
   const data = await getReportData(monthStart, today);
@@ -40,11 +31,7 @@ export default async function ReportsPage() {
             <TabsTrigger value="kds">Hiệu suất bếp</TabsTrigger>
           </TabsList>
           <TabsContent value="reports">
-            <ReportsClient
-              initialData={data}
-              initialStart={monthStart}
-              initialEnd={today}
-            />
+            <ReportsClient initialData={data} initialStart={monthStart} initialEnd={today} />
           </TabsContent>
           <TabsContent value="analytics">
             <AnalyticsTab />

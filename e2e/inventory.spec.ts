@@ -20,9 +20,7 @@ test.describe("Inventory Module", () => {
     await expect(ingredientsTab).toHaveAttribute("data-state", "active");
 
     // Verify content rendered (table or list)
-    await expect(
-      page.getByText(/nguyên liệu/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/nguyên liệu/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("stock levels tab loads", async ({ page, loginAs }) => {
@@ -35,9 +33,7 @@ test.describe("Inventory Module", () => {
 
     await expect(stockTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/tồn kho|stock/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/tồn kho|stock/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("suppliers tab loads", async ({ page, loginAs }) => {
@@ -50,9 +46,7 @@ test.describe("Inventory Module", () => {
 
     await expect(suppliersTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/nhà cung cấp|supplier/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/nhà cung cấp|supplier/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("purchase orders tab loads", async ({ page, loginAs }) => {
@@ -65,8 +59,8 @@ test.describe("Inventory Module", () => {
 
     await expect(poTab).toHaveAttribute("data-state", "active");
 
-    await expect(
-      page.getByText(/đơn mua hàng|purchase order/i).first()
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/đơn mua hàng|purchase order/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
