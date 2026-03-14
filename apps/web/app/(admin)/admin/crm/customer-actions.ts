@@ -151,7 +151,7 @@ async function _toggleCustomerActive(id: number) {
     .eq("tenant_id", tenantId)
     .single();
 
-  if (fetchError) return { error: fetchError.message };
+  if (fetchError) return safeDbErrorResult(fetchError, "db");
   if (!customer) return { error: "Khách hàng không tồn tại" };
 
   const { error } = await supabase
@@ -243,11 +243,11 @@ async function _adjustLoyaltyPoints(input: {
       reference_id: parsed.data.reference_id ?? null,
     });
 
-  if (txError) return { error: txError.message };
+  if (txError) return safeDbErrorResult(txError, "db");
 
   // Auto-tier upgrade: find the highest tier the customer qualifies for
   if (parsed.data.points > 0) {
-    const { data: tiers } = await supabase
+    const { data: tiers, error: tierError } = await supabase
       .from("loyalty_tiers")
       .select("id, min_points, name")
       .eq("tenant_id", tenantId)
@@ -255,21 +255,27 @@ async function _adjustLoyaltyPoints(input: {
       .order("min_points", { ascending: false })
       .limit(1);
 
+    if (tierError) return safeDbErrorResult(tierError, "db");
+
     const bestTier = tiers?.[0];
     if (bestTier) {
-      const { data: customer } = await supabase
+      const { data: currentCustomer, error: custError } = await supabase
         .from("customers")
         .select("loyalty_tier_id")
         .eq("id", parsed.data.customer_id)
         .eq("tenant_id", tenantId)
         .single();
 
-      if (customer && customer.loyalty_tier_id !== bestTier.id) {
-        await supabase
+      if (custError) return safeDbErrorResult(custError, "db");
+
+      if (currentCustomer && currentCustomer.loyalty_tier_id !== bestTier.id) {
+        const { error: upgradeError } = await supabase
           .from("customers")
           .update({ loyalty_tier_id: bestTier.id })
           .eq("id", parsed.data.customer_id)
           .eq("tenant_id", tenantId);
+
+        if (upgradeError) return safeDbErrorResult(upgradeError, "db");
       }
     }
   }

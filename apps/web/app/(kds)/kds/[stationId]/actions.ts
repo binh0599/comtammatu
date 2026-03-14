@@ -152,11 +152,17 @@ async function _bumpTicket(
     return { error: "Ticket không tồn tại" };
   }
 
-  // Verify branch ownership via station
-  const stationBranchId = (ticket as Record<string, unknown>).kds_stations as
-    | { branch_id: number }
-    | null;
-  if (stationBranchId?.branch_id !== profile.branch_id) {
+  // Verify branch ownership via station (runtime-validated)
+  const stationData = ticket.kds_stations;
+  if (
+    !stationData ||
+    typeof stationData !== "object" ||
+    !("branch_id" in stationData) ||
+    typeof stationData.branch_id !== "number"
+  ) {
+    return { error: "Không thể xác minh chi nhánh của trạm KDS" };
+  }
+  if (stationData.branch_id !== profile.branch_id) {
     return { error: "Ticket không thuộc chi nhánh của bạn" };
   }
 
@@ -199,7 +205,12 @@ async function _bumpTicket(
       .eq("id", ticketId)
       .single();
 
-    if (ticketOrder?.orders) {
+    if (
+      ticketOrder?.orders &&
+      typeof ticketOrder.orders === "object" &&
+      "order_number" in ticketOrder.orders &&
+      "branch_id" in ticketOrder.orders
+    ) {
       const orderInfo = ticketOrder.orders as { order_number: string; branch_id: number };
       const channel = supabase.channel(`branch:${orderInfo.branch_id}:notifications`);
       await channel.send({
@@ -258,11 +269,17 @@ async function _recallTicket(ticketId: number) {
     return { error: "Ticket không tồn tại" };
   }
 
-  // Verify branch ownership
-  const stationBranch = (ticket as Record<string, unknown>).kds_stations as
-    | { branch_id: number }
-    | null;
-  if (stationBranch?.branch_id !== profile.branch_id) {
+  // Verify branch ownership (runtime-validated)
+  const stationBranch = ticket.kds_stations;
+  if (
+    !stationBranch ||
+    typeof stationBranch !== "object" ||
+    !("branch_id" in stationBranch) ||
+    typeof stationBranch.branch_id !== "number"
+  ) {
+    return { error: "Không thể xác minh chi nhánh của trạm KDS" };
+  }
+  if (stationBranch.branch_id !== profile.branch_id) {
     return { error: "Ticket không thuộc chi nhánh của bạn" };
   }
 

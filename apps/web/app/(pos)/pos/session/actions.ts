@@ -8,6 +8,7 @@ import {
   getActionContext,
   requireBranch,
   requireRole,
+  withServerAction,
   withServerQuery,
   safeDbError,
   safeDbErrorResult,
@@ -96,7 +97,7 @@ export const getTerminalsForSession = withServerQuery(_getTerminalsForSession);
 
 // ===== Open Session =====
 
-export async function openSession(formData: FormData) {
+async function _openSession(formData: FormData) {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
@@ -170,9 +171,11 @@ export async function openSession(formData: FormData) {
   return { error: null };
 }
 
+export const openSession = withServerAction(_openSession);
+
 // ===== Close Session =====
 
-export async function closeSession(formData: FormData) {
+async function _closeSession(formData: FormData) {
   const ctx = await getActionContext();
   const branchId = requireBranch(ctx);
   requireRole(ctx.userRole, CASHIER_ROLES, "thao tác thu ngân");
@@ -241,6 +244,8 @@ export async function closeSession(formData: FormData) {
   revalidatePath("/pos/cashier");
   return { error: null };
 }
+
+export const closeSession = withServerAction(_closeSession);
 
 // ===== Session Summary =====
 

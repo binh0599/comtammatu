@@ -68,11 +68,12 @@ async function _processPayment(data: {
       return { error: "Chỉ máy thu ngân mới có thể xử lý thanh toán" };
     }
   } else {
-    // New device flow: verify user has an approved cashier_station device
+    // New device flow: verify user has an approved cashier_station device in same branch
     const { data: device } = await supabase
       .from("registered_devices")
       .select("terminal_type")
       .eq("registered_by", userId)
+      .eq("branch_id", branchId)
       .eq("status", "approved")
       .eq("terminal_type", "cashier_station")
       .limit(1)
