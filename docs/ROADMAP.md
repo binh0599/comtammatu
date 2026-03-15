@@ -1,293 +1,117 @@
-# F&B CRM System — Development Roadmap
+# Cơm Tấm Má Tư — Development Roadmap
 
-**Version 2.1 — Aligned with Lightweight Architecture v2.1**
-February 2026
+**Version 4.1 — Multi-brand SaaS Platform**
+March 2026
 
-> This document is the development roadmap extracted from the Architecture spec.
-> For technical architecture, database schema, and security details, see `F&B_CRM_Lightweight_Architecture_v2.1.md`.
-
----
-
-## Table of Contents
-
-1. [Roadmap Overview](#1-roadmap-overview)
-2. [Week 1-2: Foundation + Security Baseline](#2-week-1-2-foundation--security-baseline)
-3. [Week 3-4: Split POS & Orders](#3-week-3-4-split-pos--orders)
-4. [Week 5-6: Operations](#4-week-5-6-operations)
-5. [Week 7-8: CRM, Privacy & Polish](#5-week-7-8-crm-privacy--polish)
-6. [Post-MVP Enhancements](#6-post-mvp-enhancements)
-7. [Migration Path to Enterprise](#7-migration-path-to-enterprise)
-8. [Current Progress](#8-current-progress)
+> Source of truth: `comtammatu_master_plan_v4.1.md`
+> Task tracking: `tasks/todo.md`
 
 ---
 
-## 1. Roadmap Overview
+## Roadmap Overview
 
-Condensed **8-week roadmap** for MVP, followed by iterative improvements.
-
-| Phase    | Duration | Focus                                    |
-| -------- | -------- | ---------------------------------------- |
-| Week 1-2 | 2 weeks  | Foundation + Security Baseline           |
-| Week 3-4 | 2 weeks  | Split POS & Orders                       |
-| Week 5-6 | 2 weeks  | Operations (Inventory, HR, Admin)        |
-| Week 7-8 | 2 weeks  | CRM, Privacy & Polish                    |
-| Post-MVP | Ongoing  | Advanced features, integrations, scaling |
-
-**Team:** 2-3 developers
-**Time to MVP:** 4-6 weeks (8-week roadmap includes testing & docs)
-**Cost target:** $45-120/month
+| Phase | Duration | Focus | Status |
+|---|---|---|---|
+| V2 MVP (Week 1–8) | 8 tuần | Single-brand CRM + POS + KDS | **COMPLETE** |
+| V2 Post-MVP (Sprint 1–9) | 9 sprints | Payment, offline, campaigns, analytics | **COMPLETE** |
+| V2 Refactoring (Wave 1–6) | 6 waves | Code quality, testing, CQRS, accessibility | **COMPLETE** |
+| **V4.1 Pre-Sprint** | **2 tuần** | **Fix CI, brand_id migration, nav-config** | **NEXT** |
+| V4.1 Sprint 0 | 2 tuần | Scope System (JWT claims, ScopeContextBar) | Planned |
+| V4.1 Sprint 1 | 2 tuần | 8 modules scoped + PayOS live | Planned |
+| V4.1 Sprint 2 | 2 tuần | E-invoicing + Schema-per-module | Planned |
+| V4.1 Sprint 3 | 2 tuần | GrabFood + ShopeeFood live | Planned |
+| V4.1 Sprint 4 | 2 tuần | Zalo OA + SaaS billing + Flutter | Planned |
 
 ---
 
-## 2. Week 1-2: Foundation + Security Baseline ✅ COMPLETE
+## V2 Completed Summary
 
-### Infrastructure Setup
-
-- [x] GitHub repo with branch protection, CODEOWNERS
-- [x] Turborepo + pnpm workspace configuration
-- [x] Vercel project linked, auto-deploy configured
-- [x] Supabase project linked (project: `zrlriuednoaqrsvnjjyo`)
-- [x] Environment variables configured (Vercel + .env.local)
-
-### Database
-
-- [x] Corrected schema (v2.1 → v2.2 DDL) — all ~35 tables
-- [x] RLS policies on every table
-- [x] Seed data for development
-- [ ] RLS validation test suite _(deferred to Week 7-8)_
-
-### Authentication & Security
-
-- [x] Supabase Auth configuration
-- [x] RBAC via custom claims + RLS
-- [ ] MFA (TOTP) for admin/manager/owner roles _(deferred)_
-- [x] Login pages
-- [x] Pre-commit hooks (detect-secrets)
-- [x] CI pipeline (secrets scan, dependency scan, typecheck, lint, Prisma generate)
-
-### Core UI
-
-- [x] shadcn/ui installation and configuration (24 components)
-- [x] App layout (admin, POS, KDS, customer route groups)
-- [x] Navigation components (admin sidebar, POS bottom nav)
-- [x] Theme setup (dark mode support)
-
-### Menu Management
-
-- [x] CRUD menu items
-- [x] Menu categories
-- [x] Item modifiers and variants
-- [x] Menu assignment to branches
+**Đã hoàn thành tất cả:**
+- 57 pages, 20 API routes, 4 role-based UIs
+- 87 DB tables, 36 migrations, 8 materialized views
+- POS offline, KDS realtime, ESC/POS printing, Web Push
+- CRM, Loyalty, Campaigns, Payroll, Inventory + food cost
+- 502 unit tests, 13 E2E specs, 8 integration tests
+- 6 refactoring waves (code splitting, React Query/Zustand, security, WCAG, CQRS)
 
 ---
 
-## 3. Week 3-4: Split POS & Orders ✅ COMPLETE (Cash-Only MVP)
+## V4.1 Migration Roadmap
 
-### Terminal Management
+### 3 Vấn đề ưu tiên cao nhất
 
-- [x] Device registration with manager approval
-- [ ] Device fingerprinting _(deferred — enhancement)_
-- [ ] Peripheral config (printers, cash drawers) _(deferred)_
-- [x] Terminal type enforcement (`mobile_order` vs `cashier_station`)
+| # | Vấn đề | Mức độ | Giải pháp |
+|---|---|---|---|
+| 1 | CI/CD broken — lint errors, merge không có gate | CRITICAL | Branch protection, fix root cause |
+| 2 | Scope confusion — không biết đang quản lý Brand/Branch nào | HIGH | URL as source of truth + ScopeContextBar |
+| 3 | Compliance gap — E-invoicing Decree 70/2025 + VietQR | HIGH | PayOS + Viettel S-Invoice Edge Functions |
 
-### Mobile Order (Waiter — `mobile_order`)
+### Tier 1 — Compliance & Revenue (0–3 tháng)
 
-- [x] Mobile-first UI (table grid, menu selector, cart drawer)
-- [x] Select table → choose items → modifiers → submit order
-- [x] Order tracking (status updates via Realtime)
-- [x] Cannot process payments (enforced by role checks)
+| # | Feature | Sprint | Tại sao |
+|---|---|---|---|
+| 1 | PayOS / VietQR | Sprint 1 | Revenue — zero-fee payment |
+| 2 | E-invoicing Decree 70/2025 | Sprint 2 | Yêu cầu pháp lý |
+| 3 | Refunds + settlement_batches | Sprint 1 | Payment reconciliation |
+| 4 | VNPay card aggregator | Sprint 2 | Card payment acceptance |
+| 5 | GrabFood webhook | Sprint 3 | 36% delivery volume VN |
+| 6 | ShopeeFood webhook | Sprint 3 | 56% delivery volume VN |
+| 7 | Zalo OA / ZNS | Sprint 4 | Primary customer channel (77M MAU) |
+| 8 | Schema-per-module migration | Sprint 2 | Microservice extraction path |
+| 9 | Flutter app TestFlight | Sprint 4 | Customer access gap |
+| 10 | SaaS brand onboarding + billing | Sprint 4 | First external SaaS customer |
 
-### Cashier Station (`cashier_station`)
+### Tier 2 — Competitive Parity (3–6 tháng)
 
-- [x] Cashier screen — view orders by status (60/40 split layout)
-- [x] Process payment (cash only — MVP)
-- [x] Open/close cash shifts (POS sessions)
-- [ ] Print receipt _(deferred)_
-- [x] Shift reconciliation (opening vs closing amount + difference tracking)
+- Reservation + waitlist system
+- RFM segmentation + Zalo campaigns
+- Financial reporting materialized views
+- Inter-branch stock transfer
+- MoMo + ZaloPay e-wallets
+- Payroll SI compliance (Luật BHXH 2024)
+- Multi-brand platform dashboard
 
-### Payment Integration
+### Tier 3 — Differentiation (6–24 tháng)
 
-- [x] Cash payment flow (with change calculator, quick amounts)
-- [ ] VNPay integration with webhook signature verification _(deferred)_
-- [ ] Momo integration with webhook signature verification _(deferred)_
-- [x] Idempotency enforcement on all payments (`idempotency_key UUID`)
-- [x] Cashier-station-only restriction enforced
-
-### Order Lifecycle
-
-- [x] Order state machine: draft → confirmed → preparing → ready → served → completed
-- [x] Status history tracking (DB trigger: `record_order_status_change`)
-- [ ] Order discounts and voucher application _(deferred to Week 7-8)_
-- [x] Split POS flow (waiter creates, cashier pays)
-
-### KDS (Kitchen Display System)
-
-- [x] Realtime order display (Supabase postgres_changes)
-- [x] Per-station routing (by menu category via junction table)
-- [x] Bump system (mark items as preparing → ready)
-- [x] Timing rules and alerts (warning, critical thresholds with color coding)
-- [x] DB triggers: `create_kds_tickets`, `update_order_from_kds`
-
-### POS Offline Support _(DEFERRED)_
-
-- [ ] Service Worker + PWA setup for both terminal types
-- [ ] IndexedDB for pending orders (waiter) and pending payments (cashier)
-- [ ] AES-256-GCM encryption with PBKDF2 600K iterations
-- [ ] Background Sync API for auto-sync when online
-- [ ] Cash-only restriction when offline (code enforced)
-- [ ] Idempotency key deduplication on server
-
-### API Protection _(DEFERRED)_
-
-- [ ] Upstash Redis rate limiting middleware
-- [ ] Rate limits per endpoint category (auth, GET, mutation, webhook, export, customer)
+- BCG menu matrix
+- AI demand forecasting
+- Dynamic pricing (ingredient-cost-driven)
+- Staff analytics (SPLH, upsell tracking)
+- Zalo Mini App ordering
+- VNPAY SmartPOS hardware
+- SevenRooms-style guest CRM
 
 ---
 
-## 4. Week 5-6: Operations
+## Architecture Decisions (V4.1)
 
-### Inventory Management
-
-- [ ] Stock levels per branch with optimistic concurrency (`version` column)
-- [ ] Stock movements (in, out, transfer, waste, adjust)
-- [ ] Recipes linked to menu items
-- [ ] Auto-deduction on order completion
-- [ ] Low stock alerts
-
-### Suppliers
-
-- [ ] Supplier management (CRUD)
-- [ ] Purchase orders (create, send, receive)
-- [ ] Receiving with quantity verification
-
-### HR Basic
-
-- [ ] Employee profiles linked to user accounts
-- [ ] Shift scheduling and assignment
-- [ ] Attendance records (QR, manual, POS session, terminal login)
-- [ ] Leave requests (apply, approve/reject)
-
-### Admin Dashboard
-
-- [ ] Revenue reports (daily, weekly, monthly)
-- [ ] Daily summary (orders, payments, top items)
-- [ ] Branch comparison
-
-### Security Monitoring
-
-- [ ] Security events dashboard
-- [ ] Anomaly detection for terminals (unusual activity)
-- [ ] Failed login monitoring and alerting
-- [ ] Terminal heartbeat / last-seen tracking
+| Decision | Resolution |
+|---|---|
+| Platform identity | Multi-brand SaaS — comtammatu là platform, brands là tenants |
+| Tenant model | Platform > Brand > Chain > Branch (4-level) |
+| Query strategy | supabase-js primary; Prisma chỉ cho migrations |
+| Auth pattern | JWT custom claims: `brand_id + user_role` trong mọi token |
+| CI/CD | Fix trước bất kỳ feature — branch protection enforced |
+| Payment | PayOS (VietQR, zero fee) + VNPay (cards) trong Phase 0 |
+| E-invoicing | Viettel S-Invoice — Edge Function, 10yr archive |
+| Delivery | Direct GrabFood + ShopeeFood webhooks |
+| Customer channel | Zalo OA + ZNS primary (77M MAU); Flutter secondary |
+| Analytics | PostgreSQL materialized views + pg_cron |
+| Offline | POS offline-first; KDS không cần offline |
+| Scope fix | URL là nguồn sự thật + ScopeContextBar mandatory |
+| Nav config | Single file `nav-config.ts` — xóa 3 duplicates |
 
 ---
 
-## 5. Week 7-8: CRM, Privacy & Polish
+## Migration Path — When Scaling
 
-### CRM
-
-- [ ] Customer profiles (phone, email, visit history)
-- [ ] Loyalty points earn/redeem
-- [ ] Loyalty tiers with automatic tier upgrades
-- [ ] Customer feedback collection and response
-
-### Vouchers & Promotions
-
-- [ ] Voucher creation (percent, fixed, free item)
-- [ ] Branch-scoped vouchers
-- [ ] Usage tracking and limits
-- [ ] Campaign management (email, SMS, push)
-
-### Customer PWA
-
-- [ ] Menu browsing (public)
-- [ ] Order tracking (authenticated)
-- [ ] Loyalty balance and history
-- [ ] Feedback submission
-
-### Privacy (GDPR)
-
-- [ ] Deletion request flow (30-day grace period)
-- [ ] DSAR export (JSON/CSV via `/api/privacy/data-export`)
-- [ ] Data retention cron jobs (Supabase Edge Function)
-- [ ] Audit log pseudonymization (SHA-256 hashing of PII)
-
-### Testing & Quality
-
-- [ ] E2E tests for critical flows (order, payment, auth)
-- [ ] RLS validation test suite in CI
-- [ ] Security review (OWASP top 10 checklist)
-- [ ] Performance tuning (query optimization, index verification)
-
-### Documentation
-
-- [ ] API docs (OpenAPI/Swagger)
-- [ ] User guide for staff
-- [ ] Deployment runbook
-- [ ] Incident response playbook
+| Trigger | Action | Effort |
+|---|---|---|
+| > 500 orders/day | Extract Payment Service | 2–3 tuần |
+| > 1000 concurrent users | Extract Auth Service | 2–3 tuần |
+| > 50 branches | Extract Orders + KDS Service | 3–4 tuần |
+| > 10 brands (SaaS) | Separate DB per brand | 4–6 tuần |
 
 ---
 
-## 6. Post-MVP Enhancements
-
-These features are planned for iterative development after MVP launch:
-
-- [ ] Payroll module completion (pay calculation, tax, disbursement)
-- [ ] Marketing automation (email/SMS campaigns with scheduling)
-- [ ] Advanced reports & analytics (trends, forecasting)
-- [ ] Multi-branch stock transfer workflow
-- [ ] Delivery integration (GrabFood, ShopeeFood)
-- [ ] AI features: demand forecasting, menu optimization
-- [ ] Argon2id migration for offline encryption (GPU-attack resistance)
-- [ ] Annual PCI DSS SAQ A self-assessment
-- [ ] Customer app → native wrapper (if needed)
-- [ ] Multi-language support (Vietnamese, English)
-
----
-
-## 7. Migration Path to Enterprise
-
-When scaling beyond 10 branches, extract modules into standalone services:
-
-| Trigger             | Action                                     | Effort    |
-| ------------------- | ------------------------------------------ | --------- |
-| > 10 branches       | Extract POS module into standalone service | 2-3 weeks |
-| > 50 concurrent POS | Migrate to dedicated POS backend (Fastify) | 3-4 weeks |
-| > 100K customers    | Extract CRM + Elasticsearch                | 2-3 weeks |
-| Complex payroll     | Extract HR/Payroll service                 | 2-3 weeks |
-| > 10K orders/day    | Implement CQRS + read replicas             | 3-4 weeks |
-| Multi-region        | Migrate to K8s + multi-region Supabase     | 6-8 weeks |
-
-The Modular Monolith architecture is designed for easy module extraction — each domain module has clear boundaries, making it straightforward to split into standalone services when needed.
-
----
-
-## 8. Current Progress
-
-**Phase: Post-MVP Sprint 3 COMPLETE (Menu & Devices)**
-
-### Completed
-
-- [x] Architecture specification (v2.2) — complete
-- [x] Project Operating System — complete
-- [x] AI boot file (CLAUDE.md) — complete
-- [x] Monorepo scaffolding (Turborepo + pnpm)
-- [x] CI/CD pipeline (GitHub Actions + Prisma generate step)
-- [x] Database — v2.2 schema + POS/KDS triggers, RLS on all tables
-- [x] Auth & Admin — RBAC, menu CRUD, terminal CRUD, KDS station CRUD
-- [x] POS & KDS — split flows, cashier vs waiter, realtime bump system
-- [x] Week 5-6 Operations — Inventory, suppliers, HR basic, dashboard
-- [x] Week 7-8 CRM — Customer PWA, Loyalty, Vouchers, GDPR Privacy
-- [x] Post-MVP Sprint 1 & 2 — Payment hardening, Redis rate limiting, Resiliency
-- [x] Post-MVP Sprint 3 — Menu system restructure and precise device management
-
-### Next Steps — Sprint 4 (Payroll, Analytics & Quality)
-
-- [x] Payroll calculations module (HR)
-- [x] Branch comparison dashboard
-- [x] E2E testing foundation (Playwright)
-- [ ] Offline POS support (deferred to Sprint 5)
-
----
-
-_This roadmap is a living document. Update as development progresses, priorities shift, or new requirements emerge._
+_Cập nhật lần cuối: 2026-03-15 — Bình_

@@ -19,8 +19,8 @@
 | Layer     | Choice                                                                   |
 | --------- | ------------------------------------------------------------------------ |
 | Framework | Next.js 16.1 App Router + React 19.1 + TypeScript 5.9 strict            |
-| Database  | Supabase (`zrlriuednoaqrsvnjjyo`) + Prisma 7.2 + `@prisma/adapter-pg`   |
-| Auth      | Supabase Auth + `@supabase/ssr@0.8.0` — cookie-based sessions           |
+| Database  | Supabase (`zrlriuednoaqrsvnjjyo`) + Prisma 7.5 (migrations only) + supabase-js (queries) |
+| Auth      | Supabase Auth + `@supabase/ssr@0.9.0` — cookie-based sessions + JWT custom claims (V4.1) |
 | UI        | shadcn/ui (new-york) + Tailwind CSS v4.2 + Lucide React                 |
 | Monorepo  | Turborepo 2.8 + pnpm 9.15.0                                             |
 | Hosting   | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI                     |
@@ -28,7 +28,8 @@
 | Mobile    | Flutter 3.x — 3 flavors (manager / staff / customer) + Riverpod         |
 | Packages  | `@comtammatu/database`, `@comtammatu/shared`, `@comtammatu/security`, `@comtammatu/ui` |
 
-**Phase:** Production-ready CRM. ~300+ source files, 40+ routes, `main` branch.
+**Phase:** V4.1 Migration — Multi-brand SaaS. ~300+ source files, 57 pages, `main` branch.
+**Master Plan:** `comtammatu_master_plan_v4.1.md` | **V4 Synthesis:** `comtammatu_v4_synthesis.html`
 
 ---
 
@@ -45,7 +46,7 @@
 7. **PAYMENT_TERMINAL** — Only `cashier_station` terminals process payments. Verify server-side.
 8. **AUDIT_APPEND_ONLY** — Never `UPDATE`/`DELETE` on `audit_logs` or `security_events`.
 9. **NO_CARD_DATA** — Card/payment data never stored in our DB. PCI DSS SAQ A.
-10. **VALIDATE_CLIENT_IDS** — Every Server Action must verify branch + tenant ownership before use.
+10. **VALIDATE_CLIENT_IDS** — Every Server Action must verify branch + brand ownership before use.
 11. **REGEN_TYPES** — After migration adding/modifying SQL functions → `supabase gen types typescript`.
 12. **ZOD_SCHEMAS** — Every Server Action/API route validates input with Zod from `@comtammatu/shared`.
 13. **VIETNAMESE_DIACRITICS** — Toàn bộ text tiếng Việt phải viết có dấu đầy đủ. Tuyệt đối không viết không dấu.
@@ -82,12 +83,15 @@ Failure: If touching auth/payment/RLS → stop and surface to user
 
 ---
 
-## VI. ROLES & ORDER FLOW
+## VI. V4.1 SCOPE & ROLES
 
-**CRM Roles:** `owner > manager > cashier > chef > waiter > inventory > hr`
-**Customer:** ⛔ BLOCKED from CRM — uses Flutter App only via `/api/mobile/*`
+**Hierarchy:** Platform (L0) > Brand (L1, SaaS tenant) > Chain (L2, optional) > Branch (L3)
+**URL Pattern:** Brand-scoped: `/b/[brandId]/menu` | Branch-scoped: `/b/[brandId]/br/[branchId]/orders`
+**CRM Roles:** `super_admin > owner > manager > cashier > chef > waiter > inventory > hr`
+**Customer:** ⛔ BLOCKED from CRM — uses Flutter App + Zalo Mini App only via `/api/mobile/*`
 **Order flow:** Waiter → KDS (realtime) → Chef bumps → Cashier pays → completed
 **Terminals:** `mobile_order` (waiter) | `cashier_station` (payment only)
+**Query Strategy:** supabase-js (PostgREST) primary. Prisma CHỈ cho migrations.
 
 ---
 

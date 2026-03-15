@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cơm Tấm Má Tư — Master Plan V4.1 Synthesis</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242836;
+    --border: #2e3345;
+    --text: #e4e6f0;
+    --text-muted: #8b90a5;
+    --accent: #f97316;
+    --accent2: #3b82f6;
+    --accent3: #10b981;
+    --accent4: #a78bfa;
+    --accent5: #f43f5e;
+    --accent6: #06b6d4;
+    --yellow: #eab308;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+  .header { text-align: center; padding: 48px 24px; background: linear-gradient(135deg, #1a1d27 0%, #242836 50%, #1a1d27 100%); border-bottom: 1px solid var(--border); margin-bottom: 0; }
+  .header h1 { font-size: 2.4rem; font-weight: 800; margin-bottom: 8px; }
+  .header h1 span { color: var(--accent); }
+  .header .subtitle { color: var(--text-muted); font-size: 1.1rem; }
+  .header .badges { display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .badge { padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; border: 1px solid; }
+  .badge.orange { color: var(--accent); border-color: var(--accent); background: rgba(249,115,22,0.1); }
+  .badge.blue { color: var(--accent2); border-color: var(--accent2); background: rgba(59,130,246,0.1); }
+  .badge.green { color: var(--accent3); border-color: var(--accent3); background: rgba(16,185,129,0.1); }
+  .badge.purple { color: var(--accent4); border-color: var(--accent4); background: rgba(167,139,250,0.1); }
+  .badge.red { color: var(--accent5); border-color: var(--accent5); background: rgba(244,63,94,0.1); }
+  .badge.cyan { color: var(--accent6); border-color: var(--accent6); background: rgba(6,182,212,0.1); }
+  .nav-bar { position: sticky; top: 0; z-index: 100; background: rgba(15,17,23,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+  .nav-bar::-webkit-scrollbar { display: none; }
+  .nav-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); cursor: pointer; font-size: 0.82rem; white-space: nowrap; transition: all 0.2s; }
+  .nav-btn:hover, .nav-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .section-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .section-title .icon { font-size: 1.4rem; }
+  .section-desc { color: var(--text-muted); margin-bottom: 28px; font-size: 0.95rem; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+  .card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: var(--accent); }
+  .card h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-auto { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+  .stat-card .value { font-size: 2rem; font-weight: 800; }
+  .stat-card .label { color: var(--text-muted); font-size: 0.82rem; margin-top: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+  .mermaid-wrapper { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 20px; overflow-x: auto; }
+  .mermaid-wrapper h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; color: var(--accent2); }
+  .mermaid { background: var(--surface2); border-radius: 8px; padding: 16px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+  .tag-orange { background: rgba(249,115,22,0.15); color: var(--accent); }
+  .tag-blue { background: rgba(59,130,246,0.15); color: var(--accent2); }
+  .tag-green { background: rgba(16,185,129,0.15); color: var(--accent3); }
+  .tag-purple { background: rgba(167,139,250,0.15); color: var(--accent4); }
+  .tag-red { background: rgba(244,63,94,0.15); color: var(--accent5); }
+  .tag-cyan { background: rgba(6,182,212,0.15); color: var(--accent6); }
+  .module-card { padding: 14px; background: var(--surface2); border-radius: 8px; border-left: 3px solid; }
+  pre { background: var(--surface2); padding: 16px; border-radius: 8px; font-size: 0.82rem; line-height: 1.7; overflow-x: auto; }
+  ul.clean { list-style: none; padding: 0; }
+  ul.clean li { padding: 8px 0; border-bottom: 1px solid var(--border); }
+  ul.clean li:last-child { border-bottom: none; }
+  @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } .header h1 { font-size: 1.6rem; } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>Cơm Tấm Má Tư</span> — Master Plan V4.1</h1>
+  <div class="subtitle">Flutter + Zalo Mini App + SaaS Billing Edition | Tổng hợp từ Architecture V3.0 + Restructure Plan + API Plan + Flutter Component Tree</div>
+  <div class="badges">
+    <span class="badge orange">V4.1 — March 2026</span>
+    <span class="badge blue">Multi-brand SaaS</span>
+    <span class="badge green">7 App Surfaces</span>
+    <span class="badge purple">3 Flutter Flavors</span>
+    <span class="badge cyan">Zalo Mini App</span>
+    <span class="badge red">11 DB Schemas</span>
+  </div>
+</div>
+
+<div class="nav-bar">
+  <button class="nav-btn active" onclick="showSection('overview')">Tổng quan</button>
+  <button class="nav-btn" onclick="showSection('architecture')">Kiến trúc</button>
+  <button class="nav-btn" onclick="showSection('hierarchy')">Phân cấp</button>
+  <button class="nav-btn" onclick="showSection('modules')">9 Modules</button>
+  <button class="nav-btn" onclick="showSection('api')">7 Surfaces & API</button>
+  <button class="nav-btn" onclick="showSection('roadmap')">Roadmap</button>
+  <button class="nav-btn" onclick="showSection('agents')">6 Agents</button>
+  <button class="nav-btn" onclick="showSection('integrations')">Tích hợp</button>
+  <button class="nav-btn" onclick="showSection('flutter')">Flutter 3 Flavors</button>
+  <button class="nav-btn" onclick="showSection('zalo')">Zalo Mini App</button>
+  <button class="nav-btn" onclick="showSection('billing')">SaaS Billing</button>
+  <button class="nav-btn" onclick="showSection('migration')">Migration</button>
+</div>
+
+<div class="container">
+
+<!-- ===== SECTION: OVERVIEW ===== -->
+<div id="overview" class="section active">
+  <h2 class="section-title">Tổng quan V4.1</h2>
+  <p class="section-desc">Nền tảng F&B SaaS đa thương hiệu cho thị trường Việt Nam — POS, KDS, CRM, Loyalty, E-invoicing, Delivery Integration. V4.1 hợp nhất 6 tài liệu thành một nguồn sự thật duy nhất.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px;">
+    <div class="stat-card"><div class="value" style="color:var(--accent);">7</div><div class="label">App Surfaces</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent2);">11</div><div class="label">DB Schemas</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent3);">9</div><div class="label">Domain Modules</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent4);">3</div><div class="label">Flutter Flavors</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent6);">12</div><div class="label">Tuần Sprint</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent5);">6</div><div class="label">Agent Roles</div></div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>System Architecture Overview</h3>
+    <div class="mermaid">
+graph TB
+    subgraph CLIENTS["Client Apps"]
+        WEB_ADMIN["Web Admin<br/>Next.js 15"]
+        WEB_POS["POS Terminal<br/>Next.js PWA"]
+        WEB_KDS["KDS Display<br/>Next.js"]
+        WEB_PLAT["Platform Admin<br/>Next.js"]
+        FL_MGR["Flutter Manager<br/>owner + manager"]
+        FL_STAFF["Flutter Staff<br/>staff"]
+        FL_CUST["Flutter Customer<br/>loyalty"]
+        ZALO["Zalo Mini App<br/>77M MAU"]
+    end
+
+    subgraph SUPABASE["Supabase Backend"]
+        AUTH["Auth + JWT Claims<br/>brand_id + user_role"]
+        POSTGREST["PostgREST API<br/>Auto CRUD + RLS"]
+        RPC["RPC Functions<br/>Business Logic"]
+        EDGE["Edge Functions<br/>Deno Serverless"]
+        REALTIME["Realtime<br/>WebSocket"]
+        VAULT["Vault<br/>Secrets"]
+        DB["PostgreSQL 15<br/>11 Schemas + RLS"]
+        CRON["pg_cron<br/>Scheduled Jobs"]
+    end
+
+    subgraph EXTERNAL["External Services"]
+        PAYOS["PayOS<br/>VietQR"]
+        VNPAY["VNPay<br/>Cards + Recurring"]
+        GRAB["GrabFood<br/>36% market"]
+        SHOPEE["ShopeeFood<br/>56% market"]
+        EINV["E-invoice<br/>Viettel + VNPT"]
+        ZALOA["Zalo OA<br/>ZNS"]
+        RESEND["Resend<br/>Email"]
+    end
+
+    WEB_ADMIN --> POSTGREST
+    WEB_POS --> POSTGREST
+    WEB_KDS --> REALTIME
+    WEB_PLAT --> POSTGREST
+    FL_MGR --> POSTGREST
+    FL_STAFF --> POSTGREST
+    FL_CUST --> POSTGREST
+    ZALO --> EDGE
+
+    POSTGREST --> AUTH
+    POSTGREST --> DB
+    RPC --> DB
+    EDGE --> VAULT
+    EDGE --> PAYOS
+    EDGE --> VNPAY
+    EDGE --> GRAB
+    EDGE --> SHOPEE
+    EDGE --> EINV
+    EDGE --> ZALOA
+    EDGE --> RESEND
+    CRON --> EDGE
+    REALTIME --> DB
+    </div>
+  </div>
+
+  <!-- 3 Priorities -->
+  <div class="card">
+    <h3>3 Vấn đề ưu tiên cao nhất</h3>
+    <table>
+      <thead><tr><th>#</th><th>Vấn đề</th><th>Mức độ</th><th>Giải pháp</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent5);font-weight:700;">1</td><td><strong>CI/CD broken</strong> — 13 lint errors, test failures merge không có gate</td><td><span class="tag tag-red">CRITICAL</span></td><td>Branch protection, fix root cause, required status checks</td></tr>
+        <tr><td style="color:var(--accent);font-weight:700;">2</td><td><strong>Scope confusion</strong> — User không biết đang quản lý Brand/Branch nào</td><td><span class="tag tag-orange">HIGH</span></td><td>URL as source of truth + ScopeContextBar mandatory</td></tr>
+        <tr><td style="color:var(--accent);font-weight:700;">3</td><td><strong>Compliance gap</strong> — E-invoicing Decree 70/2025 + VietQR chưa có</td><td><span class="tag tag-orange">HIGH</span></td><td>PayOS + Viettel S-Invoice Edge Functions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Version History -->
+  <div class="card">
+    <h3>Lịch sử phiên bản</h3>
+    <table>
+      <thead><tr><th>Version</th><th>Mô tả</th><th>Trạng thái</th></tr></thead>
+      <tbody>
+        <tr><td>V1</td><td>Microservices — quá phức tạp cho giai đoạn đầu</td><td><span class="tag tag-red">Deprecated</span></td></tr>
+        <tr><td>V2</td><td>Modular Monolith — single-brand CRM</td><td><span class="tag tag-orange">Current (broken CI)</span></td></tr>
+        <tr><td>V3.0</td><td>Multi-brand SaaS Platform</td><td><span class="tag tag-blue">Target architecture</span></td></tr>
+        <tr><td style="color:var(--accent);font-weight:700;">V4.1</td><td>V3.0 + CRM Restructure + API Plan + Flutter 3 Flavors + Zalo Mini App + SaaS Billing</td><td><span class="tag tag-green">Living Document</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Key Decisions -->
+  <div class="card">
+    <h3>Quyết định kiến trúc quan trọng</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
+      <div class="module-card" style="border-color:var(--accent);">
+        <div style="font-weight:600;">Query Strategy</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">supabase-js (PostgREST) primary. Prisma CHI cho migrations.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent2);">
+        <div style="font-weight:600;">Auth Pattern</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">JWT custom claims: brand_id + user_role trong moi token</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent3);">
+        <div style="font-weight:600;">Offline Strategy</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">POS offline-first (Serwist + IndexedDB). KDS khong can offline.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent4);">
+        <div style="font-weight:600;">Customer Channel</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">Zalo OA + ZNS la primary (77M MAU). Flutter app la secondary.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent5);">
+        <div style="font-weight:600;">Billing Processor</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">VNPay recurring (token-based). Khong dung Stripe cho VN market.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent6);">
+        <div style="font-weight:600;">Differentiation</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">BCG matrix + Food cost AvT + RFM. Khong doi thu VN nao co.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION: ARCHITECTURE ===== -->
+<div id="architecture" class="section">
+  <h2 class="section-title">Kiến trúc hệ thống</h2>
+  <p class="section-desc">Turborepo monorepo + 5 Next.js apps + Flutter 3 flavors + Zalo Mini App. Supabase backend với 11 PostgreSQL schemas.</p>
+
+  <div class="mermaid-wrapper">
+    <h3>Tech Stack</h3>
+    <div class="mermaid">
+graph LR
+    subgraph MONO["Turborepo Monorepo"]
+        A1["apps/admin"]
+        A2["apps/pos"]
+        A3["apps/kds"]
+        A4["apps/employee"]
+        A5["apps/platform"]
+    end
+
+    subgraph PKG["Shared Packages"]
+        P1["@repo/ui<br/>Components + Theme"]
+        P2["@repo/auth<br/>JWT + Guards + nav-config"]
+        P3["@repo/types<br/>Generated from Supabase"]
+    end
+
+    subgraph MOBILE["Mobile"]
+        M1["Flutter Manager"]
+        M2["Flutter Staff"]
+        M3["Flutter Customer"]
+    end
+
+    subgraph MINI["Mini App"]
+        Z1["Zalo Mini App<br/>ZMA Framework + TS"]
+    end
+
+    subgraph INFRA["Infrastructure"]
+        S1["Supabase Pro<br/>PostgreSQL 15"]
+        S2["Vercel Pro<br/>5 apps"]
+        S3["pg_cron + pg_net<br/>Scheduled jobs"]
+    end
+
+    A1 --> P1
+    A1 --> P2
+    A1 --> P3
+    A2 --> P1
+    A3 --> P1
+    A5 --> P2
+    MONO --> S2
+    M1 --> S1
+    M2 --> S1
+    M3 --> S1
+    Z1 --> S1
+    </div>
+  </div>
+
+  <!-- Monorepo Structure -->
+  <div class="card">
+    <h3>Monorepo Structure</h3>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--accent);">apps/ (5 Next.js apps)</h4>
+        <table>
+          <tbody>
+            <tr><td style="color:var(--accent2);">admin/</td><td>admin.pos.vn</td><td>Brand-scoped dashboard, analytics</td></tr>
+            <tr><td style="color:var(--accent2);">pos/</td><td>pos.pos.vn</td><td>PWA + Serwist offline, printer</td></tr>
+            <tr><td style="color:var(--accent2);">kds/</td><td>kds.pos.vn</td><td>Realtime WebSocket, station routing</td></tr>
+            <tr><td style="color:var(--accent2);">employee/</td><td>staff.pos.vn</td><td>Shift management, payroll view</td></tr>
+            <tr><td style="color:var(--accent);">platform/</td><td>platform.pos.vn</td><td><strong>NEW</strong> — SaaS billing, brand mgmt</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h4 style="color:var(--accent3);">packages/ + mobile/</h4>
+        <table>
+          <tbody>
+            <tr><td style="color:var(--accent4);">@repo/ui</td><td>Shared component library + brand theme tokens</td></tr>
+            <tr><td style="color:var(--accent4);">@repo/auth</td><td>JWT helpers, role guards, nav-config.ts</td></tr>
+            <tr><td style="color:var(--accent4);">@repo/types</td><td>Generated from supabase gen types</td></tr>
+            <tr><td style="color:var(--accent6);">mobile/</td><td>Flutter 3 flavors (manager/staff/customer)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schema-per-Module -->
+  <div class="card">
+    <h3>11 Database Schemas</h3>
+    <table>
+      <thead><tr><th>Schema</th><th>Tables</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent);">core</td><td>brands, branches, brand_members, profiles, audit_logs</td></tr>
+        <tr><td style="color:var(--accent);">pos</td><td>pos_terminals, pos_sessions, printers</td></tr>
+        <tr><td style="color:var(--accent2);">orders</td><td>orders, order_items, order_status_history, delivery_orders</td></tr>
+        <tr><td style="color:var(--accent2);">payments</td><td>payments, refunds, settlement_batches, payment_webhooks</td></tr>
+        <tr><td style="color:var(--accent3);">inventory</td><td>ingredients, recipes, recipe_ingredients, stock_levels, stock_movements, stock_transfers, waste_logs, purchase_orders</td></tr>
+        <tr><td style="color:var(--accent3);">menu</td><td>menus, menu_items, categories, menu_branch_assignments</td></tr>
+        <tr><td style="color:var(--accent4);">crm</td><td>customers, loyalty_tiers, loyalty_transactions, campaigns, segments, zalo_followers, zalo_oa_configs, zalo_message_templates, zns_send_log</td></tr>
+        <tr><td style="color:var(--accent4);">hr</td><td>staff, shifts, payroll_periods, payroll_entries, payroll_si_breakdown</td></tr>
+        <tr><td style="color:var(--accent5);">einvoice</td><td>einvoices, einvoice_configs, einvoice_providers</td></tr>
+        <tr><td style="color:var(--accent5);">delivery</td><td>delivery_platforms, platform_menu_mappings, platform_orders</td></tr>
+        <tr><td style="color:var(--accent6);">billing</td><td><strong>NEW</strong> subscriptions, billing_events, invoices, promo_codes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Cost Estimate -->
+  <div class="card">
+    <h3>Chi phi Infrastructure</h3>
+    <table>
+      <thead><tr><th>Service</th><th>Plan</th><th>USD/month</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Supabase Pro</td><td>Pro + Small Compute</td><td>$40</td><td>5-10 branches</td></tr>
+        <tr><td>Supabase (scale)</td><td>Pro + Medium Compute</td><td>$85</td><td>20+ branches</td></tr>
+        <tr><td>Vercel Pro</td><td>Pro (5 projects)</td><td>$60</td><td>Per Turborepo app</td></tr>
+        <tr><td>Resend</td><td>Starter</td><td>$0-20</td><td>3K free/month</td></tr>
+        <tr><td style="color:var(--accent);font-weight:700;">Total Phase 0</td><td></td><td style="color:var(--accent);font-weight:700;">$100-165/mo</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: HIERARCHY ===== -->
+<div id="hierarchy" class="section">
+  <h2 class="section-title">Phân cấp hệ thống</h2>
+  <p class="section-desc">4-level hierarchy: Platform > Brand > Chain > Branch. JWT custom claims cho RLS trực tiếp, không cần subquery join.</p>
+
+  <div class="mermaid-wrapper">
+    <h3>Hierarchy Model</h3>
+    <div class="mermaid">
+graph TB
+    PLAT["L0: Platform<br/>comtammatu.vn<br/>super_admin"]
+    B1["L1: Brand<br/>Com Tam Ma Tu<br/>SaaS tenant"]
+    B2["L1: Brand<br/>Pho Ma Tu"]
+    B3["L1: Brand<br/>Bun Bo Ma Tu"]
+    C1["L2: Chain HCM<br/>Optional region"]
+    BR1["L3: Branch<br/>Dat Do"]
+    BR2["L3: Branch<br/>Phuoc Hai"]
+    BR3["L3: Branch<br/>Vung Tau"]
+    BR4["L3: Branch<br/>TP HCM"]
+    BR5["L3: Branch<br/>Ha Noi"]
+    BR6["L3: Branch<br/>Da Nang"]
+
+    PLAT --> B1
+    PLAT --> B2
+    PLAT --> B3
+    B1 --> C1
+    B1 --> BR4
+    C1 --> BR1
+    C1 --> BR2
+    C1 --> BR3
+    B2 --> BR5
+    B2 --> BR6
+    </div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>JWT Claims and RLS Flow</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant User
+    participant Auth as Supabase Auth
+    participant Hook as Custom Token Hook
+    participant DB as PostgreSQL + RLS
+
+    User->>Auth: Login (email/password)
+    Auth->>Hook: custom_access_token_hook(event)
+    Hook->>DB: SELECT brand_id, role FROM brand_members
+    DB-->>Hook: brand_id + user_role
+    Hook-->>Auth: JWT with brand_id + user_role claims
+    Auth-->>User: Access Token (1h) + Refresh Token (7d)
+
+    User->>DB: SELECT * FROM orders
+    DB->>DB: RLS: brand_id = jwt.brand_id
+    DB-->>User: Only own brand data
+    </div>
+  </div>
+
+  <!-- Scope Mapping -->
+  <div class="card">
+    <h3>Scope Mapping theo Domain</h3>
+    <table>
+      <thead><tr><th>Domain</th><th>Scope</th><th>Ly do</th></tr></thead>
+      <tbody>
+        <tr><td>Menu, Dinh gia</td><td><span class="tag tag-blue">Brand</span></td><td>Menu nhat quan toan chuoi</td></tr>
+        <tr><td>Khach hang, CRM</td><td><span class="tag tag-blue">Brand</span></td><td>Khach hang khong gan voi 1 chi nhanh</td></tr>
+        <tr><td>Chien dich marketing</td><td><span class="tag tag-blue">Brand</span></td><td>Campaign chay cho toan brand</td></tr>
+        <tr><td>Don hang, POS</td><td><span class="tag tag-green">Branch</span></td><td>Giao dich xay ra tai co so cu the</td></tr>
+        <tr><td>Kho, Mua hang</td><td><span class="tag tag-green">Branch</span></td><td>Ton kho doc lap theo co so</td></tr>
+        <tr><td>Nhan su, Lich ca</td><td><span class="tag tag-green">Branch</span></td><td>Staff lam viec tai 1 co so</td></tr>
+        <tr><td>Giao hang (Grab/Shopee)</td><td><span class="tag tag-green">Branch</span></td><td>Store ID la cua tung chi nhanh</td></tr>
+        <tr><td>Bao cao tai chinh</td><td><span class="tag tag-purple">Both</span></td><td>P&L theo co so hoac toan chuoi</td></tr>
+        <tr><td>Food cost AvT</td><td><span class="tag tag-purple">Both</span></td><td>Xem theo branch hoac toan chuoi</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SaaS Pricing -->
+  <div class="card">
+    <h3>SaaS Pricing Tiers</h3>
+    <table>
+      <thead><tr><th>Feature</th><th>Starter (299-499K VND)</th><th>Growth (999K-1.5M VND)</th><th>Enterprise (Custom)</th></tr></thead>
+      <tbody>
+        <tr><td>Chi nhanh</td><td>1-3</td><td>4-20</td><td>Unlimited</td></tr>
+        <tr><td>POS terminals</td><td>2 per branch</td><td>Unlimited</td><td>Unlimited</td></tr>
+        <tr><td>E-invoicing</td><td>Included</td><td>Included</td><td>Dedicated provider</td></tr>
+        <tr><td>Delivery</td><td>1 platform</td><td>GrabFood + ShopeeFood</td><td>All + Xanh SM</td></tr>
+        <tr><td>Analytics</td><td>Basic reports</td><td>RFM + Food cost AvT</td><td>BCG + AI forecasting</td></tr>
+        <tr><td>SLA</td><td>99.5%</td><td>99.9%</td><td>99.99% + dedicated</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: 9 MODULES ===== -->
+<div id="modules" class="section">
+  <h2 class="section-title">9 Domain Modules</h2>
+  <p class="section-desc">Moi module = 1 domain nghiep vu voi scope co dinh. Khong module nao lan lon brand va branch logic trong cung 1 trang.</p>
+
+  <div class="grid-auto" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+    <div class="module-card" style="border-color:var(--accent4);">
+      <div style="font-weight:600;">1. Tong quan (Dashboard)</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-purple">Both</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">Doanh thu, KPI, so sanh chi nhanh, canh bao ton kho, don dang xu ly realtime</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent3);">
+      <div style="font-weight:600;">2. Ban hang</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">Don hang, lich su, quan ly ban, phien POS, KDS man hinh bep</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent2);">
+      <div style="font-weight:600;">3. Thuc don</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-blue">Brand</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">CRUD mon an, dinh gia, combo, phan cong chi nhanh, dong bo GrabFood/ShopeeFood</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent3);">
+      <div style="font-weight:600;">4. Kho & Mua hang</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">Ton kho nguyen lieu, kiem ke, PO nha cung cap, chuyen kho lien chi nhanh</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent3);">
+      <div style="font-weight:600;">5. Giao hang</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">GrabFood/ShopeeFood don dang cho, accept/reject, toggle online/offline</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent2);">
+      <div style="font-weight:600;">6. Khach hang & CRM</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-blue">Brand</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">RFM scores, loyalty tiers, campaigns (Zalo/SMS/Email), phan khuc, Zalo OA</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent4);">
+      <div style="font-weight:600;">7. Tai chinh</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-purple">Both</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">Thanh toan, hoan tien (approval), doi soat settlement, HDDT, webhook log</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent3);">
+      <div style="font-weight:600;">8. Nhan su</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">Nhan vien, lich ca, tinh luong voi BHXH breakdown (Luat BHXH 2024)</div>
+    </div>
+    <div class="module-card" style="border-color:var(--accent4);">
+      <div style="font-weight:600;">9. Bao cao & Phan tich</div>
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-purple">Both</span></div>
+      <div style="font-size:0.82rem;margin-top:8px;">Food cost AvT, labor cost %, RFM segmentation, BCG menu matrix, delivery perf</div>
+    </div>
+  </div>
+
+  <!-- URL Route Structure -->
+  <div class="mermaid-wrapper">
+    <h3>URL Route Architecture</h3>
+    <div class="mermaid">
+graph TB
+    ROOT["apps/admin/app/"]
+    PLAT["(platform)/<br/>super_admin only"]
+    BRAND["(brand)/<br/>b/brandId/"]
+    BRANCH["(branch)/<br/>b/brandId/br/branchId/"]
+
+    P1["platform/brands"]
+    P2["platform/billing"]
+
+    B1["dashboard"]
+    B2["menu"]
+    B3["crm"]
+    B4["finance"]
+    B5["analytics"]
+    B6["settings/brand"]
+
+    BR1["orders"]
+    BR2["pos"]
+    BR3["kds"]
+    BR4["inventory"]
+    BR5["delivery"]
+    BR6["staff"]
+    BR7["settings/branch"]
+
+    ROOT --> PLAT
+    ROOT --> BRAND
+    ROOT --> BRANCH
+    PLAT --> P1
+    PLAT --> P2
+    BRAND --> B1
+    BRAND --> B2
+    BRAND --> B3
+    BRAND --> B4
+    BRAND --> B5
+    BRAND --> B6
+    BRANCH --> BR1
+    BRANCH --> BR2
+    BRANCH --> BR3
+    BRANCH --> BR4
+    BRANCH --> BR5
+    BRANCH --> BR6
+    BRANCH --> BR7
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION: 7 APP SURFACES & API ===== -->
+<div id="api" class="section">
+  <h2 class="section-title">7 App Surfaces & API Architecture</h2>
+  <p class="section-desc">3-tier API: PostgREST (auto CRUD) + RPC Functions (business logic) + Edge Functions (external APIs). 7 surfaces, moi surface co JWT mapping rieng.</p>
+
+  <!-- 7 Surfaces -->
+  <div class="card">
+    <h3>7 App Surfaces</h3>
+    <table>
+      <thead><tr><th>#</th><th>Surface</th><th>Platform</th><th>Role</th><th>Scope</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td style="color:var(--accent5);">Platform Admin</td><td>Next.js Web</td><td>super_admin</td><td>All brands</td></tr>
+        <tr><td>2</td><td style="color:var(--accent);">Brand Manager</td><td>Next.js + Flutter</td><td>owner</td><td>Brand</td></tr>
+        <tr><td>3</td><td style="color:var(--accent2);">Branch Manager</td><td>Next.js + Flutter</td><td>manager</td><td>Branch</td></tr>
+        <tr><td>4</td><td style="color:var(--accent3);">POS Terminal</td><td>Next.js PWA</td><td>staff/cashier</td><td>Branch (offline-first)</td></tr>
+        <tr><td>5</td><td style="color:var(--accent3);">KDS Display</td><td>Next.js</td><td>staff (read-only)</td><td>Branch (realtime)</td></tr>
+        <tr><td>6</td><td style="color:var(--accent4);">Staff App</td><td>Flutter</td><td>staff</td><td>Branch</td></tr>
+        <tr><td>7</td><td style="color:var(--accent6);">Customer Loyalty</td><td>Flutter + Zalo Mini App</td><td>customer</td><td>Brand</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3-Tier API -->
+  <div class="mermaid-wrapper">
+    <h3>3-Tier API Architecture</h3>
+    <div class="mermaid">
+graph LR
+    subgraph T1["Tier 1: PostgREST (Auto)"]
+        CR["CRUD Operations"]
+        FI["Filter + Join"]
+        PA["Pagination"]
+    end
+
+    subgraph T2["Tier 2: RPC Functions"]
+        RPC1["close_pos_session"]
+        RPC2["calculate_rfm_scores"]
+        RPC3["create_payos_link"]
+        RPC4["redeem_reward"]
+        RPC5["clock_in / clock_out"]
+    end
+
+    subgraph T3["Tier 3: Edge Functions (Deno)"]
+        EF1["payos-webhook"]
+        EF2["einvoice-submit"]
+        EF3["grabfood-webhook"]
+        EF4["shopeefood-webhook"]
+        EF5["send-zalo-notification"]
+        EF6["zalo-auth-exchange"]
+        EF7["process-renewal"]
+    end
+
+    RLS["RLS Policies<br/>brand_id from JWT"]
+
+    T1 --> RLS
+    T2 --> RLS
+    T3 --> RLS
+    </div>
+  </div>
+
+  <!-- Realtime Channels -->
+  <div class="card">
+    <h3>Realtime Channels</h3>
+    <table>
+      <thead><tr><th>Channel</th><th>Event</th><th>Receiver</th><th>Use Case</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent6);">kitchen:[branchId]:[stationId]</td><td>INSERT order_items</td><td>KDS station</td><td>Don moi can lam</td></tr>
+        <tr><td style="color:var(--accent6);">orders:[branchId]</td><td>UPDATE status</td><td>POS terminal</td><td>Biet khi bep da xong</td></tr>
+        <tr><td style="color:var(--accent6);">payments:[orderId]</td><td>UPDATE status</td><td>POS cashier</td><td>Xac nhan PayOS thanh toan</td></tr>
+        <tr><td style="color:var(--accent6);">tables:[branchId]</td><td>UPDATE status</td><td>Host / manager</td><td>So do ban</td></tr>
+        <tr><td style="color:var(--accent6);">delivery:[branchId]</td><td>INSERT orders</td><td>Branch manager</td><td>Don tu GrabFood/ShopeeFood</td></tr>
+        <tr><td style="color:var(--accent6);">waitlist:[branchId]</td><td>UPDATE position</td><td>Customer app</td><td>Hang cho realtime (Phase 2)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- RBAC Matrix -->
+  <div class="card">
+    <h3>RBAC Role Matrix</h3>
+    <table>
+      <thead><tr><th>Resource</th><th>super_admin</th><th>owner</th><th>manager</th><th>staff</th><th>customer</th></tr></thead>
+      <tbody>
+        <tr><td>Brands</td><td>Full CRUD</td><td>Read own</td><td>Read own</td><td>-</td><td>-</td></tr>
+        <tr><td>Branches</td><td>Full CRUD</td><td>Full CRUD</td><td>Read + Update</td><td>Read only</td><td>-</td></tr>
+        <tr><td>Orders</td><td>Full CRUD</td><td>Full CRUD</td><td>Full CRUD</td><td>Create + Read</td><td>Read own</td></tr>
+        <tr><td>Payments</td><td>Full CRUD</td><td>Full CRUD</td><td>Read + Refund</td><td>Read only</td><td>Read own</td></tr>
+        <tr><td>Menu</td><td>Full CRUD</td><td>Full CRUD</td><td>Edit</td><td>View only</td><td>View only</td></tr>
+        <tr><td>Analytics</td><td>All brands</td><td>Own brand</td><td>Own branch</td><td>-</td><td>-</td></tr>
+        <tr><td>Subscriptions</td><td>Full CRUD</td><td>Read own</td><td>-</td><td>-</td><td>-</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: ROADMAP ===== -->
+<div id="roadmap" class="section">
+  <h2 class="section-title">Roadmap</h2>
+  <p class="section-desc">3 Tier: Compliance & Revenue (0-3 thang), Competitive Parity (3-6 thang), Differentiation (6-24 thang). 12 tuan sprint voi 6 Agents song song.</p>
+
+  <div class="mermaid-wrapper">
+    <h3>12-Week Sprint Timeline</h3>
+    <div class="mermaid">
+gantt
+    title 12-Week Parallel Sprint Timeline
+    dateFormat YYYY-MM-DD
+    axisFormat %b %d
+
+    section Pre-Sprint
+    Fix CI + Branch Protection         :crit, ps1, 2026-03-16, 14d
+    ADR-001 to ADR-003                :ps2, 2026-03-16, 14d
+    brand_id migration                :ps3, 2026-03-16, 14d
+    nav-config.ts                     :ps4, 2026-03-16, 14d
+
+    section Sprint 0
+    ScopeContextBar                   :s01, 2026-03-30, 14d
+    JWT Custom Claims Hook            :s02, 2026-03-30, 14d
+    Scope Providers                   :s03, 2026-03-30, 14d
+    Vault Provisioning                :s04, 2026-03-30, 14d
+
+    section Sprint 1
+    8 Module Pages                    :s11, 2026-04-13, 14d
+    PayOS VietQR Live                 :crit, s12, 2026-04-13, 14d
+    Refunds + Settlement Tables       :s13, 2026-04-13, 14d
+    Route Guards                      :s14, 2026-04-13, 14d
+
+    section Sprint 2
+    E-invoicing Decree 70             :crit, s21, 2026-04-27, 14d
+    Schema-per-Module Migration       :s22, 2026-04-27, 14d
+    VNPay Card Integration            :s23, 2026-04-27, 14d
+
+    section Sprint 3
+    GrabFood Webhook                  :crit, s31, 2026-05-11, 14d
+    ShopeeFood Webhook                :s32, 2026-05-11, 14d
+    Delivery Module UI                :s33, 2026-05-11, 14d
+
+    section Sprint 4
+    Zalo OA + ZNS                     :s41, 2026-05-25, 14d
+    SaaS Onboarding + Billing         :crit, s42, 2026-05-25, 14d
+    Flutter TestFlight                :s43, 2026-05-25, 14d
+    RFM Materialized Views            :s44, 2026-05-25, 14d
+    </div>
+  </div>
+
+  <!-- Tier 1/2/3 Roadmap -->
+  <div class="grid-3" style="grid-template-columns:1fr 1fr 1fr;">
+    <div class="card" style="border-top:3px solid var(--accent5);">
+      <h3 style="color:var(--accent5);">Tier 1 — Compliance (0-3 thang)</h3>
+      <ul class="clean">
+        <li>PayOS VietQR (zero-fee payment)</li>
+        <li>E-invoicing Decree 70/2025</li>
+        <li>Refunds + settlement_batches</li>
+        <li>VNPay card aggregator</li>
+        <li>GrabFood webhook (36% market)</li>
+        <li>ShopeeFood webhook (56% market)</li>
+        <li>Zalo OA/ZNS notifications</li>
+        <li>POS offline-first (Serwist)</li>
+        <li>Schema-per-module migration</li>
+        <li>Flutter CI green + TestFlight</li>
+        <li>SaaS brand onboarding + billing</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent2);">
+      <h3 style="color:var(--accent2);">Tier 2 — Parity (3-6 thang)</h3>
+      <ul class="clean">
+        <li>Reservation + waitlist system</li>
+        <li>RFM segmentation + Zalo campaigns</li>
+        <li>Financial reporting views</li>
+        <li>Inter-branch stock transfer</li>
+        <li>MoMo + ZaloPay e-wallets</li>
+        <li>Payroll SI compliance (part-time)</li>
+        <li>Multi-brand platform dashboard</li>
+      </ul>
+    </div>
+    <div class="card" style="border-top:3px solid var(--accent4);">
+      <h3 style="color:var(--accent4);">Tier 3 — Differentiation (6-24 thang)</h3>
+      <ul class="clean">
+        <li>BCG menu matrix</li>
+        <li>AI demand forecasting</li>
+        <li>Dynamic pricing (ingredient-cost)</li>
+        <li>Staff analytics (SPLH, upsell)</li>
+        <li>Zalo Mini App ordering</li>
+        <li>VNPAY SmartPOS hardware</li>
+        <li>SevenRooms-style guest CRM</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Critical Path -->
+  <div class="mermaid-wrapper">
+    <h3>Critical Path Dependencies</h3>
+    <div class="mermaid">
+graph LR
+    W1["Week 1-2:<br/>A6 Fix CI"]
+    W3a["Week 3:<br/>A4 ScopeProviders"]
+    W3b["Week 3:<br/>A3 JWT Hook + RLS"]
+    W5["Week 5:<br/>A3 Schema-per-module"]
+    W7["Week 7:<br/>A5 Vault + PayOS"]
+    W9["Week 9:<br/>A5 GrabFood Live"]
+    W11["Week 11:<br/>A5 Zalo + Billing"]
+
+    W1 -->|"unblocks merge"| W3a
+    W1 -->|"unblocks merge"| W3b
+    W3a -->|"useScope hook"| W5
+    W3b -->|"RLS policies"| W5
+    W5 -->|"schema ready"| W7
+    W7 -->|"payment tables"| W9
+    W9 -->|"delivery ready"| W11
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION: 6 AGENTS ===== -->
+<div id="agents" class="section">
+  <h2 class="section-title">6 Agent Roles</h2>
+  <p class="section-desc">Moi Agent so huu mot domain rieng biet. A1 la tiebreaker, A6 la gatekeeper. Cross-domain changes dung Handoff Protocol.</p>
+
+  <div class="grid-auto" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));">
+    <div class="card" style="border-left:4px solid var(--accent5);">
+      <h3 style="color:var(--accent5);">A1 — Architect (TIEBREAKER)</h3>
+      <div style="font-size:0.88rem;">System Design, IA Authority. So huu URL structure, scope rules, route layout. Viet ADR cho moi quyet dinh lon. Review va approve moi schema change.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent2);">
+      <h3 style="color:var(--accent2);">A2 — Frontend</h3>
+      <div style="font-size:0.88rem;">UI/UX, Component System. Xay dung ScopeContextBar, route groups, @repo/ui. Dependencies: useScope() tu A4, TypeScript types tu A3.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent3);">
+      <h3 style="color:var(--accent3);">A3 — Database</h3>
+      <div style="font-size:0.88rem;">Schema, RLS, Migrations. brand_id migration, JWT claims hook, 11 module schemas, materialized views. Output: Generated TypeScript types.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent4);">
+      <h3 style="color:var(--accent4);">A4 — Auth & RBAC</h3>
+      <div style="font-size:0.88rem;">Permissions, Roles, Nav Config. nav-config.ts, ScopeProviders, has_role() function. Xoa 3 ban duplicate. Deliver useScope() truoc tuan 3.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent);">
+      <h3 style="color:var(--accent);">A5 — Integration</h3>
+      <div style="font-size:0.88rem;">External APIs, Edge Functions. PayOS, VietQR, E-invoicing, GrabFood, ShopeeFood, Zalo OA, ZNS. Tat ca secrets trong Vault.</div>
+    </div>
+    <div class="card" style="border-left:4px solid var(--accent6);">
+      <h3 style="color:var(--accent6);">A6 — CI/QA (GATEKEEPER)</h3>
+      <div style="font-size:0.88rem;">Pipeline, Testing, Quality Gates. Fix 13 lint errors, branch protection, E2E Playwright, security scan. Khong code nao merge khi CI do.</div>
+    </div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>Agent Interaction Flow</h3>
+    <div class="mermaid">
+graph TB
+    A1["A1 Architect<br/>TIEBREAKER"]
+    A2["A2 Frontend"]
+    A3["A3 Database"]
+    A4["A4 Auth"]
+    A5["A5 Integration"]
+    A6["A6 CI/QA<br/>GATEKEEPER"]
+
+    A1 -->|"ADR decisions"| A2
+    A1 -->|"Schema review"| A3
+    A4 -->|"useScope hook"| A2
+    A4 -->|"Role types"| A3
+    A3 -->|"TS types"| A2
+    A3 -->|"Schema docs"| A5
+    A5 -->|"API interfaces"| A2
+    A6 -->|"CI green gate"| A1
+    A6 -->|"CI green gate"| A2
+    A6 -->|"CI green gate"| A3
+    A6 -->|"CI green gate"| A4
+    A6 -->|"CI green gate"| A5
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION: INTEGRATIONS ===== -->
+<div id="integrations" class="section">
+  <h2 class="section-title">Tich hop</h2>
+  <p class="section-desc">PayOS + VNPay (Payment), Viettel/VNPT (E-invoicing), GrabFood + ShopeeFood (Delivery), Zalo OA + ZNS (Customer Channel).</p>
+
+  <div class="mermaid-wrapper">
+    <h3>Payment Flow</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant POS as POS Terminal
+    participant EF as Edge Function
+    participant PAYOS as PayOS
+    participant DB as PostgreSQL
+    participant INV as E-invoice Provider
+    participant ZALO as Zalo ZNS
+
+    POS->>EF: create-payment-link(order_id, amount)
+    EF->>PAYOS: Create QR payment link
+    PAYOS-->>EF: qrUrl + paymentLinkId
+    EF-->>POS: Display QR code
+
+    PAYOS->>EF: payos-webhook (HMAC verified)
+    EF->>DB: Check idempotency (payment_webhooks)
+    EF->>DB: Update payments.status = completed
+    EF->>INV: einvoice-submit (XML to GDT)
+    EF->>ZALO: ZNS order_confirm template
+    INV-->>DB: Store einvoice record (10yr archive)
+    </div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>Delivery Integration Flow</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant GRAB as GrabFood
+    participant EF as Edge Function
+    participant DB as PostgreSQL
+    participant KDS as KDS Display
+    participant MGR as Branch Manager
+
+    GRAB->>EF: grabfood-webhook (JWT verified)
+    Note over EF: Must ACK within 5 seconds
+    EF->>DB: Normalize order to internal schema
+    EF->>DB: Create order + order_items + delivery_orders
+    EF-->>GRAB: HTTP 200 ACK
+    DB->>KDS: Realtime: new order items
+    DB->>MGR: Realtime: new delivery order
+    KDS->>DB: Chef bumps: status = ready
+    DB->>EF: order-status-push trigger
+    EF->>GRAB: READY_FOR_PICKUP signal
+    </div>
+  </div>
+
+  <!-- Payment Gateways -->
+  <div class="card">
+    <h3>Payment Gateway Strategy</h3>
+    <table>
+      <thead><tr><th>Phase</th><th>Gateway</th><th>Methods</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tag-green">Phase 0</span></td><td>Cash (built-in)</td><td>Cash</td><td>Always available, offline</td></tr>
+        <tr><td><span class="tag tag-green">Phase 0</span></td><td>PayOS</td><td>VietQR bank transfer</td><td>Zero merchant fee, T+0 settlement</td></tr>
+        <tr><td><span class="tag tag-green">Phase 0</span></td><td>VNPay</td><td>Domestic card, VNPAY-QR</td><td>HMAC webhook, ~1.1% fee</td></tr>
+        <tr><td><span class="tag tag-blue">Phase 3</span></td><td>MoMo</td><td>MoMo e-wallet</td><td>40M+ users</td></tr>
+        <tr><td><span class="tag tag-blue">Phase 3</span></td><td>ZaloPay</td><td>ZaloPay e-wallet</td><td>76M Zalo users</td></tr>
+        <tr><td><span class="tag tag-blue">Phase 3</span></td><td>VNPAY SmartPOS</td><td>Physical card terminal</td><td>Stripe Terminal equivalent cho VN</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Analytics Layer -->
+  <div class="card">
+    <h3>Analytics Layer — Materialized Views</h3>
+    <table>
+      <thead><tr><th>View</th><th>Refresh</th><th>Tier</th><th>Mo ta</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent3);">daily_branch_financials</td><td>15min (peak), hourly</td><td><span class="tag tag-red">Tier 1</span></td><td>Revenue, order count, avg ticket per branch/day</td></tr>
+        <tr><td style="color:var(--accent3);">delivery_platform_perf</td><td>Hourly</td><td><span class="tag tag-red">Tier 1</span></td><td>Orders/GMV per platform, commission cost</td></tr>
+        <tr><td style="color:var(--accent2);">customer_rfm_scores</td><td>Hourly</td><td><span class="tag tag-blue">Tier 2</span></td><td>RFM scores 1-5, segment label</td></tr>
+        <tr><td style="color:var(--accent2);">food_cost_avt</td><td>Daily 3AM</td><td><span class="tag tag-blue">Tier 2</span></td><td>Theoretical vs actual food cost</td></tr>
+        <tr><td style="color:var(--accent2);">labor_cost_metrics</td><td>Daily 3AM</td><td><span class="tag tag-blue">Tier 2</span></td><td>Labor cost %, SPLH, prime cost</td></tr>
+        <tr><td style="color:var(--accent4);">menu_bcg_matrix</td><td>Daily 5AM</td><td><span class="tag tag-purple">Tier 3</span></td><td>Stars/Plowhorses/Puzzles/Dogs</td></tr>
+        <tr><td style="color:var(--accent6);">platform_metrics</td><td>Hourly</td><td><span class="tag tag-cyan">Billing</span></td><td>MRR, ARR, churn rate, trial conversion</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: FLUTTER 3 FLAVORS ===== -->
+<div id="flutter" class="section">
+  <h2 class="section-title">Flutter App — 3 Flavors</h2>
+  <p class="section-desc">Mot codebase duy nhat, 3 app binaries: Manager (owner/manager), Staff (nhan vien), Customer (loyalty). Repo: github.com/binh0599/comtammatu-app</p>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;">
+    <div class="stat-card" style="border-top:3px solid var(--accent);">
+      <div class="value" style="color:var(--accent);font-size:1.4rem;">CTM Manager</div>
+      <div class="label">vn.comtammatu.manager</div>
+      <div style="margin-top:8px;font-size:0.82rem;">owner, manager — Full brand/branch dashboard</div>
+    </div>
+    <div class="stat-card" style="border-top:3px solid var(--accent2);">
+      <div class="value" style="color:var(--accent2);font-size:1.4rem;">CTM Staff</div>
+      <div class="label">vn.comtammatu.staff</div>
+      <div style="margin-top:8px;font-size:0.82rem;">staff — Lich ca, cham cong QR, xem luong</div>
+    </div>
+    <div class="stat-card" style="border-top:3px solid var(--accent3);">
+      <div class="value" style="color:var(--accent3);font-size:1.4rem;">Com Tam Ma Tu</div>
+      <div class="label">vn.comtammatu.app</div>
+      <div style="margin-top:8px;font-size:0.82rem;">customer — Loyalty, menu, dat ban</div>
+    </div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>Flutter Architecture</h3>
+    <div class="mermaid">
+graph TB
+    subgraph FLAVORS["3 Build Flavors"]
+        FM["Manager Flavor<br/>owner + manager"]
+        FS["Staff Flavor<br/>staff"]
+        FC["Customer Flavor<br/>customer"]
+    end
+
+    subgraph FEATURES["Feature Modules"]
+        FM_F["Dashboard, Analytics<br/>Orders, CRM, Inventory<br/>Settings"]
+        FS_F["Schedule, Clock-in<br/>Menu View, Payslip"]
+        FC_F["Home, Menu, Loyalty<br/>Orders, Profile<br/>Voucher, Reservation"]
+    end
+
+    subgraph CORE["Core Layer"]
+        AUTH_C["Supabase Auth<br/>auth_provider.dart"]
+        NET["Network Layer<br/>supabase_client.dart"]
+        STORE["Storage Layer<br/>Hive + Secure Storage"]
+        RT["Realtime Service<br/>WebSocket subs"]
+    end
+
+    subgraph STATE["State: Riverpod"]
+        AP["authProvider"]
+        SP["scopeProvider"]
+        DP["dashboardDataProvider"]
+        LP["loyaltyProvider"]
+    end
+
+    FM --> FM_F
+    FS --> FS_F
+    FC --> FC_F
+    FM_F --> STATE
+    FS_F --> STATE
+    FC_F --> STATE
+    STATE --> CORE
+    CORE --> NET
+    </div>
+  </div>
+
+  <!-- Manager App Screens -->
+  <div class="card">
+    <h3 style="color:var(--accent);">Manager App — Screen Inventory</h3>
+    <div class="grid-2">
+      <div>
+        <table>
+          <tbody>
+            <tr><td style="color:var(--accent);">DashboardScreen</td><td>ScopeSwitcher, Revenue, KPI, BranchComparison</td></tr>
+            <tr><td style="color:var(--accent);">AnalyticsScreen</td><td>Financial, FoodCostAvT, RFM, Delivery, BCG tabs</td></tr>
+            <tr><td style="color:var(--accent);">OrdersScreen</td><td>Branch scope — filter by status/date/source</td></tr>
+            <tr><td style="color:var(--accent);">InventoryScreen</td><td>Stock levels, stock count, purchase orders</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <table>
+          <tbody>
+            <tr><td style="color:var(--accent);">CrmScreen</td><td>Customer search, RFM filter, campaigns (owner only)</td></tr>
+            <tr><td style="color:var(--accent);">BrandSettingsScreen</td><td>Payment, E-invoice, Zalo OA, Team (owner only)</td></tr>
+            <tr><td style="color:var(--accent);">BranchSettingsScreen</td><td>Info, hours, delivery platforms, POS devices</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Staff App Screens -->
+  <div class="card">
+    <h3 style="color:var(--accent2);">Staff App — Screen Inventory</h3>
+    <table>
+      <tbody>
+        <tr><td style="color:var(--accent2);">ScheduleScreen</td><td>WeekCalendar, ShiftCard, ClockIn/ClockOut buttons (QR scan)</td></tr>
+        <tr><td style="color:var(--accent2);">ClockInScreen</td><td>QR Scanner (mobile_scanner), Location check, Confirm</td></tr>
+        <tr><td style="color:var(--accent2);">PayslipScreen</td><td>Monthly picker, Gross/Net salary, BHXH/BHYT/BHTN breakdown</td></tr>
+        <tr><td style="color:var(--accent2);">MenuViewScreen</td><td>Read-only menu reference (CategoryTabs, MenuItemGrid)</td></tr>
+        <tr><td style="color:var(--accent2);">StaffProfileScreen</td><td>Avatar, personal info, branch chip, notifications, logout</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Customer App Screens -->
+  <div class="card">
+    <h3 style="color:var(--accent3);">Customer Loyalty App — Screen Inventory</h3>
+    <table>
+      <tbody>
+        <tr><td style="color:var(--accent3);">CustomerHomeScreen</td><td>Greeting, LoyaltySummary, VoucherBanner, NearbyBranches, RecentOrders</td></tr>
+        <tr><td style="color:var(--accent3);">MenuBrowseScreen</td><td>BranchSelector, Search, CategoryTabs, MenuItemList</td></tr>
+        <tr><td style="color:var(--accent3);">LoyaltyScreen</td><td>TierHeroCard, ProgressBar, EarnRules, Rewards, TransactionHistory</td></tr>
+        <tr><td style="color:var(--accent3);">OrderHistoryScreen</td><td>Filter (Dine-in/Delivery/Pickup), OrderList, EinvoiceButton, Reorder</td></tr>
+        <tr><td style="color:var(--accent3);">ReservationScreen</td><td>BranchSelector, DateTimePicker, PartySize (Phase 2)</td></tr>
+        <tr><td style="color:var(--accent3);">CustomerProfileScreen</td><td>Avatar, PersonalInfo, LinkedAccounts (Zalo), NotificationPrefs</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="card">
+    <h3>Flutter Tech Stack</h3>
+    <div class="grid-2">
+      <table>
+        <tbody>
+          <tr><td style="color:var(--accent);">Framework</td><td>Flutter 3.x + Dart + Impeller</td></tr>
+          <tr><td style="color:var(--accent);">State</td><td>flutter_riverpod + riverpod_annotation</td></tr>
+          <tr><td style="color:var(--accent);">Navigation</td><td>go_router (GoRouter)</td></tr>
+          <tr><td style="color:var(--accent);">Auth SDK</td><td>supabase_flutter</td></tr>
+          <tr><td style="color:var(--accent);">Charts</td><td>fl_chart (manager dashboard)</td></tr>
+          <tr><td style="color:var(--accent);">Maps</td><td>google_maps_flutter</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <tbody>
+          <tr><td style="color:var(--accent2);">Images</td><td>cached_network_image + shimmer</td></tr>
+          <tr><td style="color:var(--accent2);">QR</td><td>qr_flutter (display) + mobile_scanner (scan)</td></tr>
+          <tr><td style="color:var(--accent2);">Push</td><td>firebase_messaging + flutter_local_notifications</td></tr>
+          <tr><td style="color:var(--accent2);">Analytics</td><td>PostHog</td></tr>
+          <tr><td style="color:var(--accent2);">Storage</td><td>flutter_secure_storage + hive_flutter</td></tr>
+          <tr><td style="color:var(--accent2);">i18n</td><td>intl + l10n.yaml (vi + en)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECTION: ZALO MINI APP ===== -->
+<div id="zalo" class="section">
+  <h2 class="section-title">Zalo Mini App</h2>
+  <p class="section-desc">Chay trong native Zalo app (77M MAU), khong can install rieng. Kenh tiep can khach hang co ROI cao nhat tai Viet Nam — gan 100% visibility rate.</p>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px;">
+    <div class="stat-card"><div class="value" style="color:var(--accent6);font-size:1.6rem;">77M</div><div class="label">Zalo MAU</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent3);font-size:1.6rem;">87%</div><div class="label">VN smartphone users</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent);font-size:1.6rem;">~100%</div><div class="label">ZNS visibility rate</div></div>
+    <div class="stat-card"><div class="value" style="color:var(--accent2);font-size:1.6rem;">sub 1s</div><div class="label">ZNS delivery time</div></div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>Zalo OAuth and Auth Flow</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant User as Customer in Zalo
+    participant ZMA as Zalo Mini App
+    participant EF as Edge Function
+    participant ZAPI as Zalo Graph API
+    participant DB as Supabase DB
+
+    User->>ZMA: Open Mini App
+    ZMA->>User: getPhoneNumber() permission
+    User-->>ZMA: Approve
+    ZMA->>EF: zalo-auth-exchange(zalo_phone_token, brand_id)
+    EF->>ZAPI: Verify token + get phone
+    ZAPI-->>EF: phone number
+    EF->>DB: Upsert customer(brand_id, phone)
+    EF->>DB: Upsert zalo_followers
+    EF->>DB: Issue custom JWT (role=customer)
+    EF-->>ZMA: JWT access token
+    ZMA->>DB: All API calls with JWT + RLS
+    </div>
+  </div>
+
+  <!-- Zalo vs Flutter comparison -->
+  <div class="card">
+    <h3>Zalo Mini App vs Flutter App — Khi nao dung cai nao</h3>
+    <table>
+      <thead><tr><th>Scenario</th><th>Recommended</th><th>Ly do</th></tr></thead>
+      <tbody>
+        <tr><td>Khach hang moi chua install app</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Zero friction — trong Zalo san co</td></tr>
+        <tr><td>Nhan thong bao don hang</td><td><span class="tag tag-cyan">ZNS qua Zalo</span></td><td>100% visibility, khong can open app</td></tr>
+        <tr><td>Kiem tra diem nhanh</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Nhanh hon — khong can open app rieng</td></tr>
+        <tr><td>Xem lich su chi tiet, doi thuong</td><td><span class="tag tag-green">Flutter App</span></td><td>More screen space, full features</td></tr>
+        <tr><td>Order tai ban qua QR (Phase 2)</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Scan QR ban, order ngay trong Zalo</td></tr>
+        <tr><td>Loyalty dashboard day du</td><td><span class="tag tag-green">Flutter App</span></td><td>Charts, tier benefits, full history</td></tr>
+        <tr><td>Campaign promo push</td><td><span class="tag tag-cyan">ZNS</span> + deep link <span class="tag tag-green">Flutter</span></td><td>ZNS deliver, Flutter show detail</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Screen Tree -->
+  <div class="card">
+    <h3>Zalo Mini App Screen Tree</h3>
+    <div class="grid-2">
+      <div>
+        <h4 style="color:var(--accent6);">Screens</h4>
+        <table>
+          <tbody>
+            <tr><td style="color:var(--accent6);">/home</td><td>BrandBanner, LoyaltySummary, Vouchers, NearbyBranches, Promos</td></tr>
+            <tr><td style="color:var(--accent6);">/menu</td><td>BranchSelector, CategoryTabs, MenuItemList, DetailModal</td></tr>
+            <tr><td style="color:var(--accent6);">/loyalty</td><td>TierProgress, RedeemSection, RewardCards, EarnRules</td></tr>
+            <tr><td style="color:var(--accent6);">/order-at-table</td><td>Phase 2 — QR tu ban, MenuBrowse, CartSummary, PlaceOrder</td></tr>
+            <tr><td style="color:var(--accent6);">/reservation</td><td>Phase 2 — BranchSelector, DateTimePicker, BookButton</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h4 style="color:var(--accent4);">ZNS Templates (per brand)</h4>
+        <table>
+          <tbody>
+            <tr><td><span class="tag tag-red">P0</span></td><td style="color:var(--accent4);">order_confirm</td><td>Sent post-payment</td></tr>
+            <tr><td><span class="tag tag-red">P0</span></td><td style="color:var(--accent4);">loyalty_update</td><td>Sent after order closed</td></tr>
+            <tr><td><span class="tag tag-orange">P1</span></td><td style="color:var(--accent4);">win_back</td><td>30/60/90 ngay khong thay</td></tr>
+            <tr><td><span class="tag tag-orange">P1</span></td><td style="color:var(--accent4);">birthday</td><td>pg_cron daily trigger</td></tr>
+            <tr><td><span class="tag tag-blue">P2</span></td><td style="color:var(--accent4);">promo</td><td>Manual campaign builder</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tech Stack -->
+  <div class="card">
+    <h3>Tech Stack</h3>
+    <table>
+      <tbody>
+        <tr><td style="color:var(--accent6);">Framework</td><td>Zalo Mini App Framework (ZMA Framework)</td></tr>
+        <tr><td style="color:var(--accent6);">Language</td><td>TypeScript</td></tr>
+        <tr><td style="color:var(--accent6);">UI</td><td>ZMA UI Components + Custom CSS</td></tr>
+        <tr><td style="color:var(--accent6);">State</td><td>React-like hooks (ZMA built-in)</td></tr>
+        <tr><td style="color:var(--accent6);">API</td><td>Zalo JS SDK + fetch() to Supabase</td></tr>
+        <tr><td style="color:var(--accent6);">Build</td><td>ZMA CLI</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: SAAS BILLING ===== -->
+<div id="billing" class="section">
+  <h2 class="section-title">SaaS Billing Flow</h2>
+  <p class="section-desc">VNPay recurring (token-based) cho thi truong VN. In-house subscription management tren Supabase — billing schema tach biet, pg_cron renewal.</p>
+
+  <div class="mermaid-wrapper">
+    <h3>Subscription Lifecycle</h3>
+    <div class="mermaid">
+graph TB
+    TRIAL["trial<br/>14 ngay free<br/>All Growth features"]
+    TRIAL_EXP["trial_expired<br/>Chua upgrade<br/>Starter features only"]
+    ACTIVE["active<br/>Paid subscription<br/>Features per plan"]
+    PAST_DUE["past_due<br/>Payment failed<br/>Grace 3 ngay"]
+    SUSPENDED["suspended<br/>Grace het<br/>Read-only mode"]
+    CANCELLED["cancelled<br/>Owner cancelled<br/>Features until period end"]
+    CHURNED["churned<br/>Subscription ended<br/>Data retained 90 ngay"]
+
+    TRIAL -->|"14 days"| TRIAL_EXP
+    TRIAL -->|"upgrade"| ACTIVE
+    TRIAL_EXP -->|"upgrade"| ACTIVE
+    ACTIVE -->|"payment_failed"| PAST_DUE
+    PAST_DUE -->|"payment_success"| ACTIVE
+    PAST_DUE -->|"3 days no payment"| SUSPENDED
+    ACTIVE -->|"cancel"| CANCELLED
+    SUSPENDED -->|"7 days"| CANCELLED
+    CANCELLED -->|"period_end"| CHURNED
+    </div>
+  </div>
+
+  <div class="mermaid-wrapper">
+    <h3>VNPay Recurring Payment Flow</h3>
+    <div class="mermaid">
+sequenceDiagram
+    participant Owner as Brand Owner
+    participant PLAT as Platform Admin
+    participant EF as Edge Function
+    participant VNPAY as VNPay
+    participant VAULT as Supabase Vault
+    participant DB as PostgreSQL
+    participant ZNS as Zalo ZNS
+
+    Note over Owner,ZNS: First Payment (Manual)
+    Owner->>PLAT: Select plan + click Pay
+    PLAT->>EF: Create VNPay URL (tokenize=true)
+    EF->>VNPAY: Payment page redirect
+    Owner->>VNPAY: Enter card / bank
+    VNPAY->>EF: vnpay-billing-webhook
+    EF->>EF: Verify HMAC signature
+    EF->>VAULT: Store VNPay token
+    EF->>DB: subscription.status = active
+    EF->>ZNS: Billing success notification
+
+    Note over Owner,ZNS: Monthly Auto-Renewal
+    DB->>EF: pg_cron daily 09:00
+    EF->>VAULT: Read VNPay token
+    EF->>VNPAY: Charge recurring
+    VNPAY-->>EF: Success / Failure
+    EF->>DB: Extend period or set past_due
+    EF->>ZNS: Success or retry notification
+    </div>
+  </div>
+
+  <!-- Why VNPay over Stripe -->
+  <div class="card">
+    <h3>VNPay vs Stripe — Ly do chon VNPay</h3>
+    <table>
+      <thead><tr><th>Criteria</th><th>VNPay</th><th>Stripe</th></tr></thead>
+      <tbody>
+        <tr><td>The noi dia (Napas)</td><td style="color:var(--accent3);">Supported</td><td style="color:var(--accent5);">Not supported</td></tr>
+        <tr><td>Chuyen khoan ngan hang</td><td style="color:var(--accent3);">Supported</td><td style="color:var(--accent5);">Not supported</td></tr>
+        <tr><td>Vi dien tu VN</td><td style="color:var(--accent3);">Supported</td><td style="color:var(--accent5);">Not supported</td></tr>
+        <tr><td>Recurring billing</td><td style="color:var(--accent3);">Token-based</td><td style="color:var(--accent3);">Supported</td></tr>
+        <tr><td>Phi giao dich</td><td style="color:var(--accent3);">~1.1% + 3,300 VND</td><td style="color:var(--accent5);">~2.9% + $0.30</td></tr>
+        <tr><td>Phap ly VN</td><td style="color:var(--accent3);">Licensed</td><td style="color:var(--accent);"> Offshore</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Feature Gating -->
+  <div class="card">
+    <h3>Feature Gating by Tier</h3>
+    <table>
+      <thead><tr><th>Feature</th><th>Starter</th><th>Growth</th><th>Enterprise</th></tr></thead>
+      <tbody>
+        <tr><td>POS, Cash, E-invoice basic, Menu, KDS, Daily report</td><td style="color:var(--accent3);">All tiers</td><td style="color:var(--accent3);">All</td><td style="color:var(--accent3);">All</td></tr>
+        <tr><td>VietQR, VNPay card</td><td>-</td><td style="color:var(--accent3);">Growth+</td><td style="color:var(--accent3);">Growth+</td></tr>
+        <tr><td>GrabFood, ShopeeFood</td><td>-</td><td style="color:var(--accent3);">Growth+</td><td style="color:var(--accent3);">Growth+</td></tr>
+        <tr><td>RFM, Food cost AvT, Campaigns, ZNS</td><td>-</td><td style="color:var(--accent3);">Growth+</td><td style="color:var(--accent3);">Growth+</td></tr>
+        <tr><td>BCG matrix, AI forecasting, Xanh SM</td><td>-</td><td>-</td><td style="color:var(--accent4);">Enterprise only</td></tr>
+        <tr><td>Max branches</td><td>3</td><td>20</td><td>Unlimited</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Billing Schema -->
+  <div class="card">
+    <h3>billing Schema (11th module)</h3>
+    <table>
+      <thead><tr><th>Table</th><th>Key Columns</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent6);">subscriptions</td><td>brand_id, plan, status, trial_ends_at, current_period_start/end, plan_price_vnd, payment_method</td></tr>
+        <tr><td style="color:var(--accent6);">billing_events</td><td>brand_id, subscription_id, event_type, amount, gateway_tx_id</td></tr>
+        <tr><td style="color:var(--accent6);">invoices</td><td>brand_id, invoice_number, period, amount_vnd, tax_vnd, pdf_url</td></tr>
+        <tr><td style="color:var(--accent6);">promo_codes</td><td>code, discount_pct/vnd, valid_from/until, max_uses, applies_to</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Billing Edge Functions -->
+  <div class="card">
+    <h3>Billing Edge Functions</h3>
+    <table>
+      <thead><tr><th>Function</th><th>Trigger</th><th>Responsibility</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent);">process-renewal</td><td>pg_cron daily 09:00</td><td>Charge all subscriptions due today</td></tr>
+        <tr><td style="color:var(--accent);">vnpay-billing-webhook</td><td>VNPay POST</td><td>Receive payment confirmation, update subscription</td></tr>
+        <tr><td style="color:var(--accent);">handle-trial-expiry</td><td>pg_cron daily 00:00</td><td>Expire trials, send ZNS warnings</td></tr>
+        <tr><td style="color:var(--accent);">apply-grace-period</td><td>pg_cron daily 09:05</td><td>Downgrade past_due after 3 days</td></tr>
+        <tr><td style="color:var(--accent);">generate-invoice</td><td>After renewal</td><td>Create PDF invoice, Supabase Storage</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: MIGRATION ===== -->
+<div id="migration" class="section">
+  <h2 class="section-title">Migration Path V2 to V3.0</h2>
+  <p class="section-desc">Non-breaking first, breaking changes co ke hoach. Microservice extraction khi dat scale triggers.</p>
+
+  <div class="mermaid-wrapper">
+    <h3>Migration Sequence</h3>
+    <div class="mermaid">
+graph TB
+    M1["Phase 1: Non-Breaking<br/>Add new tables, columns<br/>brand_id alias view"]
+    M2["Phase 2: tenant_id to brand_id<br/>Single migration, off-peak<br/>Update all app code same PR"]
+    M3["Phase 3: UUID array to junction<br/>Data migration script<br/>Convert array to rows"]
+    M4["Phase 4: Schema-per-module<br/>Move tables batch-by-batch<br/>search_path backward compat"]
+    M5["Phase 5: Feature Gates<br/>SaaS billing live<br/>Tier-based enforcement"]
+
+    M1 --> M2
+    M2 --> M3
+    M3 --> M4
+    M4 --> M5
+
+    style M1 fill:#1e293b,stroke:#10b981
+    style M2 fill:#1e293b,stroke:#f97316
+    style M3 fill:#1e293b,stroke:#f97316
+    style M4 fill:#1e293b,stroke:#f43f5e
+    style M5 fill:#1e293b,stroke:#3b82f6
+    </div>
+  </div>
+
+  <!-- Microservice Extraction -->
+  <div class="card">
+    <h3>Microservice Extraction Triggers</h3>
+    <table>
+      <thead><tr><th>Trigger Condition</th><th>Extract Service</th><th>Ly do</th></tr></thead>
+      <tbody>
+        <tr><td>500+ orders/day</td><td>Payment Service</td><td>PCI scope isolation</td></tr>
+        <tr><td>1,000 concurrent users</td><td>Auth Service</td><td>JWT validation bottleneck</td></tr>
+        <tr><td>50+ branches</td><td>Orders + KDS Service</td><td>Realtime WebSocket scaling</td></tr>
+        <tr><td>10+ brands (SaaS)</td><td>Separate DB per brand</td><td>Shared DB to per-brand Supabase projects</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Breaking Changes -->
+  <div class="card">
+    <h3>Breaking Changes (ke hoach can than)</h3>
+    <table>
+      <tbody>
+        <tr><td style="color:var(--accent5);">tenant_id to brand_id</td><td>Single migration, off-peak hours, update tat ca app code cung PR</td></tr>
+        <tr><td style="color:var(--accent5);">UUID[] to junction</td><td>Data migration script convert array to rows</td></tr>
+        <tr><td style="color:var(--accent5);">Schema-per-module</td><td>Move tables batch-by-batch, dung search_path backward compat</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border);">
+  Com Tam Ma Tu — Master Plan V4.1 Synthesis<br/>
+  Tong hop tu Architecture V3.0 + Restructure Plan + API Plan + Flutter Component Tree + Zalo Mini App + SaaS Billing | March 2026 | Author: Binh
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#475569',
+      lineColor: '#64748b',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#1e1b4b',
+      fontFamily: 'Inter, sans-serif',
+      fontSize: '13px',
+    },
+    flowchart: { curve: 'basis', htmlLabels: true },
+    sequence: { actorMargin: 30, messageMargin: 20 },
+    gantt: { barHeight: 20, fontSize: 11, sectionFontSize: 12, numberSectionStyles: 6 }
+  });
+
+  const renderedSections = new Set();
+
+  async function renderMermaidInSection(sectionId) {
+    if (renderedSections.has(sectionId)) return;
+    renderedSections.add(sectionId);
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    const nodes = section.querySelectorAll('.mermaid');
+    if (nodes.length === 0) return;
+    try {
+      await mermaid.run({ nodes: Array.from(nodes) });
+    } catch (e) {
+      console.error('Mermaid render error in ' + sectionId + ':', e);
+    }
+  }
+
+  async function showSection(id) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo({ top: 200, behavior: 'smooth' });
+    await renderMermaidInSection(id);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderMermaidInSection('overview');
+  });
+</script>
+</body>
+</html>
