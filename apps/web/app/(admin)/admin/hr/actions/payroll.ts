@@ -176,7 +176,7 @@ async function _calculatePayroll(periodId: number) {
   }
 
   // For each employee, calculate pay
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Payroll entries array shape depends on calculation results
   const entries: any[] = [];
 
   for (const emp of empList) {
@@ -274,7 +274,7 @@ async function _updatePayrollEntry(data: UpdatePayrollEntryInput) {
   const bonuses = parsed.data.bonuses ?? Number(entry.bonuses);
   const netPay = basePay + overtimePay + bonuses - deductions;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic update payload varies by payroll status transition
   const payload: Record<string, any> = {
     net_pay: netPay,
   };

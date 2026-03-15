@@ -23,6 +23,7 @@ import { createLogger, type LogContext } from "./logger";
 
 const log = createLogger("error-reporter");
 
+/** Error reporting interface. Default: structured logger. Replace via `configureErrorReporter()` for Sentry etc. */
 export interface ErrorReporter {
   captureException(error: Error, context?: Record<string, unknown>): void;
   captureMessage(message: string, level?: "info" | "warning" | "error"): void;

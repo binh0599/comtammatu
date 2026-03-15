@@ -73,9 +73,9 @@ export function OfflineFallback() {
         </span>
       </div>
       <NewOrderClient
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Offline cache data shape matches server but lacks generated type
         menuItems={menuItems as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Offline cache data shape matches server but lacks generated type
         categories={categories as any}
         terminalId={0} // Offline — terminal validation happens on sync
         tableId={null}

@@ -24,7 +24,7 @@ export default async function MenuDetailPage({ params }: Props) {
 
   // Fetch items for all categories
   const categoriesWithItems = await Promise.all(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Deeply nested select with items/modifiers; typed at component boundary
     categories.map(async (cat: any) => {
       const items = await getMenuItems(cat.id);
       return { ...cat, items };

@@ -25,7 +25,7 @@ interface ReceiptOrder {
     item_total: number;
     menu_items: { name: string } | null;
     menu_item_variants: { name: string } | null;
-    modifiers?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    modifiers?: any; // eslint-disable-line @typescript-eslint/no-explicit-any -- Modifier data comes from JSON column with variable schema per item
   }[];
   payments?: {
     amount: number;

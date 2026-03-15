@@ -10,18 +10,29 @@ export type RateLimitResult = {
   reset: number;
 };
 
-/**
- * No-op limiter used when Upstash env vars are not configured (dev mode).
- * Always allows requests through.
- */
-const noopLimiter = {
-  async limit(_identifier: string): Promise<RateLimitResult> {
-    return { success: true, limit: 0, remaining: 0, reset: 0 };
-  },
+/** Interface for rate limiter instances (real or no-op). */
+export type LimiterLike = {
+  limit(identifier: string): Promise<RateLimitResult>;
 };
 
-type LimiterLike = {
-  limit(identifier: string): Promise<RateLimitResult>;
+let _noopWarned = false;
+
+/**
+ * No-op limiter used when Upstash env vars are not configured (dev mode).
+ * Always allows requests through. Logs a warning on first use so operators
+ * can distinguish "not rate-limited" from "limiter misconfigured".
+ */
+const noopLimiter: LimiterLike = {
+  async limit(_identifier: string): Promise<RateLimitResult> {
+    if (!_noopWarned) {
+      _noopWarned = true;
+      console.warn(
+        "[Security] Upstash Redis not configured (UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN missing). " +
+          "Rate limiting is disabled — all requests will be allowed through."
+      );
+    }
+    return { success: true, limit: 0, remaining: 0, reset: 0 };
+  },
 };
 
 let _upstashConfigured: boolean | null = null;

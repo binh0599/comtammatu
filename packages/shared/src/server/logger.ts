@@ -6,8 +6,10 @@
  * Không phụ thuộc external dependencies — chỉ sử dụng console.
  */
 
+/** Log severity levels, ordered: debug < info < warn < error */
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
+/** Structured context attached to log entries. Custom fields via index signature. */
 export interface LogContext {
   tenantId?: number;
   userId?: string;
@@ -34,6 +36,7 @@ function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
+/** Logger interface with leveled methods. Created via `createLogger(module)`. */
 export interface Logger {
   debug(message: string, context?: LogContext): void;
   info(message: string, context?: LogContext): void;

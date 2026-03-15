@@ -41,7 +41,7 @@ export function nowTimeInTimezone(tz: string): string {
  * Shared helper: look up the current user's employee record + branch timezone.
  * Throws on DB/RLS error, returns null if no employee record exists.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase client type varies by caller context (RSC vs action)
 export async function findMyEmployee(supabase: any, userId: string, tenantId: number) {
   const { data, error } = await supabase
     .from("employees")

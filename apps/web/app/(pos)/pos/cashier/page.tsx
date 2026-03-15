@@ -52,7 +52,7 @@ export default async function CashierPage() {
           (session.pos_terminals as { name: string } | null)?.name ?? `Máy #${session.terminal_id}`,
         terminal_id: session.terminal_id,
       }}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Complex joined query result type not worth narrowing in page-level variable
       orders={orders as any}
       branchId={profile.branch_id}
     />

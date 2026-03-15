@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
-import { formatTime, getShiftAssignmentStatusLabel } from "@comtammatu/shared";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getMyShiftAssignments } from "@/app/(employee)/employee/actions";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@comtammatu/ui";
+import { Button, Card, CardContent } from "@comtammatu/ui";
+import { ShiftDetailCard } from "./shift-detail-card";
 
 const WEEKDAYS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
@@ -16,22 +16,13 @@ function toLocalDateString(date: Date): string {
 }
 
 const MONTH_NAMES = [
-  "Tháng 1",
-  "Tháng 2",
-  "Tháng 3",
-  "Tháng 4",
-  "Tháng 5",
-  "Tháng 6",
-  "Tháng 7",
-  "Tháng 8",
-  "Tháng 9",
-  "Tháng 10",
-  "Tháng 11",
-  "Tháng 12",
+  "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4",
+  "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8",
+  "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12",
 ];
 
- 
 interface ScheduleCalendarProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Shift assignment shape from dynamic query with joins
   initialAssignments: any[];
   initialYear: number;
   initialMonth: number;
@@ -44,7 +35,7 @@ export function ScheduleCalendar({
 }: ScheduleCalendarProps) {
   const [year, setYear] = useState(initialYear);
   const [month, setMonth] = useState(initialMonth);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Shift assignment shape from dynamic query with joins
   const [assignments, setAssignments] = useState<any[]>(initialAssignments);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -182,44 +173,7 @@ export function ScheduleCalendar({
 
       {/* Selected date details */}
       {selectedDate && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CalendarDays className="h-4 w-4" />
-              {new Date(selectedDate + "T00:00:00").toLocaleDateString("vi-VN", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-              })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedAssignments.length === 0 ? (
-              <p className="text-muted-foreground text-sm">Không có ca làm ngày này.</p>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {selectedAssignments.map((a: (typeof assignments)[number]) => (
-                  <div
-                    key={a.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div>
-                      <p className="font-medium">{a.shifts?.name}</p>
-                      <p className="text-muted-foreground text-sm">
-                        {formatTime(a.shifts?.start_time)} - {formatTime(a.shifts?.end_time)}
-                      </p>
-                      {a.shifts?.branches?.name && (
-                        <p className="text-muted-foreground text-xs">{a.shifts.branches.name}</p>
-                      )}
-                      {a.notes && <p className="text-muted-foreground text-xs mt-1">{a.notes}</p>}
-                    </div>
-                    <Badge variant="outline">{getShiftAssignmentStatusLabel(a.status)}</Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <ShiftDetailCard selectedDate={selectedDate} assignments={selectedAssignments} />
       )}
     </div>
   );

@@ -1,5 +1,6 @@
 // ===== Status Enums (match DB CHECK constraints) =====
 
+/** All valid order statuses. Flow: draft → confirmed → preparing → ready → served → completed */
 export const ORDER_STATUSES = [
   "draft",
   "confirmed",
@@ -11,6 +12,7 @@ export const ORDER_STATUSES = [
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+/** Per-item status within an order. Tracked separately from order-level status for KDS. */
 export const ORDER_ITEM_STATUSES = [
   "pending",
   "sent_to_kds",
@@ -21,12 +23,15 @@ export const ORDER_ITEM_STATUSES = [
 ] as const;
 export type OrderItemStatus = (typeof ORDER_ITEM_STATUSES)[number];
 
+/** Order types: dine_in (ăn tại chỗ), takeaway (mang đi), delivery (giao hàng) */
 export const ORDER_TYPES = ["dine_in", "takeaway", "delivery"] as const;
 export type OrderType = (typeof ORDER_TYPES)[number];
 
+/** Supported payment methods. Card/ewallet data never stored (PCI DSS SAQ A). */
 export const PAYMENT_METHODS = ["cash", "card", "ewallet", "qr", "transfer"] as const;
 export type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 
+/** Vietnamese display labels for payment methods */
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: "Tiền mặt",
   card: "Thẻ",
@@ -35,9 +40,11 @@ export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   transfer: "Chuyển khoản",
 };
 
+/** Payment lifecycle statuses. Only cashier_station terminals can transition to "completed". */
 export const PAYMENT_STATUSES = ["pending", "completed", "failed", "refunded", "expired"] as const;
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 
+/** Terminal types: mobile_order (waiter device), cashier_station (payment-capable). */
 export const TERMINAL_TYPES = ["mobile_order", "cashier_station"] as const;
 export type TerminalType = (typeof TERMINAL_TYPES)[number];
 
@@ -45,17 +52,21 @@ export type TerminalType = (typeof TERMINAL_TYPES)[number];
 export const DEVICE_TERMINAL_TYPES = [...TERMINAL_TYPES, "kds_station"] as const;
 export type DeviceTerminalType = (typeof DEVICE_TERMINAL_TYPES)[number];
 
+/** POS session statuses. A terminal must have an open session to process orders/payments. */
 export const SESSION_STATUSES = ["open", "closed", "suspended"] as const;
 export type SessionStatus = (typeof SESSION_STATUSES)[number];
 
+/** KDS ticket statuses. Chef bumps: pending → preparing → ready. */
 export const KDS_TICKET_STATUSES = ["pending", "preparing", "ready"] as const;
 export type KdsTicketStatus = (typeof KDS_TICKET_STATUSES)[number];
 
+/** Table statuses for dine-in management. Realtime-updated via POS order flow. */
 export const TABLE_STATUSES = ["available", "occupied", "reserved", "maintenance"] as const;
 export type TableStatus = (typeof TABLE_STATUSES)[number];
 
 // ===== Roles =====
 
+/** All CRM staff roles, ordered by privilege (owner highest). Customer role is NOT included — customers use mobile app only. */
 export const STAFF_ROLES = [
   "owner",
   "manager",
@@ -91,6 +102,7 @@ export const ROLE_REDIRECT_MAP: Record<string, string> = {
 
 // ===== Valid Order Status Transitions =====
 
+/** Allowed status transitions for orders. Enforced server-side in order actions. */
 export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   draft: ["confirmed", "cancelled"],
   confirmed: ["preparing", "cancelled"],
@@ -103,6 +115,7 @@ export const VALID_ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 
 // ===== Valid KDS Ticket Transitions =====
 
+/** Allowed KDS ticket transitions. Chef can skip preparing and go directly to ready. */
 export const VALID_KDS_TRANSITIONS: Record<KdsTicketStatus, KdsTicketStatus[]> = {
   pending: ["preparing", "ready"],
   preparing: ["ready"],
@@ -111,14 +124,17 @@ export const VALID_KDS_TRANSITIONS: Record<KdsTicketStatus, KdsTicketStatus[]> =
 
 // ===== Inventory =====
 
+/** Types of stock movements for inventory tracking */
 export const STOCK_MOVEMENT_TYPES = ["in", "out", "transfer", "waste", "adjust"] as const;
 export type StockMovementType = (typeof STOCK_MOVEMENT_TYPES)[number];
 
+/** Reasons for stock waste/disposal */
 export const WASTE_REASONS = ["expired", "spoiled", "overproduction", "other"] as const;
 export type WasteReason = (typeof WASTE_REASONS)[number];
 
 // ===== Supplier / Purchase Orders =====
 
+/** Purchase order statuses. Flow: draft → sent → partially_received → received */
 export const PO_STATUSES = [
   "draft",
   "sent",
@@ -128,6 +144,7 @@ export const PO_STATUSES = [
 ] as const;
 export type PoStatus = (typeof PO_STATUSES)[number];
 
+/** Allowed PO status transitions. Enforced in supplier actions. */
 export const VALID_PO_TRANSITIONS: Record<PoStatus, PoStatus[]> = {
   draft: ["sent", "cancelled"],
   sent: ["partially_received", "received", "cancelled"],
@@ -138,18 +155,23 @@ export const VALID_PO_TRANSITIONS: Record<PoStatus, PoStatus[]> = {
 
 // ===== HR =====
 
+/** Employment types: full-time, part-time, contract */
 export const EMPLOYMENT_TYPES = ["full", "part", "contract"] as const;
 export type EmploymentType = (typeof EMPLOYMENT_TYPES)[number];
 
+/** Employee statuses. Terminated employees are soft-deleted (data retained for HR records). */
 export const EMPLOYEE_STATUSES = ["active", "inactive", "on_leave", "terminated"] as const;
 export type EmployeeStatus = (typeof EMPLOYEE_STATUSES)[number];
 
+/** Leave request types */
 export const LEAVE_TYPES = ["annual", "sick", "unpaid", "maternity"] as const;
 export type LeaveType = (typeof LEAVE_TYPES)[number];
 
+/** Leave request approval statuses */
 export const LEAVE_STATUSES = ["pending", "approved", "rejected"] as const;
 export type LeaveStatus = (typeof LEAVE_STATUSES)[number];
 
+/** Shift assignment lifecycle: scheduled → confirmed → completed (or no_show) */
 export const SHIFT_ASSIGNMENT_STATUSES = [
   "scheduled",
   "confirmed",
@@ -158,17 +180,21 @@ export const SHIFT_ASSIGNMENT_STATUSES = [
 ] as const;
 export type ShiftAssignmentStatus = (typeof SHIFT_ASSIGNMENT_STATUSES)[number];
 
+/** Attendance record statuses. Derived from clock-in/clock-out times vs shift schedule. */
 export const ATTENDANCE_STATUSES = ["present", "absent", "late", "early_leave"] as const;
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number];
 
+/** How attendance was recorded: QR scan, manual entry, POS session start, or terminal login */
 export const ATTENDANCE_SOURCES = ["qr", "manual", "pos_session", "terminal_login"] as const;
 export type AttendanceSource = (typeof ATTENDANCE_SOURCES)[number];
 
 // ===== Payroll =====
 
+/** Payroll processing statuses. Flow: draft → calculated → approved → paid */
 export const PAYROLL_STATUSES = ["draft", "calculated", "approved", "paid"] as const;
 export type PayrollStatus = (typeof PAYROLL_STATUSES)[number];
 
+/** Allowed payroll transitions. Approved can revert to calculated for re-computation. */
 export const VALID_PAYROLL_TRANSITIONS: Record<PayrollStatus, PayrollStatus[]> = {
   draft: ["calculated"],
   calculated: ["approved", "draft"],
@@ -178,34 +204,43 @@ export const VALID_PAYROLL_TRANSITIONS: Record<PayrollStatus, PayrollStatus[]> =
 
 // ===== Security =====
 
+/** Security event severity levels for the security_events table */
 export const SECURITY_SEVERITIES = ["info", "warning", "critical"] as const;
 export type SecuritySeverity = (typeof SECURITY_SEVERITIES)[number];
 
 // ===== CRM =====
 
+/** Customer gender options for CRM profiles */
 export const CUSTOMER_GENDERS = ["M", "F", "Other"] as const;
 export type CustomerGender = (typeof CUSTOMER_GENDERS)[number];
 
+/** How a customer was acquired: POS registration, mobile app signup, or website */
 export const CUSTOMER_SOURCES = ["pos", "app", "website"] as const;
 export type CustomerSource = (typeof CUSTOMER_SOURCES)[number];
 
+/** Loyalty points transaction types for the loyalty program */
 export const LOYALTY_TRANSACTION_TYPES = ["earn", "redeem", "expire", "adjust"] as const;
 export type LoyaltyTransactionType = (typeof LOYALTY_TRANSACTION_TYPES)[number];
 
+/** Voucher discount types: percentage off, fixed amount, or free item */
 export const VOUCHER_TYPES = ["percent", "fixed", "free_item"] as const;
 export type VoucherType = (typeof VOUCHER_TYPES)[number];
 
+/** Order-level discount types: percentage, fixed amount, or voucher redemption */
 export const DISCOUNT_TYPES = ["percent", "fixed", "voucher"] as const;
 export type DiscountType = (typeof DISCOUNT_TYPES)[number];
 
+/** GDPR data deletion request statuses */
 export const DELETION_REQUEST_STATUSES = ["pending", "cancelled", "completed"] as const;
 export type DeletionRequestStatus = (typeof DELETION_REQUEST_STATUSES)[number];
 
 // ===== Menu =====
 
+/** Menu category types for organizing items */
 export const MENU_CATEGORY_TYPES = ["main_dish", "side_dish", "drink"] as const;
 export type MenuCategoryType = (typeof MENU_CATEGORY_TYPES)[number];
 
+/** Vietnamese labels for menu category types */
 export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
   main_dish: "Món chính",
   side_dish: "Món kèm",
@@ -214,9 +249,11 @@ export const MENU_CATEGORY_TYPE_LABELS: Record<MenuCategoryType, string> = {
 
 // ===== Device Registration =====
 
+/** Device registration approval statuses. Owner/manager must approve new devices. */
 export const DEVICE_STATUSES = ["pending", "approved", "rejected"] as const;
 export type DeviceStatus = (typeof DEVICE_STATUSES)[number];
 
+/** Device types: POS (waiter/cashier) or KDS (kitchen display) */
 export const DEVICE_TYPES = ["pos", "kds"] as const;
 export type DeviceType = (typeof DEVICE_TYPES)[number];
 
@@ -236,30 +273,37 @@ export const ROLE_TERMINAL_TYPE_MAP: Record<string, DeviceTerminalType | null> =
 
 // ===== Printing =====
 
+/** Printer connection types: USB thermal, network thermal, or browser print dialog */
 export const PRINTER_TYPES = ["thermal_usb", "thermal_network", "browser"] as const;
 export type PrinterType = (typeof PRINTER_TYPES)[number];
 
+/** Supported thermal receipt paper widths in mm */
 export const PAPER_WIDTHS = [58, 80] as const;
 export type PaperWidth = (typeof PAPER_WIDTHS)[number];
 
+/** Printer connectivity test result statuses */
 export const PRINTER_TEST_STATUSES = ["connected", "error", "untested"] as const;
 export type PrinterTestStatus = (typeof PRINTER_TEST_STATUSES)[number];
 
+/** What type of station a printer is assigned to */
 export const PRINTER_ASSIGNED_TYPES = ["pos_terminal", "kds_station", "registered_device"] as const;
 export type PrinterAssignedType = (typeof PRINTER_ASSIGNED_TYPES)[number];
 
 // ===== PO Quality Check =====
 
+/** Quality check statuses for received purchase order items */
 export const PO_QUALITY_STATUSES = ["pending", "accepted", "partial", "rejected"] as const;
 export type PoQualityStatus = (typeof PO_QUALITY_STATUSES)[number];
 
 // ===== Stock Count =====
 
+/** Physical stock count workflow statuses */
 export const STOCK_COUNT_STATUSES = ["draft", "submitted", "approved"] as const;
 export type StockCountStatus = (typeof STOCK_COUNT_STATUSES)[number];
 
 // ===== 86'd / Menu Availability Reasons =====
 
+/** Reasons why a menu item is 86'd (temporarily unavailable) */
 export const ITEM_UNAVAILABLE_REASONS = [
   "out_of_stock",
   "ingredient_shortage",
@@ -288,17 +332,21 @@ export const CRM_ROLES = ["manager", "owner"] as const;
 
 // ===== Campaigns =====
 
+/** Marketing campaign delivery channels */
 export const CAMPAIGN_TYPES = ["email", "sms", "push"] as const;
 export type CampaignType = (typeof CAMPAIGN_TYPES)[number];
 
+/** Campaign lifecycle statuses */
 export const CAMPAIGN_STATUSES = ["draft", "scheduled", "sent", "completed"] as const;
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
+/** Available notification delivery channels */
 export const NOTIFICATION_CHANNELS = ["in_app", "push", "email", "sms"] as const;
 export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
 
 // ===== Reservations =====
 
+/** Table reservation lifecycle statuses */
 export const RESERVATION_STATUSES = [
   "pending",
   "confirmed",
@@ -308,10 +356,12 @@ export const RESERVATION_STATUSES = [
 ] as const;
 export type ReservationStatus = (typeof RESERVATION_STATUSES)[number];
 
+/** Physical sections/areas of the restaurant for table grouping */
 export const TABLE_SECTIONS = ["Tầng 1", "Tầng 2", "Sân vườn", "VIP", "Ngoài trời"] as const;
 
 // ===== Push Notifications =====
 
+/** Categories of push notifications sent to mobile app users */
 export const PUSH_NOTIFICATION_TYPES = [
   "order_status",
   "low_stock",
@@ -322,11 +372,13 @@ export const PUSH_NOTIFICATION_TYPES = [
 ] as const;
 export type PushNotificationType = (typeof PUSH_NOTIFICATION_TYPES)[number];
 
+/** Push notification subscription statuses */
 export const PUSH_SUBSCRIPTION_STATUSES = ["active", "expired", "unsubscribed"] as const;
 export type PushSubscriptionStatus = (typeof PUSH_SUBSCRIPTION_STATUSES)[number];
 
 // ===== System Settings Keys =====
 
+/** Canonical keys for the system_settings table. Always use these constants, never hardcode strings. */
 export const SYSTEM_SETTINGS_KEYS = {
   TAX_RATE: "tax_rate",
   SERVICE_CHARGE: "service_charge",

@@ -148,7 +148,7 @@ async function _clockOut() {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic payload shape depends on which fields are being updated
   const updatePayload: Record<string, any> = {
     clock_out: clockOutTime,
     hours_worked: hoursWorked,

@@ -207,7 +207,7 @@ export async function getKdsBranchContext(
  */
 export interface CustomerContext {
   supabase: SupabaseClient;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Customer profile shape from auth join; full typing requires generated types rework
   customer: any; // customers row
 }
 

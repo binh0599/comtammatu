@@ -88,9 +88,9 @@ export default async function PosPage() {
         <p className="text-muted-foreground text-sm">Chọn bàn để xem đơn hoặc tạo đơn mới</p>
       </div>
       <TableMapClient
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Complex joined query result; typed at component boundary
         tables={tables as any}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Complex joined query result; typed at component boundary
         menuItems={menuItems as any}
         categories={categories}
         terminalId={terminalId}

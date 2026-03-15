@@ -24,7 +24,7 @@ const CREATABLE_ROLES: Record<string, string[]> = {
   hr: ["cashier", "waiter", "chef"],
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic table helper requires untyped client for dynamic .from() calls
 export async function getBranchesInternal(supabase: any, tenantId: number) {
   const { data } = await supabase
     .from("branches")
@@ -192,7 +192,7 @@ async function _updateEmployee(id: number, data: UpdateEmployeeInput) {
 
   const { supabase, tenantId } = await getActionContext();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Dynamic update payload shape depends on which fields changed
   const payload: Record<string, any> = {};
   if (parsed.data.position !== undefined) payload.position = parsed.data.position;
   if (parsed.data.department !== undefined) payload.department = parsed.data.department || null;

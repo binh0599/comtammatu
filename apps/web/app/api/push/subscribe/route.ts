@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
   const { endpoint, keys, notification_types } = parsed.data;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- push_subscriptions table not in generated types (added via migration)
   const { error } = await (supabase as any).from("push_subscriptions").upsert(
     {
       user_id: user.id,
@@ -78,7 +78,7 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- push_subscriptions table not in generated types (added via migration)
   await (supabase as any)
     .from("push_subscriptions")
     .update({ status: "unsubscribed", updated_at: new Date().toISOString() })

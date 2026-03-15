@@ -70,7 +70,7 @@ export default async function NewOrderPage({
 
   return (
     <NewOrderClient
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Complex nested select with modifiers/categories; typed at component boundary
       menuItems={menuItems as any}
       categories={categories}
       terminalId={terminalId}

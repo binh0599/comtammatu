@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { UserCircle, Shield, Building2, Briefcase, Calendar } from "lucide-react";
-import { updateMyProfile, changeMyPassword } from "@/app/(employee)/employee/actions";
 import { getEmploymentTypeLabel, getEmployeeStatusLabel, formatDate } from "@comtammatu/shared";
-import { toast } from "sonner";
 import { ROLE_LABELS } from "@/lib/role-labels";
 import {
   Button,
@@ -12,10 +10,10 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Input,
-  Label,
   Separator,
 } from "@comtammatu/ui";
+import { ProfileEditForm } from "./profile-edit-form";
+import { PasswordChangeForm } from "./password-change-form";
 
 interface EmergencyContact {
   name?: string | null;
@@ -51,60 +49,6 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
   const ec = getEmergencyContact(employee?.emergency_contact ?? null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
-  const [isPending, startTransition] = useTransition();
-
-  // Profile form state
-  const [fullName, setFullName] = useState(profile?.full_name ?? "");
-  const [ecName, setEcName] = useState(ec?.name ?? "");
-  const [ecPhone, setEcPhone] = useState(ec?.phone ?? "");
-  const [ecRelationship, setEcRelationship] = useState(ec?.relationship ?? "");
-
-  // Password form state
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
-  function handleProfileSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    startTransition(async () => {
-      const result = await updateMyProfile({
-        full_name: fullName,
-        emergency_contact: {
-          name: ecName || undefined,
-          phone: ecPhone || undefined,
-          relationship: ecRelationship || undefined,
-        },
-      });
-
-      if (result && "error" in result && result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Đã cập nhật thông tin");
-        setIsEditingProfile(false);
-      }
-    });
-  }
-
-  function handlePasswordSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    startTransition(async () => {
-      const result = await changeMyPassword({
-        current_password: currentPassword,
-        new_password: newPassword,
-        confirm_password: confirmPassword,
-      });
-
-      if (result && "error" in result && result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Đã đổi mật khẩu thành công");
-        setIsEditingPassword(false);
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      }
-    });
-  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -118,58 +62,12 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
         </CardHeader>
         <CardContent>
           {isEditingProfile ? (
-            <form onSubmit={handleProfileSubmit} className="flex flex-col gap-4">
-              <div>
-                <Label htmlFor="full_name">Họ tên</Label>
-                <Input
-                  id="full_name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  minLength={2}
-                />
-              </div>
-
-              <Separator />
-              <p className="text-sm font-medium">Liên hệ khẩn cấp</p>
-
-              <div>
-                <Label htmlFor="ec_name">Tên người liên hệ</Label>
-                <Input id="ec_name" value={ecName} onChange={(e) => setEcName(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="ec_phone">Số điện thoại</Label>
-                <Input id="ec_phone" value={ecPhone} onChange={(e) => setEcPhone(e.target.value)} />
-              </div>
-              <div>
-                <Label htmlFor="ec_relationship">Quan hệ</Label>
-                <Input
-                  id="ec_relationship"
-                  value={ecRelationship}
-                  onChange={(e) => setEcRelationship(e.target.value)}
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Button type="submit" disabled={isPending} size="sm">
-                  {isPending ? "Đang lưu..." : "Lưu"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setFullName(profile?.full_name ?? "");
-                    setEcName(ec?.name ?? "");
-                    setEcPhone(ec?.phone ?? "");
-                    setEcRelationship(ec?.relationship ?? "");
-                    setIsEditingProfile(false);
-                  }}
-                >
-                  Hủy
-                </Button>
-              </div>
-            </form>
+            <ProfileEditForm
+              initialName={profile?.full_name ?? ""}
+              initialEc={ec}
+              onCancel={() => setIsEditingProfile(false)}
+              onSuccess={() => setIsEditingProfile(false)}
+            />
           ) : (
             <div className="flex flex-col gap-3">
               <InfoRow label="Họ tên" value={profile?.full_name ?? "—"} />
@@ -239,59 +137,10 @@ export function ProfileInfo({ profile, employee, userEmail }: ProfileInfoProps) 
         </CardHeader>
         <CardContent>
           {isEditingPassword ? (
-            <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-              <div>
-                <Label htmlFor="current_password">Mật khẩu hiện tại</Label>
-                <Input
-                  id="current_password"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
-              </div>
-              <div>
-                <Label htmlFor="new_password">Mật khẩu mới</Label>
-                <Input
-                  id="new_password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={8}
-                  placeholder="Tối thiểu 8 ký tự"
-                />
-              </div>
-              <div>
-                <Label htmlFor="confirm_password">Xác nhận mật khẩu</Label>
-                <Input
-                  id="confirm_password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={isPending} size="sm">
-                  {isPending ? "Đang đổi..." : "Đổi mật khẩu"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIsEditingPassword(false);
-                    setCurrentPassword("");
-                    setNewPassword("");
-                    setConfirmPassword("");
-                  }}
-                >
-                  Hủy
-                </Button>
-              </div>
-            </form>
+            <PasswordChangeForm
+              onCancel={() => setIsEditingPassword(false)}
+              onSuccess={() => setIsEditingPassword(false)}
+            />
           ) : (
             <div>
               <p className="text-muted-foreground text-sm mb-3">Đổi mật khẩu đăng nhập của bạn.</p>

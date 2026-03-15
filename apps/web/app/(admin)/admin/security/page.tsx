@@ -27,11 +27,11 @@ export default async function SecurityPage() {
             <TabsTrigger value="audit">Nhật ký hoạt động</TabsTrigger>
           </TabsList>
           <TabsContent value="events">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- security_events/audit_logs have dynamic JSON columns (metadata, new_value) */}
             <EventsTab events={events as any} summary={summary} />
           </TabsContent>
           <TabsContent value="audit">
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- security_events/audit_logs have dynamic JSON columns (metadata, new_value) */}
             <AuditTab logs={auditLogs as any} resourceTypes={resourceTypes} />
           </TabsContent>
         </Tabs>

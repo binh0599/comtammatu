@@ -39,7 +39,7 @@ interface PrinterConfigRow {
   id: number;
   name: string;
   type: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- connection_config is JSON column with printer-protocol-specific shape
   connection_config: any;
   paper_width_mm: number;
   assigned_to_type: string | null;

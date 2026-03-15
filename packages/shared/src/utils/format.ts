@@ -75,11 +75,17 @@ export function formatDiscount(type: string, value: number): string {
 
 // =====================================================================
 // Label Mappers — generated via createLabelMapper factory
+//
+// Each mapper converts a DB enum value to its Vietnamese display label.
+// Usage: getOrderStatusLabel("confirmed") → "Đã xác nhận"
+// All mappers fall back to the raw key if no mapping exists.
 // =====================================================================
 
 /**
  * Factory: creates a label-mapper function from a key→label record.
  * Falls back to the raw key if no mapping exists.
+ * @param labels - Record mapping enum values to Vietnamese display strings
+ * @returns A function that converts enum keys to display labels
  */
 function createLabelMapper(labels: Record<string, string>): (key: string) => string {
   return (key: string) => labels[key] ?? key;

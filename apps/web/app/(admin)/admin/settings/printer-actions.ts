@@ -139,7 +139,7 @@ async function _createPrinterConfig(formData: FormData) {
     const targetTable =
       parsed.data.assigned_to_type === "pos_terminal" ? "pos_terminals" : "kds_stations";
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic table helper requires untyped client for dynamic .from() calls
     const { data: targetRow, error: targetError } = await (supabase as any)
       .from(targetTable)
       .select("id")
@@ -305,7 +305,7 @@ async function _assignPrinter(formData: FormData) {
     const targetTable =
       parsed.data.assigned_to_type === "pos_terminal" ? "pos_terminals" : "kds_stations";
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Generic table helper requires untyped client for dynamic .from() calls
     const { data: targetRow, error: targetError } = await (supabase as any)
       .from(targetTable)
       .select("id")
