@@ -8,7 +8,7 @@ A multi-tenant, multi-branch restaurant management platform built for the **Cơm
 
 ## Overview
 
-The system is split into five distinct UIs served from a single Next.js application:
+The system is split into four distinct UIs served from a single Next.js application, plus a REST API for the Flutter mobile app:
 
 | Interface                 | Path              | Who uses it     |
 | ------------------------- | ----------------- | --------------- |
@@ -16,7 +16,7 @@ The system is split into five distinct UIs served from a single Next.js applicat
 | **POS Terminal**          | `/pos`            | Cashier, Waiter |
 | **Kitchen Display (KDS)** | `/kds/:stationId` | Chef            |
 | **Employee Portal**       | `/employee`       | All staff       |
-| **Customer PWA**          | `/customer`       | Guests          |
+| **Mobile App API**        | `/api/mobile/*`   | Customers (Flutter) |
 
 ---
 
@@ -45,15 +45,14 @@ The system is split into five distinct UIs served from a single Next.js applicat
 │           ├── (pos)/pos/           # POS routes (orders, cashier, session, printer, notifications)
 │           ├── (kds)/kds/           # Kitchen Display routes (+ printer)
 │           ├── (employee)/employee/ # Employee portal (profile, schedule, leave, payroll, workspace)
-│           ├── (customer)/customer/ # Customer PWA (menu, orders, loyalty, feedback, account)
 │           ├── login/               # Auth pages + actions
-│           └── api/                 # Route handlers (auth callback, GDPR, health, cron, webhooks)
+│           └── api/                 # Route handlers (auth, health, cron, webhooks, mobile API)
 │
 ├── packages/
 │   ├── database/                   # Prisma client, Supabase helpers (server/client/middleware)
 │   ├── shared/                     # Zod schemas + constants (no runtime dependencies)
-│   ├── security/                   # Security utilities (stub)
-│   └── ui/                         # Shared UI components (stub)
+│   ├── security/                   # Rate limiters + account lockout
+│   └── ui/                         # 26 shadcn/ui components (barrel export)
 │
 ├── supabase/
 │   └── migrations/                 # SQL migration history
@@ -157,7 +156,7 @@ pnpm build
 
 ### Multi-tenant & Multi-branch
 
-Every row in the database carries `tenant_id` and usually `branch_id`. All queries and Server Actions validate ownership before use — receiving an entity ID from the client is never trusted at face value.
+Every row in the database carries `tenant_id` (migrating to `brand_id` per V3.0) and usually `branch_id`. All queries and Server Actions validate ownership before use — receiving an entity ID from the client is never trusted at face value.
 
 ### Role-Based Access Control
 
@@ -244,13 +243,18 @@ Violating these tiers causes runtime crashes (`next/headers` in Edge, Prisma in 
 - Payroll information
 - Workspace dashboard
 
-### Customer PWA (`/customer`)
+### Mobile App API (`/api/mobile/*`)
 
-- Menu browsing
-- Order placement & status tracking
-- Loyalty points and tier status
-- Feedback submission
-- Account management
+REST API for the Flutter customer app (Bearer token auth, rate-limited):
+
+- `GET /menu` — Public menu browsing (no auth)
+- `GET /orders` — Customer order history
+- `GET /loyalty` — Loyalty dashboard
+- `GET /profile` — Customer profile
+- `GET /vouchers` — Available vouchers
+- `POST /feedback` — Submit feedback
+- `GET /notifications` — Customer notifications
+- `GET /stores` — Branch/store list (no auth)
 
 ---
 
@@ -268,54 +272,44 @@ Payment credentials are stored in **Supabase Vault** — never in environment va
 
 ## API Routes
 
-| Endpoint                        | Purpose                       |
-| ------------------------------- | ----------------------------- |
-| `/api/auth/callback`            | Supabase Auth OAuth callback  |
-| `/api/health`                   | Health check                  |
-| `/api/cron/process-deletions`   | GDPR auto-deletion cron job   |
-| `/api/privacy/data-export`      | GDPR data export              |
-| `/api/privacy/deletion-request` | GDPR deletion request         |
-| `/api/webhooks/momo`            | Momo payment webhook receiver |
+| Endpoint                          | Purpose                        |
+| --------------------------------- | ------------------------------ |
+| `/api/auth/callback`              | Supabase Auth OAuth callback   |
+| `/api/health`                     | Health check                   |
+| `/api/mobile/*`                   | Flutter customer app REST API  |
+| `/api/cron/process-deletions`     | GDPR auto-deletion cron        |
+| `/api/cron/expire-points`         | Loyalty point expiration       |
+| `/api/cron/upgrade-tiers`         | Loyalty tier upgrades          |
+| `/api/cron/inventory-alerts`      | Low stock alerts               |
+| `/api/cron/payment-expiry`        | Expire stale payments          |
+| `/api/cron/daily-analytics`       | Daily analytics refresh        |
+| `/api/webhooks/momo`              | Momo payment webhook           |
+| `/api/privacy/data-export`        | GDPR data export               |
+| `/api/privacy/deletion-request`   | GDPR deletion request          |
 
 ---
 
 ## Roadmap
 
-**Priority 1 — Core**
-
-- VNPay integration with HMAC webhook verification
-- Auto loyalty-tier upgrade triggers
-- Thermal receipt printing
-- In-app + push notification system
-
-**Priority 2 — Operations**
-
-- Attendance clock-in/out via QR scan
-- Branch comparison in dashboard
-- Offline support (Service Worker, IndexedDB, AES-256-GCM)
-- Device fingerprinting for terminal registration
-
-**Priority 3 — Quality**
-
-- Playwright end-to-end test suite expansion
-- RLS validation test suite
-- OpenAPI documentation
-- Upstash Redis rate limiting
-- Peripheral configuration (printers, cash drawers)
+See `docs/ROADMAP.md` for the full development roadmap and `docs/F&B_CRM_Architecture_v3.0.md` for the V3.0 SaaS platform vision.
 
 ---
 
 ## Documentation
 
-| File                       | Contents                                                                          |
-| -------------------------- | --------------------------------------------------------------------------------- |
-| `CLAUDE.md`                | AI agent boot instructions, hard boundaries, task contract template               |
-| `docs/REFERENCE.md`        | Full dependency list, DB conventions, env vars, import strategy, agent skills map |
-| `docs/TASK_TEMPLATES.md`   | Pre-filled task contract templates by domain                                      |
-| `docs/SESSION_PROTOCOL.md` | Session rules and workflow                                                        |
-| `tasks/regressions.md`     | Rules derived from past failures                                                  |
-| `tasks/lessons.md`         | Patterns and prevention notes                                                     |
-| `tasks/todo.md`            | Current sprint progress                                                           |
+| File                                    | Contents                                                                          |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| `CLAUDE.md`                             | AI agent boot instructions, hard boundaries, task contract template               |
+| `docs/F&B_CRM_Architecture_v3.0.md`    | V3.0 SaaS platform architecture (multi-brand, e-invoicing, delivery)              |
+| `docs/REFERENCE.md`                     | Full dependency list, DB conventions, env vars, import strategy, agent skills map |
+| `docs/API.md`                           | REST API reference for mobile endpoints                                           |
+| `docs/state-machines.md`               | Order, payment, delivery state machines                                           |
+| `docs/ROADMAP.md`                       | Development roadmap and sprint progress                                           |
+| `docs/TASK_TEMPLATES.md`               | Pre-filled task contract templates by domain                                      |
+| `docs/SESSION_PROTOCOL.md`             | Session rules and workflow                                                        |
+| `tasks/regressions.md`                  | Rules derived from past failures                                                  |
+| `tasks/lessons.md`                      | Patterns and prevention notes                                                     |
+| `tasks/todo.md`                         | Current sprint progress                                                           |
 
 ---
 

@@ -52,7 +52,6 @@ apps/web/app/
   (pos)/pos/orders/actions.ts ← Order lifecycle (createOrder, updateStatus)
   (pos)/pos/cashier/actions.ts← Payment processing
   (kds)/kds/[stationId]/      ← KDS realtime board
-  (customer)/                 ← ⛔ DEPRECATED — gutted stubs, layout redirects to /login
   api/mobile/                 ← REST API cho Flutter Mobile App (Loyalty)
     helpers.ts                ← Shared auth (Bearer token) + rate limiting
     menu/route.ts             ← GET public menu (no auth)

@@ -88,3 +88,17 @@ backups/*.sql.gz
 playwright-report/
 test-results/
 blob-report/
+
+# Binary documents (keep .md versions only)
+*.docx
+*.xlsx
+*.pptx
+.~lock.*
+
+# One-off generated reports (root level)
+COMTAMMATU_Project_Synthesis_and_Agent_Plan.md
+code-review-report-*.md
+
+# Outdated report patterns
+*.pnpm-outdated.txt
+.pnpm-outdated.txt
