@@ -189,24 +189,64 @@ pnpm --filter @comtammatu/database db:studio     # Prisma Studio
 
 ## AGENT SKILLS MAP
 
-### Always load for this stack:
+### gstack — Development Workflow Skills
 
-- `supabase-postgres-best-practices` — any DB/schema/RLS task
-- `nextjs-supabase-auth` — auth flows, middleware, session handling
-- `next-best-practices` — any Next.js route/RSC/Server Action work
-- `clean-code` — every coding task
+8 specialist modes from [garrytan/gstack](https://github.com/garrytan/gstack). Each provides a distinct "brain mode" — planning ≠ review ≠ shipping.
 
-### By domain:
+| Skill                    | Role              | Purpose                                                        |
+| ------------------------ | ----------------- | -------------------------------------------------------------- |
+| `/plan-ceo-review`       | Founder/CEO       | Product-level plan review — 10-star product vision             |
+| `/plan-eng-review`       | Engineering Mgr   | Architecture, data flow, edge cases, test plans                |
+| `/review`                | Staff Engineer    | Find bugs that pass CI but blow up in production               |
+| `/ship`                  | Release Engineer  | Sync main, run tests, push changes, open PRs                  |
+| `/browse`                | QA Engineer       | Persistent headless Chromium — navigate, interact, screenshot  |
+| `/qa`                    | QA Lead           | Analyze diffs → identify affected pages → systematic testing   |
+| `/setup-browser-cookies` | Session Manager   | Import cookies from real browser for authenticated testing     |
+| `/retro`                 | Engineering Mgr   | Per-contributor metrics, retrospectives, process improvements  |
 
-| Domain                | Skills                                                                               |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| Database schema/RLS   | `supabase-postgres-best-practices` + `database-design:postgresql`                    |
-| Admin UI tabs         | `next-best-practices` + `ui-design:web-component-design`                             |
-| Customer PWA          | `next-best-practices` + `ui-design:accessibility-compliance`                         |
-| Complex SQL/reporting | `data:sql-queries`                                                                   |
-| CI/CD                 | `cicd-automation:github-actions-templates`                                           |
-| Testing               | `engineering:testing-strategy` + `javascript-typescript:javascript-testing-patterns` |
-| Documentation         | `engineering:documentation`                                                          |
+### Domain Skills — By Task Type
+
+| Domain                     | Primary Skill                                                    | Secondary                                   |
+| -------------------------- | ---------------------------------------------------------------- | ------------------------------------------- |
+| Database / Schema / RLS    | `database-design:postgresql`                                     | —                                           |
+| Next.js routes / RSC       | `frontend-mobile-development:nextjs-app-router-patterns`         | —                                           |
+| React state management     | `frontend-mobile-development:react-state-management`             | —                                           |
+| Tailwind / Design system   | `frontend-mobile-development:tailwind-design-system`             | `ui-design:design-system-patterns`          |
+| UI component creation      | `ui-design:web-component-design`                                 | `ui-design:interaction-design`              |
+| Accessibility              | `ui-design:accessibility-compliance`                             | —                                           |
+| Flutter mobile app         | `frontend-mobile-development:react-native-architecture`          | `ui-design:react-native-design`             |
+| API design (REST/GraphQL)  | `backend-development:api-design-principles`                      | —                                           |
+| Microservices / DDD        | `backend-development:architecture-patterns`                      | `backend-development:microservices-patterns` |
+| Complex TypeScript types   | `javascript-typescript:typescript-advanced-types`                | —                                           |
+| Node.js backend            | `javascript-typescript:nodejs-backend-patterns`                  | —                                           |
+| Testing strategy           | `engineering:testing-strategy`                                   | `javascript-typescript:javascript-testing-patterns` |
+| Code review                | `engineering:code-review`                                        | —                                           |
+| Architecture decisions     | `engineering:system-design`                                      | —                                           |
+| Tech debt assessment       | `engineering:tech-debt`                                          | —                                           |
+| Documentation              | `engineering:documentation`                                      | —                                           |
+| CI/CD pipelines            | `cicd-automation:github-actions-templates`                       | `cicd-automation:deployment-pipeline-design` |
+| Security / compliance      | `security-compliance:compliance-check`                           | —                                           |
+| SQL optimization           | `data:sql-queries`                                               | `data:analyze`                              |
+| Data visualization         | `data:data-visualization`                                        | `data:interactive-dashboard-builder`        |
+| Feature spec / PRD         | `product-management:feature-spec`                                | —                                           |
+| Roadmap planning           | `product-management:roadmap-management`                          | —                                           |
+
+### Connected Services (MCP Servers)
+
+| Service  | Status       | Use case                           |
+| -------- | ------------ | ---------------------------------- |
+| Supabase | ✅ Connected | Database, Auth, Edge Functions, Realtime |
+| Vercel   | ✅ Connected | Deploy, hosting, build logs        |
+| Figma    | ✅ Connected | Design files, screenshots          |
+| Gmail    | ✅ Connected | Email notifications                |
+| Google Drive | ✅ Connected | Document sharing                |
+
+### Skill Invocation Rules
+
+1. **Max 2 skills per session** — More = context noise
+2. **Invoke BEFORE coding** — Skills load specialized patterns/constraints
+3. **gstack for workflow** — Use `/plan-ceo-review` → `/plan-eng-review` → code → `/review` → `/qa` → `/ship`
+4. **Domain skills for implementation** — Match task type to skill from table above
 
 ---
 

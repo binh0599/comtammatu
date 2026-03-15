@@ -1,160 +1,171 @@
-# CLAUDE.md — Cơm tấm Má Tư F&B CRM
+# CLAUDE.md — Cơm tấm Má Tư F&B SaaS Platform
 
-> Read this first. Details live in `docs/REFERENCE.md`. Task templates in `docs/TASK_TEMPLATES.md`. Session rules in `docs/SESSION_PROTOCOL.md`.
-
----
-
-## I. STACK
-
-| Layer           | Choice                                                                                                                                                          |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Framework       | Next.js 16.1 App Router + React 19.1 + TypeScript 5.9 strict                                                                                                    |
-| Database        | Supabase (project: `zrlriuednoaqrsvnjjyo`) + Prisma 7.2 + `@prisma/adapter-pg`                                                                                  |
-| Auth            | Supabase Auth + `@supabase/ssr@0.8.0` — cookie-based sessions                                                                                                   |
-| UI              | shadcn/ui (new-york) + Tailwind CSS v4.2 + Lucide React                                                                                                         |
-| Monorepo        | Turborepo 2.8 + pnpm 9.15.0 workspaces                                                                                                                          |
-| Hosting         | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI                                                                                                            |
-| State           | React Query + Zustand                                                                                                                                           |
-| Shared packages | `@comtammatu/database`, `@comtammatu/shared` (Zod schemas + logging), `@comtammatu/security` (rate limiting + lockout), `@comtammatu/ui` (26 shadcn components) |
-
-**Phase:** Production-ready. All sprints + refactoring waves completed. ~300+ source files, 40+ routes, `main` branch.
+> Boot file. Loaded every session. Keep under 150 lines.
+> Deep-dive: `docs/REFERENCE.md` | Templates: `docs/TASK_TEMPLATES.md` | Session rules: `docs/SESSION_PROTOCOL.md`
 
 ---
 
-## II. HARD BOUNDARIES
+## I. CORE PRINCIPLES
 
-> Violation = stop immediately, `git checkout .`, and diagnose root cause.
+1. **Simplicity First** — Every change as simple as possible. Find root cause, not patches. If it feels hacky → stop and rethink.
+2. **Plan Before Build** — Any task ≥3 steps → write Task Contract (Section V) before coding. Off-track → STOP and re-plan.
+3. **Verify Before Done** — Never mark complete without proving it works. Run tests, check build, demo correctness.
+4. **Learning Compounds** — Every failure → rule in `tasks/regressions.md`. Every lesson → `tasks/lessons.md`. Optimize across sessions.
 
-1. **CLIENT_IMPORT** — `"use client"` files import from `@comtammatu/database/src/supabase/client` (never the barrel). Middleware/Edge from `@comtammatu/database/src/supabase`. RSC/Actions from `@comtammatu/database` (full barrel).
+---
+
+## II. STACK
+
+| Layer     | Choice                                                                   |
+| --------- | ------------------------------------------------------------------------ |
+| Framework | Next.js 16.1 App Router + React 19.1 + TypeScript 5.9 strict            |
+| Database  | Supabase (`zrlriuednoaqrsvnjjyo`) + Prisma 7.2 + `@prisma/adapter-pg`   |
+| Auth      | Supabase Auth + `@supabase/ssr@0.8.0` — cookie-based sessions           |
+| UI        | shadcn/ui (new-york) + Tailwind CSS v4.2 + Lucide React                 |
+| Monorepo  | Turborepo 2.8 + pnpm 9.15.0                                             |
+| Hosting   | Vercel (`comtammatu.vercel.app`) + GitHub Actions CI                     |
+| State     | React Query + Zustand                                                    |
+| Mobile    | Flutter 3.x — 3 flavors (manager / staff / customer) + Riverpod         |
+| Packages  | `@comtammatu/database`, `@comtammatu/shared`, `@comtammatu/security`, `@comtammatu/ui` |
+
+**Phase:** Production-ready CRM. ~300+ source files, 40+ routes, `main` branch.
+
+---
+
+## III. HARD BOUNDARIES
+
+> Violation = `git checkout .` + diagnose root cause.
+
+1. **CLIENT_IMPORT** — `"use client"` → import from `@comtammatu/database/src/supabase/client`. Middleware/Edge → `@comtammatu/database/src/supabase`. RSC/Actions → `@comtammatu/database` (barrel).
 2. **RLS_EVERYWHERE** — Every new table needs RLS policies. No exceptions.
-3. **MONEY_TYPE** — `NUMERIC(14,2)` for totals, `NUMERIC(12,2)` for prices. Never `FLOAT`.
+3. **MONEY_TYPE** — `NUMERIC(14,2)` totals, `NUMERIC(12,2)` prices. Never `FLOAT`.
 4. **TIME_TYPE** — `TIMESTAMPTZ` always. Never `TIMESTAMP`.
-5. **PK_TYPE** — `BIGINT GENERATED ALWAYS AS IDENTITY`. Never `SERIAL`, never `UUID` for internal PKs.
+5. **PK_TYPE** — `BIGINT GENERATED ALWAYS AS IDENTITY`. Never `SERIAL`/`UUID` for internal PKs.
 6. **TEXT_TYPE** — `TEXT` always. Never `VARCHAR`.
-7. **PAYMENT_TERMINAL** — Only `cashier_station` terminals can process payments. Verify server-side.
+7. **PAYMENT_TERMINAL** — Only `cashier_station` terminals process payments. Verify server-side.
 8. **AUDIT_APPEND_ONLY** — Never `UPDATE`/`DELETE` on `audit_logs` or `security_events`.
 9. **NO_CARD_DATA** — Card/payment data never stored in our DB. PCI DSS SAQ A.
-10. **VALIDATE_CLIENT_IDS** — Every Server Action receiving an entity ID from client must verify branch + tenant ownership before use.
-11. **REGEN_TYPES** — After any migration adding/modifying SQL functions, run `supabase gen types typescript` before referencing via `.rpc()`.
-12. **ZOD_SCHEMAS** — Every Server Action and API route validates input with a Zod schema from `@comtammatu/shared`.
-13. **VIETNAMESE_DIACRITICS** — Toàn bộ text tiếng Việt trong hệ thống (UI labels, messages, placeholders, comments, metadata) phải được viết có dấu đầy đủ. Tuyệt đối không được viết tiếng Việt không dấu. Ví dụ: "Đăng nhập" (đúng) vs "Dang nhap" (sai), "Quản lý" (đúng) vs "Quan ly" (sai).
+10. **VALIDATE_CLIENT_IDS** — Every Server Action must verify branch + tenant ownership before use.
+11. **REGEN_TYPES** — After migration adding/modifying SQL functions → `supabase gen types typescript`.
+12. **ZOD_SCHEMAS** — Every Server Action/API route validates input with Zod from `@comtammatu/shared`.
+13. **VIETNAMESE_DIACRITICS** — Toàn bộ text tiếng Việt phải viết có dấu đầy đủ. Tuyệt đối không viết không dấu.
 
 ---
 
-## III. CRITICAL FILE PATHS
+## IV. BOOT SEQUENCE
 
-```
-apps/web/app/
-  login/actions.ts            ← Auth: login(), logout() — blocks 'customer' role
-  (admin)/layout.tsx          ← RBAC guard (owner/manager only)
-  (admin)/admin/              ← All admin routes + actions/ directories (split sub-modules)
-  (pos)/layout.tsx            ← POS auth guard
-  (pos)/pos/orders/actions.ts ← Order lifecycle (createOrder, updateStatus)
-  (pos)/pos/cashier/actions.ts← Payment processing
-  (kds)/kds/[stationId]/      ← KDS realtime board
-  api/mobile/                 ← REST API cho Flutter Mobile App (Loyalty)
-    helpers.ts                ← Shared auth (Bearer token) + rate limiting
-    menu/route.ts             ← GET public menu (no auth)
-    orders/route.ts           ← GET customer orders
-    loyalty/route.ts          ← GET loyalty dashboard
-    feedback/route.ts         ← POST submit feedback
-    profile/route.ts          ← GET customer profile
-    vouchers/route.ts         ← GET available vouchers
-    stores/route.ts           ← GET branch/store list (no auth)
-    notifications/route.ts    ← GET customer notifications
-
-packages/
-  database/src/supabase/client.ts  ← Client components ONLY import from here
-  database/src/supabase/server.ts  ← RSC/Actions import from here
-  shared/src/constants.ts          ← All enums, status arrays, valid transitions
-  shared/src/schemas/              ← All Zod schemas (16 files)
-  shared/src/server/               ← Structured logger + error reporter
-  ui/src/                          ← 26 shadcn/ui components (barrel export)
-  security/src/                    ← Rate limiters + account lockout
-
-docs/
-  SESSION_PROTOCOL.md  ← Session workflow and rules — CHECK EVERY SESSION
-  TASK_TEMPLATES.md    ← Templates for contract — CHECK EVERY SESSION
-
-tasks/
-  regressions.md  ← Rules from past failures — CHECK EVERY SESSION
-  lessons.md      ← Patterns + prevention — CHECK EVERY SESSION
-  todo.md         ← Current progress
+```text
+1. Read tasks/regressions.md → any rule that applies?
+2. Read tasks/lessons.md → any relevant pattern?
+3. Read tasks/friction.md → any unresolved contradictions?
+4. Assess complexity → Simple (execute) | Complex (Task Contract → confirm → build)
+5. git checkpoint commit BEFORE starting work
+6. After task: typecheck + lint + build → commit
 ```
 
 ---
 
-## IV. TASK CONTRACT TEMPLATE
-
-> Use before starting any task with 3+ steps. Pre-filled examples in `docs/TASK_TEMPLATES.md`.
+## V. TASK CONTRACT (Use for ≥3 steps)
 
 ```
 ## Task: [name]
-
 Goal: [one sentence — what changes and why]
-
 Adjacent Code:
-- path/to/file.ts — [what it does and how it connects to this task]
-
+- path/file.ts — [what it does, how it connects]
 Constraints:
-- Hard boundaries that apply: [list from Section II]
-- Do NOT touch: [files explicitly out of scope]
-- Scope lock: only modify files listed above
-
-Output Format: [e.g., "Server Action + Client component + Zod schema update"]
-
-Failure Conditions:
-- If touching auth/payment/RLS → stop and surface to user
-- If [specific risk] → [specific action]
+- Hard boundaries: [from Section III]
+- Do NOT touch: [out of scope files]
+- Scope lock: only modify listed files
+Output: [e.g., "Server Action + Component + Zod schema"]
+Failure: If touching auth/payment/RLS → stop and surface to user
 ```
 
 ---
 
-## V. BOOT SEQUENCE
+## VI. ROLES & ORDER FLOW
 
-```text
-1. Check docs/SESSION_PROTOCOL.md — strictly follow session lifecycle & rules
-2. Check docs/TASK_TEMPLATES.md — read the templates before coding
-3. Check tasks/regressions.md — any rule that applies?
-4. Check tasks/lessons.md — any relevant pattern?
-5. Fill Task Contract Template → confirm scope before coding
-6. git commit checkpoint BEFORE starting work
-7. After task: typecheck + lint + build → commit → kill session
-```
+**CRM Roles:** `owner > manager > cashier > chef > waiter > inventory > hr`
+**Customer:** ⛔ BLOCKED from CRM — uses Flutter App only via `/api/mobile/*`
+**Order flow:** Waiter → KDS (realtime) → Chef bumps → Cashier pays → completed
+**Terminals:** `mobile_order` (waiter) | `cashier_station` (payment only)
 
 ---
 
-## VI. ROLES & ORDER FLOW (Quick Reference)
+## VII. ANTI-PATTERNS
 
-**CRM Roles (web login):** `owner > manager > cashier > chef > waiter > inventory > hr`
-
-**Customer Role:** ⛔ BLOCKED from CRM login — customers use Flutter Mobile App only via `/api/mobile/*` REST endpoints.
-
-**Order flow:** Waiter creates → KDS receives (realtime) → Chef bumps ready → Cashier pays → completed
-
-**Terminal split:** `mobile_order` (waiter, no payment) | `cashier_station` (payment only)
-
-**Mobile App API:** `/api/mobile/*` — Bearer token auth (Supabase), rate-limited, JSON responses `{ data }` / `{ error }`
-
----
-
-_Full reference: `docs/REFERENCE.md` — dependencies, DB conventions, full file tree, skills map, migration path._
+1. Don't build without planning — complex task → Task Contract first
+2. Don't silently swallow contradictions → log in `tasks/friction.md`
+3. Don't mark done without verifying → prove it works
+4. Don't repeat past mistakes → always check `tasks/regressions.md`
+5. Don't over-engineer simple fixes — simplicity > cleverness
+6. Don't patch the surface → find root cause
+7. Don't ask user what you can self-fix → self-investigate → self-fix
+8. Don't confuse RAG with learning → rules must live in boot file
 
 ---
 
-## VII. GSTACK
+## VIII. SKILLS & TOOLS
 
-**Web browsing:** Always use the `/browse` skill from gstack for all web browsing. Never use `mcp__Claude_in_Chrome__*` tools.
+### gstack (Development Workflow)
 
-**Available skills:**
+| Skill                  | Role              | When to use                                       |
+| ---------------------- | ----------------- | ------------------------------------------------- |
+| `/plan-ceo-review`     | Founder/CEO       | Product-level plan review, 10-star product vision  |
+| `/plan-eng-review`     | Engineering Mgr   | Architecture, data flow, edge cases, test plans    |
+| `/review`              | Staff Engineer    | Find bugs that pass CI but blow up in production   |
+| `/ship`                | Release Engineer  | Sync main, run tests, push changes, open PRs       |
+| `/browse`              | QA Engineer       | Headless browser for UI testing, screenshots        |
+| `/qa`                  | QA Lead           | Analyze diffs, identify affected pages, auto-test   |
+| `/setup-browser-cookies` | Session Manager | Import cookies for authenticated page testing      |
+| `/retro`               | Engineering Mgr   | Retrospective with per-contributor metrics          |
 
-| Skill                    | Purpose                                                                                         |
-| ------------------------ | ----------------------------------------------------------------------------------------------- |
-| `/browse`                | Headless browser for navigating URLs, interacting with elements, taking screenshots, QA testing |
-| `/plan-ceo-review`       | CEO-level plan review                                                                           |
-| `/plan-eng-review`       | Engineering plan review                                                                         |
-| `/review`                | Code review                                                                                     |
-| `/ship`                  | Ship/deploy workflow                                                                            |
-| `/qa`                    | QA testing workflow                                                                             |
-| `/setup-browser-cookies` | Configure browser cookies for authenticated browsing                                            |
-| `/retro`                 | Retrospective workflow                                                                          |
+**Rule:** Always use `/browse` for web browsing. Never use `mcp__Claude_in_Chrome__*` tools.
+
+### Domain Skills (Invoke before coding)
+
+| Task involves              | Invoke first                                        |
+| -------------------------- | --------------------------------------------------- |
+| SQL / migration / RLS      | `database-design:postgresql`                        |
+| Next.js routes / RSC       | `frontend-mobile-development:nextjs-app-router-patterns` |
+| Complex types / Zod        | `javascript-typescript:typescript-advanced-types`   |
+| Bug investigation          | `engineering:code-review`                           |
+| Architecture decision      | `engineering:system-design`                         |
+| Flutter mobile app         | `frontend-mobile-development:react-native-architecture` |
+| API design                 | `backend-development:api-design-principles`         |
+| Testing strategy           | `engineering:testing-strategy`                      |
+| Security audit             | `security-compliance:compliance-check`              |
+
+### Connected Services (MCP)
+
+| Service  | Use case                 |
+| -------- | ------------------------ |
+| Supabase | Database, Auth, Realtime |
+| Vercel   | Deploy & hosting         |
+| Figma    | Design files             |
+
+---
+
+## IX. META-LEARNING FILES
+
+| File                    | Purpose                             | When to update                  |
+| ----------------------- | ----------------------------------- | ------------------------------- |
+| `tasks/regressions.md`  | Named failure rules (1-line each)  | Every serious failure           |
+| `tasks/lessons.md`      | Pattern → Rule → Prevention         | Every correction from user      |
+| `tasks/friction.md`     | Contradiction log                   | New instruction contradicts old |
+| `tasks/predictions.md`  | Prediction → Delta → Lesson         | Before/after important decisions |
+| `tasks/todo.md`         | Current task progress               | During work                     |
+
+---
+
+## X. QUALITY GATES (Before Delivery)
+
+- [ ] Does it run? (test / demo)
+- [ ] As simple as possible? (no over-engineering)
+- [ ] Violates any rule in `tasks/regressions.md`?
+- [ ] Would a staff engineer approve?
+- [ ] `pnpm typecheck && pnpm lint && pnpm build` pass?
+
+---
+
+_Full reference: `docs/REFERENCE.md` — dependencies, DB conventions, file tree, migration history._
+_Session management: `docs/SESSION_PROTOCOL.md` — lifecycle, error recovery, parallel sessions._

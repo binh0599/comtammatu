@@ -171,12 +171,45 @@ Ugly git log beats a beautiful log you can't navigate. Every commit is a potenti
 
 **Before starting a session**, identify which skills to invoke. Doing it during the session breaks flow.
 
-| Task involves                         | Invoke skill first                                |
-| ------------------------------------- | ------------------------------------------------- |
-| New SQL / migration / RLS             | `supabase-postgres-best-practices`                |
-| Next.js routes / RSC / Server Actions | `next-best-practices`                             |
-| Auth / middleware / sessions          | `nextjs-supabase-auth`                            |
-| Any code writing                      | `clean-code`                                      |
-| Complex types / Zod inference         | `javascript-typescript:typescript-advanced-types` |
-| Bug investigation                     | `engineering:code-review`                         |
-| Architecture decision                 | `engineering:system-design`                       |
+### gstack Skills (Development Workflow)
+
+Use these for structured development phases. Each invokes a specialist "brain mode":
+
+| Phase          | Skill                  | When to use                                                      |
+| -------------- | ---------------------- | ---------------------------------------------------------------- |
+| Planning       | `/plan-ceo-review`     | Product-level review — find the 10-star product in the request   |
+| Planning       | `/plan-eng-review`     | Lock architecture, data flow, edge cases, test plans             |
+| Code Review    | `/review`              | Find bugs that pass CI but blow up in production                 |
+| Shipping       | `/ship`                | Sync main, run tests, resolve reviews, push, open PRs            |
+| QA Testing     | `/browse`              | Headless browser — navigate, interact, screenshot, verify UI     |
+| QA Testing     | `/qa`                  | Analyze diffs, identify affected pages, systematic test plan     |
+| Browser Auth   | `/setup-browser-cookies` | Import cookies for authenticated page testing                  |
+| Retrospective  | `/retro`               | Per-contributor metrics, lessons, process improvements            |
+
+**Rule:** Always use `/browse` for web browsing. Never use `mcp__Claude_in_Chrome__*` tools.
+
+### Domain Skills (Invoke before coding)
+
+| Task involves                         | Invoke skill first                                              |
+| ------------------------------------- | --------------------------------------------------------------- |
+| New SQL / migration / RLS             | `database-design:postgresql`                                    |
+| Next.js routes / RSC / Server Actions | `frontend-mobile-development:nextjs-app-router-patterns`        |
+| Auth / middleware / sessions          | (check `docs/REFERENCE.md` import strategy)                     |
+| Complex types / Zod inference         | `javascript-typescript:typescript-advanced-types`               |
+| Bug investigation                     | `engineering:code-review`                                       |
+| Architecture decision                 | `engineering:system-design`                                     |
+| Flutter mobile app                    | `frontend-mobile-development:react-native-architecture`         |
+| API design / new endpoints            | `backend-development:api-design-principles`                     |
+| Testing strategy                      | `engineering:testing-strategy`                                  |
+| Security / compliance audit           | `security-compliance:compliance-check`                          |
+| CI/CD pipelines                       | `cicd-automation:github-actions-templates`                      |
+| Data analysis / SQL optimization      | `data:sql-queries` hoặc `data:analyze`                          |
+| Documentation                         | `engineering:documentation`                                     |
+| Tech debt assessment                  | `engineering:tech-debt`                                         |
+
+### Skill Invocation Protocol
+
+1. **Identify** — Before writing any code, check if a domain skill applies
+2. **Invoke** — Call the skill to load specialized knowledge
+3. **Apply** — Follow the skill's patterns/constraints during implementation
+4. **Don't stack** — Maximum 2 skills per session. More = context noise
