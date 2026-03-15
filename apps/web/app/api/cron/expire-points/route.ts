@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     .limit(500); // Process in batches to avoid timeout
 
   if (fetchError) {
-    log.error("Lỗi truy vấn giao dịch hết hạn", { action: "fetch" });
+    log.error("Lỗi truy vấn giao dịch hết hạn", { action: "fetch", error: fetchError });
     return NextResponse.json(
       { error: "Lỗi truy vấn giao dịch hết hạn" },
       { status: 500 },
@@ -61,7 +61,7 @@ export async function GET(request: Request) {
       .eq("id", txn.id);
 
     if (markError) {
-      log.error(`Lỗi đánh dấu giao dịch #${txn.id}`, { action: "mark-expired" });
+      log.error(`Lỗi đánh dấu giao dịch #${txn.id}`, { action: "mark-expired", error: markError });
       continue;
     }
 
@@ -92,7 +92,7 @@ export async function GET(request: Request) {
       });
 
       if (insertError) {
-        log.error(`Lỗi tạo giao dịch hết hạn cho khách hàng #${txn.customer_id}`, { action: "insert-expire" });
+        log.error(`Lỗi tạo giao dịch hết hạn cho khách hàng #${txn.customer_id}`, { action: "insert-expire", error: insertError });
         continue;
       }
     }

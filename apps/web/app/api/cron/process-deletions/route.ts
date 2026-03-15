@@ -108,7 +108,7 @@ export async function GET(request: Request) {
 
       processed++;
     } catch (err) {
-      log.error(`Lỗi xử lý yêu cầu xóa #${req.id}`, { action: "process-deletion" });
+      log.error(`Lỗi xử lý yêu cầu xóa #${req.id}`, { action: "process-deletion", error: err });
       errors.push({ id: req.id, error: String(err) });
 
       // Log failure as security event

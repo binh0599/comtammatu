@@ -57,7 +57,7 @@ export async function GET(request: Request) {
       duration_ms: durationMs,
     });
   } catch (err) {
-    log.error("Lỗi không mong muốn khi làm mới views", { action: "refresh" });
+    log.error("Lỗi không mong muốn khi làm mới views", { action: "refresh", error: err });
     return NextResponse.json(
       { error: "Lỗi không mong muốn khi làm mới views" },
       { status: 500 },

@@ -38,7 +38,7 @@ export async function GET(request: Request) {
     .lt("created_at", thirtyMinutesAgo);
 
   if (fetchError) {
-    log.error("Lỗi truy vấn thanh toán chờ xử lý", { action: "fetch", duration_ms: 0 });
+    log.error("Lỗi truy vấn thanh toán chờ xử lý", { action: "fetch", error: fetchError });
     return NextResponse.json(
       { error: "Failed to fetch stale payments" },
       { status: 500 },

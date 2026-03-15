@@ -66,7 +66,7 @@ export async function GET(_req: NextRequest) {
       orders: orders ?? [],
     });
   } catch (error) {
-    log.error("Lỗi máy chủ khi xử lý đơn hàng", { action: "get-orders" });
+    log.error("Lỗi máy chủ khi xử lý đơn hàng", { action: "get-orders", error });
     return jsonError(
       "Lỗi máy chủ. Vui lòng thử lại sau.",
       500,
