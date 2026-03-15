@@ -6,8 +6,6 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-  Separator,
-  SidebarTrigger,
 } from "@comtammatu/ui";
 
 interface HeaderProps {
@@ -16,9 +14,7 @@ interface HeaderProps {
 
 export function Header({ breadcrumbs }: HeaderProps) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
+    <nav className="flex shrink-0 items-center gap-2 px-4 pt-4 pb-2" aria-label="Breadcrumb">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
@@ -38,6 +34,6 @@ export function Header({ breadcrumbs }: HeaderProps) {
           ))}
         </BreadcrumbList>
       </Breadcrumb>
-    </header>
+    </nav>
   );
 }

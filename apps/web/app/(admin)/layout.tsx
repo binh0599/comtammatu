@@ -1,7 +1,6 @@
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { requireLayoutAuth } from "@/lib/layout-auth";
-import { NotificationBadge } from "./admin/notifications/notification-badge";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AdminLayoutToolbar } from "@/components/admin/admin-layout-toolbar";
 import { SidebarInset, SidebarProvider } from "@comtammatu/ui";
 
 const ADMIN_ALLOWED_ROLES = ["owner", "manager", "hr"] as const;
@@ -22,13 +21,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         }}
       />
       <SidebarInset>
-        <div className="flex items-center justify-end gap-2 border-b px-4 py-1">
-          <ThemeToggle />
-          <NotificationBadge />
-        </div>
-        <main id="main-content" className="animate-page-in">
+        <AdminLayoutToolbar />
+        <div id="main-content" className="flex flex-1 flex-col animate-page-in">
           {children}
-        </main>
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
