@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     const { error } = await supabase.rpc("refresh_materialized_views");
 
     if (error) {
-      log.error("Lỗi làm mới materialized views", { action: "refresh" });
+      log.error("Lỗi làm mới materialized views", { action: "refresh", error });
       return NextResponse.json(
         { error: "Lỗi khi làm mới materialized views", details: error.message },
         { status: 500 }

@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     .lte("scheduled_deletion_at", new Date().toISOString());
 
   if (fetchError) {
-    log.error("Lỗi truy vấn yêu cầu xóa dữ liệu", { action: "fetch-requests" });
+    log.error("Lỗi truy vấn yêu cầu xóa dữ liệu", { action: "fetch-requests", error: fetchError });
     return NextResponse.json({ error: "Failed to fetch requests" }, { status: 500 });
   }
 
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
     }
   }
 
-  log.info(`Đã xử lý ${processed}/${requests.length} yêu cầu xóa dữ liệu`);
+  log.info("Đã xử lý yêu cầu xóa dữ liệu", { processed, total: requests.length });
 
   return NextResponse.json({
     message: `Processed ${processed} deletion requests`,

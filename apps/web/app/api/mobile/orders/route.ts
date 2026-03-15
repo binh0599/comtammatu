@@ -55,7 +55,7 @@ export async function GET(_req: NextRequest) {
       .limit(50);
 
     if (error) {
-      log.error("Lỗi truy vấn đơn hàng", { action: "fetch-orders" });
+      log.error("Lỗi truy vấn đơn hàng", { action: "fetch-orders", error });
       return jsonError(
         "Không thể tải lịch sử đơn hàng. Vui lòng thử lại sau.",
         500,
