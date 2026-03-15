@@ -1,5 +1,8 @@
 import type { NextRequest } from "next/server";
 import { getMobileCustomer, checkMobileRateLimit, jsonOk, jsonError } from "../helpers";
+import { createLogger } from "@comtammatu/shared";
+
+const log = createLogger("api:mobile-orders");
 
 /**
  * GET /api/mobile/orders
@@ -52,23 +55,21 @@ export async function GET(_req: NextRequest) {
       .limit(50);
 
     if (error) {
-      console.error("Error fetching orders:", error);
-      return jsonError("Không thể tải lịch sử đơn hàng. Vui lòng thử lại sau.", 500);
+      log.error("Lỗi truy vấn đơn hàng", { action: "fetch-orders", error });
+      return jsonError(
+        "Không thể tải lịch sử đơn hàng. Vui lòng thử lại sau.",
+        500,
+      );
     }
 
     return jsonOk({
       orders: orders ?? [],
     });
   } catch (error) {
-    console.error("[GET /api/mobile/orders]", error);
-    return jsonError("Lỗi máy chủ. Vui lòng thử lại sau.", 500);
+    log.error("Lỗi máy chủ khi xử lý đơn hàng", { action: "get-orders", error });
+    return jsonError(
+      "Lỗi máy chủ. Vui lòng thử lại sau.",
+      500,
+    );
   }
-}
-
-/**
- * POST /api/mobile/orders
- * Not implemented yet. Placeholder for future mobile order creation.
- */
-export async function POST(_req: NextRequest) {
-  return jsonError("Chức năng này chưa được triển khai. Vui lòng liên hệ hỗ trợ.", 501);
 }
