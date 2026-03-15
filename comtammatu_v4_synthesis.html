@@ -80,7 +80,7 @@
 
 <div class="header">
   <h1><span>Cơm Tấm Má Tư</span> — Master Plan V4.1</h1>
-  <div class="subtitle">Flutter + Zalo Mini App + SaaS Billing Edition | Tổng hợp từ Architecture V3.0 + Restructure Plan + API Plan + Flutter Component Tree</div>
+  <div class="subtitle">Flutter + Zalo Mini App + SaaS Billing + Agent Rules | Tổng hợp từ Architecture V3.0 + Restructure Plan + API Plan + Flutter Component Tree + Project Operating System</div>
   <div class="badges">
     <span class="badge orange">V4.1 — March 2026</span>
     <span class="badge blue">Multi-brand SaaS</span>
@@ -104,6 +104,7 @@
   <button class="nav-btn" onclick="showSection('zalo')">Zalo Mini App</button>
   <button class="nav-btn" onclick="showSection('billing')">SaaS Billing</button>
   <button class="nav-btn" onclick="showSection('migration')">Migration</button>
+  <button class="nav-btn" onclick="showSection('devops')">Agent & Skills</button>
 </div>
 
 <div class="container">
@@ -216,27 +217,27 @@ graph TB
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;">
       <div class="module-card" style="border-color:var(--accent);">
         <div style="font-weight:600;">Query Strategy</div>
-        <div style="color:var(--text-muted);font-size:0.82rem;">supabase-js (PostgREST) primary. Prisma CHI cho migrations.</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">supabase-js (PostgREST) là query client chính. Prisma CHỈ cho migrations.</div>
       </div>
       <div class="module-card" style="border-color:var(--accent2);">
         <div style="font-weight:600;">Auth Pattern</div>
-        <div style="color:var(--text-muted);font-size:0.82rem;">JWT custom claims: brand_id + user_role trong moi token</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">JWT custom claims: brand_id + user_role trong mỗi token</div>
       </div>
       <div class="module-card" style="border-color:var(--accent3);">
         <div style="font-weight:600;">Offline Strategy</div>
-        <div style="color:var(--text-muted);font-size:0.82rem;">POS offline-first (Serwist + IndexedDB). KDS khong can offline.</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">POS offline-first (Serwist + IndexedDB). KDS không cần offline.</div>
       </div>
       <div class="module-card" style="border-color:var(--accent4);">
         <div style="font-weight:600;">Customer Channel</div>
-        <div style="color:var(--text-muted);font-size:0.82rem;">Zalo OA + ZNS la primary (77M MAU). Flutter app la secondary.</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">Zalo OA + ZNS là kênh chính (77M MAU). Flutter app là kênh phụ.</div>
       </div>
       <div class="module-card" style="border-color:var(--accent5);">
         <div style="font-weight:600;">Billing Processor</div>
-        <div style="color:var(--text-muted);font-size:0.82rem;">VNPay recurring (token-based). Khong dung Stripe cho VN market.</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">VNPay recurring (token-based). Không dùng Stripe cho thị trường VN.</div>
       </div>
       <div class="module-card" style="border-color:var(--accent6);">
         <div style="font-weight:600;">Differentiation</div>
-        <div style="color:var(--text-muted);font-size:0.82rem;">BCG matrix + Food cost AvT + RFM. Khong doi thu VN nao co.</div>
+        <div style="color:var(--text-muted);font-size:0.82rem;">BCG matrix + Food cost AvT + RFM. Không đối thủ VN nào có.</div>
       </div>
     </div>
   </div>
@@ -424,15 +425,15 @@ sequenceDiagram
     <table>
       <thead><tr><th>Domain</th><th>Scope</th><th>Ly do</th></tr></thead>
       <tbody>
-        <tr><td>Menu, Dinh gia</td><td><span class="tag tag-blue">Brand</span></td><td>Menu nhat quan toan chuoi</td></tr>
-        <tr><td>Khach hang, CRM</td><td><span class="tag tag-blue">Brand</span></td><td>Khach hang khong gan voi 1 chi nhanh</td></tr>
-        <tr><td>Chien dich marketing</td><td><span class="tag tag-blue">Brand</span></td><td>Campaign chay cho toan brand</td></tr>
-        <tr><td>Don hang, POS</td><td><span class="tag tag-green">Branch</span></td><td>Giao dich xay ra tai co so cu the</td></tr>
-        <tr><td>Kho, Mua hang</td><td><span class="tag tag-green">Branch</span></td><td>Ton kho doc lap theo co so</td></tr>
-        <tr><td>Nhan su, Lich ca</td><td><span class="tag tag-green">Branch</span></td><td>Staff lam viec tai 1 co so</td></tr>
-        <tr><td>Giao hang (Grab/Shopee)</td><td><span class="tag tag-green">Branch</span></td><td>Store ID la cua tung chi nhanh</td></tr>
-        <tr><td>Bao cao tai chinh</td><td><span class="tag tag-purple">Both</span></td><td>P&L theo co so hoac toan chuoi</td></tr>
-        <tr><td>Food cost AvT</td><td><span class="tag tag-purple">Both</span></td><td>Xem theo branch hoac toan chuoi</td></tr>
+        <tr><td>Menu, Dinh gia</td><td><span class="tag tag-blue">Brand</span></td><td>Menu nhất quán toàn chuỗi</td></tr>
+        <tr><td>Khách hàng, CRM</td><td><span class="tag tag-blue">Brand</span></td><td>Khách hàng không gắn với 1 chi nhánh</td></tr>
+        <tr><td>Chiến dịch marketing</td><td><span class="tag tag-blue">Brand</span></td><td>Campaign chạy cho toàn brand</td></tr>
+        <tr><td>Đơn hàng, POS</td><td><span class="tag tag-green">Branch</span></td><td>Giao dịch xảy ra tại cơ sở cụ thể</td></tr>
+        <tr><td>Kho, Mua hàng</td><td><span class="tag tag-green">Branch</span></td><td>Tồn kho độc lập theo cơ sở</td></tr>
+        <tr><td>Nhân sự, Lịch ca</td><td><span class="tag tag-green">Branch</span></td><td>Staff làm việc tại 1 cơ sở</td></tr>
+        <tr><td>Giao hàng (Grab/Shopee)</td><td><span class="tag tag-green">Branch</span></td><td>Store ID là của từng chi nhánh</td></tr>
+        <tr><td>Báo cáo tài chính</td><td><span class="tag tag-purple">Both</span></td><td>P&L theo cơ sở hoặc toàn chuỗi</td></tr>
+        <tr><td>Food cost AvT</td><td><span class="tag tag-purple">Both</span></td><td>Xem theo branch hoặc toàn chuỗi</td></tr>
       </tbody>
     </table>
   </div>
@@ -443,7 +444,7 @@ sequenceDiagram
     <table>
       <thead><tr><th>Feature</th><th>Starter (299-499K VND)</th><th>Growth (999K-1.5M VND)</th><th>Enterprise (Custom)</th></tr></thead>
       <tbody>
-        <tr><td>Chi nhanh</td><td>1-3</td><td>4-20</td><td>Unlimited</td></tr>
+        <tr><td>Chi nhánh</td><td>1-3</td><td>4-20</td><td>Unlimited</td></tr>
         <tr><td>POS terminals</td><td>2 per branch</td><td>Unlimited</td><td>Unlimited</td></tr>
         <tr><td>E-invoicing</td><td>Included</td><td>Included</td><td>Dedicated provider</td></tr>
         <tr><td>Delivery</td><td>1 platform</td><td>GrabFood + ShopeeFood</td><td>All + Xanh SM</td></tr>
@@ -457,51 +458,51 @@ sequenceDiagram
 <!-- ===== SECTION: 9 MODULES ===== -->
 <div id="modules" class="section">
   <h2 class="section-title">9 Domain Modules</h2>
-  <p class="section-desc">Moi module = 1 domain nghiep vu voi scope co dinh. Khong module nao lan lon brand va branch logic trong cung 1 trang.</p>
+  <p class="section-desc">Mỗi module = 1 domain nghiệp vụ với scope cố định. Không module nào lẫn lộn brand và branch logic trong cùng 1 trang.</p>
 
   <div class="grid-auto" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
     <div class="module-card" style="border-color:var(--accent4);">
-      <div style="font-weight:600;">1. Tong quan (Dashboard)</div>
+      <div style="font-weight:600;">1. Tổng quan (Dashboard)</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-purple">Both</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">Doanh thu, KPI, so sanh chi nhanh, canh bao ton kho, don dang xu ly realtime</div>
+      <div style="font-size:0.82rem;margin-top:8px;">Doanh thu, KPI, so sánh chi nhánh, cảnh báo tồn kho, đơn đang xử lý realtime</div>
     </div>
     <div class="module-card" style="border-color:var(--accent3);">
-      <div style="font-weight:600;">2. Ban hang</div>
+      <div style="font-weight:600;">2. Bán hàng</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">Don hang, lich su, quan ly ban, phien POS, KDS man hinh bep</div>
+      <div style="font-size:0.82rem;margin-top:8px;">Đơn hàng, lịch sử, quản lý bàn, phiên POS, KDS màn hình bếp</div>
     </div>
     <div class="module-card" style="border-color:var(--accent2);">
-      <div style="font-weight:600;">3. Thuc don</div>
+      <div style="font-weight:600;">3. Thực đơn</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-blue">Brand</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">CRUD mon an, dinh gia, combo, phan cong chi nhanh, dong bo GrabFood/ShopeeFood</div>
+      <div style="font-size:0.82rem;margin-top:8px;">CRUD món ăn, định giá, combo, phân công chi nhánh, đồng bộ GrabFood/ShopeeFood</div>
     </div>
     <div class="module-card" style="border-color:var(--accent3);">
-      <div style="font-weight:600;">4. Kho & Mua hang</div>
+      <div style="font-weight:600;">4. Kho & Mua hàng</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">Ton kho nguyen lieu, kiem ke, PO nha cung cap, chuyen kho lien chi nhanh</div>
+      <div style="font-size:0.82rem;margin-top:8px;">Tồn kho nguyên liệu, kiểm kê, PO nhà cung cấp, chuyển kho liên chi nhánh</div>
     </div>
     <div class="module-card" style="border-color:var(--accent3);">
-      <div style="font-weight:600;">5. Giao hang</div>
+      <div style="font-weight:600;">5. Giao hàng</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">GrabFood/ShopeeFood don dang cho, accept/reject, toggle online/offline</div>
+      <div style="font-size:0.82rem;margin-top:8px;">GrabFood/ShopeeFood đơn đang chờ, accept/reject, toggle online/offline</div>
     </div>
     <div class="module-card" style="border-color:var(--accent2);">
-      <div style="font-weight:600;">6. Khach hang & CRM</div>
+      <div style="font-weight:600;">6. Khách hàng & CRM</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-blue">Brand</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">RFM scores, loyalty tiers, campaigns (Zalo/SMS/Email), phan khuc, Zalo OA</div>
+      <div style="font-size:0.82rem;margin-top:8px;">RFM scores, loyalty tiers, campaigns (Zalo/SMS/Email), phân khúc, Zalo OA</div>
     </div>
     <div class="module-card" style="border-color:var(--accent4);">
-      <div style="font-weight:600;">7. Tai chinh</div>
+      <div style="font-weight:600;">7. Tài chính</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-purple">Both</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">Thanh toan, hoan tien (approval), doi soat settlement, HDDT, webhook log</div>
+      <div style="font-size:0.82rem;margin-top:8px;">Thanh toán, hoàn tiền (approval), đối soát settlement, HĐĐT, webhook log</div>
     </div>
     <div class="module-card" style="border-color:var(--accent3);">
-      <div style="font-weight:600;">8. Nhan su</div>
+      <div style="font-weight:600;">8. Nhân sự</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-green">Branch</span></div>
-      <div style="font-size:0.82rem;margin-top:8px;">Nhan vien, lich ca, tinh luong voi BHXH breakdown (Luat BHXH 2024)</div>
+      <div style="font-size:0.82rem;margin-top:8px;">Nhân viên, lịch ca, tính lương với BHXH breakdown (Luật BHXH 2024)</div>
     </div>
     <div class="module-card" style="border-color:var(--accent4);">
-      <div style="font-weight:600;">9. Bao cao & Phan tich</div>
+      <div style="font-weight:600;">9. Báo cáo & Phân tích</div>
       <div style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Scope: <span class="tag tag-purple">Both</span></div>
       <div style="font-size:0.82rem;margin-top:8px;">Food cost AvT, labor cost %, RFM segmentation, BCG menu matrix, delivery perf</div>
     </div>
@@ -622,9 +623,9 @@ graph LR
     <table>
       <thead><tr><th>Channel</th><th>Event</th><th>Receiver</th><th>Use Case</th></tr></thead>
       <tbody>
-        <tr><td style="color:var(--accent6);">kitchen:[branchId]:[stationId]</td><td>INSERT order_items</td><td>KDS station</td><td>Don moi can lam</td></tr>
+        <tr><td style="color:var(--accent6);">kitchen:[branchId]:[stationId]</td><td>INSERT order_items</td><td>KDS station</td><td>Đơn mới cần làm</td></tr>
         <tr><td style="color:var(--accent6);">orders:[branchId]</td><td>UPDATE status</td><td>POS terminal</td><td>Biet khi bep da xong</td></tr>
-        <tr><td style="color:var(--accent6);">payments:[orderId]</td><td>UPDATE status</td><td>POS cashier</td><td>Xac nhan PayOS thanh toan</td></tr>
+        <tr><td style="color:var(--accent6);">payments:[orderId]</td><td>UPDATE status</td><td>POS cashier</td><td>Xác nhận PayOS thanh toán</td></tr>
         <tr><td style="color:var(--accent6);">tables:[branchId]</td><td>UPDATE status</td><td>Host / manager</td><td>So do ban</td></tr>
         <tr><td style="color:var(--accent6);">delivery:[branchId]</td><td>INSERT orders</td><td>Branch manager</td><td>Don tu GrabFood/ShopeeFood</td></tr>
         <tr><td style="color:var(--accent6);">waitlist:[branchId]</td><td>UPDATE position</td><td>Customer app</td><td>Hang cho realtime (Phase 2)</td></tr>
@@ -770,16 +771,16 @@ graph LR
 <!-- ===== SECTION: 6 AGENTS ===== -->
 <div id="agents" class="section">
   <h2 class="section-title">6 Agent Roles</h2>
-  <p class="section-desc">Moi Agent so huu mot domain rieng biet. A1 la tiebreaker, A6 la gatekeeper. Cross-domain changes dung Handoff Protocol.</p>
+  <p class="section-desc">Mỗi Agent sở hữu một domain riêng biệt. A1 là tiebreaker, A6 là gatekeeper. Cross-domain changes dùng Handoff Protocol.</p>
 
   <div class="grid-auto" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));">
     <div class="card" style="border-left:4px solid var(--accent5);">
       <h3 style="color:var(--accent5);">A1 — Architect (TIEBREAKER)</h3>
-      <div style="font-size:0.88rem;">System Design, IA Authority. So huu URL structure, scope rules, route layout. Viet ADR cho moi quyet dinh lon. Review va approve moi schema change.</div>
+      <div style="font-size:0.88rem;">System Design, IA Authority. Sở hữu URL structure, scope rules, route layout. Viết ADR cho mọi quyết định lớn. Review và approve mọi schema change.</div>
     </div>
     <div class="card" style="border-left:4px solid var(--accent2);">
       <h3 style="color:var(--accent2);">A2 — Frontend</h3>
-      <div style="font-size:0.88rem;">UI/UX, Component System. Xay dung ScopeContextBar, route groups, @repo/ui. Dependencies: useScope() tu A4, TypeScript types tu A3.</div>
+      <div style="font-size:0.88rem;">UI/UX, Component System. Xây dựng ScopeContextBar, route groups, @repo/ui. Dependencies: useScope() từ A4, TypeScript types từ A3.</div>
     </div>
     <div class="card" style="border-left:4px solid var(--accent3);">
       <h3 style="color:var(--accent3);">A3 — Database</h3>
@@ -787,15 +788,15 @@ graph LR
     </div>
     <div class="card" style="border-left:4px solid var(--accent4);">
       <h3 style="color:var(--accent4);">A4 — Auth & RBAC</h3>
-      <div style="font-size:0.88rem;">Permissions, Roles, Nav Config. nav-config.ts, ScopeProviders, has_role() function. Xoa 3 ban duplicate. Deliver useScope() truoc tuan 3.</div>
+      <div style="font-size:0.88rem;">Permissions, Roles, Nav Config. nav-config.ts, ScopeProviders, has_role() function. Xóa 3 bản duplicate. Deliver useScope() trước tuần 3.</div>
     </div>
     <div class="card" style="border-left:4px solid var(--accent);">
       <h3 style="color:var(--accent);">A5 — Integration</h3>
-      <div style="font-size:0.88rem;">External APIs, Edge Functions. PayOS, VietQR, E-invoicing, GrabFood, ShopeeFood, Zalo OA, ZNS. Tat ca secrets trong Vault.</div>
+      <div style="font-size:0.88rem;">External APIs, Edge Functions. PayOS, VietQR, E-invoicing, GrabFood, ShopeeFood, Zalo OA, ZNS. Tất cả secrets trong Vault.</div>
     </div>
     <div class="card" style="border-left:4px solid var(--accent6);">
       <h3 style="color:var(--accent6);">A6 — CI/QA (GATEKEEPER)</h3>
-      <div style="font-size:0.88rem;">Pipeline, Testing, Quality Gates. Fix 13 lint errors, branch protection, E2E Playwright, security scan. Khong code nao merge khi CI do.</div>
+      <div style="font-size:0.88rem;">Pipeline, Testing, Quality Gates. Fix 13 lint errors, branch protection, E2E Playwright, security scan. Không code nào merge khi CI đỏ.</div>
     </div>
   </div>
 
@@ -916,7 +917,7 @@ sequenceDiagram
 <!-- ===== SECTION: FLUTTER 3 FLAVORS ===== -->
 <div id="flutter" class="section">
   <h2 class="section-title">Flutter App — 3 Flavors</h2>
-  <p class="section-desc">Mot codebase duy nhat, 3 app binaries: Manager (owner/manager), Staff (nhan vien), Customer (loyalty). Repo: github.com/binh0599/comtammatu-app</p>
+  <p class="section-desc">Một codebase duy nhất, 3 app binaries: Manager (owner/manager), Staff (nhân viên), Customer (loyalty). Repo: github.com/binh0599/comtammatu-app</p>
 
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;">
     <div class="stat-card" style="border-top:3px solid var(--accent);">
@@ -927,7 +928,7 @@ sequenceDiagram
     <div class="stat-card" style="border-top:3px solid var(--accent2);">
       <div class="value" style="color:var(--accent2);font-size:1.4rem;">CTM Staff</div>
       <div class="label">vn.comtammatu.staff</div>
-      <div style="margin-top:8px;font-size:0.82rem;">staff — Lich ca, cham cong QR, xem luong</div>
+      <div style="margin-top:8px;font-size:0.82rem;">staff — Lịch ca, chấm công QR, xem lương</div>
     </div>
     <div class="stat-card" style="border-top:3px solid var(--accent3);">
       <div class="value" style="color:var(--accent3);font-size:1.4rem;">Com Tam Ma Tu</div>
@@ -1063,7 +1064,7 @@ graph TB
 <!-- ===== SECTION: ZALO MINI APP ===== -->
 <div id="zalo" class="section">
   <h2 class="section-title">Zalo Mini App</h2>
-  <p class="section-desc">Chay trong native Zalo app (77M MAU), khong can install rieng. Kenh tiep can khach hang co ROI cao nhat tai Viet Nam — gan 100% visibility rate.</p>
+  <p class="section-desc">Chạy trong native Zalo app (77M MAU), không cần install riêng. Kênh tiếp cận khách hàng có ROI cao nhất tại Việt Nam — gần 100% visibility rate.</p>
 
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:28px;">
     <div class="stat-card"><div class="value" style="color:var(--accent6);font-size:1.6rem;">77M</div><div class="label">Zalo MAU</div></div>
@@ -1098,14 +1099,14 @@ sequenceDiagram
 
   <!-- Zalo vs Flutter comparison -->
   <div class="card">
-    <h3>Zalo Mini App vs Flutter App — Khi nao dung cai nao</h3>
+    <h3>Zalo Mini App vs Flutter App — Khi nào dùng cái nào</h3>
     <table>
       <thead><tr><th>Scenario</th><th>Recommended</th><th>Ly do</th></tr></thead>
       <tbody>
-        <tr><td>Khach hang moi chua install app</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Zero friction — trong Zalo san co</td></tr>
-        <tr><td>Nhan thong bao don hang</td><td><span class="tag tag-cyan">ZNS qua Zalo</span></td><td>100% visibility, khong can open app</td></tr>
-        <tr><td>Kiem tra diem nhanh</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Nhanh hon — khong can open app rieng</td></tr>
-        <tr><td>Xem lich su chi tiet, doi thuong</td><td><span class="tag tag-green">Flutter App</span></td><td>More screen space, full features</td></tr>
+        <tr><td>Khách hàng mới chưa install app</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Zero friction — trong Zalo sẵn có</td></tr>
+        <tr><td>Nhận thông báo đơn hàng</td><td><span class="tag tag-cyan">ZNS qua Zalo</span></td><td>100% visibility, không cần mở app</td></tr>
+        <tr><td>Kiểm tra điểm nhanh</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Nhanh hơn — không cần mở app riêng</td></tr>
+        <tr><td>Xem lịch sử chi tiết, đổi thưởng</td><td><span class="tag tag-green">Flutter App</span></td><td>Nhiều không gian hơn, đầy đủ tính năng</td></tr>
         <tr><td>Order tai ban qua QR (Phase 2)</td><td><span class="tag tag-cyan">Zalo Mini App</span></td><td>Scan QR ban, order ngay trong Zalo</td></tr>
         <tr><td>Loyalty dashboard day du</td><td><span class="tag tag-green">Flutter App</span></td><td>Charts, tier benefits, full history</td></tr>
         <tr><td>Campaign promo push</td><td><span class="tag tag-cyan">ZNS</span> + deep link <span class="tag tag-green">Flutter</span></td><td>ZNS deliver, Flutter show detail</td></tr>
@@ -1135,7 +1136,7 @@ sequenceDiagram
           <tbody>
             <tr><td><span class="tag tag-red">P0</span></td><td style="color:var(--accent4);">order_confirm</td><td>Sent post-payment</td></tr>
             <tr><td><span class="tag tag-red">P0</span></td><td style="color:var(--accent4);">loyalty_update</td><td>Sent after order closed</td></tr>
-            <tr><td><span class="tag tag-orange">P1</span></td><td style="color:var(--accent4);">win_back</td><td>30/60/90 ngay khong thay</td></tr>
+            <tr><td><span class="tag tag-orange">P1</span></td><td style="color:var(--accent4);">win_back</td><td>30/60/90 ngày không thấy</td></tr>
             <tr><td><span class="tag tag-orange">P1</span></td><td style="color:var(--accent4);">birthday</td><td>pg_cron daily trigger</td></tr>
             <tr><td><span class="tag tag-blue">P2</span></td><td style="color:var(--accent4);">promo</td><td>Manual campaign builder</td></tr>
           </tbody>
@@ -1163,7 +1164,7 @@ sequenceDiagram
 <!-- ===== SECTION: SAAS BILLING ===== -->
 <div id="billing" class="section">
   <h2 class="section-title">SaaS Billing Flow</h2>
-  <p class="section-desc">VNPay recurring (token-based) cho thi truong VN. In-house subscription management tren Supabase — billing schema tach biet, pg_cron renewal.</p>
+  <p class="section-desc">VNPay recurring (token-based) cho thị trường VN. In-house subscription management trên Supabase — billing schema tách biệt, pg_cron renewal.</p>
 
   <div class="mermaid-wrapper">
     <h3>Subscription Lifecycle</h3>
@@ -1287,7 +1288,7 @@ sequenceDiagram
 <!-- ===== SECTION: MIGRATION ===== -->
 <div id="migration" class="section">
   <h2 class="section-title">Migration Path V2 to V3.0</h2>
-  <p class="section-desc">Non-breaking first, breaking changes co ke hoach. Microservice extraction khi dat scale triggers.</p>
+  <p class="section-desc">Non-breaking first, breaking changes có kế hoạch. Microservice extraction khi đạt scale triggers.</p>
 
   <div class="mermaid-wrapper">
     <h3>Migration Sequence</h3>
@@ -1316,7 +1317,7 @@ graph TB
   <div class="card">
     <h3>Microservice Extraction Triggers</h3>
     <table>
-      <thead><tr><th>Trigger Condition</th><th>Extract Service</th><th>Ly do</th></tr></thead>
+      <thead><tr><th>Trigger Condition</th><th>Extract Service</th><th>Lý do</th></tr></thead>
       <tbody>
         <tr><td>500+ orders/day</td><td>Payment Service</td><td>PCI scope isolation</td></tr>
         <tr><td>1,000 concurrent users</td><td>Auth Service</td><td>JWT validation bottleneck</td></tr>
@@ -1328,12 +1329,196 @@ graph TB
 
   <!-- Breaking Changes -->
   <div class="card">
-    <h3>Breaking Changes (ke hoach can than)</h3>
+    <h3>Breaking Changes (kế hoạch cẩn thận)</h3>
     <table>
       <tbody>
-        <tr><td style="color:var(--accent5);">tenant_id to brand_id</td><td>Single migration, off-peak hours, update tat ca app code cung PR</td></tr>
+        <tr><td style="color:var(--accent5);">tenant_id to brand_id</td><td>Single migration, off-peak hours, update tất cả app code cùng PR</td></tr>
         <tr><td style="color:var(--accent5);">UUID[] to junction</td><td>Data migration script convert array to rows</td></tr>
-        <tr><td style="color:var(--accent5);">Schema-per-module</td><td>Move tables batch-by-batch, dung search_path backward compat</td></tr>
+        <tr><td style="color:var(--accent5);">Schema-per-module</td><td>Move tables batch-by-batch, dùng search_path backward compat</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION: DEVOPS / AGENT & SKILLS ===== -->
+<div id="devops" class="section">
+  <h2 class="section-title">Agent & Skills — Hệ thống phát triển</h2>
+  <p class="section-desc">CLAUDE.md boot file + Project Operating System + gstack workflow skills + domain skills. Mỗi session bắt đầu với boot sequence, kết thúc với quality gates.</p>
+
+  <div class="mermaid-wrapper">
+    <h3>Development Workflow</h3>
+    <div class="mermaid">
+graph LR
+    BOOT["Boot Sequence<br/>regressions + lessons<br/>+ friction check"]
+    PLAN["Plan Mode<br/>Task Contract<br/>Adjacent Code"]
+    SKILL["Load Skills<br/>gstack + domain<br/>max 2 per session"]
+    BUILD["Build<br/>Step by step<br/>Checkpoint commits"]
+    VERIFY["Verify<br/>typecheck + lint<br/>+ build"]
+    LEARN["Learn<br/>Update regressions<br/>+ lessons"]
+
+    BOOT --> PLAN
+    PLAN --> SKILL
+    SKILL --> BUILD
+    BUILD --> VERIFY
+    VERIFY --> LEARN
+    LEARN -.-> BOOT
+
+    style BOOT fill:#1e293b,stroke:#f97316
+    style PLAN fill:#1e293b,stroke:#3b82f6
+    style SKILL fill:#1e293b,stroke:#a78bfa
+    style BUILD fill:#1e293b,stroke:#10b981
+    style VERIFY fill:#1e293b,stroke:#eab308
+    style LEARN fill:#1e293b,stroke:#f43f5e
+    </div>
+  </div>
+
+  <!-- gstack Skills -->
+  <div class="card">
+    <h3>gstack — 8 Specialist Roles</h3>
+    <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">Mỗi skill kích hoạt một "chế độ não" chuyên biệt. Từ <a href="https://github.com/garrytan/gstack" style="color:var(--accent2);">garrytan/gstack</a></p>
+    <div class="grid-2">
+      <div>
+        <table>
+          <thead><tr><th>Skill</th><th>Vai trò</th><th>Khi nào dùng</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent);">/plan-ceo-review</td><td>Founder/CEO</td><td>Review sản phẩm, tầm nhìn 10-star</td></tr>
+            <tr><td style="color:var(--accent2);">/plan-eng-review</td><td>Engineering Mgr</td><td>Kiến trúc, data flow, edge cases</td></tr>
+            <tr><td style="color:var(--accent3);">/review</td><td>Staff Engineer</td><td>Tìm bug qua CI nhưng lỗi production</td></tr>
+            <tr><td style="color:var(--accent4);">/ship</td><td>Release Engineer</td><td>Sync main, test, push, mở PR</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <table>
+          <thead><tr><th>Skill</th><th>Vai trò</th><th>Khi nào dùng</th></tr></thead>
+          <tbody>
+            <tr><td style="color:var(--accent6);">/browse</td><td>QA Engineer</td><td>Headless browser, screenshot, UI test</td></tr>
+            <tr><td style="color:var(--accent5);">/qa</td><td>QA Lead</td><td>Phân tích diff, test có hệ thống</td></tr>
+            <tr><td style="color:var(--yellow);">/setup-browser-cookies</td><td>Session Mgr</td><td>Import cookies cho auth testing</td></tr>
+            <tr><td style="color:var(--text-muted);">/retro</td><td>Engineering Mgr</td><td>Retrospective, metrics per contributor</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 16px;background:rgba(249,115,22,0.1);border-radius:8px;font-size:0.85rem;border-left:3px solid var(--accent);">
+      <strong>Quy tắc:</strong> Luôn dùng <code>/browse</code> cho web browsing. Không bao giờ dùng <code>mcp__Claude_in_Chrome__*</code> tools.
+    </div>
+  </div>
+
+  <!-- Domain Skills -->
+  <div class="card">
+    <h3>Domain Skills — Kích hoạt trước khi code</h3>
+    <table>
+      <thead><tr><th>Loại tác vụ</th><th>Skill chính</th><th>Skill phụ</th></tr></thead>
+      <tbody>
+        <tr><td>SQL / Migration / RLS</td><td style="color:var(--accent2);">database-design:postgresql</td><td>—</td></tr>
+        <tr><td>Next.js routes / RSC</td><td style="color:var(--accent2);">nextjs-app-router-patterns</td><td>—</td></tr>
+        <tr><td>TypeScript nâng cao / Zod</td><td style="color:var(--accent2);">typescript-advanced-types</td><td>—</td></tr>
+        <tr><td>Flutter mobile app</td><td style="color:var(--accent2);">react-native-architecture</td><td>react-native-design</td></tr>
+        <tr><td>API design</td><td style="color:var(--accent2);">api-design-principles</td><td>—</td></tr>
+        <tr><td>Bug investigation</td><td style="color:var(--accent2);">engineering:code-review</td><td>—</td></tr>
+        <tr><td>Kiến trúc hệ thống</td><td style="color:var(--accent2);">engineering:system-design</td><td>—</td></tr>
+        <tr><td>Testing strategy</td><td style="color:var(--accent2);">engineering:testing-strategy</td><td>javascript-testing-patterns</td></tr>
+        <tr><td>Security / Compliance</td><td style="color:var(--accent2);">security-compliance</td><td>—</td></tr>
+        <tr><td>CI/CD pipelines</td><td style="color:var(--accent2);">github-actions-templates</td><td>deployment-pipeline-design</td></tr>
+        <tr><td>Data / SQL tối ưu</td><td style="color:var(--accent2);">data:sql-queries</td><td>data:analyze</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Meta-Learning System -->
+  <div class="card">
+    <h3>Meta-Learning System — 5 Vòng lặp học tập</h3>
+    <div class="grid-auto" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));">
+      <div class="module-card" style="border-color:var(--accent5);">
+        <div style="font-weight:600;">tasks/regressions.md</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Quy tắc phòng tránh lỗi. 1 dòng mỗi rule. Load mọi session.</div>
+        <div style="font-size:0.75rem;color:var(--accent5);margin-top:4px;">Hiện tại: 18 rules</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent2);">
+        <div style="font-weight:600;">tasks/lessons.md</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Pattern, Rule, Prevention. Cập nhật sau mỗi correction từ user.</div>
+        <div style="font-size:0.75rem;color:var(--accent2);margin-top:4px;">Hiện tại: 25+ lessons</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent);">
+        <div style="font-weight:600;">tasks/friction.md</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Log mâu thuẫn giữa các instruction. Không tuân thủ im lặng.</div>
+        <div style="font-size:0.75rem;color:var(--accent);margin-top:4px;">Hiện tại: 2 contradictions</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent4);">
+        <div style="font-weight:600;">tasks/predictions.md</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Dự đoán, Thực tế, Delta, Bài học. Cải thiện ước lượng qua thời gian.</div>
+        <div style="font-size:0.75rem;color:var(--accent4);margin-top:4px;">Accuracy: 60% to 95%</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent3);">
+        <div style="font-weight:600;">tasks/todo.md</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Tiến độ tác vụ hiện tại. Cập nhật trong khi làm việc.</div>
+        <div style="font-size:0.75rem;color:var(--accent3);margin-top:4px;">Active task tracker</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Connected Services -->
+  <div class="card">
+    <h3>MCP Connected Services</h3>
+    <div class="grid-auto" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+      <div class="stat-card">
+        <div class="value" style="color:var(--accent3);font-size:1.4rem;">Supabase</div>
+        <div class="label">Database, Auth, Realtime, Edge Functions</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color:var(--accent2);font-size:1.4rem;">Vercel</div>
+        <div class="label">Deploy, Hosting, Build logs</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color:var(--accent4);font-size:1.4rem;">Figma</div>
+        <div class="label">Design files, Screenshots</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color:var(--accent5);font-size:1.4rem;">Gmail</div>
+        <div class="label">Email notifications</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" style="color:var(--accent6);font-size:1.4rem;">Google Drive</div>
+        <div class="label">Document sharing</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Core Principles -->
+  <div class="card">
+    <h3>4 Nguyên tắc cốt lõi (Constitutional — Không hết hạn)</h3>
+    <div class="grid-2">
+      <div class="module-card" style="border-color:var(--accent);">
+        <div style="font-weight:600;">1. Simplicity First</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Mọi thay đổi phải đơn giản nhất có thể. Tìm nguyên nhân gốc, không vá tạm.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent2);">
+        <div style="font-weight:600;">2. Plan Before Build</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Task 3+ bước phải viết Task Contract trước. Lạc hướng thì DỪNG và lên kế hoạch lại.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent3);">
+        <div style="font-weight:600;">3. Verify Before Done</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Không đánh dấu hoàn thành mà không chứng minh nó hoạt động. typecheck + lint + build.</div>
+      </div>
+      <div class="module-card" style="border-color:var(--accent4);">
+        <div style="font-weight:600;">4. Learning Compounds</div>
+        <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Mọi thất bại thành rule mới. Mọi bài học thành pattern. Tối ưu xuyên sessions.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quality Gates -->
+  <div class="card">
+    <h3>Quality Gates — Kiểm tra trước khi giao</h3>
+    <table>
+      <thead><tr><th>Gate</th><th>Kiểm tra</th><th>Hành động khi thất bại</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--accent3);">Build</td><td><code>pnpm typecheck && pnpm lint && pnpm build</code></td><td>Sửa trước khi commit</td></tr>
+        <tr><td style="color:var(--accent2);">Simplicity</td><td>Đơn giản nhất có thể?</td><td>Refactor, bỏ over-engineering</td></tr>
+        <tr><td style="color:var(--accent5);">Regressions</td><td>Vi phạm rule nào trong regressions.md?</td><td>Sửa theo rule</td></tr>
+        <tr><td style="color:var(--accent4);">Staff Review</td><td>Staff engineer có approve không?</td><td>Cải thiện cho tới khi đạt</td></tr>
+        <tr><td style="color:var(--accent);">Hard Boundaries</td><td>13 boundaries trong CLAUDE.md §III</td><td><code>git checkout .</code> + phân tích nguyên nhân</td></tr>
       </tbody>
     </table>
   </div>
@@ -1342,8 +1527,8 @@ graph TB
 </div><!-- /container -->
 
 <div style="text-align:center;padding:40px;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border);">
-  Com Tam Ma Tu — Master Plan V4.1 Synthesis<br/>
-  Tong hop tu Architecture V3.0 + Restructure Plan + API Plan + Flutter Component Tree + Zalo Mini App + SaaS Billing | March 2026 | Author: Binh
+  Cơm Tấm Má Tư — Master Plan V4.1 Synthesis<br/>
+  Tổng hợp từ Architecture V3.0 + Restructure Plan + API Plan + Flutter Component Tree + Zalo Mini App + SaaS Billing + Agent Rules | March 2026 | Author: Bình
 </div>
 
 <script>
